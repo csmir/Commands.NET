@@ -19,7 +19,7 @@ Define your own pre-execution checks to ensure commands will only run when they 
 
 Create custom conversion for changing raw input into types.
 
-### 🔍 [[Dealing with Post-Execution]]
+### 🔍 [[Dealing with Post-Execution|Results]]
 
 All about handling command results and treating custom return types.
 
@@ -27,6 +27,6 @@ All about handling command results and treating custom return types.
 
 Customize your modules and contexts to scale up your applications, or simply to reduce code repetition.
 
-### 💉 [[Mastering Dependency Injection||Dependency-Injection]]
+### 💉 [[Mastering Dependency Injection|Dependency-Injection]]
 
 Learning all there is to know about dependency injection in .NET and how it benefits Commands.NET. 

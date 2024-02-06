@@ -1,5 +1,9 @@
 # Commands.NET
 
+![Build Status](https://img.shields.io/github/actions/workflow/status/csmir/CSF.NET/dotnet.yml?branch=master&style=flat)
+[![Download](https://img.shields.io/static/v1?style=flat&message=download%20on%20nuget&color=004880&logo=NuGet&logoColor=FFFFFF&label=)](https://nuget.org/packages/Commands.NET)
+[![Discord](https://img.shields.io/discord/1092510256384450652?style=flat)](https://discord.gg/T7hCvShAx5)
+
 Commands.NET is a no-nonsense command library that makes creating and processing queries easy for any* interactive platform.
 It implements a modular, easy to implement pipeline for registering and executing commands, as well as a wide range of customization options to make development on different platforms as easy as possible.
 
@@ -146,7 +150,7 @@ This guide introduces you to the basics of defining modules, commands, and how t
 
 Samples are available to learn how to implement Commands.NET in your own programs.
 
-- [Commands.Samples.Console](https://github.com/csmir/Commands.NET/tree/master/src/examples/Commands.Samples.Console)
+- [Commands.Samples.Console](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Console)
   - Shows how to implement Commands.NET on a basic console application.
-- [Commands.Samples.Hosting](https://github.com/csmir/Commands.NET/tree/master/src/examples/Commands.Samples.Console)
+- [Commands.Samples.Hosting](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Console)
   - Shows how to implement Commands.NET on a hosted console application.
