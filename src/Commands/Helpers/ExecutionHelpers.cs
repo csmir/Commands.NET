@@ -74,7 +74,7 @@ namespace Commands.Helpers
 
                     index += result.Length;
 
-                    if (result.Any(x => !x.Success))
+                    if (result.Any(x => !x.Success()))
                     {
                         try
                         {

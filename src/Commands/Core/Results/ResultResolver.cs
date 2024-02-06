@@ -6,18 +6,22 @@ namespace Commands.Core
     /// <summary>
     ///     A container that implements an asynchronous functor to handle post-execution operations.
     /// </summary>
-    /// <param name="handler">A functor that serves as the handler for post-execution operations in this resolver.</param>
-    public class ResultResolver(Func<ICommandContext, ICommandResult, IServiceProvider, Task> handler)
+    public class ResultResolver()
     {
-        private static readonly Lazy<ResultResolver> _i = new(() => new ResultResolver(null));
+        private static readonly Lazy<ResultResolver> _i = new(() => new ResultResolver());
 
         /// <summary>
-        ///     Gets the handler responsible for post-execution operation handling.
+        ///     Gets or sets the handler responsible for post-execution failure handling.
         /// </summary>
-        public Func<ICommandContext, ICommandResult, IServiceProvider, Task> Handler { get; } = handler;
+        public Func<ICommandContext, ICommandResult, IServiceProvider, Task> FailHandle { get; set; }
 
         /// <summary>
-        ///     Validates the state of the <see cref="Handler"/> and attempts to execute the delegate.
+        ///     Gets or sets the handler responsible for post-execution success handling.
+        /// </summary>
+        public Func<ICommandContext, ICommandResult, IServiceProvider, Task> SuccessHandle { get; set; }
+
+        /// <summary>
+        ///     Validates the state of the <see cref="FailHandle"/> and attempts to execute the delegate.
         /// </summary>
         /// <param name="context">Context of the current execution.</param>
         /// <param name="result">The result of the command, being successful or containing failure information.</param>
@@ -26,9 +30,13 @@ namespace Commands.Core
         [EditorBrowsable(EditorBrowsableState.Never)]
         public async Task TryHandleAsync(ICommandContext context, ICommandResult result, AsyncServiceScope scope)
         {
-            if (Handler != null)
+            if (result.Success())
             {
-                await Handler(context, result, scope.ServiceProvider);
+                await SuccessHandle?.Invoke(context, result, scope.ServiceProvider);
+            }    
+            else
+            {
+                await FailHandle?.Invoke(context, result, scope.ServiceProvider);
             }
 
             await scope.DisposeAsync();

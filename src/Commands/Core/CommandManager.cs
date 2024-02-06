@@ -145,7 +145,7 @@ namespace Commands.Core
                 var match = await MatchAsync(context, scope.ServiceProvider, search, args, cancellationToken);
 
                 // enter the invocation logic when a match is successful.
-                if (match.Success)
+                if (match.Success())
                 {
                     var result = await RunAsync(context, scope.ServiceProvider, match, cancellationToken);
 
@@ -179,7 +179,7 @@ namespace Commands.Core
             var check = await CheckAsync(context, services, search.Command, cancellationToken);
 
             // verify check success, if not, return the failure.
-            if (!check.Success)
+            if (!check.Success())
                 return new(search.Command, new MatchException("Command failed to reach execution state. View inner exception for more details.", check.Exception));
 
             // read the command parameters in right order.
@@ -190,7 +190,7 @@ namespace Commands.Core
             for (int i = 0; i < readResult.Length; i++)
             {
                 // check for read success.
-                if (!readResult[i].Success)
+                if (!readResult[i].Success())
                     return new(search.Command, readResult[i].Exception);
 
                 reads[i] = readResult[i].Value;
@@ -210,11 +210,11 @@ namespace Commands.Core
             {
                 var result = await precon.EvaluateAsync(context, services, command, cancellationToken);
 
-                if (!result.Success)
+                if (!result.Success())
                     return result;
             }
 
-            return new(true);
+            return new(null);
         }
         #endregion
 

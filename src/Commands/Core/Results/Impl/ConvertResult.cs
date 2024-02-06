@@ -8,21 +8,22 @@
         /// <inheritdoc />
         public Exception Exception { get; } = null;
 
-        /// <inheritdoc />
-        public bool Success { get; }
-
         internal object Value { get; } = null;
 
         internal ConvertResult(object value)
         {
             Value = value;
-            Success = true;
         }
 
         internal ConvertResult(Exception exception)
         {
             Exception = exception;
-            Success = false;
+        }
+
+        /// <inheritdoc />
+        public bool Success()
+        {
+            return Exception == null;
         }
     }
 }

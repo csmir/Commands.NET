@@ -229,14 +229,26 @@ namespace Commands.Core
         /// </summary>
         /// <param name="configureDelegate"></param>
         /// <returns>The same <see cref="CommandConfiguration"/> for call chaining.</returns>
-        public CommandConfiguration ConfigureResultAction([DisallowNull] Func<ICommandContext, ICommandResult, IServiceProvider, Task> configureDelegate)
+        public CommandConfiguration ConfigureSuccessAction([DisallowNull] Func<ICommandContext, ICommandResult, IServiceProvider, Task> configureDelegate)
         {
             if (configureDelegate == null)
             {
                 ThrowHelpers.ThrowInvalidArgument(configureDelegate);
             }
 
-            _resultResolver = new ResultResolver(configureDelegate);
+            _resultResolver.FailHandle = configureDelegate;
+
+            return this;
+        }
+
+        public CommandConfiguration ConfigureFailureAction([DisallowNull] Func<ICommandContext, ICommandResult, IServiceProvider, Task> configureDelegate)
+        {
+            if (configureDelegate == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(configureDelegate);
+            }
+
+            _resultResolver.SuccessHandle = configureDelegate;
 
             return this;
         }

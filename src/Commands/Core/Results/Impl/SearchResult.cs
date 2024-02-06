@@ -10,9 +10,6 @@ namespace Commands
         /// <inheritdoc />
         public Exception Exception { get; } = null;
 
-        /// <inheritdoc />
-        public bool Success { get; }
-
         /// <summary>
         ///     Gets the command that was found for this result.
         /// </summary>
@@ -27,14 +24,18 @@ namespace Commands
         {
             Command = command;
             SearchHeight = srcHeight;
-            Success = true;
         }
 
         internal SearchResult(Exception exception)
         {
             Exception = exception;
             SearchHeight = 0;
-            Success = false;
+        }
+
+        /// <inheritdoc />
+        public bool Success()
+        {
+            return Exception == null;
         }
     }
 }

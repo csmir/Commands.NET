@@ -9,16 +9,10 @@ var collection = new ServiceCollection()
     .ConfigureCommands(configuration =>
     {
         configuration.AsyncApproach = AsyncApproach.Await;
-        configuration.ConfigureResultAction(async (context, result, services) =>
+        configuration.ConfigureFailureAction(async (context, result, services) =>
         {
-            if (result.Success)
-            {
-                await Task.CompletedTask;
-            }
-            else
-            {
-                Console.WriteLine(result.Exception);
-            }
+            await Task.CompletedTask;
+            Console.WriteLine(result.Exception);
         });
         configuration.WithAssemblies(Assembly.GetEntryAssembly());
     });

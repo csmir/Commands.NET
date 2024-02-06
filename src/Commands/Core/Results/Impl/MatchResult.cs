@@ -10,9 +10,6 @@ namespace Commands
         /// <inheritdoc />
         public Exception Exception { get; } = null;
 
-        /// <inheritdoc />
-        public bool Success { get; }
-
         /// <summary>
         ///     Gets the command known during the matching operation.
         /// </summary>
@@ -24,15 +21,19 @@ namespace Commands
         {
             Command = command;
             Reads = reads;
-            Success = true;
         }
 
         internal MatchResult(CommandInfo command, Exception exception)
         {
             Command = command;
-            Success = false;
 
             Exception = exception;
+        }
+
+        /// <inheritdoc />
+        public bool Success()
+        {
+            return Exception == null;
         }
     }
 }

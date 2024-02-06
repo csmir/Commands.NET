@@ -10,9 +10,6 @@ namespace Commands
         /// <inheritdoc />
         public Exception Exception { get; } = null;
 
-        /// <inheritdoc />
-        public bool Success { get; }
-
         /// <summary>
         ///     Gets the command responsible for the invocation.
         /// </summary>
@@ -22,13 +19,17 @@ namespace Commands
         {
             Exception = exception;
             Command = command;
-            Success = false;
         }
 
         internal RunResult(CommandInfo command)
         {
             Command = command;
-            Success = true;
+        }
+
+        /// <inheritdoc />
+        public bool Success()
+        {
+            return Exception == null;
         }
     }
 }

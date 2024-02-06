@@ -8,18 +8,15 @@
         /// <inheritdoc />
         public Exception Exception { get; } = null;
 
-        /// <inheritdoc />
-        public bool Success { get; } = true;
-
         internal CheckResult(Exception exception)
         {
             Exception = exception;
-            Success = false;
         }
 
-        internal CheckResult(bool success)
+        /// <inheritdoc />
+        public bool Success()
         {
-            Success = success;
+            return Exception == null;
         }
     }
 }
