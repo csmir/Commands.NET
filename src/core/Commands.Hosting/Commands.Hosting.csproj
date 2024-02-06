@@ -6,9 +6,9 @@
 	  
 	<RootNamespace>Commands</RootNamespace>
 
-	<AssemblyVersion>0.1</AssemblyVersion>
+	<AssemblyVersion>1.0</AssemblyVersion>
 	<PackageVersion>1-alpha</PackageVersion>
-	<FileVersion>0.1.0.0</FileVersion>
+	<FileVersion>1.0.0.0</FileVersion>
 
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
