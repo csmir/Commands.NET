@@ -225,11 +225,11 @@ namespace Commands.Core
         }
 
         /// <summary>
-        /// 
+        ///     Sets the <see cref="ResultResolver.SuccessHandle"/> on the present <see cref="ResultResolver"/>, being <see cref="ResultResolver.Default"/> if not set.
         /// </summary>
-        /// <param name="configureDelegate"></param>
+        /// <param name="configureDelegate">The delegate that configures what action should be taken when the pipeline returns success.</param>
         /// <returns>The same <see cref="CommandConfiguration"/> for call chaining.</returns>
-        public CommandConfiguration ConfigureSuccessAction([DisallowNull] Func<ICommandContext, ICommandResult, IServiceProvider, Task> configureDelegate)
+        public CommandConfiguration OnSuccess([DisallowNull] Func<ICommandContext, ICommandResult, IServiceProvider, Task> configureDelegate)
         {
             if (configureDelegate == null)
             {
@@ -241,7 +241,12 @@ namespace Commands.Core
             return this;
         }
 
-        public CommandConfiguration ConfigureFailureAction([DisallowNull] Func<ICommandContext, ICommandResult, IServiceProvider, Task> configureDelegate)
+        /// <summary>
+        ///     Sets the <see cref="ResultResolver.SuccessHandle"/> on the present <see cref="ResultResolver"/>, being <see cref="ResultResolver.Default"/> if not set.
+        /// </summary>
+        /// <param name="configureDelegate">The delegate that configures what action should be taken when the pipeline returns failure.</param>
+        /// <returns>The same <see cref="CommandConfiguration"/> for call chaining.</returns>
+        public CommandConfiguration OnFailure([DisallowNull] Func<ICommandContext, ICommandResult, IServiceProvider, Task> configureDelegate)
         {
             if (configureDelegate == null)
             {

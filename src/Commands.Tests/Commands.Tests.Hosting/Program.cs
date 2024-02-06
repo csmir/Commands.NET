@@ -10,7 +10,7 @@ await Host.CreateDefaultBuilder(args)
     .ConfigureCommands((context, configuration) =>
     {
         configuration.TryAddAssembly(Assembly.GetEntryAssembly());
-        configuration.ConfigureFailureAction((context, result, services) =>
+        configuration.OnFailure((context, result, services) =>
         {
             Console.WriteLine(result);
 

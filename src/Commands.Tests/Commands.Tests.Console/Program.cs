@@ -9,7 +9,7 @@ var collection = new ServiceCollection()
     .ConfigureCommands(configuration =>
     {
         configuration.AsyncApproach = AsyncApproach.Await;
-        configuration.ConfigureFailureAction(async (context, result, services) =>
+        configuration.OnFailure(async (context, result, services) =>
         {
             await Task.CompletedTask;
             Console.WriteLine(result.Exception);

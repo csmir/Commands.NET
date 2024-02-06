@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 var collection = new ServiceCollection()
     .ConfigureCommands(configuration =>
     {
-        configuration.ConfigureFailureAction((context, result, services) =>
+        configuration.OnFailure((context, result, services) =>
         {
             Console.WriteLine(result.Exception);    
 
