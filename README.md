@@ -150,7 +150,7 @@ This guide introduces you to the basics of defining modules, commands, and how t
 
 Samples are available to learn how to implement Commands.NET in your own programs.
 
-- [Commands.Samples.Console](https://github.com/csmir/Commands.NET/tree/master/src/examples/Commands.Samples.Console)
+- [Commands.Samples.Console](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Console)
   - Shows how to implement Commands.NET on a basic console application.
-- [Commands.Samples.Hosting](https://github.com/csmir/Commands.NET/tree/master/src/examples/Commands.Samples.Console)
+- [Commands.Samples.Hosting](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Console)
   - Shows how to implement Commands.NET on a hosted console application.
