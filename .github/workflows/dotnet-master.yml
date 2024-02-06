@@ -21,13 +21,9 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build -c Release --no-restore --warnaserror
     - name: Test
-      run: dotnet test --no-build --verbosity normal
-    - name: Pack
-      run: |
-        dotnet pack src/Commands -c Release --no-build
-        dotnet pack src/core/Commands.Hosting -c Release --no-build
+      run: dotnet test -c Release --no-build --verbosity normal
     - name: Publish
       run: |
         dotnet nuget push src/Commands/bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -n -s https://api.nuget.org/v3/index.json --skip-duplicate
