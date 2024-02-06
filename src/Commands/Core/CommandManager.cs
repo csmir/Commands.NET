@@ -67,7 +67,7 @@ namespace Commands.Core
         /// </remarks>
         /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        public void TryExecute(ICommandContext context, params object[] args)
+        public virtual void TryExecute(ICommandContext context, params object[] args)
             => TryExecuteAsync(context, args).Wait();
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace Commands.Core
         /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandConfiguration.AsyncApproach"/> is set to <see cref="AsyncApproach.Discard"/>.</returns>
-        public Task TryExecuteAsync(ICommandContext context, params object[] args)
+        public virtual Task TryExecuteAsync(ICommandContext context, params object[] args)
             => TryExecuteAsync(context, args, cancellationToken: default);
 
         /// <summary>
@@ -92,18 +92,18 @@ namespace Commands.Core
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="cancellationToken">A token that can be provided from a <see cref="CancellationTokenSource"/> and later used to cancel asynchronous execution.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandConfiguration.AsyncApproach"/> is set to <see cref="AsyncApproach.Discard"/>.</returns>
-        public async Task TryExecuteAsync(ICommandContext context, object[] args, CancellationToken cancellationToken = default)
+        public virtual async Task TryExecuteAsync(ICommandContext context, object[] args, CancellationToken cancellationToken = default)
         {
             switch (Configuration.AsyncApproach)
             {
                 case AsyncApproach.Await:
                     {
-                        await ExecuteInternalAsync(context, args, cancellationToken);
+                        await ExecuteAsync(context, args, cancellationToken);
                     }
                     return;
                 case AsyncApproach.Discard:
                     {
-                        _ = ExecuteInternalAsync(context, args, cancellationToken);
+                        _ = ExecuteAsync(context, args, cancellationToken);
                     }
                     return;
             }
@@ -114,7 +114,7 @@ namespace Commands.Core
         /// </summary>
         /// <param name="args">A set of arguments intended to discover commands as a query.</param>
         /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the results of the search query.</returns>
-        public IEnumerable<SearchResult> Search(object[] args)
+        public virtual IEnumerable<SearchResult> Search(object[] args)
         {
             // recursively search for commands in the execution.
             lock (_searchLock)
@@ -123,8 +123,14 @@ namespace Commands.Core
             }
         }
 
-        #region Executing
-        private async Task ExecuteInternalAsync(ICommandContext context, object[] args, CancellationToken cancellationToken)
+        /// <summary>
+        ///     Steps through the pipeline in order to execute a command based on the provided <paramref name="args"/>.
+        /// </summary>
+        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution.</returns>
+        protected virtual async Task ExecuteAsync(ICommandContext context, object[] args, CancellationToken cancellationToken)
         {
             var searches = Search(args);
 
@@ -141,7 +147,7 @@ namespace Commands.Core
                 // enter the invocation logic when a match is successful.
                 if (match.Success())
                 {
-                    var result = await RunAsync(context, scope.ServiceProvider, match, cancellationToken);
+                    var result = await InvokeAsync(context, scope.ServiceProvider, match, cancellationToken);
 
                     await _resultHandle.TryHandleAsync(context, result, scope);
 
@@ -164,10 +170,17 @@ namespace Commands.Core
                 await _resultHandle.TryHandleAsync(context, fallback, scope);
             }
         }
-        #endregion
 
-        #region Matching
-        private async ValueTask<MatchResult> MatchAsync(ICommandContext context, IServiceProvider services, SearchResult search, object[] args, CancellationToken cancellationToken)
+        /// <summary>
+        ///     Matches the provided <paramref name="search"/> based on the provided <paramref name="args"/> and returns the result.
+        /// </summary>
+        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
+        /// <param name="search"></param>
+        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the matching process.</returns>
+        protected virtual async ValueTask<MatchResult> MatchAsync(ICommandContext context, IServiceProvider services, SearchResult search, object[] args, CancellationToken cancellationToken)
         {
             // check command preconditions.
             var check = await CheckAsync(context, services, search.Command, cancellationToken);
@@ -193,10 +206,16 @@ namespace Commands.Core
             // return successful match if execution reaches here.
             return new(search.Command, reads);
         }
-        #endregion
 
-        #region Checking
-        private async ValueTask<CheckResult> CheckAsync(ICommandContext context, IServiceProvider services, CommandInfo command, CancellationToken cancellationToken)
+        /// <summary>
+        ///     Evaluates the provided <paramref name="command"/> and returns the result.
+        /// </summary>
+        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
+        /// <param name="command">The command intended to be evaluated.</param>
+        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the checking process.</returns>
+        protected virtual async ValueTask<CheckResult> CheckAsync(ICommandContext context, IServiceProvider services, CommandInfo command, CancellationToken cancellationToken)
         {
             foreach (var precon in command.Preconditions)
             {
@@ -208,10 +227,17 @@ namespace Commands.Core
 
             return new(null);
         }
-        #endregion
 
-        #region Reading
-        private async ValueTask<ConvertResult[]> ConvertAsync(ICommandContext context, IServiceProvider services, SearchResult search, object[] args, CancellationToken cancellationToken)
+        /// <summary>
+        ///     Converts the provided <paramref name="search"/> based on the provided <paramref name="args"/> and returns the result.
+        /// </summary>
+        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
+        /// <param name="search">The result of the search intended to be converted.</param>
+        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <returns>An awaitable <see cref="ValueTask"/> holding the results of the conversion process.</returns>
+        protected virtual async ValueTask<ConvertResult[]> ConvertAsync(ICommandContext context, IServiceProvider services, SearchResult search, object[] args, CancellationToken cancellationToken)
         {
             // skip if no parameters exist.
             if (!search.Command.HasArguments)
@@ -235,10 +261,16 @@ namespace Commands.Core
             // input is too long or too short.
             return [];
         }
-        #endregion
 
-        #region Running
-        private async ValueTask<RunResult> RunAsync(ICommandContext context, IServiceProvider services, MatchResult match, CancellationToken cancellationToken)
+        /// <summary>
+        ///     Invokes the provided <paramref name="match"/> and returns the result.
+        /// </summary>
+        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
+        /// <param name="match">The result of the match intended to be ran.</param>
+        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation process.</returns>
+        protected virtual async ValueTask<InvokeResult> InvokeAsync(ICommandContext context, IServiceProvider services, MatchResult match, CancellationToken cancellationToken)
         {
             try
             {
@@ -264,7 +296,6 @@ namespace Commands.Core
                 return new(match.Command, exception);
             }
         }
-        #endregion
 
         internal class ServiceProvider : IServiceProvider
         {

@@ -76,7 +76,7 @@ namespace Commands.Core
             await Task.CompletedTask;
         }
 
-        internal async Task<RunResult> ResolveReturnAsync(object value)
+        internal async Task<InvokeResult> ResolveReturnAsync(object value)
         {
             switch (value)
             {

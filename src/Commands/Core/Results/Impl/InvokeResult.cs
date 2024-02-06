@@ -5,7 +5,7 @@ namespace Commands
     /// <summary>
     ///     The result of an invocation operation within the command execution pipeline.
     /// </summary>
-    public readonly struct RunResult : ICommandResult
+    public readonly struct InvokeResult : ICommandResult
     {
         /// <inheritdoc />
         public Exception Exception { get; } = null;
@@ -15,13 +15,13 @@ namespace Commands
         /// </summary>
         public CommandInfo Command { get; }
 
-        internal RunResult(CommandInfo command, Exception exception)
+        internal InvokeResult(CommandInfo command, Exception exception)
         {
             Exception = exception;
             Command = command;
         }
 
-        internal RunResult(CommandInfo command)
+        internal InvokeResult(CommandInfo command)
         {
             Command = command;
         }
