@@ -25,5 +25,11 @@
         {
             return Exception == null;
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"Success = {(Exception != null ? "True" : $"False: {Exception}")}";
+        }
     }
 }

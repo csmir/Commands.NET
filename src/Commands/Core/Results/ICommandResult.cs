@@ -20,6 +20,7 @@
         /// <summary>
         ///     Gets if the result was successful or not.
         /// </summary>
+        /// <returns><see langword="true"/> if this result represents a successful operation, otherwise <see langword="false"/>.</returns>
         public bool Success();
     }
 }
