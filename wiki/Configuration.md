@@ -55,22 +55,3 @@ Changing to this setting, the following should be checked for thread-safety:
 
 > To ensure thread safety in any of the above situations, it is important to know what this actually means. 
 > For more information, consider reading [this article](https://learn.microsoft.com/en-us/dotnet/standard/threading/managed-threading-best-practices).
-
-### Scope Approach (ScopeApproach)
-
-The `ScopeApproach` defines how scoping is approached at command pipeline level. The pipeline takes into account all instances 
-
-#### OnlyAsync
-
-This option forces the `IServiceProvider` to use `CreateAsyncScope` to generate new scopes. This structure wraps around `IServiceScope` to carry the ability to handle `IAsyncDisposable` types. This is usually unnecessary, unless if `AsyncApproach` is set to `Discard` but no `IAsyncDisposable` services exist.
-
-#### OnlySync
-
-Here, the option forces the `IServiceProvider` to use `CreateScope`. If no settings are changed in the `CommandConfiguration`, this is the default approach. It is unusual for smaller applications to have scopes that implement `IAsyncDisposable` pattern. Though, if this is the case, this setting must be changed.
-
-#### ByAsyncApproach
-
-Here, `AsyncApproach` determines the value (one of the above).
-
-- When set to `Discard`, it will follow the logic as set in `OnlyAsync`.
-- When set to `Await`, it will follow `OnlySync` logic.
