@@ -250,7 +250,6 @@ namespace Commands.Core
 
                 module.Context = context;
                 module.Command = match.Command;
-                module.Services = services;
 
                 await module.BeforeExecuteAsync(cancellationToken);
 

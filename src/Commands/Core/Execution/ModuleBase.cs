@@ -30,17 +30,10 @@ namespace Commands.Core
     /// </remarks>
     public abstract class ModuleBase
     {
-        private bool disposedValue;
-
         /// <summary>
         ///     Gets the command context containing metadata and logging access for the command currently in scope.
         /// </summary>
         public ICommandContext Context { get; internal set; }
-
-        /// <summary>
-        ///     Gets the services configured to start and run the command currently in scope.
-        /// </summary>
-        public IServiceProvider Services { get; internal set; }
 
         /// <summary>
         ///     Gets the reflection information about this command.
