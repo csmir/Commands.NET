@@ -134,7 +134,7 @@ namespace Commands.Core
         {
             var searches = Search(args);
 
-            var scope = Services.CreateScope(Configuration);
+            var scope = Services.CreateAsyncScope();
 
             var c = 0;
 

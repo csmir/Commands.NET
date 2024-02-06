@@ -24,21 +24,14 @@ namespace Commands.Core
         /// <param name="scope">The provider used to register modules and inject services.</param>
         /// <returns>An awaitable <see cref="Task"/> that waits for the delegate to finish.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public async Task TryHandleAsync(ICommandContext context, ICommandResult result, IServiceScope scope)
+        public async Task TryHandleAsync(ICommandContext context, ICommandResult result, AsyncServiceScope scope)
         {
             if (Handler != null)
             {
                 await Handler(context, result, scope.ServiceProvider);
             }
 
-            if (scope is AsyncServiceScope asyncScope)
-            {
-                await asyncScope.DisposeAsync();
-            }
-            else
-            {
-                scope.Dispose();
-            }
+            await scope.DisposeAsync();
         }
 
         internal static ResultResolver Default

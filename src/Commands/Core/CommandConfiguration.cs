@@ -92,26 +92,6 @@ namespace Commands.Core
             }
         }
 
-        private ScopeApproach _scopeApproach = ScopeApproach.Default;
-
-        /// <summary>
-        ///     
-        /// </summary>
-        public ScopeApproach ScopeApproach
-        {
-            get
-            {
-                return _scopeApproach;
-            }
-            set
-            {
-                if (value is not ScopeApproach.ByAsyncApproach or ScopeApproach.OnlySync or ScopeApproach.OnlyAsync)
-                {
-                    ThrowHelpers.ThrowInvalidOperation("ScopeApproach does not support values that exceed the provided optiosn, ranging between 0 and 2.");
-                }
-            }
-        }
-
         /// <summary>
         ///     Replaces the existing values in <see cref="Assemblies"/> with a new collection.
         /// </summary>

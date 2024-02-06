@@ -81,33 +81,5 @@ namespace Commands.Helpers
 
             return collection;
         }
-
-        /// <summary>
-        ///     Generates a <see cref="IServiceScope"/> by resolving the configured <see cref="AsyncApproach"/> within <paramref name="configuration"/>.
-        /// </summary>
-        /// <param name="provider"></param>
-        /// <param name="configuration">The configuration for generating <see cref="IServiceScope"/>'s</param>
-        /// <returns>A <see cref="IServiceScope"/> matching the configured logic, being async when <see cref="AsyncApproach.Discard"/> is set.</returns>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public static IServiceScope CreateScope(this IServiceProvider provider, CommandConfiguration configuration)
-        {
-            switch (configuration.ScopeApproach)
-            {
-                case ScopeApproach.ByAsyncApproach when configuration.AsyncApproach is AsyncApproach.Discard:
-                case ScopeApproach.OnlyAsync:
-                    {
-                        return provider.CreateAsyncScope();
-                    }
-                case ScopeApproach.ByAsyncApproach when configuration.AsyncApproach is AsyncApproach.Await:
-                case ScopeApproach.OnlySync:
-                    {
-                        return provider.CreateScope();
-                    }
-                default:
-                    {
-                        throw new NotImplementedException();
-                    }
-            }
-        }
     }
 }

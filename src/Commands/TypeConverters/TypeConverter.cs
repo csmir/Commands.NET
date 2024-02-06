@@ -109,7 +109,7 @@ namespace Commands.TypeConverters
 
         internal static TypeConverter[] CreateDefaultReaders()
         {
-            var arr = BaseTypeConverter.CreateBaseReaders();
+            var arr = BaseTypeConverter.CreateBaseConverters();
 
             int i = arr.Length;
             Array.Resize(ref arr, i + 2);
