@@ -28,7 +28,7 @@ namespace Commands.Core
     /// <remarks>
     ///      All derived types must be known in <see cref="CommandConfiguration.Assemblies"/> to be discoverable and automatically registered during the creation of a <see cref="CommandManager"/>.
     /// </remarks>
-    public abstract class ModuleBase : IDisposable, IAsyncDisposable
+    public abstract class ModuleBase
     {
         private bool disposedValue;
 
@@ -77,77 +77,30 @@ namespace Commands.Core
         ///     Represents an overridable operation that is responsible for resolving unknown invocation results.
         /// </summary>
         /// <param name="value">The invocation result of which no base handler exists.</param>
-        /// <returns><see langword="true"/> if the unknown result is handled. <see langword="false"/> if the unknown result is unhandled.</returns>
-        public virtual bool HandleUnknownInvocationResult(object value)
+        /// <returns>The awaitable result of this asynchronous operation.</returns>
+        public virtual async ValueTask UnknownReturnAsync(object value)
         {
-            return false;
+            await Task.CompletedTask;
         }
 
-        internal async Task<RunResult> ResolveInvocationResultAsync(object value)
+        internal async Task<RunResult> ResolveReturnAsync(object value)
         {
             switch (value)
             {
                 case Task task:
-                    {
-                        await task;
-                    }
-                    return new(Command);
+                    await task;
+                    break;
+                case ValueTask vTask:
+                    await vTask;
+                    break;
                 case null:
-                    return new(Command);
+                    break;
                 default:
-                    {
-                        if (!HandleUnknownInvocationResult(value))
-                        {
-                            Context.LogWarning("{} returned unknown type. Consider overriding {} to resolve this message.", Command, nameof(HandleUnknownInvocationResult));
-                        }
-
-                        return new(Command);
-                    }
+                    await UnknownReturnAsync(value);
+                    break;
             }
-        }
 
-        /// <summary>
-        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        /// <param name="disposing">Defines whether to dispose managed objects or not.</param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // TODO: dispose managed state (managed objects)
-                }
-
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
-                disposedValue = true;
-            }
-        }
-
-        /// <summary>
-        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
-        /// <param name="disposing">Defines whether to dispose managed objects or not.</param>
-        /// <returns>A <see cref="ValueTask"/> holding the state of disposing.</returns>
-        protected virtual ValueTask DisposeAsync(bool disposing)
-        {
-            Dispose(disposing: disposing);
-            return ValueTask.CompletedTask;
-        }
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <inheritdoc />
-        public async ValueTask DisposeAsync()
-        {
-            await DisposeAsync(disposing: true);
-            GC.SuppressFinalize(this);
+            return new(Command);
         }
     }
 }

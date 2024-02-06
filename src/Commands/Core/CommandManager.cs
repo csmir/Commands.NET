@@ -102,13 +102,11 @@ namespace Commands.Core
             {
                 case AsyncApproach.Await:
                     {
-                        context.LogDebug("Starting execution. Execution pattern = [Await].");
                         await ExecuteInternalAsync(context, args, cancellationToken);
                     }
                     return;
                 case AsyncApproach.Discard:
                     {
-                        context.LogDebug("Starting execution. Execution pattern = [Discard].");
                         _ = ExecuteInternalAsync(context, args, cancellationToken);
                     }
                     return;
@@ -204,8 +202,6 @@ namespace Commands.Core
         #region Checking
         private async ValueTask<CheckResult> CheckAsync(ICommandContext context, IServiceProvider services, CommandInfo command, CancellationToken cancellationToken)
         {
-            context.LogDebug("Attempting validations for {0}", command);
-
             foreach (var precon in command.Preconditions)
             {
                 var result = await precon.EvaluateAsync(context, services, command, cancellationToken);
@@ -221,8 +217,6 @@ namespace Commands.Core
         #region Reading
         private async ValueTask<ConvertResult[]> ConvertAsync(ICommandContext context, IServiceProvider services, SearchResult search, object[] args, CancellationToken cancellationToken)
         {
-            context.LogDebug("Attempting argument conversion for {0}", search.Command);
-
             // skip if no parameters exist.
             if (!search.Command.HasArguments)
                 return [];
@@ -252,8 +246,6 @@ namespace Commands.Core
         {
             try
             {
-                context.LogInformation("Executing {0} with {1} resolved arguments.", match.Command, match.Reads.Length);
-
                 var targetInstance = Services.GetService(match.Command.Module.Type);
 
                 var module = targetInstance != null 
@@ -270,7 +262,7 @@ namespace Commands.Core
 
                 await module.AfterExecuteAsync(cancellationToken);
 
-                return await module.ResolveInvocationResultAsync(value);
+                return await module.ResolveReturnAsync(value);
             }
             catch (Exception exception)
             {
