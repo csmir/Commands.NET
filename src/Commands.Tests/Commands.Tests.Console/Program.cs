@@ -27,5 +27,5 @@ while (true)
 {
     var input = parser.Parse(Console.ReadLine()!);
 
-    await framework.TryExecuteAsync(new LoggingContext(), input);
+    await framework.TryExecuteAsync(new CommandContext(), input);
 }
