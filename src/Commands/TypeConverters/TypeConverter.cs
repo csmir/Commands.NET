@@ -115,7 +115,6 @@ namespace Commands.TypeConverters
             Array.Resize(ref arr, i + 2);
 
             arr[i++] = new TimeSpanConverter();
-            arr[i++] = new ColorConverter();
 
             return arr;
         }
