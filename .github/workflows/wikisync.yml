@@ -9,7 +9,7 @@ jobs:
   update-wiki:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@master 
       name: Wiki Update
       uses: JoeIzzard/ghaction-wiki-sync@v1
       with:
