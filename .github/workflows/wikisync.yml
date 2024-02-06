@@ -2,8 +2,8 @@ name: wiki
 run-name: Wiki Update
 on:
   push:
-    branches: [ "master", "workflows" ]
-  pull-request
+    branches: [ "master" ]
+  pull-request:
     branches: [ "master" ]
 jobs:
   update-wiki:
