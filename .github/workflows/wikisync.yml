@@ -1,4 +1,4 @@
-name: wiki
+name: Wiki
 run-name: Wiki Update
 on:
   push:
@@ -16,6 +16,7 @@ jobs:
         username: csmir
         access_token: ${{ secrets.GITHUB_TOKEN }}
         wiki_folder: wiki
+        ignore_safe_warnings: true
         commit_message: 'Wiki Update'
         commit_username: 'contributors'
         commit_email: '68127614+csmir@users.noreply.github.com'
