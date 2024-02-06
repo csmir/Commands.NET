@@ -1,5 +1,5 @@
-name: docs
-run-name: Documentation Generation
+name: wiki
+run-name: Wiki Generation
 on:
   push:
     branches: [ "master" ]
@@ -14,6 +14,6 @@ jobs:
         username: csmir
         access_token: ${{ secrets.GITHUB_TOKEN }}
         wiki_folder: wiki
-        commit_message: 'Documentation'
-        commit_username: 'contrib'
+        commit_message: 'Wiki Generation'
+        commit_username: 'contributors'
         commit_email: '68127614+csmir@users.noreply.github.com'
