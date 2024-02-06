@@ -31,7 +31,7 @@ In many cases, there is need for custom `TypeConverter` implementations to conve
 
 ### Result Resolver (ResultResolver)
 
-Results can be handled in an elaborate many ways, as documented [[here|Results]]. This configuration option allows you to set a custom resolver or redefine the base implementation with `ConfigureResultAction`.
+Results can be handled in an elaborate many ways, as documented [[here|Results]]. This configuration option allows you to set a custom resolver or redefine the base implementation with `OnSuccess` or `OnFailure`.
 
 ### Async Approach (AsyncApproach)
 
