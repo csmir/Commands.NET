@@ -18,16 +18,12 @@ namespace Commands.Core
     {
         private readonly object _searchLock = new();
         private readonly ResultResolver _resultHandle;
+        private readonly IServiceProvider _services;
 
         /// <summary>
         ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="CommandConfiguration"/> provided when creating the manager.
         /// </summary>
         public IReadOnlySet<IConditional> Commands { get; }
-
-        /// <summary>
-        ///     Gets the services used to create transient instances of modules that host command execution, with full support for dependency injection in mind.
-        /// </summary>
-        public IServiceProvider Services { get; }
 
         /// <summary>
         ///     Gets the configuration used to configure execution operations and registration options.
@@ -56,11 +52,11 @@ namespace Commands.Core
 
             services ??= ServiceProvider.Default;
 
-            Services = services;
             Configuration = configuration;
 
             _resultHandle = services.GetService<ResultResolver>() 
-                ?? Configuration.ResultResolver;
+                ?? Configuration.Resolver;
+            _services = services;
         }
 
         /// <summary>
@@ -132,7 +128,7 @@ namespace Commands.Core
         {
             var searches = Search(args);
 
-            var scope = Services.CreateAsyncScope();
+            var scope = _services.CreateAsyncScope();
 
             var c = 0;
 
@@ -246,7 +242,7 @@ namespace Commands.Core
         {
             try
             {
-                var targetInstance = Services.GetService(match.Command.Module.Type);
+                var targetInstance = services.GetService(match.Command.Module.Type);
 
                 var module = targetInstance != null 
                     ? targetInstance as ModuleBase 

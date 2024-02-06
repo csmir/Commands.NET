@@ -10,6 +10,8 @@ namespace Commands.Core
     /// </summary>
     public class CommandConfiguration
     {
+        internal readonly ResultResolver Resolver = ResultResolver.Default;
+
         private Assembly[] _assemblies = [Assembly.GetEntryAssembly()];
 
         /// <summary>
@@ -26,42 +28,20 @@ namespace Commands.Core
             }
         }
 
-        private TypeConverter[] _typeReaders = [];
+        private TypeConverter[] _converters = [];
 
         /// <summary>
         ///     Gets a collection of <see cref="TypeConverter"/>'s that the <see cref="CommandManager"/> will use to handle unknown argument types.
         /// </summary>
         /// <remarks>
-        ///     It is adviced <b>not</b> to create new implementations of <see cref="TypeConverter"/> without first confirming if the target type is not already supported. 
+        ///     It is advised <b>not</b> to create new implementations of <see cref="TypeConverter"/> without first confirming if the target type is not already supported. 
         ///     All valuetypes and time/date types are already supported out of the box.
         /// </remarks>
         public TypeConverter[] Converters
         {
             get
             {
-                return _typeReaders;
-            }
-        }
-
-        private ResultResolver _resultResolver = ResultResolver.Default;
-
-        /// <summary>
-        ///     Gets or sets a resolver that contains a handler for handling command post-execution data.
-        /// </summary>
-        public ResultResolver ResultResolver
-        {
-            get
-            {
-                return _resultResolver;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    ThrowHelpers.ThrowInvalidArgument(value);
-                }
-
-                _resultResolver = value;
+                return _converters;
             }
         }
 
@@ -85,7 +65,7 @@ namespace Commands.Core
             {
                 if (value is not AsyncApproach.Await or AsyncApproach.Discard)
                 {
-                    ThrowHelpers.ThrowInvalidOperation("AsyncApproach does not support values that exceed the provided options, ranging between 0 and 1.");
+                    ThrowHelpers.ThrowInvalidOperation("AsyncApproach does not support values that exceed the provided options, ranging between Await and Discard.");
                 }
 
                 _asyncApproach = value;
@@ -173,7 +153,7 @@ namespace Commands.Core
                 ThrowHelpers.ThrowInvalidArgument(typeReaders);
             }
 
-            _typeReaders = typeReaders.Distinct(TypeConverter.EqualityComparer.Default).ToArray();
+            _converters = typeReaders.Distinct(TypeConverter.EqualityComparer.Default).ToArray();
 
             return this;
         }
@@ -193,7 +173,7 @@ namespace Commands.Core
                 ThrowHelpers.ThrowInvalidArgument(typeReader);
             }
 
-            if (_typeReaders.Contains(typeReader, TypeConverter.EqualityComparer.Default))
+            if (_converters.Contains(typeReader, TypeConverter.EqualityComparer.Default))
             {
                 ThrowHelpers.NotDistinct(typeReader);
             }
@@ -215,7 +195,7 @@ namespace Commands.Core
         {
             if (typeReader != null)
             {
-                if (!_typeReaders.Contains(typeReader, TypeConverter.EqualityComparer.Default))
+                if (!_converters.Contains(typeReader, TypeConverter.EqualityComparer.Default))
                 {
                     AddTr(typeReader);
                 }
@@ -236,7 +216,7 @@ namespace Commands.Core
                 ThrowHelpers.ThrowInvalidArgument(configureDelegate);
             }
 
-            _resultResolver.FailHandle = configureDelegate;
+            Resolver.FailHandle = configureDelegate;
 
             return this;
         }
@@ -253,7 +233,7 @@ namespace Commands.Core
                 ThrowHelpers.ThrowInvalidArgument(configureDelegate);
             }
 
-            _resultResolver.SuccessHandle = configureDelegate;
+            Resolver.SuccessHandle = configureDelegate;
 
             return this;
         }
@@ -268,10 +248,10 @@ namespace Commands.Core
 
         private void AddTr(TypeConverter typeReader)
         {
-            var oLen = _typeReaders.Length;
-            Array.Resize(ref _typeReaders, oLen + 1);
+            var oLen = _converters.Length;
+            Array.Resize(ref _converters, oLen + 1);
 
-            _typeReaders[oLen] = typeReader;
+            _converters[oLen] = typeReader;
         }
     }
 }
