@@ -9,9 +9,8 @@ jobs:
   update-wiki:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: JoeIzzard/ghaction-wiki-sync@v1
       name: Wiki Update
-      uses: JoeIzzard/ghaction-wiki-sync@v1
       with:
         username: csmir
         access_token: ${{ secrets.GITHUB_TOKEN }}
