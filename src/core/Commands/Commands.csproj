@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+	<AssemblyVersion>0.1</AssemblyVersion>
+	<PackageVersion>0.1-alpha</PackageVersion>
+	<FileVersion>0.1.0.0</FileVersion>
+
+	<Authors>Commands.NET contributors.</Authors>
+
+	<PackageProjectUrl>https://github.com/csmir/Commands.NET</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/csmir/Commands.NET</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+
+	<PackageReleaseNotes>Made for net8+.</PackageReleaseNotes>
+	<PackageTags>commands, cli, console, text, chat</PackageTags>
+	  
+	<Title>Commands.NET</Title>
+	<Description>A robust command library to listen to virtually any input source and handle it effectively at small or large scale.</Description>
+	
+	<NeutralLanguage>en-US</NeutralLanguage>
+
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<PackageId>Commands.NET</PackageId>
+
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>
