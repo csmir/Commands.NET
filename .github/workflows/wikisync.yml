@@ -3,7 +3,7 @@ run-name: Wiki Update
 on:
   push:
     branches: [ "master" ]
-  pull-request:
+  pull_request:
     branches: [ "master" ]
 jobs:
   update-wiki:
