@@ -7,7 +7,7 @@
 	<RootNamespace>Commands</RootNamespace>
 
 	<AssemblyVersion>0.1</AssemblyVersion>
-	<PackageVersion>0.1-alpha</PackageVersion>
+	<PackageVersion>1-alpha</PackageVersion>
 	<FileVersion>0.1.0.0</FileVersion>
 
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -18,7 +18,6 @@
 	<RepositoryUrl>https://github.com/csmir/Commands.NET</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 
-	<PackageReleaseNotes>Made for net8+.</PackageReleaseNotes>
 	<PackageTags>commands, cli, console, text, chat</PackageTags>
 
 	<Title>Commands.NET.Hosting</Title>
@@ -28,14 +27,21 @@
 
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	<PackageId>Commands.NET.Hosting</PackageId>
+	  
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\LICENSE">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
+	<None Include="..\..\..\LICENSE">
+	  <Pack>True</Pack>
+	  <PackagePath>\</PackagePath>
+	</None>
+	<None Include="..\..\..\README.md">
+	  <Pack>True</Pack>
+	  <PackagePath>\</PackagePath>
+	</None>
   </ItemGroup>
 
   <ItemGroup>

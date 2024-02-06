@@ -6,7 +6,7 @@
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
 	<AssemblyVersion>0.1</AssemblyVersion>
-	<PackageVersion>0.1-alpha</PackageVersion>
+	<PackageVersion>1-alpha</PackageVersion>
 	<FileVersion>0.1.0.0</FileVersion>
 
 	<Authors>Commands.NET contributors.</Authors>
@@ -15,7 +15,6 @@
 	<RepositoryUrl>https://github.com/csmir/Commands.NET</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 
-	<PackageReleaseNotes>Made for net8+.</PackageReleaseNotes>
 	<PackageTags>commands, cli, console, text, chat</PackageTags>
 	  
 	<Title>Commands.NET</Title>
@@ -26,8 +25,21 @@
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	<PackageId>Commands.NET</PackageId>
 
-	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+
+	<PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
