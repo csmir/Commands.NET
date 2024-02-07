@@ -1,4 +1,5 @@
 ﻿using Commands.Core;
+using Commands.Resolvers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.ComponentModel;
@@ -42,7 +43,7 @@ namespace Commands.Helpers
                 ThrowHelpers.ThrowInvalidArgument(resultAction);
             }
 
-            var descriptor = ServiceDescriptor.Singleton(typeof(ResolverBase), new ResolverBase.DelegateResolver(resultAction));
+            var descriptor = ServiceDescriptor.Singleton(typeof(ResolverBase), new DelegateResolver(resultAction));
 
             collection.TryAddEnumerable(descriptor);
             collection.TryAddSingleton<CommandFinalizer>();
@@ -63,7 +64,7 @@ namespace Commands.Helpers
                 ThrowHelpers.ThrowInvalidArgument(resultAction);
             }
 
-            var descriptor = ServiceDescriptor.Singleton(typeof(ResolverBase), new ResolverBase.AsyncDelegateResolver(resultAction));
+            var descriptor = ServiceDescriptor.Singleton(typeof(ResolverBase), new AsyncDelegateResolver(resultAction));
 
             collection.TryAddEnumerable(descriptor);
             collection.TryAddSingleton<CommandFinalizer>();

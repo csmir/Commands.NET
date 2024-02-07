@@ -25,16 +25,16 @@ namespace Commands.Core
             }
         }
 
-        private TypeConverter[] _converters = [];
+        private TypeConverterBase[] _converters = [];
 
         /// <summary>
-        ///     Gets a collection of <see cref="TypeConverter"/>'s that the <see cref="CommandManager"/> will use to handle unknown argument types.
+        ///     Gets a collection of <see cref="TypeConverterBase"/>'s that the <see cref="CommandManager"/> will use to handle unknown argument types.
         /// </summary>
         /// <remarks>
-        ///     It is advised <b>not</b> to create new implementations of <see cref="TypeConverter"/> without first confirming if the target type is not already supported. 
+        ///     It is advised <b>not</b> to create new implementations of <see cref="TypeConverterBase"/> without first confirming if the target type is not already supported. 
         ///     All valuetypes and time/date types are already supported out of the box.
         /// </remarks>
-        public TypeConverter[] Converters
+        public TypeConverterBase[] Converters
         {
             get
             {
@@ -141,36 +141,36 @@ namespace Commands.Core
         /// <remarks>
         ///     To prevent duplicate value recognition, <see cref="Enumerable.Distinct{TSource}(IEnumerable{TSource})"/> is called to remove duplicates from <paramref name="typeReaders"/>.
         /// </remarks>
-        /// <param name="typeReaders">A collection of <see cref="TypeConverter"/>'s to parse unknown argument types.</param>
+        /// <param name="typeReaders">A collection of <see cref="TypeConverterBase"/>'s to parse unknown argument types.</param>
         /// <returns>The same <see cref="CommandConfiguration"/> for call chaining.</returns>
-        public CommandConfiguration WithTypeReaders(params TypeConverter[] typeReaders)
+        public CommandConfiguration WithTypeReaders(params TypeConverterBase[] typeReaders)
         {
             if (typeReaders == null)
             {
                 ThrowHelpers.ThrowInvalidArgument(typeReaders);
             }
 
-            _converters = typeReaders.Distinct(TypeConverter.EqualityComparer.Default).ToArray();
+            _converters = typeReaders.Distinct(TypeConverterBase.EqualityComparer.Default).ToArray();
 
             return this;
         }
 
         /// <summary>
-        ///     Adds a <see cref="TypeConverter"/> to <see cref="Converters"/>.
+        ///     Adds a <see cref="TypeConverterBase"/> to <see cref="Converters"/>.
         /// </summary>
         /// <remarks>
         ///     This call will throw if <see cref="Converters"/> already contains an implementation of the target type, validated by a custom equality comparer.
         /// </remarks>
-        /// <param name="typeReader">A <see cref="TypeConverter"/> to parse unknown argument types.</param>
+        /// <param name="typeReader">A <see cref="TypeConverterBase"/> to parse unknown argument types.</param>
         /// <returns>The same <see cref="CommandConfiguration"/> for call chaining.</returns>
-        public CommandConfiguration AddTypeReader(TypeConverter typeReader)
+        public CommandConfiguration AddTypeReader(TypeConverterBase typeReader)
         {
             if (typeReader == null)
             {
                 ThrowHelpers.ThrowInvalidArgument(typeReader);
             }
 
-            if (_converters.Contains(typeReader, TypeConverter.EqualityComparer.Default))
+            if (_converters.Contains(typeReader, TypeConverterBase.EqualityComparer.Default))
             {
                 ThrowHelpers.NotDistinct(typeReader);
             }
@@ -181,18 +181,18 @@ namespace Commands.Core
         }
 
         /// <summary>
-        ///     Attempts to add a <see cref="TypeConverter"/> to <see cref="Converters"/>.
+        ///     Attempts to add a <see cref="TypeConverterBase"/> to <see cref="Converters"/>.
         /// </summary>
         /// <remarks>
         ///     Will not add <paramref name="typeReader"/> to <see cref="Converters"/> if it already contains an implementation of the target type, validated by a custom equality comparer.
         /// </remarks>
-        /// <param name="typeReader">A <see cref="TypeConverter"/> to parse unknown argument types.</param>
+        /// <param name="typeReader">A <see cref="TypeConverterBase"/> to parse unknown argument types.</param>
         /// <returns>The same <see cref="CommandConfiguration"/> for call chaining.</returns>
-        public CommandConfiguration TryAddTypeReader(TypeConverter typeReader)
+        public CommandConfiguration TryAddTypeReader(TypeConverterBase typeReader)
         {
             if (typeReader != null)
             {
-                if (!_converters.Contains(typeReader, TypeConverter.EqualityComparer.Default))
+                if (!_converters.Contains(typeReader, TypeConverterBase.EqualityComparer.Default))
                 {
                     typeReader.AddTo(ref _converters);
                 }

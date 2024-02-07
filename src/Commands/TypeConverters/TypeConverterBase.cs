@@ -7,8 +7,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace Commands.TypeConverters
 {
     /// <inheritdoc />
-    /// <typeparam name="T">The type this <see cref="TypeConverter{T}"/> should convert into.</typeparam>
-    public abstract class TypeConverter<T> : TypeConverter
+    /// <typeparam name="T">The type this <see cref="TypeConverterBase{T}"/> should convert into.</typeparam>
+    public abstract class TypeConverterBase<T> : TypeConverterBase
     {
         /// <summary>
         ///     Gets the type that should be converted to.
@@ -30,9 +30,9 @@ namespace Commands.TypeConverters
     ///     An abstract type that can be implemented to create custom type conversion from a command query argument.
     /// </summary>
     /// <remarks>
-    ///     Registering custom <see cref="TypeConverter"/>'s is not an automated process. To register them for the <see cref="CommandManager"/> to use, add them to <see cref="CommandConfiguration.Converters"/>.
+    ///     Registering custom <see cref="TypeConverterBase"/>'s is not an automated process. To register them for the <see cref="CommandManager"/> to use, add them to <see cref="CommandConfiguration.Converters"/>.
     /// </remarks>
-    public abstract class TypeConverter
+    public abstract class TypeConverterBase
     {
         const string _exHeader = "TypeConverter failed to parse provided value as '{0}'. View inner exception for more details.";
 
@@ -107,20 +107,20 @@ namespace Commands.TypeConverters
             return new(value);
         }
 
-        internal static TypeConverter[] BuildDefaults()
+        internal static TypeConverterBase[] BuildDefaults()
         {
-            var arr = BaseTypeConverter.CreateBaseConverters();
+            var arr = ValueTypeConverter.CreateBaseConverters();
 
             new TimeSpanConverter().AddTo(ref arr);
 
             return arr;
         }
 
-        internal class EqualityComparer : IEqualityComparer<TypeConverter>
+        internal class EqualityComparer : IEqualityComparer<TypeConverterBase>
         {
             private static readonly Lazy<EqualityComparer> _i = new();
 
-            public bool Equals(TypeConverter x, TypeConverter y)
+            public bool Equals(TypeConverterBase x, TypeConverterBase y)
             {
                 if (x == y)
                     return true;
@@ -131,7 +131,7 @@ namespace Commands.TypeConverters
                 return false;
             }
 
-            public int GetHashCode([DisallowNull] TypeConverter obj)
+            public int GetHashCode([DisallowNull] TypeConverterBase obj)
             {
                 return obj.GetHashCode();
             }

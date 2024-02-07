@@ -44,7 +44,7 @@ namespace Commands.Core
         ///             Services, specifically those created as singleton or scoped to anything but a single command.
         ///         </item>
         ///         <item>
-        ///             Implementations of <see cref="TypeConverter"/>, <see cref="TypeConverter{T}"/> and <see cref="PreconditionAttribute"/>.
+        ///             Implementations of <see cref="TypeConverterBase"/>, <see cref="TypeConverterBase{T}"/> and <see cref="PreconditionAttribute"/>.
         ///         </item>
         ///         <item>
         ///             Generic collections and objects with shared access.

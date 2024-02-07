@@ -44,6 +44,6 @@ namespace Commands.Reflection
         /// <remarks>
         ///     Will be <see langword="null"/> if <see cref="Type"/> is <see cref="string"/> or <see cref="object"/>.
         /// </remarks>
-        public TypeConverter Converter { get; }
+        public TypeConverterBase Converter { get; }
     }
 }

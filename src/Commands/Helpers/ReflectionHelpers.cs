@@ -10,7 +10,7 @@ namespace Commands.Helpers
     {
         public static IEnumerable<ModuleInfo> BuildComponents(CommandConfiguration configuration)
         {
-            var converters = TypeConverter.BuildDefaults().UnionBy(configuration.Converters, x => x.Type).ToDictionary(x => x.Type, x => x);
+            var converters = TypeConverterBase.BuildDefaults().UnionBy(configuration.Converters, x => x.Type).ToDictionary(x => x.Type, x => x);
 
             var rootType = typeof(ModuleBase);
             foreach (var assembly in configuration.Assemblies)
@@ -27,7 +27,7 @@ namespace Commands.Helpers
             }
         }
 
-        public static IEnumerable<ModuleInfo> GetModules(ModuleInfo module, IDictionary<Type, TypeConverter> typeReaders)
+        public static IEnumerable<ModuleInfo> GetModules(ModuleInfo module, IDictionary<Type, TypeConverterBase> typeReaders)
         {
             foreach (var group in module.Type.GetNestedTypes())
             {
@@ -41,7 +41,7 @@ namespace Commands.Helpers
             }
         }
 
-        public static IEnumerable<CommandInfo> GetCommands(ModuleInfo module, IDictionary<Type, TypeConverter> typeReaders)
+        public static IEnumerable<CommandInfo> GetCommands(ModuleInfo module, IDictionary<Type, TypeConverterBase> typeReaders)
         {
             foreach (var method in module.Type.GetMethods())
             {
@@ -65,7 +65,7 @@ namespace Commands.Helpers
             }
         }
 
-        public static IConditional[] GetComponents(this ModuleInfo module, IDictionary<Type, TypeConverter> typeReaders)
+        public static IConditional[] GetComponents(this ModuleInfo module, IDictionary<Type, TypeConverterBase> typeReaders)
         {
             var commands = (IEnumerable<IConditional>)GetCommands(module, typeReaders)
                 .OrderBy(x => x.Arguments.Length);
@@ -77,7 +77,7 @@ namespace Commands.Helpers
                 .ToArray();
         }
 
-        public static IArgument[] GetParameters(this MethodBase method, IDictionary<Type, TypeConverter> typeReaders)
+        public static IArgument[] GetParameters(this MethodBase method, IDictionary<Type, TypeConverterBase> typeReaders)
         {
             var parameters = method.GetParameters();
 

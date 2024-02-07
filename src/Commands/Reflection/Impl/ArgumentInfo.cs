@@ -30,9 +30,9 @@ namespace Commands.Reflection
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
-        public TypeConverter Converter { get; }
+        public TypeConverterBase Converter { get; }
 
-        internal ArgumentInfo(ParameterInfo parameterInfo, IDictionary<Type, TypeConverter> typeReaders)
+        internal ArgumentInfo(ParameterInfo parameterInfo, IDictionary<Type, TypeConverterBase> typeReaders)
         {
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);

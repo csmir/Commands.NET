@@ -42,7 +42,7 @@ namespace Commands.Reflection
         /// </remarks>
         public ModuleInfo Root { get; }
 
-        internal ModuleInfo(Type type, IDictionary<Type, TypeConverter> typeReaders, ModuleInfo root = null, string expectedName = null, string[] aliases = null)
+        internal ModuleInfo(Type type, IDictionary<Type, TypeConverterBase> typeReaders, ModuleInfo root = null, string expectedName = null, string[] aliases = null)
         {
             var attributes = type.GetAttributes(true);
             var preconditions = attributes.GetPreconditions();

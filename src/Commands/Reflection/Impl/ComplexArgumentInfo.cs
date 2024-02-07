@@ -43,14 +43,14 @@ namespace Commands.Reflection
         public int MaxLength { get; }
 
         /// <inheritdoc />
-        public TypeConverter Converter { get; }
+        public TypeConverterBase Converter { get; }
 
         /// <summary>
         ///     Gets the invocation target of this complex argument.
         /// </summary>
         public ConstructorInfo Constructor { get; }
 
-        internal ComplexArgumentInfo(ParameterInfo parameterInfo, IDictionary<Type, TypeConverter> typeReaders)
+        internal ComplexArgumentInfo(ParameterInfo parameterInfo, IDictionary<Type, TypeConverterBase> typeReaders)
         {
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);
