@@ -1,4 +1,4 @@
-﻿namespace Commands
+﻿namespace Commands.Core
 {
     /// <summary>
     ///     The result of any operation within the command execution pipeline.

@@ -1,7 +1,7 @@
 ﻿// Documentation of this file can be found at: https://github.com/csmir/Commands.NET/wiki/Preconditions.
 
+using Commands.Conditions;
 using Commands.Core;
-using Commands.Preconditions;
 using Commands.Reflection;
 
 namespace Commands.Samples
@@ -10,7 +10,7 @@ namespace Commands.Samples
     {
         public PlatformID Platform { get; } = platform;
 
-        public override ValueTask<CheckResult> EvaluateAsync(ICommandContext context, IServiceProvider services, CommandInfo command, CancellationToken cancellationToken)
+        public override ValueTask<ConditionResult> EvaluateAsync(ICommandContext context, IServiceProvider services, CommandInfo command, CancellationToken cancellationToken)
         {
             if (Environment.OSVersion.Platform == Platform)
                 return ValueTask.FromResult(Success());

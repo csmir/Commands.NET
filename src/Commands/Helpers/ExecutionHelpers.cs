@@ -1,7 +1,5 @@
 ﻿using Commands.Core;
 using Commands.Reflection;
-using Microsoft.Extensions.DependencyInjection;
-using System.Reflection.Metadata;
 
 namespace Commands.Helpers
 {

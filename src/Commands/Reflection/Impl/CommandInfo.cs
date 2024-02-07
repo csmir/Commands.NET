@@ -1,6 +1,6 @@
-﻿using Commands.Core;
+﻿using Commands.Conditions;
+using Commands.Core;
 using Commands.Helpers;
-using Commands.Preconditions;
 using Commands.TypeConverters;
 using System.Reflection;
 
@@ -21,7 +21,7 @@ namespace Commands.Reflection
         public PreconditionAttribute[] Preconditions { get; }
 
         /// <inheritdoc />
-        public bool HasPreconditions { get; }
+        public PostconditionAttribute[] PostConditions { get; }
 
         /// <inheritdoc />
         public IArgument[] Arguments { get; }
@@ -60,6 +60,8 @@ namespace Commands.Reflection
         {
             var attributes = method.GetAttributes(true);
             var preconditions = attributes.GetPreconditions();
+            var postconditions = attributes.GetPostconditions();
+
             var parameters = method.GetParameters(typeReaders);
 
             var (minLength, maxLength) = parameters.GetLength();
@@ -84,7 +86,7 @@ namespace Commands.Reflection
 
             Attributes = attributes;
             Preconditions = preconditions;
-            HasPreconditions = preconditions.Length > 0;
+            PostConditions = postconditions;
 
             Arguments = parameters;
             HasArguments = parameters.Length > 0;

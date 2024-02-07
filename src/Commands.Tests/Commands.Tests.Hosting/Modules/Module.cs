@@ -1,5 +1,4 @@
 ﻿using Commands.Core;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Commands.Tests
 {
@@ -7,12 +6,10 @@ namespace Commands.Tests
     {
         private readonly IServiceProvider _provider = provider;
 
-        [Command("stop")]
-        public void Stop()
+        [Command("test")]
+        public void Test()
         {
-            var handler = _provider.GetRequiredService<CommandHandler>();
-
-            handler.StopAsync(default);
+            Console.WriteLine("Tested");
         }
     }
 }

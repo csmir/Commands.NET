@@ -1,4 +1,4 @@
-﻿using Commands.Preconditions;
+﻿using Commands.Conditions;
 
 namespace Commands.Reflection
 {
@@ -18,8 +18,8 @@ namespace Commands.Reflection
         public PreconditionAttribute[] Preconditions { get; }
 
         /// <summary>
-        ///     Gets if this component has zero or more preconditions.
+        ///     Gets an array of <see cref="PostconditionAttribute"/>'s defined atop this component.
         /// </summary>
-        public bool HasPreconditions { get; }
+        public PostconditionAttribute[] PostConditions { get; }
     }
 }

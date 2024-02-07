@@ -1,5 +1,5 @@
-﻿using Commands.Helpers;
-using Commands.Preconditions;
+﻿using Commands.Conditions;
+using Commands.Helpers;
 using Commands.TypeConverters;
 
 namespace Commands.Reflection
@@ -22,7 +22,7 @@ namespace Commands.Reflection
         public PreconditionAttribute[] Preconditions { get; }
 
         /// <inheritdoc />
-        public bool HasPreconditions { get; }
+        public PostconditionAttribute[] PostConditions { get; }
 
         /// <summary>
         ///     Gets an array containing nested modules or commands inside this module.
@@ -46,13 +46,14 @@ namespace Commands.Reflection
         {
             var attributes = type.GetAttributes(true);
             var preconditions = attributes.GetPreconditions();
+            var postconditions = attributes.GetPostconditions();
 
             Root = root;
             Type = type;
 
             Attributes = attributes;
             Preconditions = preconditions;
-            HasPreconditions = preconditions.Length > 0;
+            PostConditions = postconditions;
 
             Components = this.GetComponents(typeReaders);
 

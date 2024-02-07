@@ -1,6 +1,6 @@
 ﻿using Commands.Reflection;
 
-namespace Commands
+namespace Commands.Core
 {
     /// <summary>
     ///     The result of an invocation operation within the command execution pipeline.
@@ -35,7 +35,7 @@ namespace Commands
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"Success = {(Exception != null ? "True" : $"False: {Exception}")}";
+            return $"Success = {(Exception == null ? "True" : $"False: {Exception}")}";
         }
     }
 }

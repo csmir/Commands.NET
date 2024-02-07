@@ -1,7 +1,6 @@
 ﻿using Commands.Exceptions;
 using Commands.Helpers;
 using Commands.Reflection;
-using Commands.TypeConverters;
 using Microsoft.Extensions.DependencyInjection;
 
 [assembly: CLSCompliant(true)]
@@ -17,7 +16,7 @@ namespace Commands.Core
     public class CommandManager
     {
         private readonly object _searchLock = new();
-        private readonly ResultResolver _resultHandle;
+        private readonly CommandFinalizer _finalizer;
         private readonly IServiceProvider _services;
 
         /// <summary>
@@ -54,8 +53,7 @@ namespace Commands.Core
 
             Configuration = configuration;
 
-            _resultHandle = services.GetService<ResultResolver>() 
-                ?? Configuration.Resolver;
+            _finalizer = services.GetService<CommandFinalizer>() ?? CommandFinalizer.Default;
             _services = services;
         }
 
@@ -149,7 +147,7 @@ namespace Commands.Core
                 {
                     var result = await InvokeAsync(context, scope.ServiceProvider, match, cancellationToken);
 
-                    await _resultHandle.TryHandleAsync(context, result, scope);
+                    await _finalizer.FinalizeAsync(context, result, scope, cancellationToken);
 
                     return;
                 }
@@ -160,14 +158,14 @@ namespace Commands.Core
             // if no searches were found, we send searchfailure.
             if (c is 0)
             {
-                await _resultHandle.TryHandleAsync(context, new SearchResult(new SearchException("No commands were found with the provided input.")), scope);
+                await _finalizer.FinalizeAsync(context, new SearchResult(new SearchException("No commands were found with the provided input.")), scope, cancellationToken);
                 return;
             }
 
             // if there is a fallback present, we send matchfailure.
             if (context.TryGetFallback(out var fallback))
             {
-                await _resultHandle.TryHandleAsync(context, fallback, scope);
+                await _finalizer.FinalizeAsync(context, fallback, scope, cancellationToken);
             }
         }
 
@@ -183,11 +181,11 @@ namespace Commands.Core
         protected virtual async ValueTask<MatchResult> MatchAsync(ICommandContext context, IServiceProvider services, SearchResult search, object[] args, CancellationToken cancellationToken)
         {
             // check command preconditions.
-            var check = await CheckAsync(context, services, search.Command, cancellationToken);
+            var check = await CheckAsync(context, search, services, cancellationToken);
 
             // verify check success, if not, return the failure.
             if (!check.Success())
-                return new(search.Command, new MatchException("Command failed to reach execution state. View inner exception for more details.", check.Exception));
+                return new(search.Command, new MatchException("Command failed to reach execution. View inner exception for more details.", check.Exception));
 
             // read the command parameters in right order.
             var readResult = await ConvertAsync(context, services, search, args, cancellationToken);
@@ -208,21 +206,42 @@ namespace Commands.Core
         }
 
         /// <summary>
-        ///     Evaluates the provided <paramref name="command"/> and returns the result.
+        ///     Evaluates the preconditions of provided <paramref name="result"/> and returns the result.
         /// </summary>
         /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
-        /// <param name="command">The command intended to be evaluated.</param>
+        /// <param name="result">The found command intended to be evaluated.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the checking process.</returns>
-        protected virtual async ValueTask<CheckResult> CheckAsync(ICommandContext context, IServiceProvider services, CommandInfo command, CancellationToken cancellationToken)
+        protected virtual async ValueTask<ConditionResult> CheckAsync(ICommandContext context, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            foreach (var precon in command.Preconditions)
+            foreach (var precon in result.Command.Preconditions)
             {
-                var result = await precon.EvaluateAsync(context, services, command, cancellationToken);
+                var checkResult = await precon.EvaluateAsync(context, result, services, cancellationToken);
 
-                if (!result.Success())
-                    return result;
+                if (!checkResult.Success())
+                    return checkResult;
+            }
+
+            return new(null);
+        }
+
+        /// <summary>
+        ///     Evaluates the postconditions of provided <paramref name="result"/> and returns the result.
+        /// </summary>
+        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
+        /// <param name="result">The result of the command intended to be evaluated.</param>
+        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the checking process.</returns>
+        protected virtual async ValueTask<ConditionResult> CheckAsync(ICommandContext context, InvokeResult result, IServiceProvider services, CancellationToken cancellationToken)
+        {
+            foreach (var postcon in result.Command.PostConditions)
+            {
+                var checkResult = await postcon.EvaluateAsync(context, result, services, cancellationToken);
+
+                if (!checkResult.Success())
+                    return checkResult;
             }
 
             return new(null);
@@ -276,20 +295,25 @@ namespace Commands.Core
             {
                 var targetInstance = services.GetService(match.Command.Module.Type);
 
-                var module = targetInstance != null 
-                    ? targetInstance as ModuleBase 
+                var module = targetInstance != null
+                    ? targetInstance as ModuleBase
                     : ActivatorUtilities.CreateInstance(services, match.Command.Module.Type) as ModuleBase;
 
                 module.Context = context;
                 module.Command = match.Command;
 
-                await module.BeforeExecuteAsync(cancellationToken);
-
                 var value = match.Command.Target.Invoke(module, match.Reads);
 
-                await module.AfterExecuteAsync(cancellationToken);
+                var result = await module.ResolveReturnAsync(value);
 
-                return await module.ResolveReturnAsync(value);
+                var checkResult = await CheckAsync(context, result, services, cancellationToken);
+
+                if (!checkResult.Success())
+                {
+                    return new InvokeResult(match.Command, new RunException("Command failed to finalize execution. View inner exception for more details.", checkResult.Exception));
+                }
+
+                return result;
             }
             catch (Exception exception)
             {

@@ -45,5 +45,13 @@ namespace Commands.Helpers
 
             return found;
         }
+
+        public static void AddTo<T>(this T value, ref T[] range)
+        {
+            var oLen = range.Length;
+            Array.Resize(ref range, oLen + 1);
+
+            range[oLen] = value;
+        }
     }
 }

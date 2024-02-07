@@ -1,20 +1,18 @@
 ﻿using Commands.Core;
 using Commands.Helpers;
 using Commands.Parsing;
-using Commands.Tests;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 var collection = new ServiceCollection()
     .ConfigureCommands(configuration =>
     {
-        configuration.AsyncApproach = AsyncApproach.Await;
-        configuration.OnFailure(async (context, result, services) =>
-        {
-            await Task.CompletedTask;
-            Console.WriteLine(result.Exception);
-        });
         configuration.WithAssemblies(Assembly.GetEntryAssembly());
+    })
+    .TryAddResolver((context, result, services) =>
+    {
+        if (!result.Success())
+            Console.WriteLine(result);
     });
 
 var services = collection.BuildServiceProvider();

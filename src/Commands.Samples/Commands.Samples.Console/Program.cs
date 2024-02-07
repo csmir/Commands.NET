@@ -11,12 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 var collection = new ServiceCollection()
     .ConfigureCommands(configuration =>
     {
-        configuration.OnFailure((context, result, services) =>
-        {
-            Console.WriteLine(result.Exception);    
-
-            return Task.CompletedTask;
-        });
         configuration.AddTypeReader(new ReflectionTypeConverter(caseIgnore: true));
     });
 

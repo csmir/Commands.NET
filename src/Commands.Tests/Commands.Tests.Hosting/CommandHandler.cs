@@ -36,11 +36,11 @@ namespace Commands.Tests
                 var guid = Guid.NewGuid();
                 var logger = _factory.CreateLogger($"Commands.Pipeline[{Guid.NewGuid()}]");
 
-                logger.LogTrace("Generating context with ID {}", guid);
+                logger.LogInformation("Generating context with ID {}", guid);
 
                 var context = new HostedCommandContext(logger);
 
-                await _manager.TryExecuteAsync(context, args, cancellationToken).ConfigureAwait(false);
+                await _manager.TryExecuteAsync(context, args, cancellationToken);
             }
         }
 

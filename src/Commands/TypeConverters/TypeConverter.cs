@@ -107,14 +107,11 @@ namespace Commands.TypeConverters
             return new(value);
         }
 
-        internal static TypeConverter[] CreateDefaultReaders()
+        internal static TypeConverter[] BuildDefaults()
         {
             var arr = BaseTypeConverter.CreateBaseConverters();
 
-            int i = arr.Length;
-            Array.Resize(ref arr, i + 2);
-
-            arr[i++] = new TimeSpanConverter();
+            new TimeSpanConverter().AddTo(ref arr);
 
             return arr;
         }

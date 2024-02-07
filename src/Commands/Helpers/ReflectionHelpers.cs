@@ -1,5 +1,5 @@
-﻿using Commands.Core;
-using Commands.Preconditions;
+﻿using Commands.Conditions;
+using Commands.Core;
 using Commands.Reflection;
 using Commands.TypeConverters;
 using System.Reflection;
@@ -10,7 +10,7 @@ namespace Commands.Helpers
     {
         public static IEnumerable<ModuleInfo> BuildComponents(CommandConfiguration configuration)
         {
-            var typeReaders = TypeConverter.CreateDefaultReaders().UnionBy(configuration.Converters, x => x.Type).ToDictionary(x => x.Type, x => x);
+            var converters = TypeConverter.BuildDefaults().UnionBy(configuration.Converters, x => x.Type).ToDictionary(x => x.Type, x => x);
 
             var rootType = typeof(ModuleBase);
             foreach (var assembly in configuration.Assemblies)
@@ -21,7 +21,7 @@ namespace Commands.Helpers
                         && !type.IsAbstract
                         && !type.ContainsGenericParameters)
                     {
-                        yield return new ModuleInfo(type, typeReaders);
+                        yield return new ModuleInfo(type, converters);
                     }
                 }
             }
@@ -99,6 +99,9 @@ namespace Commands.Helpers
 
         public static PreconditionAttribute[] GetPreconditions(this Attribute[] attributes)
             => attributes.CastWhere<PreconditionAttribute>().ToArray();
+
+        public static PostconditionAttribute[] GetPostconditions(this Attribute[] attributes)
+            => attributes.CastWhere<PostconditionAttribute>().ToArray();
 
         public static Attribute[] GetAttributes(this ICustomAttributeProvider provider, bool inherit)
             => provider.GetCustomAttributes(inherit).CastWhere<Attribute>().ToArray();

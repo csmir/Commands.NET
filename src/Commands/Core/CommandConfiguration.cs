@@ -1,6 +1,5 @@
 ﻿using Commands.Helpers;
 using Commands.TypeConverters;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Commands.Core
@@ -10,8 +9,6 @@ namespace Commands.Core
     /// </summary>
     public class CommandConfiguration
     {
-        internal readonly ResultResolver Resolver = ResultResolver.Default;
-
         private Assembly[] _assemblies = [Assembly.GetEntryAssembly()];
 
         /// <summary>
@@ -112,7 +109,7 @@ namespace Commands.Core
                 ThrowHelpers.NotDistinct(assembly);
             }
 
-            AddAsm(assembly);
+            assembly.AddTo(ref _assemblies);
 
             return this;
         }
@@ -131,7 +128,7 @@ namespace Commands.Core
             {
                 if (!_assemblies.Contains(assembly))
                 {
-                    AddAsm(assembly);
+                    assembly.AddTo(ref _assemblies);
                 }
             }
 
@@ -178,7 +175,7 @@ namespace Commands.Core
                 ThrowHelpers.NotDistinct(typeReader);
             }
 
-            AddTr(typeReader);
+            typeReader.AddTo(ref _converters);
 
             return this;
         }
@@ -197,61 +194,11 @@ namespace Commands.Core
             {
                 if (!_converters.Contains(typeReader, TypeConverter.EqualityComparer.Default))
                 {
-                    AddTr(typeReader);
+                    typeReader.AddTo(ref _converters);
                 }
             }
 
             return this;
-        }
-
-        /// <summary>
-        ///     Sets the <see cref="ResultResolver.SuccessHandle"/> on the present <see cref="ResultResolver"/>, being <see cref="ResultResolver.Default"/> if not set.
-        /// </summary>
-        /// <param name="configureDelegate">The delegate that configures what action should be taken when the pipeline returns success.</param>
-        /// <returns>The same <see cref="CommandConfiguration"/> for call chaining.</returns>
-        public CommandConfiguration OnSuccess([DisallowNull] Func<ICommandContext, ICommandResult, IServiceProvider, Task> configureDelegate)
-        {
-            if (configureDelegate == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(configureDelegate);
-            }
-
-            Resolver.FailHandle = configureDelegate;
-
-            return this;
-        }
-
-        /// <summary>
-        ///     Sets the <see cref="ResultResolver.SuccessHandle"/> on the present <see cref="ResultResolver"/>, being <see cref="ResultResolver.Default"/> if not set.
-        /// </summary>
-        /// <param name="configureDelegate">The delegate that configures what action should be taken when the pipeline returns failure.</param>
-        /// <returns>The same <see cref="CommandConfiguration"/> for call chaining.</returns>
-        public CommandConfiguration OnFailure([DisallowNull] Func<ICommandContext, ICommandResult, IServiceProvider, Task> configureDelegate)
-        {
-            if (configureDelegate == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(configureDelegate);
-            }
-
-            Resolver.SuccessHandle = configureDelegate;
-
-            return this;
-        }
-
-        private void AddAsm(Assembly assembly)
-        {
-            var oLen = _assemblies.Length;
-            Array.Resize(ref _assemblies, oLen + 1);
-
-            _assemblies[oLen] = assembly;
-        }
-
-        private void AddTr(TypeConverter typeReader)
-        {
-            var oLen = _converters.Length;
-            Array.Resize(ref _converters, oLen + 1);
-
-            _converters[oLen] = typeReader;
         }
     }
 }

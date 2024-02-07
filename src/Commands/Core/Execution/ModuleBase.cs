@@ -41,32 +41,6 @@ namespace Commands.Core
         public CommandInfo Command { get; internal set; }
 
         /// <summary>
-        ///     Represents an overridable operation that runs before command invocation starts.
-        /// </summary>
-        /// <remarks>
-        ///     If this method throws an exception, the whole command invocation is halted.
-        /// </remarks>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> provided at the root call for this command execution, which can be used to cancel running operations.</param>
-        /// <returns>The awaitable result of this asynchronous operation.</returns>
-        public virtual ValueTask BeforeExecuteAsync(CancellationToken cancellationToken)
-        {
-            return ValueTask.CompletedTask;
-        }
-
-        /// <summary>
-        ///     Represents an overridable operation that runs after command invocation ended.
-        /// </summary>
-        /// <remarks>
-        ///     If command invocation threw an exception, this method will not execute.
-        /// </remarks>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> provided at the root call for this command execution, which can be used to cancel running operations.</param>
-        /// <returns>The awaitable result of this asynchronous operation.</returns>
-        public virtual ValueTask AfterExecuteAsync(CancellationToken cancellationToken)
-        {
-            return ValueTask.CompletedTask;
-        }
-
-        /// <summary>
         ///     Represents an overridable operation that is responsible for resolving unknown invocation results.
         /// </summary>
         /// <param name="value">The invocation result of which no base handler exists.</param>

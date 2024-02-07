@@ -1,4 +1,4 @@
-﻿namespace Commands
+﻿namespace Commands.Core
 {
     /// <summary>
     ///     The result of a convert operation within the command execution pipeline.
@@ -29,7 +29,7 @@
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"Success = {(Exception != null ? "True" : $"False: {Exception}")}";
+            return $"Success = {(Exception == null ? "True" : $"False: {Exception}")}";
         }
     }
 }
