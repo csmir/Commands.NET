@@ -6,18 +6,14 @@ using System.ComponentModel;
 namespace Commands.Core
 {
     /// <summary>
-    ///     A container that implements an asynchronous functor to handle post-execution operations.
+    ///     A container that is responsible for finalizing the command scope and notifying post-execution processes.
     /// </summary>
-    public sealed class CommandFinalizer
+    /// <param name="resolvers">A collection of <see cref="ResolverBase"/>'s to run on post-execution.</param>
+    public sealed class CommandFinalizer(IEnumerable<ResolverBase> resolvers)
     {
         private static readonly Lazy<CommandFinalizer> _i = new(() => new CommandFinalizer([]));
 
-        private readonly ResolverBase[] _resolvers;
-
-        public CommandFinalizer(IEnumerable<ResolverBase> resolvers)
-        {
-            _resolvers = resolvers.ToArray();
-        }
+        private readonly ResolverBase[] _resolvers = resolvers.ToArray();
 
         internal async ValueTask FinalizeAsync(ConsumerBase consumer, ICommandResult result, AsyncServiceScope scope, RequestContext context)
         {

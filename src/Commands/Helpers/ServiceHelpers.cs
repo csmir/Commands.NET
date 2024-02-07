@@ -16,6 +16,12 @@ namespace Commands.Helpers
     public static class ServiceHelpers
     {
         #region Converters
+        /// <summary>
+        ///     Attempts to add a <see cref="TypeConverterBase"/> defined as <typeparamref name="T"/> to the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="T">The implementation of <see cref="TypeConverterBase"/> to implement.</typeparam>
+        /// <param name="collection"></param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection TryAddConverter<T>(this IServiceCollection collection)
             where T : TypeConverterBase
         {
@@ -26,6 +32,12 @@ namespace Commands.Helpers
             return collection;
         }
 
+        /// <summary>
+        ///     Attempts to add a <see cref="TypeConverterBase"/> defined as <paramref name="converter"/> to the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="converter">The implementation of <see cref="TypeConverterBase"/> to implement.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection TryAddConverter(this IServiceCollection collection, [DisallowNull] TypeConverterBase converter)
         {
             if (converter == null)
@@ -41,6 +53,12 @@ namespace Commands.Helpers
         #endregion
 
         #region Resolvers
+        /// <summary>
+        ///     Attempts to add a <see cref="ResolverBase"/> defined as <typeparamref name="T"/> to the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <typeparam name="T">The implementation of <see cref="ResolverBase"/> to implement.</typeparam>
+        /// <param name="collection"></param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection TryAddResolver<T>(this IServiceCollection collection)
             where T : ResolverBase
         {
@@ -52,6 +70,32 @@ namespace Commands.Helpers
             return collection;
         }
 
+        /// <summary>
+        ///     Attempts to add a <see cref="ResolverBase"/> defined as <paramref name="resolver"/> to the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="resolver">The implementation of <see cref="ResolverBase"/> to implement.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
+        public static IServiceCollection TryAddResolver(this IServiceCollection collection, [DisallowNull] ResolverBase resolver)
+        {
+            if (resolver == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(resolver);
+            }
+
+            var descriptor = ServiceDescriptor.Singleton(resolver);
+
+            collection.TryAddEnumerable(descriptor);
+
+            return collection;
+        }
+
+        /// <summary>
+        ///     Attempts to add a synchronous post-execution process to the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="resultAction">A synchronous result handler to handle post-execution processing.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection TryAddResolver(this IServiceCollection collection, [DisallowNull] Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
         {
             if (resultAction == null)
@@ -67,6 +111,12 @@ namespace Commands.Helpers
             return collection;
         }
 
+        /// <summary>
+        ///     Attempts to add an asynchronous post-execution process to the <see cref="IServiceCollection"/>.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="resultAction"></param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection TryAddResolver(this IServiceCollection collection, [DisallowNull] Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
         {
             if (resultAction == null)
@@ -78,20 +128,6 @@ namespace Commands.Helpers
 
             collection.TryAddEnumerable(descriptor);
             collection.TryAddSingleton<CommandFinalizer>();
-
-            return collection;
-        }
-
-        public static IServiceCollection TryAddResolver(this IServiceCollection collection, [DisallowNull] ResolverBase resolver)
-        {
-            if (resolver == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(resolver);
-            }
-
-            var descriptor = ServiceDescriptor.Singleton(resolver);
-
-            collection.TryAddEnumerable(descriptor);
 
             return collection;
         }
@@ -108,6 +144,12 @@ namespace Commands.Helpers
             return collection.ConfigureCommands<CommandManager>(null);
         }
 
+        /// <summary>
+        ///     Configures the <see cref="IServiceCollection"/> to support use of a <see cref="CommandManager"/>.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="contextDelegate">Configures the context responsible for determining the build process.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection ConfigureCommands(this IServiceCollection collection, Action<BuildingContext> contextDelegate)
         {
             collection.ConfigureCommands<CommandManager>(contextDelegate);
@@ -115,6 +157,13 @@ namespace Commands.Helpers
             return collection;
         }
 
+        /// <summary>
+        ///     Configures the <see cref="IServiceCollection"/> to support use of a <see cref="CommandManager"/>.
+        /// </summary>
+        /// <typeparam name="T">An implementation of <see cref="CommandManager"/> to replace the default implementation.</typeparam>
+        /// <param name="collection"></param>
+        /// <param name="contextDelegate">Configures the context responsible for determining the build process.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection ConfigureCommands<T>(this IServiceCollection collection, Action<BuildingContext> contextDelegate)
             where T : CommandManager
         {
@@ -127,6 +176,13 @@ namespace Commands.Helpers
             return collection;
         }
 
+        /// <summary>
+        ///     Configures the <see cref="IServiceCollection"/> to support use of a <see cref="CommandManager"/>.
+        /// </summary>
+        /// <typeparam name="T">An implementation of <see cref="CommandManager"/> to replace the default implementation.</typeparam>
+        /// <param name="collection"></param>
+        /// <param name="context">The context responsible for determining the build process.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IServiceCollection ConfigureCommands<T>(this IServiceCollection collection, BuildingContext context)
             where T : CommandManager
@@ -147,6 +203,12 @@ namespace Commands.Helpers
         #endregion
 
         #region Modules
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="context">The context responsible for determining the build process.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IServiceCollection TryAddModules(this IServiceCollection collection, BuildingContext context)
         {

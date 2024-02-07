@@ -71,6 +71,20 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public override string ToString()
-            => $"{Type.Name} {Name}";
+            => ToString(false);
+
+        /// <inheritdoc cref="ToString()"/>
+        /// <param name="includeArgumentNames">Defines whether the argument signatures should be named or not.</param>
+        public string ToString(bool includeArgumentNames)
+        {
+            var str = Type.Name;
+
+            if (includeArgumentNames)
+            {
+                str += $" {Name}";
+            }
+
+            return str;
+        }
     }
 }

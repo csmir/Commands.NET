@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 var collection = new ServiceCollection()
     .ConfigureCommands()
+    .TryAddConverter<ReflectionTypeConverter>()
     .TryAddResolver((context, result, provider) => Console.WriteLine(result));
 
 var services = collection.BuildServiceProvider();

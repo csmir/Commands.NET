@@ -99,6 +99,13 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public override string ToString()
-            => $"{Type.Name} ({string.Join<IArgument>(", ", Arguments)}) {Name}";
+            => ToString(false);
+
+        /// <inheritdoc cref="ToString()"/>
+        /// <param name="includeArgumentNames">Defines whether the argument signatures should be named or not.</param>
+        public string ToString(bool includeArgumentNames)
+        {
+            return $"{Type.Name}{(includeArgumentNames ? $" {Name} " : "")}({string.Join<IArgument>(", ", Arguments)})";
+        }
     }
 }

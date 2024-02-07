@@ -10,7 +10,7 @@ namespace Commands.Conditions
     ///     An attribute that defines that a check should succeed before a command can be executed.
     /// </summary>
     /// <remarks>
-    ///     The <see cref="EvaluateAsync(IConsumer, ICommandResult, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
+    ///     The <see cref="EvaluateAsync(ConsumerBase, ICommandResult, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
     ///     Custom implementations of <see cref="PostconditionAttribute"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]

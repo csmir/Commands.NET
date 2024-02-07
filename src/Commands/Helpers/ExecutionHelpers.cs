@@ -1,4 +1,5 @@
 ﻿using Commands.Core;
+using Commands.Exceptions;
 using Commands.Reflection;
 
 namespace Commands.Helpers
@@ -35,10 +36,10 @@ namespace Commands.Helpers
             static async ValueTask<ConvertResult> ConvertAsync(IArgument param, ConsumerBase consumer, IServiceProvider services, object arg, RequestContext context)
             {
                 if (param.IsNullable && arg is null or "null" or "nothing")
-                    return new(arg);
+                    return new(value: null);
 
                 if (param.Type == typeof(string) || param.Type == typeof(object))
-                    return new(arg);
+                    return new(value: arg);
 
                 return await param.Converter.ObjectEvaluateAsync(consumer, param, arg, services, context.CancellationToken);
             }
@@ -72,7 +73,7 @@ namespace Commands.Helpers
 
                     index += result.Length;
 
-                    if (result.Any(x => !x.Success()))
+                    if (result.All(x => x.Success()))
                     {
                         try
                         {
@@ -81,7 +82,7 @@ namespace Commands.Helpers
                         }
                         catch (Exception ex)
                         {
-                            results[i] = new(ex);
+                            results[i] = new(exception: ex);
                         }
                     }
                     continue;

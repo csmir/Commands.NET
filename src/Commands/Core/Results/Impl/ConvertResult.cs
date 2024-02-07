@@ -29,7 +29,7 @@
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"Success = {(Exception == null ? "True" : $"False: {Exception}")}";
+            return $"Success = {(Exception == null ? "True" : $"False. \nException = {Exception}")}";
         }
     }
 }

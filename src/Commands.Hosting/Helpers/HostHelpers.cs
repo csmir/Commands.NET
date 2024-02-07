@@ -1,4 +1,5 @@
 ﻿using Commands.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using System.ComponentModel;
@@ -40,13 +41,19 @@ namespace Commands.Helpers
 
             builder.ConfigureServices((context, services) =>
             {
-                var config = new BuildingContext();
+                var buildContext = new BuildingContext();
 
-                configureDelegate(context, config);
+                configureDelegate(context, buildContext);
 
-                services.TryAddModules(config);
+                services.TryAddModules(buildContext);
                 services.TryAddSingleton<CommandFinalizer>();
-                services.TryAddSingleton<TManager>();
+
+                var descriptor = ServiceDescriptor.Singleton(services =>
+                {
+                    return ActivatorUtilities.CreateInstance<TManager>(services, buildContext);
+                });
+
+                services.TryAdd(descriptor);
             });
 
             return builder;

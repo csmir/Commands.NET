@@ -63,6 +63,8 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public override string ToString()
-            => $"{(Root != null ? $"{Root}." : "")}{(Type.Name != Name ? $"{Type.Name}['{Name}']" : $"{Name}")}";
+        {
+            return $"{(Root != null ? $"{Root}." : "")}{(Type.Name != Name ? $"{Type.Name}['{Name}']" : $"{Name}")}";
+        }
     }
 }

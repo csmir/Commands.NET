@@ -17,21 +17,21 @@ namespace Commands.Core
     /// <param name="services"></param>
     /// <param name="finalizer"></param>
     /// <param name="converters"></param>
-    /// <param name="options"></param>
+    /// <param name="context"></param>
     public class CommandManager(
         IServiceProvider services,
         CommandFinalizer finalizer,
         IEnumerable<TypeConverterBase> converters,
-        BuildingContext options)
+        BuildingContext context)
     {
         private readonly object _searchLock = new();
         private readonly CommandFinalizer _finalizer = finalizer;
         private readonly IServiceProvider _services = services;
 
         /// <summary>
-        ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="CommandConfiguration"/> provided when creating the manager.
+        ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="BuildingContext"/> provided when creating the manager.
         /// </summary>
-        public IReadOnlySet<IConditional> Commands { get; } = Build(converters, options);
+        public IReadOnlySet<IConditional> Commands { get; } = Build(converters, context);
 
         /// <summary>
         ///     Makes an attempt at executing a command from provided <paramref name="args"/>.
@@ -54,7 +54,7 @@ namespace Commands.Core
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="context">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandConfiguration.AsyncApproach"/> is set to <see cref="AsyncApproach.Discard"/>.</returns>
+        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="RequestContext.AsyncApproach"/> is set to <see cref="AsyncApproach.Discard"/>.</returns>
         public virtual async Task TryExecuteAsync<T>(T consumer, object[] args, RequestContext context = default)
             where T : ConsumerBase
         {
@@ -248,18 +248,30 @@ namespace Commands.Core
 
             // check if input equals command length.
             if (search.Command.MaxLength == length)
+            {
                 return await search.Command.Arguments.RecursiveConvertAsync(consumer, services, args[^length..], 0, context);
+            }
 
             // check if input is longer than command, but remainder to concatenate.
             if (search.Command.MaxLength <= length && search.Command.HasRemainder)
+            {
                 return await search.Command.Arguments.RecursiveConvertAsync(consumer, services, args[^length..], 0, context);
+            }
 
             // check if input is shorter than command, but optional parameters to replace.
             if (search.Command.MaxLength > length && search.Command.MinLength <= length)
+            {
                 return await search.Command.Arguments.RecursiveConvertAsync(consumer, services, args[^length..], 0, context);
+            }
 
-            // input is too long or too short.
-            return [];
+            // check if input is too short.
+            if (search.Command.MinLength > length)
+            {
+                return [new ConvertResult(exception: new ConvertException("Query is too short for best match."))];
+            }
+
+            // input is too long.
+            return [new ConvertResult(exception: new ConvertException("Query is too long for best match."))];
         }
 
         /// <summary>
