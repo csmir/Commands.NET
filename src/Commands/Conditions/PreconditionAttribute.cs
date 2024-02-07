@@ -16,7 +16,7 @@ namespace Commands.Conditions
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public abstract class PreconditionAttribute : Attribute
     {
-        const string _exHeader = "Precondition result halted further command execution. View inner exception for more details.";
+        const string _exHeader = "Precondition evaluation failed. View inner exception for more details.";
 
         /// <summary>
         ///     Evaluates the known data about a command at the point of pre-execution, in order to determine if it can be executed or not.
