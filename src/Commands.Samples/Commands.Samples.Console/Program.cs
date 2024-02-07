@@ -19,7 +19,7 @@ var framework = services.GetRequiredService<CommandManager>();
 
 while (true)
 {
-    var input = StringParser.Parse(Console.ReadLine());
+    var input = StringParser.Parse(Console.ReadLine()!);
 
     var context = new ConsumerBase();
 

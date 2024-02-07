@@ -21,18 +21,9 @@ var services = collection.BuildServiceProvider();
 
 var framework = services.GetRequiredService<CommandManager>();
 
-bool swap = true;
 while (true)
 {
-    var input = Array.Empty<object>();
-    if (swap)
-    {
-        input = StringParser.Parse("async true");
-    }
-    else
-    {
-        input = StringParser.Parse("async false");
-    }
+    var input = StringParser.Parse(Console.ReadLine());
 
     await framework.TryExecuteAsync(new ConsumerBase(), input, new()
     {

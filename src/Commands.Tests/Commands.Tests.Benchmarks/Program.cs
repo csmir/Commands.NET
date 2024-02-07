@@ -1,22 +1,41 @@
-﻿
-using BenchmarkDotNet.Attributes;
+﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
+using Commands.Core;
+using Commands.Helpers;
 using Commands.Parsing;
+using Microsoft.Extensions.DependencyInjection;
 
-[MemoryDiagnoser]
-public class Program
+#pragma warning disable CS8321
+
+var services = new ServiceCollection()
+    .ConfigureCommands()
+    .AddLogging()
+    .BuildServiceProvider();
+
+var manager = services.GetRequiredService<CommandManager>();
+
+BenchmarkRunner.Run<Program>();
+
+[Benchmark]
+void ParseText()
 {
-    private static readonly StringParser _parser = new();
+    StringParser.Parse("command");
+}
 
-    [Params("command", "a larger command with context", "a massive command \"with quotes\" and several additional 1 22 333 4444 5555")]
-    public string? Text { get; set; }
+[Benchmark]
+void RunCommand()
+{
+    manager!.TryExecute(new ConsumerBase(), "base-test");
+}
 
-    static void Main()
-        => BenchmarkRunner.Run<Program>();
+[Benchmark]
+void RunParametered()
+{
+    manager!.TryExecute(new ConsumerBase(), "param-test", "1");
+}
 
-    [Benchmark]
-    public void ParseText()
-    {
-        _parser.Parse(Text);
-    }
+[Benchmark]
+void RunNested()
+{
+    manager!.TryExecute(new ConsumerBase(), "nested", "test");
 }

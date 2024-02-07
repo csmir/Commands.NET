@@ -23,7 +23,7 @@ namespace Commands.Tests
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var input = Console.ReadLine();
+                var input = Console.ReadLine()!;
 
                 var args = StringParser.Parse(input);
 

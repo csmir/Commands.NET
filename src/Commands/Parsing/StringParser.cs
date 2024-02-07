@@ -14,7 +14,9 @@ namespace Commands.Parsing
         const char quote = '"';
         const char whitespace = ' ';
 
-        /// <inheritdoc />
+        /// <summary>
+        ///     Parses a <see cref="string"/> into an array of command arguments.
+        /// </summary>
         /// <remarks>
         ///     This parser sets the following guidelines:
         ///     <list type="number">
@@ -33,7 +35,7 @@ namespace Commands.Parsing
         public static object[] Parse(string toParse)
         {
             // return empty range on empty object.
-            if (toParse.Length == 0)
+            if (string.IsNullOrWhiteSpace(toParse))
             {
                 return [];
             }
