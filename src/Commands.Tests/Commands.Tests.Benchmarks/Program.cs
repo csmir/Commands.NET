@@ -5,8 +5,6 @@ using Commands.Helpers;
 using Commands.Parsing;
 using Microsoft.Extensions.DependencyInjection;
 
-#pragma warning disable CS8321
-
 public class Program
 {
     private readonly CommandManager _manager;

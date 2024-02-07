@@ -5,7 +5,7 @@ namespace Commands.Helpers
 {
     internal static class ExecutionHelpers
     {
-        public static IEnumerable<SearchResult> RecursiveSearch(this IEnumerable<IConditional> components, 
+        public static IEnumerable<SearchResult> RecursiveSearch(this IEnumerable<IConditional> components,
             object[] args, int searchHeight)
         {
             List<SearchResult> discovered = [];
@@ -31,7 +31,7 @@ namespace Commands.Helpers
             return discovered;
         }
 
-        public static async Task<ConvertResult[]> RecursiveConvertAsync(this IArgument[] param, 
+        public static async Task<ConvertResult[]> RecursiveConvertAsync(this IArgument[] param,
             ConsumerBase consumer, IServiceProvider services, object[] args, int index, Core.RequestContext context)
         {
             static async ValueTask<ConvertResult> ConvertAsync(IArgument param, ConsumerBase consumer, IServiceProvider services, object arg, RequestContext context)
