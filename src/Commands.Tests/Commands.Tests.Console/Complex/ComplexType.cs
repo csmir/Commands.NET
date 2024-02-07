@@ -2,7 +2,6 @@
 
 namespace Commands.Tests
 {
-    [method: PrimaryConstructor]
     public class ComplexType(int x, int y, int z, [Complex] ComplexerType complexer)
     {
         public int X = x, Y = y, Z = z;
