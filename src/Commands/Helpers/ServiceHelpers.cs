@@ -37,7 +37,8 @@ namespace Commands.Helpers
         /// <param name="collection"></param>
         /// <param name="converter">The implementation of <see cref="TypeConverterBase"/> to implement.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
-        public static IServiceCollection TryAddConverter(this IServiceCollection collection, [DisallowNull] TypeConverterBase converter)
+        public static IServiceCollection TryAddConverter(this IServiceCollection collection, 
+            [DisallowNull] TypeConverterBase converter)
         {
             if (converter == null)
             {
@@ -75,7 +76,8 @@ namespace Commands.Helpers
         /// <param name="collection"></param>
         /// <param name="resolver">The implementation of <see cref="ResolverBase"/> to implement.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
-        public static IServiceCollection TryAddResolver(this IServiceCollection collection, [DisallowNull] ResolverBase resolver)
+        public static IServiceCollection TryAddResolver(this IServiceCollection collection, 
+            [DisallowNull] ResolverBase resolver)
         {
             if (resolver == null)
             {
@@ -95,7 +97,8 @@ namespace Commands.Helpers
         /// <param name="collection"></param>
         /// <param name="resultAction">A synchronous result handler to handle post-execution processing.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
-        public static IServiceCollection TryAddResolver(this IServiceCollection collection, [DisallowNull] Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
+        public static IServiceCollection TryAddResolver(this IServiceCollection collection, 
+            [DisallowNull] Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
         {
             if (resultAction == null)
             {
@@ -116,7 +119,8 @@ namespace Commands.Helpers
         /// <param name="collection"></param>
         /// <param name="resultAction"></param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
-        public static IServiceCollection TryAddResolver(this IServiceCollection collection, [DisallowNull] Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
+        public static IServiceCollection TryAddResolver(this IServiceCollection collection, 
+            [DisallowNull] Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
         {
             if (resultAction == null)
             {
@@ -149,7 +153,8 @@ namespace Commands.Helpers
         /// <param name="collection"></param>
         /// <param name="contextDelegate">Configures the context responsible for determining the build process.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
-        public static IServiceCollection ConfigureCommands(this IServiceCollection collection, Action<BuildingContext> contextDelegate)
+        public static IServiceCollection ConfigureCommands(this IServiceCollection collection, 
+            Action<BuildingContext> contextDelegate)
         {
             collection.ConfigureCommands<CommandManager>(contextDelegate);
 
@@ -163,7 +168,8 @@ namespace Commands.Helpers
         /// <param name="collection"></param>
         /// <param name="contextDelegate">Configures the context responsible for determining the build process.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
-        public static IServiceCollection ConfigureCommands<T>(this IServiceCollection collection, Action<BuildingContext> contextDelegate)
+        public static IServiceCollection ConfigureCommands<T>(this IServiceCollection collection, 
+            Action<BuildingContext> contextDelegate)
             where T : CommandManager
         {
             var configuration = new BuildingContext();
@@ -183,7 +189,8 @@ namespace Commands.Helpers
         /// <param name="context">The context responsible for determining the build process.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static IServiceCollection ConfigureCommands<T>(this IServiceCollection collection, BuildingContext context)
+        public static IServiceCollection ConfigureCommands<T>(this IServiceCollection collection, 
+            BuildingContext context)
             where T : CommandManager
         {
             collection.TryAddSingleton<CommandFinalizer>();
@@ -209,7 +216,8 @@ namespace Commands.Helpers
         /// <param name="context">The context responsible for determining the build process.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static IServiceCollection TryAddModules(this IServiceCollection collection, BuildingContext context)
+        public static IServiceCollection TryAddModules(this IServiceCollection collection, 
+            BuildingContext context)
         {
             var rootType = typeof(ModuleBase);
 

@@ -50,7 +50,8 @@ namespace Commands.Reflection
         /// </summary>
         public ConstructorInfo Constructor { get; }
 
-        internal ComplexArgumentInfo(ParameterInfo parameterInfo, IDictionary<Type, TypeConverterBase> typeReaders)
+        internal ComplexArgumentInfo(
+            ParameterInfo parameterInfo, IDictionary<Type, TypeConverterBase> converters)
         {
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);
@@ -72,7 +73,7 @@ namespace Commands.Reflection
                 IsOptional = false;
 
             var constructor = Type.GetConstructors()[0];
-            var parameters = constructor.GetParameters(typeReaders);
+            var parameters = constructor.GetParameters(converters);
 
             if (parameters.Length == 0)
             {

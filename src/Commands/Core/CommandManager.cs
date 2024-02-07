@@ -23,11 +23,7 @@ namespace Commands.Core
     /// <param name="context"></param>
     [DebuggerDisplay("Commands = {Commands}")]
     public class CommandManager(
-        IServiceProvider services,
-        ILoggerFactory logFactory,
-        CommandFinalizer finalizer,
-        IEnumerable<TypeConverterBase> converters,
-        BuildingContext context)
+        IServiceProvider services, ILoggerFactory logFactory, CommandFinalizer finalizer, IEnumerable<TypeConverterBase> converters, BuildingContext context)
     {
         private long _scopeId = 0;
 
@@ -39,7 +35,9 @@ namespace Commands.Core
         /// <summary>
         ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="BuildingContext"/> provided when creating the manager.
         /// </summary>
-        public IReadOnlySet<IConditional> Commands { get; } = Build(converters, context);
+        public IReadOnlySet<IConditional> Commands { get; } = ReflectionHelpers.BuildComponents(converters, context)
+            .SelectMany(x => x.Components)
+            .ToHashSet();
 
         /// <summary>
         ///     Makes an attempt at executing a command from provided <paramref name="args"/>.
@@ -63,7 +61,8 @@ namespace Commands.Core
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="RequestContext.AsyncApproach"/> is set to <see cref="AsyncApproach.Discard"/>.</returns>
-        public virtual async Task TryExecuteAsync<T>(T consumer, object[] args, RequestContext context = default)
+        public virtual async Task TryExecuteAsync<T>(
+            T consumer, object[] args, RequestContext context = default)
             where T : ConsumerBase
         {
             switch (context.AsyncApproach)
@@ -114,7 +113,8 @@ namespace Commands.Core
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution.</returns>
-        protected virtual async Task ExecuteAsync<T>(T consumer, object[] args, RequestContext context)
+        protected virtual async Task ExecuteAsync<T>(
+            T consumer, object[] args, RequestContext context)
             where T : ConsumerBase
         {
             var searches = Search(args);
@@ -170,7 +170,8 @@ namespace Commands.Core
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the matching process.</returns>
-        protected virtual async ValueTask<MatchResult> MatchAsync<T>(T consumer, IServiceProvider services, SearchResult search, object[] args, RequestContext context)
+        protected virtual async ValueTask<MatchResult> MatchAsync<T>(
+            T consumer, IServiceProvider services, SearchResult search, object[] args, RequestContext context)
             where T : ConsumerBase
         {
             context.Logger.LogDebug("Match process starting on search {}", search.Command);
@@ -208,7 +209,8 @@ namespace Commands.Core
         /// <param name="result">The found command intended to be evaluated.</param>
         /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the checking process.</returns>
-        protected virtual async ValueTask<ConditionResult> CheckAsync<T>(T consumer, SearchResult result, IServiceProvider services, RequestContext context)
+        protected virtual async ValueTask<ConditionResult> CheckAsync<T>(
+            T consumer, SearchResult result, IServiceProvider services, RequestContext context)
             where T : ConsumerBase
         {
             if (context.SkipPreconditions)
@@ -244,7 +246,8 @@ namespace Commands.Core
         /// <param name="result">The result of the command intended to be evaluated.</param>
         /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the checking process.</returns>
-        protected virtual async ValueTask<ConditionResult> CheckAsync<T>(T consumer, InvokeResult result, IServiceProvider services, RequestContext context)
+        protected virtual async ValueTask<ConditionResult> CheckAsync<T>(
+            T consumer, InvokeResult result, IServiceProvider services, RequestContext context)
             where T : ConsumerBase
         {
             if (context.SkipPostconditions)
@@ -280,7 +283,8 @@ namespace Commands.Core
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the results of the conversion process.</returns>
-        protected virtual async ValueTask<ConvertResult[]> ConvertAsync<T>(T consumer, IServiceProvider services, SearchResult search, object[] args, RequestContext context)
+        protected virtual async ValueTask<ConvertResult[]> ConvertAsync<T>(
+            T consumer, IServiceProvider services, SearchResult search, object[] args, RequestContext context)
             where T : ConsumerBase
         {
             // skip if no parameters exist.
@@ -333,7 +337,8 @@ namespace Commands.Core
         /// <param name="match">The result of the match intended to be ran.</param>
         /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation process.</returns>
-        protected virtual async ValueTask<InvokeResult> InvokeAsync<T>(T consumer, IServiceProvider services, MatchResult match, RequestContext context)
+        protected virtual async ValueTask<InvokeResult> InvokeAsync<T>(
+            T consumer, IServiceProvider services, MatchResult match, RequestContext context)
             where T : ConsumerBase
         {
             try
@@ -373,10 +378,5 @@ namespace Commands.Core
                 return new(match.Command, exception);
             }
         }
-
-        private static HashSet<IConditional> Build(IEnumerable<TypeConverterBase> converters, BuildingContext context)
-            => ReflectionHelpers.BuildComponents(converters, context)
-                .SelectMany(x => x.Components)
-                .ToHashSet();
     }
 }

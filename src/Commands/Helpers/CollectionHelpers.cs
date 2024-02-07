@@ -11,7 +11,8 @@ namespace Commands.Helpers
                     yield return @out;
         }
 
-        public static T SelectFirstOrDefault<T>(this IEnumerable input, T defaultValue = default)
+        public static T SelectFirstOrDefault<T>(this IEnumerable input, 
+            T defaultValue = default)
         {
             foreach (var @in in input)
                 if (@in is T @out)
@@ -20,7 +21,8 @@ namespace Commands.Helpers
             return defaultValue;
         }
 
-        public static bool Contains<T>(this IEnumerable input, bool allowMultipleMatches)
+        public static bool Contains<T>(this IEnumerable input, 
+            bool allowMultipleMatches)
             where T : Attribute
         {
             var found = false;

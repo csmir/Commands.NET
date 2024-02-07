@@ -8,7 +8,8 @@ namespace Commands.Helpers
 {
     internal static class ReflectionHelpers
     {
-        public static IEnumerable<ModuleInfo> BuildComponents(IEnumerable<TypeConverterBase> converters, BuildingContext context)
+        public static IEnumerable<ModuleInfo> BuildComponents(
+            IEnumerable<TypeConverterBase> converters, BuildingContext context)
         {
             var unionConverters = TypeConverterBase.BuildDefaults().UnionBy(converters, x => x.Type).ToDictionary(x => x.Type, x => x);
 
@@ -27,7 +28,8 @@ namespace Commands.Helpers
             }
         }
 
-        public static IEnumerable<ModuleInfo> GetModules(ModuleInfo module, IDictionary<Type, TypeConverterBase> converters)
+        public static IEnumerable<ModuleInfo> GetModules(
+            ModuleInfo module, IDictionary<Type, TypeConverterBase> converters)
         {
             foreach (var group in module.Type.GetNestedTypes())
             {

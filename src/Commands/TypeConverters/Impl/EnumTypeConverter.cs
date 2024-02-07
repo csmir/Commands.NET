@@ -9,7 +9,8 @@ namespace Commands.TypeConverters
 
         public override Type Type { get; } = targetEnumType;
 
-        public override ValueTask<ConvertResult> EvaluateAsync(ConsumerBase consumer, IArgument parameter, string value, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> EvaluateAsync(
+            ConsumerBase consumer, IArgument parameter, string value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Enum.TryParse(Type, value, true, out var result))
                 return ValueTask.FromResult(Success(result));

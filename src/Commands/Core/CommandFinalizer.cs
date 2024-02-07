@@ -14,7 +14,8 @@ namespace Commands.Core
 
         private readonly ResolverBase[] _resolvers = resolvers.ToArray();
 
-        internal async ValueTask FinalizeAsync(ConsumerBase consumer, ICommandResult result, AsyncServiceScope scope, RequestContext context)
+        internal async ValueTask FinalizeAsync(
+            ConsumerBase consumer, ICommandResult result, AsyncServiceScope scope, RequestContext context)
         {
             context.Logger.LogDebug("Finalizing execution...");
 

@@ -29,7 +29,8 @@ namespace Commands.Conditions
         /// <param name="result">Information about the command currently targetted.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
-        public abstract ValueTask<ConditionResult> EvaluateAsync(ConsumerBase context, SearchResult result, IServiceProvider services, CancellationToken cancellationToken);
+        public abstract ValueTask<ConditionResult> EvaluateAsync(
+            ConsumerBase context, SearchResult result, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Creates a new <see cref="ConditionResult"/> representing a failed evaluation.

@@ -56,13 +56,14 @@ namespace Commands.Reflection
         /// </summary>
         public MethodInfo Target { get; }
 
-        internal CommandInfo(ModuleInfo module, MethodInfo method, string[] aliases, IDictionary<Type, TypeConverterBase> typeReaders)
+        internal CommandInfo(
+            ModuleInfo module, MethodInfo method, string[] aliases, IDictionary<Type, TypeConverterBase> converters)
         {
             var attributes = method.GetAttributes(true);
             var preconditions = attributes.GetPreconditions();
             var postconditions = attributes.GetPostconditions();
 
-            var parameters = method.GetParameters(typeReaders);
+            var parameters = method.GetParameters(converters);
 
             var (minLength, maxLength) = parameters.GetLength();
 

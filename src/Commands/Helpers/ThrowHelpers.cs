@@ -31,7 +31,8 @@ namespace Commands.Helpers
         /// <exception cref="ArgumentException"></exception>
         [DoesNotReturn]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void ThrowInvalidArgument(object value, [CallerArgumentExpression(nameof(value))] string arg = null)
+        public static void ThrowInvalidArgument(
+            object value, [CallerArgumentExpression(nameof(value))] string arg = null)
         {
             // should resolve overload when a collection is null or empty.
             if (value is ICollection or IEnumerable)
@@ -72,7 +73,8 @@ namespace Commands.Helpers
         /// <exception cref="ArgumentException"></exception>
         [DoesNotReturn]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void NotDistinct(object value, [CallerArgumentExpression(nameof(value))] string arg = null)
+        public static void NotDistinct(
+            object value, [CallerArgumentExpression(nameof(value))] string arg = null)
         {
             throw new ArgumentException(
                 message: "Provided collection cannot contain duplicate values.",

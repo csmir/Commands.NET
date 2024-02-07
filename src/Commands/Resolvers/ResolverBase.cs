@@ -18,6 +18,7 @@ namespace Commands.Resolvers
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/>.</returns>
-        public abstract ValueTask EvaluateAsync(ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken);
+        public abstract ValueTask EvaluateAsync(
+            ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken);
     }
 }

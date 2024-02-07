@@ -32,7 +32,8 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public TypeConverterBase Converter { get; }
 
-        internal ArgumentInfo(ParameterInfo parameterInfo, IDictionary<Type, TypeConverterBase> typeReaders)
+        internal ArgumentInfo(
+            ParameterInfo parameterInfo, IDictionary<Type, TypeConverterBase> converters)
         {
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);
@@ -62,7 +63,7 @@ namespace Commands.Reflection
                 Converter = EnumTypeReader.GetOrCreate(Type);
 
             else if (Type != typeof(string) && Type != typeof(object))
-                Converter = typeReaders[Type];
+                Converter = converters[Type];
 
             Attributes = attributes;
             ExposedType = parameterInfo.ParameterType;

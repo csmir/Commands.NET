@@ -7,35 +7,44 @@ using Microsoft.Extensions.DependencyInjection;
 
 #pragma warning disable CS8321
 
-var services = new ServiceCollection()
-    .ConfigureCommands()
-    .AddLogging()
-    .BuildServiceProvider();
-
-var manager = services.GetRequiredService<CommandManager>();
-
-BenchmarkRunner.Run<Program>();
-
-[Benchmark]
-void ParseText()
+public class Program
 {
-    StringParser.Parse("command");
-}
+    private readonly CommandManager _manager;
 
-[Benchmark]
-void RunCommand()
-{
-    manager!.TryExecute(new ConsumerBase(), "base-test");
-}
+    public Program()
+    {
+        var services = new ServiceCollection()
+            .ConfigureCommands()
+            .AddLogging()
+            .BuildServiceProvider();
 
-[Benchmark]
-void RunParametered()
-{
-    manager!.TryExecute(new ConsumerBase(), "param-test", "1");
-}
+        _manager = services.GetRequiredService<CommandManager>();
+    }
 
-[Benchmark]
-void RunNested()
-{
-    manager!.TryExecute(new ConsumerBase(), "nested", "test");
+    static void Main()
+        => BenchmarkRunner.Run<Program>();
+
+    [Benchmark]
+    public void ParseText()
+    {
+        StringParser.Parse("command");
+    }
+
+    [Benchmark]
+    public async Task RunCommand()
+    {
+        await _manager!.TryExecuteAsync(new ConsumerBase(), ["base-test"]);
+    }
+
+    [Benchmark]
+    public async Task RunParametered()
+    {
+        await _manager!.TryExecuteAsync(new ConsumerBase(), ["param-test", "1"]);
+    }
+
+    [Benchmark]
+    public async Task RunNested()
+    {
+        await _manager!.TryExecuteAsync(new ConsumerBase(), ["nested", "test"]);
+    }
 }

@@ -9,7 +9,8 @@ namespace Commands.Resolvers
     {
         private readonly Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> _action = action;
 
-        public override async ValueTask EvaluateAsync(ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask EvaluateAsync(
+            ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             await _action(consumer, result, services);
         }

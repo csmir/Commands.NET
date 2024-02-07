@@ -42,7 +42,8 @@ namespace Commands.Reflection
         /// </remarks>
         public ModuleInfo Root { get; }
 
-        internal ModuleInfo(Type type, IDictionary<Type, TypeConverterBase> typeReaders, ModuleInfo root = null, string expectedName = null, string[] aliases = null)
+        internal ModuleInfo(
+            Type type, IDictionary<Type, TypeConverterBase> converters, ModuleInfo root = null, string expectedName = null, string[] aliases = null)
         {
             var attributes = type.GetAttributes(true);
             var preconditions = attributes.GetPreconditions();
@@ -55,7 +56,7 @@ namespace Commands.Reflection
             Preconditions = preconditions;
             PostConditions = postconditions;
 
-            Components = this.GetComponents(typeReaders);
+            Components = this.GetComponents(converters);
 
             Name = expectedName ?? type.Name;
             Aliases = aliases ?? [Name];
