@@ -1,14 +1,15 @@
-﻿using System.Text;
+﻿using Commands.Helpers;
+using System.Text;
 
 namespace Commands.Parsing
 {
     /// <summary>
-    ///     The default implementation of <see cref="Parser{T}"/>, implementing <see cref="string"/> as the raw value.
+    ///     A thread-safe argument parser, implementing <see cref="string"/> as the raw value.
     /// </summary>
     /// <remarks>
     ///     As edge cases are discovered in the parser logic, the parser guidelines may change, and command input might improve, or degrade based on different usecases.
     /// </remarks>
-    public class StringParser : Parser<string>
+    public static class StringParser
     {
         const char quote = '"';
         const char whitespace = ' ';
@@ -29,24 +30,27 @@ namespace Commands.Parsing
         ///         </item>
         ///     </list>
         /// </remarks>
-        public override object[] Parse(string toParse)
+        public static object[] Parse(string toParse)
         {
+            // return empty range on empty object.
+            if (toParse.Length == 0)
+            {
+                return [];
+            }
+
             var arr = Array.Empty<string>();
             var sb = new StringBuilder(0, toParse.Length);
             var quoted = false;
 
-            // Adds SB content to array & resets
-            void SAddReset()
+            // adds SB content to array & resets.
+            void AddReset()
             {
-                // if anything exists, otherwise skip
+                // if anything exists, otherwise skip.
                 if (sb.Length > 0)
                 {
-                    var size = arr.Length;
-                    Array.Resize(ref arr, size + 1);
+                    sb.ToString().AddTo(ref arr);
 
-                    arr[size] = sb.ToString();
-
-                    // clear for next range
+                    // clear for next range.
                     sb.Clear();
                 }
             }
@@ -54,62 +58,62 @@ namespace Commands.Parsing
             // enter loop for string inner char[]
             for (int i = 0; i < toParse.Length; i++)
             {
-                // if startquote found, skip space check & continue until next occurrence of quote
+                // if startquote found, skip space check & continue until next occurrence of quote.
                 if (quoted)
                 {
-                    // next quote occurrence
+                    // next quote occurrence.
                     if (toParse[i] is quote)
                     {
-                        // add discovered until now, skipping quote itself
-                        SAddReset();
+                        // add discovered until now, skipping quote itself.
+                        AddReset();
 
-                        // set quoted to false, quoted range is handled
+                        // set quoted to false, quoted range is handled.
                         quoted = false;
 
-                        // next loop step
+                        // next loop step.
                         continue;
                     }
 
-                    // add char in quote range
+                    // add char in quote range.
                     sb.Append(toParse[i]);
 
-                    // dont allow the checks below this statement, next loop step
+                    // dont allow the checks below this statement, next loop step.
                     continue;
                 }
 
-                // check for startquote
+                // check for startquote.
                 if (toParse[i] is quote)
                 {
-                    // check end of loop, skipping add
+                    // check end of loop, skipping add.
                     if (i + 1 == toParse.Length)
                     {
                         break;
                     }
 
-                    // add all before quote
-                    SAddReset();
+                    // add all before quote.
+                    AddReset();
 
-                    // set startquote discovery to true
+                    // set startquote discovery to true.
                     quoted = true;
 
                     continue;
                 }
 
-                // check for whitespace
+                // check for whitespace.
                 if (toParse[i] is whitespace)
                 {
-                    // add all before whitespace, skip whitespace itself
-                    SAddReset();
+                    // add all before whitespace, skip whitespace itself.
+                    AddReset();
 
                     continue;
                 }
 
-                // nomatch for above, add character to current range
+                // nomatch for above, add character to current range.
                 sb.Append(toParse[i]);
             }
 
-            // if loop ended, do final add
-            SAddReset();
+            // if loop ended, do final add.
+            AddReset();
 
             return arr;
         }

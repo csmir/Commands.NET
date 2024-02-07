@@ -11,7 +11,6 @@ namespace Commands.Tests
         private readonly ILoggerFactory _factory = logger;
         private readonly CommandManager _manager = manager;
 
-        private readonly StringParser _parser = new();
         private readonly CancellationTokenSource _cts = new();
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -26,7 +25,7 @@ namespace Commands.Tests
             {
                 var input = Console.ReadLine();
 
-                var args = _parser.Parse(input);
+                var args = StringParser.Parse(input);
 
                 if (args.Length == 0)
                 {
@@ -38,9 +37,7 @@ namespace Commands.Tests
 
                 logger.LogInformation("Generating context with ID {}", guid);
 
-                var context = new HostedCommandContext(logger);
-
-                await _manager.TryExecuteAsync(context, args, new()
+                await _manager.TryExecuteAsync(new ConsumerBase(), args, new()
                 {
                     CancellationToken = cancellationToken
                 });

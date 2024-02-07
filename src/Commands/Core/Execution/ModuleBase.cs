@@ -1,4 +1,5 @@
 ﻿using Commands.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace Commands.Core
 {
@@ -31,14 +32,19 @@ namespace Commands.Core
     public abstract class ModuleBase
     {
         /// <summary>
-        ///     Gets the command context containing metadata and logging access for the command currently in scope.
+        ///     Gets the consumer for the command currently in scope.
         /// </summary>
         public ConsumerBase Consumer { get; internal set; }
 
         /// <summary>
-        ///     Gets the reflection information about this command.
+        ///     Gets the reflection information about the command currently in scope.
         /// </summary>
         public CommandInfo Command { get; internal set; }
+
+        /// <summary>
+        ///     Gets the logger that logs information for the command currently in scope.
+        /// </summary>
+        public ILogger Logger { get; internal set; }
 
         /// <summary>
         ///     Represents an overridable operation that is responsible for resolving unknown invocation results.

@@ -101,7 +101,7 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public override string ToString()
-        { 
+        {
             return $"{Module}.{Target.Name}['{Name}']({string.Join<IArgument>(", ", Arguments)})";
         }
     }

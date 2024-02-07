@@ -2,7 +2,6 @@
 
 using Commands.Conditions;
 using Commands.Core;
-using Commands.Reflection;
 
 namespace Commands.Samples
 {

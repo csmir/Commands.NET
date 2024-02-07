@@ -3,6 +3,8 @@ using Commands.Helpers;
 using Commands.Reflection;
 using Commands.TypeConverters;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 [assembly: CLSCompliant(true)]
 
@@ -15,18 +17,24 @@ namespace Commands.Core
     ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
     /// </remarks>
     /// <param name="services"></param>
+    /// <param name="logFactory"></param>
     /// <param name="finalizer"></param>
     /// <param name="converters"></param>
     /// <param name="context"></param>
+    [DebuggerDisplay("Commands = {Commands}")]
     public class CommandManager(
         IServiceProvider services,
+        ILoggerFactory logFactory,
         CommandFinalizer finalizer,
         IEnumerable<TypeConverterBase> converters,
         BuildingContext context)
     {
+        private long _scopeId = 0;
+
         private readonly object _searchLock = new();
         private readonly CommandFinalizer _finalizer = finalizer;
         private readonly IServiceProvider _services = services;
+        private readonly ILoggerFactory _logFactory = logFactory;
 
         /// <summary>
         ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="BuildingContext"/> provided when creating the manager.
@@ -74,12 +82,24 @@ namespace Commands.Core
         }
 
         /// <summary>
-        ///     Searches all commands for any matches of <paramref name="args"/>.
+        ///     Runs a thread safe search operation over all commands for any matches of <paramref name="args"/>.
         /// </summary>
         /// <param name="args">A set of arguments intended to discover commands as a query.</param>
         /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the results of the search query.</returns>
         public virtual IEnumerable<SearchResult> Search(object[] args)
         {
+            // dont allow args to be null.
+            if (args == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(args);
+            }
+
+            // return empty collection for empty argument collection.
+            if (args.Length == 0)
+            {
+                return [];
+            }
+
             // recursively search for commands in the execution.
             lock (_searchLock)
             {
@@ -100,6 +120,9 @@ namespace Commands.Core
             var searches = Search(args);
 
             var scope = _services.CreateAsyncScope();
+            context.Logger ??= _logFactory.CreateLogger($"Commands.Request[{Interlocked.Increment(ref _scopeId)}]");
+
+            context.Logger.LogDebug("Resolved workflow: {}", context.AsyncApproach);
 
             var c = 0;
 
@@ -125,6 +148,8 @@ namespace Commands.Core
             // if no searches were found, we send searchfailure.
             if (c is 0)
             {
+                context.Logger.LogError("No commands found.");
+
                 await _finalizer.FinalizeAsync(consumer, new SearchResult(new SearchException("No commands were found with the provided input.")), scope, context);
                 return;
             }
@@ -148,6 +173,8 @@ namespace Commands.Core
         protected virtual async ValueTask<MatchResult> MatchAsync<T>(T consumer, IServiceProvider services, SearchResult search, object[] args, RequestContext context)
             where T : ConsumerBase
         {
+            context.Logger.LogDebug("Match process starting on search {}", search.Command);
+
             // check command preconditions.
             var check = await CheckAsync(consumer, search, services, context);
 
@@ -186,16 +213,25 @@ namespace Commands.Core
         {
             if (context.SkipPreconditions)
             {
+                context.Logger.LogDebug("Precondition evaluation skipped for {}", result.Command);
+
                 return new(null);
             }
+
+            context.Logger.LogDebug("Precondition evaluation starting for {}", result.Command);
 
             foreach (var precon in result.Command.Preconditions)
             {
                 var checkResult = await precon.EvaluateAsync(consumer, result, services, context.CancellationToken);
 
                 if (!checkResult.Success())
+                {
+                    context.Logger.LogError("Precondition evaluation failed for {}", result.Command);
                     return checkResult;
+                }
             }
+
+            context.Logger.LogInformation("Precondition evaluation succeeded for {}", result.Command);
 
             return new(null);
         }
@@ -213,16 +249,24 @@ namespace Commands.Core
         {
             if (context.SkipPostconditions)
             {
+                context.Logger.LogDebug("Skipped postcondition evaluation for {}", result.Command);
                 return new(null);
             }
+
+            context.Logger.LogDebug("Postcondition evaluation starting for {}", result.Command);
 
             foreach (var postcon in result.Command.PostConditions)
             {
                 var checkResult = await postcon.EvaluateAsync(consumer, result, services, context.CancellationToken);
 
                 if (!checkResult.Success())
+                {
+                    context.Logger.LogError("Postcondition evaluation failed for {}", result.Command);
                     return checkResult;
+                }
             }
+
+            context.Logger.LogInformation("Postcondition evaluation succeeded for {}", result.Command);
 
             return new(null);
         }
@@ -241,7 +285,12 @@ namespace Commands.Core
         {
             // skip if no parameters exist.
             if (!search.Command.HasArguments)
+            {
+                context.Logger.LogDebug("Argument evaluation skipped for {}", search.Command);
                 return [];
+            }
+
+            context.Logger.LogDebug("Argument evaluation starting for {}", search.Command);
 
             // determine height of search to discover command name.
             var length = args.Length - search.SearchHeight;
@@ -263,6 +312,8 @@ namespace Commands.Core
             {
                 return await search.Command.Arguments.RecursiveConvertAsync(consumer, services, args[^length..], 0, context);
             }
+
+            context.Logger.LogError("Argument evaluation failed for {}", search.Command);
 
             // check if input is too short.
             if (search.Command.MinLength > length)
@@ -287,6 +338,8 @@ namespace Commands.Core
         {
             try
             {
+                context.Logger.LogDebug("Resolving targets for {}", match.Command);
+
                 var targetInstance = services.GetService(match.Command.Module.Type);
 
                 var module = targetInstance != null
@@ -296,9 +349,13 @@ namespace Commands.Core
                 module.Consumer = consumer;
                 module.Command = match.Command;
 
+                context.Logger.LogDebug("Starting invocation of {}", match.Command);
+
                 var value = match.Command.Target.Invoke(module, match.Reads);
 
                 var result = await module.ResolveReturnAsync(value);
+
+                context.Logger.LogInformation("Invocation succeeded for {}", match.Command);
 
                 var checkResult = await CheckAsync(consumer, result, services, context);
 
@@ -311,6 +368,8 @@ namespace Commands.Core
             }
             catch (Exception exception)
             {
+                context.Logger.LogError("Invocation failed for {}", match.Command);
+
                 return new(match.Command, exception);
             }
         }

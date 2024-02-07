@@ -1,5 +1,4 @@
 ﻿using Commands.Core;
-using Commands.Exceptions;
 using Commands.Reflection;
 
 namespace Commands.Helpers

@@ -4,18 +4,13 @@ namespace Commands.Tests
 {
     public sealed class AsyncModule : ModuleBase<ConsumerBase>
     {
-        [Command("delayed")]
-        public async Task AsyncRunDelayed()
+        [Command("async")]
+        public async Task Async(bool delay)
         {
-            await Task.Delay(5000);
-
-            System.Console.WriteLine("Success. (Delayed).");
+            if (delay)
+            {
+                await Task.Delay(Random.Shared.Next(100, 1000));
+            }
         }
-
-        [Command("direct")]
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async Task AsyncRunDirect()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-            => System.Console.WriteLine("Success. (Direct).");
     }
 }

@@ -16,11 +16,10 @@ var collection = new ServiceCollection()
 var services = collection.BuildServiceProvider();
 
 var framework = services.GetRequiredService<CommandManager>();
-var parser = new StringParser();
 
 while (true)
 {
-    var input = parser.Parse(Console.ReadLine());
+    var input = StringParser.Parse(Console.ReadLine());
 
     var context = new ConsumerBase();
 

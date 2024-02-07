@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Commands.Conditions;
+﻿using Commands.Conditions;
+using Microsoft.Extensions.Logging;
 
 namespace Commands.Core
 {
@@ -32,6 +28,14 @@ namespace Commands.Core
         ///     Default: <see langword="default"/>
         /// </remarks>
         public CancellationToken CancellationToken { get; set; } = default;
+
+        /// <summary>
+        ///     Gets or sets a logger that can log information about the command scope.
+        /// </summary>
+        /// <remarks>
+        ///     Default: <see langword="null"/>
+        /// </remarks>
+        public ILogger Logger { get; set; } = null;
 
         /// <summary>
         ///     Gets or sets whether the defined <see cref="PostconditionAttribute"/>'s for this execution should be ran.

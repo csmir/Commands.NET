@@ -1,7 +1,6 @@
-﻿using Commands.Helpers;
-using Commands.Resolvers;
+﻿using Commands.Resolvers;
 using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel;
+using Microsoft.Extensions.Logging;
 
 namespace Commands.Core
 {
@@ -17,10 +16,14 @@ namespace Commands.Core
 
         internal async ValueTask FinalizeAsync(ConsumerBase consumer, ICommandResult result, AsyncServiceScope scope, RequestContext context)
         {
+            context.Logger.LogDebug("Finalizing execution...");
+
             foreach (var resolver in _resolvers)
             {
                 await resolver.EvaluateAsync(consumer, result, scope.ServiceProvider, context.CancellationToken);
             }
+
+            context.Logger.LogDebug("Disposing resources...");
 
             await scope.DisposeAsync();
         }

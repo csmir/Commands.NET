@@ -2,7 +2,7 @@
 using Commands.Helpers;
 using Commands.Parsing;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
+using Microsoft.Extensions.Logging;
 
 var collection = new ServiceCollection()
     .ConfigureCommands()
@@ -10,17 +10,32 @@ var collection = new ServiceCollection()
     {
         if (!result.Success())
             Console.WriteLine(result);
+    })
+    .AddLogging(configure =>
+    {
+        configure.AddSimpleConsole();
+        configure.SetMinimumLevel(LogLevel.Information);
     });
 
 var services = collection.BuildServiceProvider();
 
 var framework = services.GetRequiredService<CommandManager>();
 
-var parser = new StringParser();
-
+bool swap = true;
 while (true)
 {
-    var input = parser.Parse(Console.ReadLine()!);
+    var input = Array.Empty<object>();
+    if (swap)
+    {
+        input = StringParser.Parse("async true");
+    }
+    else
+    {
+        input = StringParser.Parse("async false");
+    }
 
-    await framework.TryExecuteAsync(new ConsumerBase(), input);
+    await framework.TryExecuteAsync(new ConsumerBase(), input, new()
+    {
+        AsyncApproach = AsyncApproach.Discard
+    });
 }

@@ -1,10 +1,12 @@
 ﻿using Commands.Reflection;
+using System.Diagnostics;
 
 namespace Commands.Core
 {
     /// <summary>
     ///     The result of a search operation within the command execution pipeline.
     /// </summary>
+    [DebuggerDisplay("Success = {Success()}")]
     public readonly struct SearchResult : ICommandResult
     {
         /// <inheritdoc />
@@ -41,7 +43,7 @@ namespace Commands.Core
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"Command = {Command}. \nSuccess = {(Exception == null ? "True" : $"False. \nException = {Exception}")}";
+            return $"{(Command != null ? $"Command = {Command} \n" : "")}Success = {(Exception == null ? "True" : $"False \nException = {Exception}")}";
         }
     }
 }

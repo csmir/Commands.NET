@@ -2,7 +2,6 @@
 using Commands.Exceptions;
 using Commands.Helpers;
 using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography;
 
 namespace Commands.Conditions
 {
