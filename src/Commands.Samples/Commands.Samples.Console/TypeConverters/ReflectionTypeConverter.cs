@@ -10,18 +10,18 @@ namespace Commands.Samples
     {
         private readonly bool _caseIgnore = caseIgnore;
 
-        public override ValueTask<ConvertResult> EvaluateAsync(IConsumer context, IServiceProvider services, IArgument argument, string raw, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> EvaluateAsync(ConsumerBase consumer, IArgument argument, string value, IServiceProvider services, CancellationToken cancellationToken)
         {
             try
             {
                 var typeSrc = Type.GetType(
-                    typeName: raw,
+                    typeName: value,
                     throwOnError: true,
                     ignoreCase: _caseIgnore);
 
                 if (typeSrc == null)
                 {
-                    return ValueTask.FromResult(Error($"A type with name '{raw}' was not found."));
+                    return ValueTask.FromResult(Error($"A type with name '{value}' was not found."));
                 }
 
                 return ValueTask.FromResult(Success(typeSrc));
