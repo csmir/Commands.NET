@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 namespace Commands.Resolvers
 {
     internal sealed class AsyncDelegateResolver(
-        [DisallowNull] Func<ICommandContext, ICommandResult, IServiceProvider, ValueTask> action)
+        [DisallowNull] Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> action)
         : ResolverBase
     {
-        private readonly Func<ICommandContext, ICommandResult, IServiceProvider, ValueTask> _action = action;
+        private readonly Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> _action = action;
 
-        public override async ValueTask EvaluateAsync(ICommandContext context, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask EvaluateAsync(ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            await _action(context, result, services);
+            await _action(consumer, result, services);
         }
     }
 }

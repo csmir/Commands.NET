@@ -16,9 +16,9 @@ namespace Commands.Helpers
         ///     Configures the <see cref="IHostBuilder"/> to support use of a <see cref="CommandManager"/>.
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="configureDelegate">A delegate to configure the <see cref="CommandConfiguration"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
+        /// <param name="configureDelegate">A delegate to configure the <see cref="BuildingContext"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
         /// <returns>The same <see cref="IHostBuilder"/> for call chaining.</returns>
-        public static IHostBuilder ConfigureCommands(this IHostBuilder builder, [DisallowNull] Action<HostBuilderContext, CommandConfiguration> configureDelegate)
+        public static IHostBuilder ConfigureCommands(this IHostBuilder builder, [DisallowNull] Action<HostBuilderContext, BuildingContext> configureDelegate)
         {
             return builder.ConfigureCommands<CommandManager>(configureDelegate);
         }
@@ -28,19 +28,24 @@ namespace Commands.Helpers
         /// </summary>
         /// <typeparam name="TManager">The implementation of a <see cref="CommandManager"/> to configure for use.</typeparam>
         /// <param name="builder"></param>
-        /// <param name="configureDelegate">A delegate to configure the <see cref="CommandConfiguration"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
+        /// <param name="configureDelegate">A delegate to configure the <see cref="BuildingContext"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
         /// <returns>The same <see cref="IHostBuilder"/> for call chaining.</returns>
-        public static IHostBuilder ConfigureCommands<TManager>(this IHostBuilder builder, [DisallowNull] Action<HostBuilderContext, CommandConfiguration> configureDelegate)
+        public static IHostBuilder ConfigureCommands<TManager>(this IHostBuilder builder, [DisallowNull] Action<HostBuilderContext, BuildingContext> configureDelegate)
             where TManager : CommandManager
         {
+            if (configureDelegate == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(configureDelegate);
+            }
+
             builder.ConfigureServices((context, services) =>
             {
-                var config = new CommandConfiguration();
+                var config = new BuildingContext();
+
                 configureDelegate(context, config);
 
-                services.AddModules(config);
-
-                services.TryAddSingleton(config);
+                services.TryAddModules(config);
+                services.TryAddSingleton<CommandFinalizer>();
                 services.TryAddSingleton<TManager>();
             });
 

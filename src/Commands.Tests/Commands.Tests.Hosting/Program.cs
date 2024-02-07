@@ -15,6 +15,7 @@ await Host.CreateDefaultBuilder(args)
         {
             Console.WriteLine(result);
         });
+
         services.AddHostedService<CommandHandler>();
     })
     .ConfigureLogging(x =>

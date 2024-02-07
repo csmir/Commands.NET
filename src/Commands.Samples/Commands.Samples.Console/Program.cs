@@ -9,10 +9,8 @@ using Commands.Samples;
 using Microsoft.Extensions.DependencyInjection;
 
 var collection = new ServiceCollection()
-    .ConfigureCommands(configuration =>
-    {
-        configuration.AddTypeReader(new ReflectionTypeConverter(caseIgnore: true));
-    });
+    .ConfigureCommands()
+    .TryAddResolver((context, result, provider) => Console.WriteLine(result));
 
 var services = collection.BuildServiceProvider();
 
@@ -23,7 +21,7 @@ while (true)
 {
     var input = parser.Parse(Console.ReadLine());
 
-    var context = new CommandContext();
+    var context = new ConsumerBase();
 
     framework.TryExecute(context, input);
 }

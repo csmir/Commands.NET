@@ -10,7 +10,7 @@ namespace Commands.Samples
     {
         private readonly bool _caseIgnore = caseIgnore;
 
-        public override ValueTask<ConvertResult> EvaluateAsync(ICommandContext context, IServiceProvider services, IArgument argument, string raw, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> EvaluateAsync(IConsumer context, IServiceProvider services, IArgument argument, string raw, CancellationToken cancellationToken)
         {
             try
             {

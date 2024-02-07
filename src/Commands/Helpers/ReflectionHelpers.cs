@@ -8,12 +8,12 @@ namespace Commands.Helpers
 {
     internal static class ReflectionHelpers
     {
-        public static IEnumerable<ModuleInfo> BuildComponents(CommandConfiguration configuration)
+        public static IEnumerable<ModuleInfo> BuildComponents(IEnumerable<TypeConverterBase> converters, BuildingContext context)
         {
-            var converters = TypeConverterBase.BuildDefaults().UnionBy(configuration.Converters, x => x.Type).ToDictionary(x => x.Type, x => x);
+            var unionConverters = TypeConverterBase.BuildDefaults().UnionBy(converters, x => x.Type).ToDictionary(x => x.Type, x => x);
 
             var rootType = typeof(ModuleBase);
-            foreach (var assembly in configuration.Assemblies)
+            foreach (var assembly in context.Assemblies)
             {
                 foreach (var type in assembly.GetTypes())
                 {
@@ -21,13 +21,13 @@ namespace Commands.Helpers
                         && !type.IsAbstract
                         && !type.ContainsGenericParameters)
                     {
-                        yield return new ModuleInfo(type, converters);
+                        yield return new ModuleInfo(type, unionConverters);
                     }
                 }
             }
         }
 
-        public static IEnumerable<ModuleInfo> GetModules(ModuleInfo module, IDictionary<Type, TypeConverterBase> typeReaders)
+        public static IEnumerable<ModuleInfo> GetModules(ModuleInfo module, IDictionary<Type, TypeConverterBase> converters)
         {
             foreach (var group in module.Type.GetNestedTypes())
             {
@@ -35,7 +35,7 @@ namespace Commands.Helpers
                 {
                     if (attribute is GroupAttribute gattribute)
                     {
-                        yield return new ModuleInfo(group, typeReaders, module, gattribute.Name, gattribute.Aliases);
+                        yield return new ModuleInfo(group, converters, module, gattribute.Name, gattribute.Aliases);
                     }
                 }
             }

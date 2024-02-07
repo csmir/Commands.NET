@@ -2,7 +2,7 @@
 
 namespace Commands.Tests
 {
-    public sealed class AsyncModule : ModuleBase<CommandContext>
+    public sealed class AsyncModule : ModuleBase<ConsumerBase>
     {
         [Command("delayed")]
         public async Task AsyncRunDelayed()

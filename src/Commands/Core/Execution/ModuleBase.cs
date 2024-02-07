@@ -3,21 +3,21 @@
 namespace Commands.Core
 {
     /// <summary>
-    ///     Represents a <see cref="ModuleBase"/> that implements an implementation-friendly accessor to the <see cref="ICommandContext"/>.
+    ///     Represents a <see cref="ModuleBase"/> that implements an implementation-friendly accessor to the <see cref="ConsumerBase"/>.
     /// </summary>
-    /// <typeparam name="T">The implementation of <see cref="ICommandContext"/> known during command pipeline execution.</typeparam>
+    /// <typeparam name="T">The implementation of <see cref="ConsumerBase"/> known during command pipeline execution.</typeparam>
     public abstract class ModuleBase<T> : ModuleBase
-        where T : ICommandContext
+        where T : ConsumerBase
     {
-        private T _context;
+        private T _consumer;
 
         /// <summary>
         ///     Gets the command context containing metadata and logging access for the command currently in scope.
         /// </summary>
-        public new T Context
+        public new T Consumer
         {
             get
-                => _context ??= (T)base.Context;
+                => _consumer ??= (T)base.Consumer;
         }
     }
 
@@ -26,14 +26,14 @@ namespace Commands.Core
     ///     Modules do not have state, they are instantiated and populated before a command runs and immediately disposed when it finishes.
     /// </summary>
     /// <remarks>
-    ///      All derived types must be known in <see cref="CommandConfiguration.Assemblies"/> to be discoverable and automatically registered during the creation of a <see cref="CommandManager"/>.
+    ///      All derived types must be known in <see cref="BuildingContext.Assemblies"/> to be discoverable and automatically registered during the creation of a <see cref="CommandManager"/>.
     /// </remarks>
     public abstract class ModuleBase
     {
         /// <summary>
         ///     Gets the command context containing metadata and logging access for the command currently in scope.
         /// </summary>
-        public ICommandContext Context { get; internal set; }
+        public ConsumerBase Consumer { get; internal set; }
 
         /// <summary>
         ///     Gets the reflection information about this command.

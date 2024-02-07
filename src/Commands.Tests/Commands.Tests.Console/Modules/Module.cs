@@ -2,7 +2,7 @@
 
 namespace Commands.Tests
 {
-    public class Module : ModuleBase<CommandContext>
+    public class Module : ModuleBase<ConsumerBase>
     {
         [Command("priority")]
         [Priority(1)]
@@ -68,7 +68,7 @@ namespace Commands.Tests
         }
 
         [Group("nested")]
-        public class NestedModule : ModuleBase<CommandContext>
+        public class NestedModule : ModuleBase<ConsumerBase>
         {
             [Command("multiple")]
             public void Test(bool truee, bool falsee)

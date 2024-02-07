@@ -40,7 +40,10 @@ namespace Commands.Tests
 
                 var context = new HostedCommandContext(logger);
 
-                await _manager.TryExecuteAsync(context, args, cancellationToken);
+                await _manager.TryExecuteAsync(context, args, new()
+                {
+                    CancellationToken = cancellationToken
+                });
             }
         }
 

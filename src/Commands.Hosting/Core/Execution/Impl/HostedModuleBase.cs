@@ -15,7 +15,7 @@ namespace Commands.Core
         public ILogger Logger
         {
             get
-                => Context.Logger;
+                => Consumer.Logger;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Commands.Samples
     {
         public PlatformID Platform { get; } = platform;
 
-        public override ValueTask<ConditionResult> EvaluateAsync(ICommandContext context, SearchResult search, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConditionResult> EvaluateAsync(ConsumerBase context, SearchResult search, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Environment.OSVersion.Platform == Platform)
                 return ValueTask.FromResult(Success());

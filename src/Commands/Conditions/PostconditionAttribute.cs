@@ -2,6 +2,7 @@
 using Commands.Exceptions;
 using Commands.Helpers;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography;
 
 namespace Commands.Conditions
 {
@@ -9,7 +10,7 @@ namespace Commands.Conditions
     ///     An attribute that defines that a check should succeed before a command can be executed.
     /// </summary>
     /// <remarks>
-    ///     The <see cref="EvaluateAsync(ICommandContext, ICommandResult, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
+    ///     The <see cref="EvaluateAsync(IConsumer, ICommandResult, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
     ///     Custom implementations of <see cref="PostconditionAttribute"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
@@ -28,7 +29,7 @@ namespace Commands.Conditions
         /// <param name="services">The provider used to register modules and inject services.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
-        public abstract ValueTask<ConditionResult> EvaluateAsync(ICommandContext context, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken);
+        public abstract ValueTask<ConditionResult> EvaluateAsync(ConsumerBase context, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Creates a new <see cref="ConditionResult"/> representing a failed evaluation.

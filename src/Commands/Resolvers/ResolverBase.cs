@@ -5,6 +5,6 @@ namespace Commands.Resolvers
 {
     public abstract class ResolverBase
     {
-        public abstract ValueTask EvaluateAsync(ICommandContext context, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken);
+        public abstract ValueTask EvaluateAsync(ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken);
     }
 }

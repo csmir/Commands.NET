@@ -47,20 +47,20 @@ namespace Commands.TypeConverters
         /// <summary>
         ///     Evaluates the known data about the argument to be converted into, as well as the raw value it should convert into a valid invocation parameter.
         /// </summary>
-        /// <param name="context">Context of the current execution.</param>
+        /// <param name="consumer">Context of the current execution.</param>
         /// <param name="services">The provider used to register modules and inject services.</param>
         /// <param name="argument">Information about the invocation argument this evaluation converts for.</param>
-        /// <param name="raw">The raw command query argument to convert.</param>
+        /// <param name="value">The raw command query argument to convert.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
-        public abstract ValueTask<ConvertResult> EvaluateAsync(ICommandContext context, IServiceProvider services, IArgument argument, string raw, CancellationToken cancellationToken);
+        public abstract ValueTask<ConvertResult> EvaluateAsync(ConsumerBase consumer, IArgument argument, string value, IServiceProvider services, CancellationToken cancellationToken);
 
-        internal ValueTask<ConvertResult> ObjectEvaluateAsync(ICommandContext context, IServiceProvider services, IArgument argument, object raw, CancellationToken cancellationToken)
+        internal ValueTask<ConvertResult> ObjectEvaluateAsync(ConsumerBase consumer, IArgument argument, object value, IServiceProvider services, CancellationToken cancellationToken)
         {
-            if (raw is string str)
-                return EvaluateAsync(context, services, argument, str, cancellationToken);
+            if (value is string str)
+                return EvaluateAsync(consumer, argument, str, services, cancellationToken);
 
-            return EvaluateAsync(context, services, argument, raw.ToString(), cancellationToken);
+            return EvaluateAsync(consumer, argument, value.ToString(), services, cancellationToken);
         }
 
         /// <summary>

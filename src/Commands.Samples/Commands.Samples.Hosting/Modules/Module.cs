@@ -2,7 +2,7 @@
 
 namespace Commands.Samples.Hosting.Modules
 {
-    public sealed class Module : ModuleBase<CommandContext>
+    public sealed class Module : ModuleBase<ConsumerBase>
     {
         private readonly IServiceProvider _provider;
 

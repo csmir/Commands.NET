@@ -1,6 +1,7 @@
 ﻿using Commands.Exceptions;
 using Commands.Helpers;
 using Commands.Reflection;
+using Commands.TypeConverters;
 using Microsoft.Extensions.DependencyInjection;
 
 [assembly: CLSCompliant(true)]
@@ -8,54 +9,29 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Commands.Core
 {
     /// <summary>
-    ///     The root type serving as a basis for all operations and functionality as provided by the Command Standardization Framework.
+    ///     The root type serving as a basis for all operations and functionality as provided by Commands.NET.
     /// </summary>
     /// <remarks>
     ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
     /// </remarks>
-    public class CommandManager
+    /// <param name="services"></param>
+    /// <param name="finalizer"></param>
+    /// <param name="converters"></param>
+    /// <param name="options"></param>
+    public class CommandManager(
+        IServiceProvider services,
+        CommandFinalizer finalizer,
+        IEnumerable<TypeConverterBase> converters,
+        BuildingContext options)
     {
         private readonly object _searchLock = new();
-        private readonly CommandFinalizer _finalizer;
-        private readonly IServiceProvider _services;
+        private readonly CommandFinalizer _finalizer = finalizer;
+        private readonly IServiceProvider _services = services;
 
         /// <summary>
         ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="CommandConfiguration"/> provided when creating the manager.
         /// </summary>
-        public IReadOnlySet<IConditional> Commands { get; }
-
-        /// <summary>
-        ///     Gets the configuration used to configure execution operations and registration options.
-        /// </summary>
-        public CommandConfiguration Configuration { get; }
-
-        /// <summary>
-        ///     Creates a new instance of <see cref="CommandManager"/> with provided arguments.
-        /// </summary>
-        /// <remarks>
-        ///     It is suggested to configure and create the <see cref="CommandManager"/> by calling <see cref="ServiceHelpers.ConfigureCommands(IServiceCollection, Action{CommandConfiguration})"/>.
-        ///     Creating the manager manually will have a negative impact on performance, unless each <see cref="ModuleBase"/> is manually added to the <paramref name="services"/> as provided.
-        /// </remarks>
-        /// <param name="services">A built collection of services that hosts services to be injected or received at request.</param>
-        /// <param name="configuration">A configuration to be used to configure the execution and registration of commands.</param>
-        public CommandManager(IServiceProvider services, CommandConfiguration configuration)
-        {
-            if (configuration.Assemblies == null || configuration.Assemblies.Length == 0)
-            {
-                ThrowHelpers.ThrowInvalidArgument(nameof(configuration.Assemblies));
-            }
-
-            Commands = ReflectionHelpers.BuildComponents(configuration)
-                .SelectMany(x => x.Components)
-                .ToHashSet();
-
-            services ??= ServiceProvider.Default;
-
-            Configuration = configuration;
-
-            _finalizer = services.GetService<CommandFinalizer>() ?? CommandFinalizer.Default;
-            _services = services;
-        }
+        public IReadOnlySet<IConditional> Commands { get; } = Build(converters, options);
 
         /// <summary>
         ///     Makes an attempt at executing a command from provided <paramref name="args"/>.
@@ -65,7 +41,8 @@ namespace Commands.Core
         /// </remarks>
         /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        public virtual void TryExecute(ICommandContext context, params object[] args)
+        public virtual void TryExecute<T>(T context, params object[] args)
+            where T : ConsumerBase
             => TryExecuteAsync(context, args).Wait();
 
         /// <summary>
@@ -74,34 +51,23 @@ namespace Commands.Core
         /// <remarks>
         ///     The arguments intended for searching for a target need to be <see cref="string"/>, as <see cref="ModuleInfo"/> and <see cref="CommandInfo"/> store their aliases this way also.
         /// </remarks>
-        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandConfiguration.AsyncApproach"/> is set to <see cref="AsyncApproach.Discard"/>.</returns>
-        public virtual Task TryExecuteAsync(ICommandContext context, params object[] args)
-            => TryExecuteAsync(context, args, cancellationToken: default);
-
-        /// <summary>
-        ///     Makes an attempt at executing a command from provided <paramref name="args"/>.
-        /// </summary>
-        /// <remarks>
-        ///     The arguments intended for searching for a target need to be <see cref="string"/>, as <see cref="ModuleInfo"/> and <see cref="CommandInfo"/> store their aliases this way also.
-        /// </remarks>
-        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        /// <param name="cancellationToken">A token that can be provided from a <see cref="CancellationTokenSource"/> and later used to cancel asynchronous execution.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandConfiguration.AsyncApproach"/> is set to <see cref="AsyncApproach.Discard"/>.</returns>
-        public virtual async Task TryExecuteAsync(ICommandContext context, object[] args, CancellationToken cancellationToken = default)
+        public virtual async Task TryExecuteAsync<T>(T consumer, object[] args, RequestContext context = default)
+            where T : ConsumerBase
         {
-            switch (Configuration.AsyncApproach)
+            switch (context.AsyncApproach)
             {
                 case AsyncApproach.Await:
                     {
-                        await ExecuteAsync(context, args, cancellationToken);
+                        await ExecuteAsync(consumer, args, context);
                     }
                     return;
                 case AsyncApproach.Discard:
                     {
-                        _ = ExecuteAsync(context, args, cancellationToken);
+                        _ = ExecuteAsync(consumer, args, context);
                     }
                     return;
             }
@@ -124,11 +90,12 @@ namespace Commands.Core
         /// <summary>
         ///     Steps through the pipeline in order to execute a command based on the provided <paramref name="args"/>.
         /// </summary>
-        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution.</returns>
-        protected virtual async Task ExecuteAsync(ICommandContext context, object[] args, CancellationToken cancellationToken)
+        protected virtual async Task ExecuteAsync<T>(T consumer, object[] args, RequestContext context)
+            where T : ConsumerBase
         {
             var searches = Search(args);
 
@@ -140,55 +107,56 @@ namespace Commands.Core
             {
                 c++;
 
-                var match = await MatchAsync(context, scope.ServiceProvider, search, args, cancellationToken);
+                var match = await MatchAsync(consumer, scope.ServiceProvider, search, args, context);
 
                 // enter the invocation logic when a match is successful.
                 if (match.Success())
                 {
-                    var result = await InvokeAsync(context, scope.ServiceProvider, match, cancellationToken);
+                    var result = await InvokeAsync(consumer, scope.ServiceProvider, match, context);
 
-                    await _finalizer.FinalizeAsync(context, result, scope, cancellationToken);
+                    await _finalizer.FinalizeAsync(consumer, result, scope, context);
 
                     return;
                 }
 
-                context.TrySetFallback(match);
+                consumer.TrySetFallback(match);
             }
 
             // if no searches were found, we send searchfailure.
             if (c is 0)
             {
-                await _finalizer.FinalizeAsync(context, new SearchResult(new SearchException("No commands were found with the provided input.")), scope, cancellationToken);
+                await _finalizer.FinalizeAsync(consumer, new SearchResult(new SearchException("No commands were found with the provided input.")), scope, context);
                 return;
             }
 
             // if there is a fallback present, we send matchfailure.
-            if (context.TryGetFallback(out var fallback))
+            if (consumer.TryGetFallback(out var fallback))
             {
-                await _finalizer.FinalizeAsync(context, fallback, scope, cancellationToken);
+                await _finalizer.FinalizeAsync(consumer, fallback, scope, context);
             }
         }
 
         /// <summary>
         ///     Matches the provided <paramref name="search"/> based on the provided <paramref name="args"/> and returns the result.
         /// </summary>
-        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
         /// <param name="search"></param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the matching process.</returns>
-        protected virtual async ValueTask<MatchResult> MatchAsync(ICommandContext context, IServiceProvider services, SearchResult search, object[] args, CancellationToken cancellationToken)
+        protected virtual async ValueTask<MatchResult> MatchAsync<T>(T consumer, IServiceProvider services, SearchResult search, object[] args, RequestContext context)
+            where T : ConsumerBase
         {
             // check command preconditions.
-            var check = await CheckAsync(context, search, services, cancellationToken);
+            var check = await CheckAsync(consumer, search, services, context);
 
             // verify check success, if not, return the failure.
             if (!check.Success())
                 return new(search.Command, new MatchException("Command failed to reach execution. View inner exception for more details.", check.Exception));
 
             // read the command parameters in right order.
-            var readResult = await ConvertAsync(context, services, search, args, cancellationToken);
+            var readResult = await ConvertAsync(consumer, services, search, args, context);
 
             // exchange the reads for result, verifying successes in the process.
             var reads = new object[readResult.Length];
@@ -208,16 +176,22 @@ namespace Commands.Core
         /// <summary>
         ///     Evaluates the preconditions of provided <paramref name="result"/> and returns the result.
         /// </summary>
-        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
         /// <param name="result">The found command intended to be evaluated.</param>
-        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the checking process.</returns>
-        protected virtual async ValueTask<ConditionResult> CheckAsync(ICommandContext context, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
+        protected virtual async ValueTask<ConditionResult> CheckAsync<T>(T consumer, SearchResult result, IServiceProvider services, RequestContext context)
+            where T : ConsumerBase
         {
+            if (context.SkipPreconditions)
+            {
+                return new(null);
+            }
+
             foreach (var precon in result.Command.Preconditions)
             {
-                var checkResult = await precon.EvaluateAsync(context, result, services, cancellationToken);
+                var checkResult = await precon.EvaluateAsync(consumer, result, services, context.CancellationToken);
 
                 if (!checkResult.Success())
                     return checkResult;
@@ -229,16 +203,22 @@ namespace Commands.Core
         /// <summary>
         ///     Evaluates the postconditions of provided <paramref name="result"/> and returns the result.
         /// </summary>
-        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
         /// <param name="result">The result of the command intended to be evaluated.</param>
-        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the checking process.</returns>
-        protected virtual async ValueTask<ConditionResult> CheckAsync(ICommandContext context, InvokeResult result, IServiceProvider services, CancellationToken cancellationToken)
+        protected virtual async ValueTask<ConditionResult> CheckAsync<T>(T consumer, InvokeResult result, IServiceProvider services, RequestContext context)
+            where T : ConsumerBase
         {
+            if (context.SkipPostconditions)
+            {
+                return new(null);
+            }
+
             foreach (var postcon in result.Command.PostConditions)
             {
-                var checkResult = await postcon.EvaluateAsync(context, result, services, cancellationToken);
+                var checkResult = await postcon.EvaluateAsync(consumer, result, services, context.CancellationToken);
 
                 if (!checkResult.Success())
                     return checkResult;
@@ -250,13 +230,14 @@ namespace Commands.Core
         /// <summary>
         ///     Converts the provided <paramref name="search"/> based on the provided <paramref name="args"/> and returns the result.
         /// </summary>
-        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
         /// <param name="search">The result of the search intended to be converted.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the results of the conversion process.</returns>
-        protected virtual async ValueTask<ConvertResult[]> ConvertAsync(ICommandContext context, IServiceProvider services, SearchResult search, object[] args, CancellationToken cancellationToken)
+        protected virtual async ValueTask<ConvertResult[]> ConvertAsync<T>(T consumer, IServiceProvider services, SearchResult search, object[] args, RequestContext context)
+            where T : ConsumerBase
         {
             // skip if no parameters exist.
             if (!search.Command.HasArguments)
@@ -267,15 +248,15 @@ namespace Commands.Core
 
             // check if input equals command length.
             if (search.Command.MaxLength == length)
-                return await search.Command.Arguments.RecursiveConvertAsync(context, services, args[^length..], 0, cancellationToken);
+                return await search.Command.Arguments.RecursiveConvertAsync(consumer, services, args[^length..], 0, context);
 
             // check if input is longer than command, but remainder to concatenate.
             if (search.Command.MaxLength <= length && search.Command.HasRemainder)
-                return await search.Command.Arguments.RecursiveConvertAsync(context, services, args[^length..], 0, cancellationToken);
+                return await search.Command.Arguments.RecursiveConvertAsync(consumer, services, args[^length..], 0, context);
 
             // check if input is shorter than command, but optional parameters to replace.
             if (search.Command.MaxLength > length && search.Command.MinLength <= length)
-                return await search.Command.Arguments.RecursiveConvertAsync(context, services, args[^length..], 0, cancellationToken);
+                return await search.Command.Arguments.RecursiveConvertAsync(consumer, services, args[^length..], 0, context);
 
             // input is too long or too short.
             return [];
@@ -284,12 +265,13 @@ namespace Commands.Core
         /// <summary>
         ///     Invokes the provided <paramref name="match"/> and returns the result.
         /// </summary>
-        /// <param name="context">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
         /// <param name="match">The result of the match intended to be ran.</param>
-        /// <param name="cancellationToken">The token to cancel the operation.</param>
+        /// <param name="context">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation process.</returns>
-        protected virtual async ValueTask<InvokeResult> InvokeAsync(ICommandContext context, IServiceProvider services, MatchResult match, CancellationToken cancellationToken)
+        protected virtual async ValueTask<InvokeResult> InvokeAsync<T>(T consumer, IServiceProvider services, MatchResult match, RequestContext context)
+            where T : ConsumerBase
         {
             try
             {
@@ -299,14 +281,14 @@ namespace Commands.Core
                     ? targetInstance as ModuleBase
                     : ActivatorUtilities.CreateInstance(services, match.Command.Module.Type) as ModuleBase;
 
-                module.Context = context;
+                module.Consumer = consumer;
                 module.Command = match.Command;
 
                 var value = match.Command.Target.Invoke(module, match.Reads);
 
                 var result = await module.ResolveReturnAsync(value);
 
-                var checkResult = await CheckAsync(context, result, services, cancellationToken);
+                var checkResult = await CheckAsync(consumer, result, services, context);
 
                 if (!checkResult.Success())
                 {
@@ -321,22 +303,9 @@ namespace Commands.Core
             }
         }
 
-        internal class ServiceProvider : IServiceProvider
-        {
-            private static readonly Lazy<ServiceProvider> _i = new();
-
-            public object GetService(Type serviceType)
-            {
-                return null;
-            }
-
-            public static IServiceProvider Default
-            {
-                get
-                {
-                    return _i.Value;
-                }
-            }
-        }
+        private static HashSet<IConditional> Build(IEnumerable<TypeConverterBase> converters, BuildingContext context)
+            => ReflectionHelpers.BuildComponents(converters, context)
+                .SelectMany(x => x.Components)
+                .ToHashSet();
     }
 }

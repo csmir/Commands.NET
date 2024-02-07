@@ -5,10 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 var collection = new ServiceCollection()
-    .ConfigureCommands(configuration =>
-    {
-        configuration.WithAssemblies(Assembly.GetEntryAssembly());
-    })
+    .ConfigureCommands()
     .TryAddResolver((context, result, services) =>
     {
         if (!result.Success())
@@ -25,5 +22,5 @@ while (true)
 {
     var input = parser.Parse(Console.ReadLine()!);
 
-    await framework.TryExecuteAsync(new CommandContext(), input);
+    await framework.TryExecuteAsync(new ConsumerBase(), input);
 }
