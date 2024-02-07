@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Commands.TypeConverters
 {
-    internal partial class TimeSpanConverter : TypeConverterBase<TimeSpan>
+    internal sealed partial class TimeSpanConverter : TypeConverterBase<TimeSpan>
     {
         private readonly IReadOnlyDictionary<string, Func<string, TimeSpan>> _callback;
         private readonly Regex _regex = GenTSRegex();

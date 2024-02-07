@@ -3,7 +3,7 @@ using Commands.Reflection;
 
 namespace Commands.TypeConverters
 {
-    internal class EnumTypeReader(Type targetEnumType) : TypeConverterBase
+    internal sealed class EnumTypeReader(Type targetEnumType) : TypeConverterBase
     {
         private static readonly Dictionary<Type, EnumTypeReader> _readers = [];
 

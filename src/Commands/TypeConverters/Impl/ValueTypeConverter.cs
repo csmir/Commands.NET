@@ -3,7 +3,7 @@ using Commands.Reflection;
 
 namespace Commands.TypeConverters
 {
-    internal class ValueTypeConverter<T> : TypeConverterBase<T>
+    internal sealed class ValueTypeConverter<T> : TypeConverterBase<T>
     {
         private delegate bool Parser<TValue>(string str, out TValue value);
 
