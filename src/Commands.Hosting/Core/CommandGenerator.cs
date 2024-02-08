@@ -1,6 +1,7 @@
 ﻿using Commands.Resolvers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Collections;
 
 namespace Commands.Core
 {
@@ -26,7 +27,9 @@ namespace Commands.Core
         /// <inheritdoc />
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await RunAsync();
+            await Task.CompletedTask;
+
+            _ = RunAsync();
         }
 
         /// <inheritdoc />
@@ -35,26 +38,43 @@ namespace Commands.Core
             await Task.CompletedTask;
         }
 
-        private async Task RunAsync()
+        private Task RunAsync()
         {
-            await Parallel.ForEachAsync(_resolvers, CancellationSource.Token, async (resolver, cToken) =>
+            var tasks = ActivateResolvers();
+
+            return Task.WhenAll(tasks.Select(x =>
             {
-                while (!cToken.IsCancellationRequested)
+                x.Start();
+
+                return x;
+            }));
+        }
+
+        private IEnumerable<Task> ActivateResolvers()
+        {
+            foreach (var resolver in _resolvers)
+            {
+                var cToken = CancellationSource.Token;
+
+                yield return new Task(async () =>
                 {
-                    var source = await resolver.EvaluateAsync(cToken);
-
-                    if (!source.Success)
+                    while (!cToken.IsCancellationRequested)
                     {
-                        _logger.LogWarning("Source resolver failed to succeed acquirement iteration.");
+                        var source = await resolver.EvaluateAsync(cToken);
+
+                        if (!source.Success)
+                        {
+                            _logger.LogWarning("Source resolver failed to succeed acquirement iteration.");
+                        }
+
+                        var options = source.Options ?? new();
+
+                        options.AsyncMode = AsyncMode.Await;
+
+                        await _manager.TryExecuteAsync(source.Consumer, source.Args, options);
                     }
-
-                    var options = source.Options ?? new();
-
-                    options.AsyncMode = AsyncMode.Discard;
-
-                    await _manager.TryExecuteAsync(source.Consumer, source.Args, options);
-                }
-            });
+                });
+            }
         }
     }
 }
