@@ -65,6 +65,8 @@ namespace Commands.Core
                         if (!source.Success)
                         {
                             _logger.LogWarning("Source resolver failed to succeed acquirement iteration.");
+
+                            continue;
                         }
 
                         var options = source.Options ?? new();
