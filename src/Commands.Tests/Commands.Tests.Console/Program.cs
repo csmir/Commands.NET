@@ -4,7 +4,7 @@ using Commands.Parsing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-var collection = new ServiceCollection()
+var services = new ServiceCollection()
     .ConfigureCommands(configure =>
     {
         configure.AddResultResolver((c, r, s) =>
@@ -16,10 +16,8 @@ var collection = new ServiceCollection()
     .AddLogging(configure =>
     {
         configure.AddSimpleConsole();
-        configure.SetMinimumLevel(LogLevel.Critical);
-    });
-
-var services = collection.BuildServiceProvider();
+    })
+    .BuildServiceProvider();
 
 var framework = services.GetRequiredService<CommandManager>();
 
@@ -27,8 +25,5 @@ while (true)
 {
     var input = StringParser.Parse(Console.ReadLine());
 
-    await framework.TryExecuteAsync(new ConsumerBase(), input, new()
-    {
-        AsyncMode = AsyncMode.Await
-    });
+    await framework.TryExecuteAsync(new ConsumerBase(), input);
 }
