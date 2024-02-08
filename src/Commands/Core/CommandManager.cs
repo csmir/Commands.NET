@@ -5,6 +5,8 @@ using Commands.TypeConverters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Text;
+using System.Text.Json;
 
 [assembly: CLSCompliant(true)]
 
@@ -16,26 +18,30 @@ namespace Commands.Core
     /// <remarks>
     ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
     /// </remarks>
+    /// <remarks>
+    /// 
+    /// </remarks>
     /// <param name="services"></param>
     /// <param name="logFactory"></param>
     /// <param name="finalizer"></param>
     /// <param name="converters"></param>
-    /// <param name="context"></param>
+    /// <param name="options"></param>
     [DebuggerDisplay("Commands = {Commands}")]
     public class CommandManager(
-        IServiceProvider services, ILoggerFactory logFactory, CommandFinalizer finalizer, IEnumerable<TypeConverterBase> converters, BuildingContext context)
+        IServiceProvider services, ILoggerFactory logFactory, CommandFinalizer finalizer, IEnumerable<TypeConverterBase> converters, BuildOptions options)
     {
         private long _scopeId = 0;
 
         private readonly object _searchLock = new();
+
         private readonly CommandFinalizer _finalizer = finalizer;
         private readonly IServiceProvider _services = services;
         private readonly ILoggerFactory _logFactory = logFactory;
 
         /// <summary>
-        ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="BuildingContext"/> provided when creating the manager.
+        ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="BuildOptions"/> provided when creating the manager.
         /// </summary>
-        public IReadOnlySet<IConditional> Commands { get; } = ReflectionHelpers.BuildComponents(converters, context)
+        public IReadOnlySet<IConditional> Commands { get; } = ReflectionHelpers.BuildComponents(converters, options)
             .SelectMany(x => x.Components)
             .ToHashSet();
 
@@ -59,22 +65,22 @@ namespace Commands.Core
         /// </remarks>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        /// <param name="context">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="RequestContext.AsyncApproach"/> is set to <see cref="AsyncApproach.Discard"/>.</returns>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
+        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Discard"/>.</returns>
         public virtual async Task TryExecuteAsync<T>(
-            T consumer, object[] args, RequestContext context = default)
+            T consumer, object[] args, CommandOptions options = default)
             where T : ConsumerBase
         {
-            switch (context.AsyncApproach)
+            switch (options.AsyncMode)
             {
-                case AsyncApproach.Await:
+                case AsyncMode.Await:
                     {
-                        await ExecuteAsync(consumer, args, context);
+                        await ExecuteAsync(consumer, args, options);
                     }
                     return;
-                case AsyncApproach.Discard:
+                case AsyncMode.Discard:
                     {
-                        _ = ExecuteAsync(consumer, args, context);
+                        _ = ExecuteAsync(consumer, args, options);
                     }
                     return;
             }
@@ -111,18 +117,18 @@ namespace Commands.Core
         /// </summary>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        /// <param name="context">A collection of options that determines pipeline logic.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution.</returns>
         protected virtual async Task ExecuteAsync<T>(
-            T consumer, object[] args, RequestContext context)
+            T consumer, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
             var searches = Search(args);
 
-            var scope = _services.CreateAsyncScope();
-            context.Logger ??= _logFactory.CreateLogger($"Commands.Request[{Interlocked.Increment(ref _scopeId)}]");
+            options.Scope ??= _services.CreateAsyncScope();
+            options.Logger ??= _logFactory.CreateLogger($"Commands.Request[{Interlocked.Increment(ref _scopeId)}]");
 
-            context.Logger.LogDebug("Resolved workflow: {}", context.AsyncApproach);
+            options.Logger.LogDebug("Resolved workflow: {}", options.AsyncMode);
 
             var c = 0;
 
@@ -130,61 +136,47 @@ namespace Commands.Core
             {
                 c++;
 
-                var match = await MatchAsync(consumer, scope.ServiceProvider, search, args, context);
+                var match = await MatchAsync(consumer, search, args, options);
 
                 // enter the invocation logic when a match is successful.
                 if (match.Success())
                 {
-                    var result = await InvokeAsync(consumer, scope.ServiceProvider, match, context);
+                    var result = await InvokeAsync(consumer, match, options);
 
-                    await _finalizer.FinalizeAsync(consumer, result, scope, context);
+                    await _finalizer.FinalizeAsync(consumer, result, options);
 
                     return;
                 }
 
-                consumer.TrySetFallback(match);
+                options.TrySetResult(match);
             }
 
-            // if no searches were found, we send searchfailure.
-            if (c is 0)
-            {
-                context.Logger.LogError("No commands found.");
-
-                await _finalizer.FinalizeAsync(consumer, new SearchResult(new SearchException("No commands were found with the provided input.")), scope, context);
-                return;
-            }
-
-            // if there is a fallback present, we send matchfailure.
-            if (consumer.TryGetFallback(out var fallback))
-            {
-                await _finalizer.FinalizeAsync(consumer, fallback, scope, context);
-            }
+            await _finalizer.FinalizeAsync(consumer, null, options);
         }
 
         /// <summary>
         ///     Matches the provided <paramref name="search"/> based on the provided <paramref name="args"/> and returns the result.
         /// </summary>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
         /// <param name="search"></param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        /// <param name="context">A collection of options that determines pipeline logic.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the matching process.</returns>
         protected virtual async ValueTask<MatchResult> MatchAsync<T>(
-            T consumer, IServiceProvider services, SearchResult search, object[] args, RequestContext context)
+            T consumer, SearchResult search, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
-            context.Logger.LogDebug("Match process starting on search {}", search.Command);
+            options.Logger.LogDebug("Match process starting on search {}", search.Command);
 
             // check command preconditions.
-            var check = await CheckAsync(consumer, search, services, context);
+            var check = await CheckAsync(consumer, search, options);
 
             // verify check success, if not, return the failure.
             if (!check.Success())
                 return new(search.Command, new MatchException("Command failed to reach execution. View inner exception for more details.", check.Exception));
 
             // read the command parameters in right order.
-            var readResult = await ConvertAsync(consumer, services, search, args, context);
+            var readResult = await ConvertAsync(consumer, search, args, options);
 
             // exchange the reads for result, verifying successes in the process.
             var reads = new object[readResult.Length];
@@ -205,35 +197,34 @@ namespace Commands.Core
         ///     Evaluates the preconditions of provided <paramref name="result"/> and returns the result.
         /// </summary>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
         /// <param name="result">The found command intended to be evaluated.</param>
-        /// <param name="context">A collection of options that determines pipeline logic.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the checking process.</returns>
         protected virtual async ValueTask<ConditionResult> CheckAsync<T>(
-            T consumer, SearchResult result, IServiceProvider services, RequestContext context)
+            T consumer, SearchResult result, CommandOptions options)
             where T : ConsumerBase
         {
-            if (context.SkipPreconditions)
+            if (options.SkipPreconditions)
             {
-                context.Logger.LogDebug("Precondition evaluation skipped for {}", result.Command);
+                options.Logger.LogDebug("Precondition evaluation skipped for {}", result.Command);
 
                 return new(null);
             }
 
-            context.Logger.LogDebug("Precondition evaluation starting for {}", result.Command);
+            options.Logger.LogDebug("Precondition evaluation starting for {}", result.Command);
 
             foreach (var precon in result.Command.Preconditions)
             {
-                var checkResult = await precon.EvaluateAsync(consumer, result, services, context.CancellationToken);
+                var checkResult = await precon.EvaluateAsync(consumer, result, options.Scope.ServiceProvider, options.CancellationToken);
 
                 if (!checkResult.Success())
                 {
-                    context.Logger.LogError("Precondition evaluation failed for {}", result.Command);
+                    options.Logger.LogError("Precondition evaluation failed for {}", result.Command);
                     return checkResult;
                 }
             }
 
-            context.Logger.LogInformation("Precondition evaluation succeeded for {}", result.Command);
+            options.Logger.LogInformation("Precondition evaluation succeeded for {}", result.Command);
 
             return new(null);
         }
@@ -242,34 +233,33 @@ namespace Commands.Core
         ///     Evaluates the postconditions of provided <paramref name="result"/> and returns the result.
         /// </summary>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
         /// <param name="result">The result of the command intended to be evaluated.</param>
-        /// <param name="context">A collection of options that determines pipeline logic.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the checking process.</returns>
         protected virtual async ValueTask<ConditionResult> CheckAsync<T>(
-            T consumer, InvokeResult result, IServiceProvider services, RequestContext context)
+            T consumer, InvokeResult result, CommandOptions options)
             where T : ConsumerBase
         {
-            if (context.SkipPostconditions)
+            if (options.SkipPostconditions)
             {
-                context.Logger.LogDebug("Skipped postcondition evaluation for {}", result.Command);
+                options.Logger.LogDebug("Skipped postcondition evaluation for {}", result.Command);
                 return new(null);
             }
 
-            context.Logger.LogDebug("Postcondition evaluation starting for {}", result.Command);
+            options.Logger.LogDebug("Postcondition evaluation starting for {}", result.Command);
 
             foreach (var postcon in result.Command.PostConditions)
             {
-                var checkResult = await postcon.EvaluateAsync(consumer, result, services, context.CancellationToken);
+                var checkResult = await postcon.EvaluateAsync(consumer, result, options.Scope.ServiceProvider, options.CancellationToken);
 
                 if (!checkResult.Success())
                 {
-                    context.Logger.LogError("Postcondition evaluation failed for {}", result.Command);
+                    options.Logger.LogError("Postcondition evaluation failed for {}", result.Command);
                     return checkResult;
                 }
             }
 
-            context.Logger.LogInformation("Postcondition evaluation succeeded for {}", result.Command);
+            options.Logger.LogInformation("Postcondition evaluation succeeded for {}", result.Command);
 
             return new(null);
         }
@@ -278,23 +268,22 @@ namespace Commands.Core
         ///     Converts the provided <paramref name="search"/> based on the provided <paramref name="args"/> and returns the result.
         /// </summary>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
         /// <param name="search">The result of the search intended to be converted.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        /// <param name="context">A collection of options that determines pipeline logic.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the results of the conversion process.</returns>
         protected virtual async ValueTask<ConvertResult[]> ConvertAsync<T>(
-            T consumer, IServiceProvider services, SearchResult search, object[] args, RequestContext context)
+            T consumer, SearchResult search, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
             // skip if no parameters exist.
             if (!search.Command.HasArguments)
             {
-                context.Logger.LogDebug("Argument evaluation skipped for {}", search.Command);
+                options.Logger.LogDebug("Argument evaluation skipped for {}", search.Command);
                 return [];
             }
 
-            context.Logger.LogDebug("Argument evaluation starting for {}", search.Command);
+            options.Logger.LogDebug("Argument evaluation starting for {}", search.Command);
 
             // determine height of search to discover command name.
             var length = args.Length - search.SearchHeight;
@@ -302,22 +291,22 @@ namespace Commands.Core
             // check if input equals command length.
             if (search.Command.MaxLength == length)
             {
-                return await search.Command.Arguments.RecursiveConvertAsync(consumer, services, args[^length..], 0, context);
+                return await search.Command.Arguments.RecursiveConvertAsync(consumer, args[^length..], 0, options);
             }
 
             // check if input is longer than command, but remainder to concatenate.
             if (search.Command.MaxLength <= length && search.Command.HasRemainder)
             {
-                return await search.Command.Arguments.RecursiveConvertAsync(consumer, services, args[^length..], 0, context);
+                return await search.Command.Arguments.RecursiveConvertAsync(consumer, args[^length..], 0, options);
             }
 
             // check if input is shorter than command, but optional parameters to replace.
             if (search.Command.MaxLength > length && search.Command.MinLength <= length)
             {
-                return await search.Command.Arguments.RecursiveConvertAsync(consumer, services, args[^length..], 0, context);
+                return await search.Command.Arguments.RecursiveConvertAsync(consumer, args[^length..], 0, options);
             }
 
-            context.Logger.LogError("Argument evaluation failed for {}", search.Command);
+            options.Logger.LogError("Argument evaluation failed for {}", search.Command);
 
             // check if input is too short.
             if (search.Command.MinLength > length)
@@ -333,36 +322,35 @@ namespace Commands.Core
         ///     Invokes the provided <paramref name="match"/> and returns the result.
         /// </summary>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="services">The scoped <see cref="IServiceProvider"/> used for executing this command.</param>
         /// <param name="match">The result of the match intended to be ran.</param>
-        /// <param name="context">A collection of options that determines pipeline logic.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation process.</returns>
         protected virtual async ValueTask<InvokeResult> InvokeAsync<T>(
-            T consumer, IServiceProvider services, MatchResult match, RequestContext context)
+            T consumer, MatchResult match, CommandOptions options)
             where T : ConsumerBase
         {
             try
             {
-                context.Logger.LogDebug("Resolving targets for {}", match.Command);
+                options.Logger.LogDebug("Resolving targets for {}", match.Command);
 
-                var targetInstance = services.GetService(match.Command.Module.Type);
+                var targetInstance = options.Scope.ServiceProvider.GetService(match.Command.Module.Type);
 
                 var module = targetInstance != null
                     ? targetInstance as ModuleBase
-                    : ActivatorUtilities.CreateInstance(services, match.Command.Module.Type) as ModuleBase;
+                    : ActivatorUtilities.CreateInstance(options.Scope.ServiceProvider, match.Command.Module.Type) as ModuleBase;
 
                 module.Consumer = consumer;
                 module.Command = match.Command;
 
-                context.Logger.LogDebug("Starting invocation of {}", match.Command);
+                options.Logger.LogDebug("Starting invocation of {}", match.Command);
 
                 var value = match.Command.Target.Invoke(module, match.Reads);
 
                 var result = await module.ResolveReturnAsync(value);
 
-                context.Logger.LogInformation("Invocation succeeded for {}", match.Command);
+                options.Logger.LogInformation("Invocation succeeded for {}", match.Command);
 
-                var checkResult = await CheckAsync(consumer, result, services, context);
+                var checkResult = await CheckAsync(consumer, result, options);
 
                 if (!checkResult.Success())
                 {
@@ -373,7 +361,7 @@ namespace Commands.Core
             }
             catch (Exception exception)
             {
-                context.Logger.LogError("Invocation failed for {}", match.Command);
+                options.Logger.LogError("Invocation failed for {}", match.Command);
 
                 return new(match.Command, exception);
             }

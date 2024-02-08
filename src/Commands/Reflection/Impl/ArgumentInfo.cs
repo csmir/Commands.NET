@@ -33,7 +33,7 @@ namespace Commands.Reflection
         public TypeConverterBase Converter { get; }
 
         internal ArgumentInfo(
-            ParameterInfo parameterInfo, IDictionary<Type, TypeConverterBase> converters)
+            ParameterInfo parameterInfo, BuildOptions options)
         {
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);
@@ -63,7 +63,7 @@ namespace Commands.Reflection
                 Converter = EnumTypeReader.GetOrCreate(Type);
 
             else if (Type != typeof(string) && Type != typeof(object))
-                Converter = converters[Type];
+                Converter = options.KeyedConverters[Type];
 
             Attributes = attributes;
             ExposedType = parameterInfo.ParameterType;

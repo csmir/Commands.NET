@@ -1,4 +1,5 @@
-﻿using Commands.Reflection;
+﻿using Commands.Helpers;
+using Commands.Reflection;
 using Microsoft.Extensions.Logging;
 
 namespace Commands.Core
@@ -13,12 +14,29 @@ namespace Commands.Core
         private T _consumer;
 
         /// <summary>
-        ///     Gets the command context containing metadata and logging access for the command currently in scope.
+        ///     Gets the consumer for the command currently in scope.
         /// </summary>
+        /// <remarks>
+        ///     Throws if the <see cref="ConsumerBase"/> provided in this scope does not match <typeparamref name="T"/>.
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">Thrown when <typeparamref name="T"/> does not match with the provided</exception>
         public new T Consumer
         {
             get
-                => _consumer ??= (T)base.Consumer;
+            {
+                if (_consumer == null)
+                {
+                    if (base.Consumer is T t)
+                    {
+                        _consumer = t;
+                    }
+                    else
+                    {
+                        ThrowHelpers.ThrowInvalidOperation("The consumer does not match as T.");
+                    }
+                }
+                return _consumer;
+            }
         }
     }
 
@@ -27,7 +45,7 @@ namespace Commands.Core
     ///     Modules do not have state, they are instantiated and populated before a command runs and immediately disposed when it finishes.
     /// </summary>
     /// <remarks>
-    ///      All derived types must be known in <see cref="BuildingContext.Assemblies"/> to be discoverable and automatically registered during the creation of a <see cref="CommandManager"/>.
+    ///      All derived types must be known in <see cref="BuildOptions.Assemblies"/> to be discoverable and automatically registered during the creation of a <see cref="CommandManager"/>.
     /// </remarks>
     public abstract class ModuleBase
     {

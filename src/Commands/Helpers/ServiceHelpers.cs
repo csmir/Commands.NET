@@ -54,15 +54,15 @@ namespace Commands.Helpers
 
         #region Resolvers
         /// <summary>
-        ///     Attempts to add a <see cref="ResolverBase"/> defined as <typeparamref name="T"/> to the <see cref="IServiceCollection"/>.
+        ///     Attempts to add a <see cref="ResultResolverBase"/> defined as <typeparamref name="T"/> to the <see cref="IServiceCollection"/>.
         /// </summary>
-        /// <typeparam name="T">The implementation of <see cref="ResolverBase"/> to implement.</typeparam>
+        /// <typeparam name="T">The implementation of <see cref="ResultResolverBase"/> to implement.</typeparam>
         /// <param name="collection"></param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection TryAddResolver<T>(this IServiceCollection collection)
-            where T : ResolverBase
+            where T : ResultResolverBase
         {
-            var descriptor = ServiceDescriptor.Singleton<ResolverBase, T>();
+            var descriptor = ServiceDescriptor.Singleton<ResultResolverBase, T>();
 
             collection.TryAddEnumerable(descriptor);
             collection.TryAddSingleton<CommandFinalizer>();
@@ -71,13 +71,13 @@ namespace Commands.Helpers
         }
 
         /// <summary>
-        ///     Attempts to add a <see cref="ResolverBase"/> defined as <paramref name="resolver"/> to the <see cref="IServiceCollection"/>.
+        ///     Attempts to add a <see cref="ResultResolverBase"/> defined as <paramref name="resolver"/> to the <see cref="IServiceCollection"/>.
         /// </summary>
         /// <param name="collection"></param>
-        /// <param name="resolver">The implementation of <see cref="ResolverBase"/> to implement.</param>
+        /// <param name="resolver">The implementation of <see cref="ResultResolverBase"/> to implement.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection TryAddResolver(this IServiceCollection collection,
-            [DisallowNull] ResolverBase resolver)
+            [DisallowNull] ResultResolverBase resolver)
         {
             if (resolver == null)
             {
@@ -98,14 +98,14 @@ namespace Commands.Helpers
         /// <param name="resultAction">A synchronous result handler to handle post-execution processing.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection TryAddResolver(this IServiceCollection collection,
-            [DisallowNull] Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
+            [DisallowNull] Action<ConsumerBase, IRunResult, IServiceProvider> resultAction)
         {
             if (resultAction == null)
             {
                 ThrowHelpers.ThrowInvalidArgument(resultAction);
             }
 
-            var descriptor = ServiceDescriptor.Singleton(typeof(ResolverBase), new DelegateResolver(resultAction));
+            var descriptor = ServiceDescriptor.Singleton(typeof(ResultResolverBase), new DelegateResolver(resultAction));
 
             collection.TryAddEnumerable(descriptor);
             collection.TryAddSingleton<CommandFinalizer>();
@@ -120,14 +120,14 @@ namespace Commands.Helpers
         /// <param name="resultAction"></param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection TryAddResolver(this IServiceCollection collection,
-            [DisallowNull] Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
+            [DisallowNull] Func<ConsumerBase, IRunResult, IServiceProvider, ValueTask> resultAction)
         {
             if (resultAction == null)
             {
                 ThrowHelpers.ThrowInvalidArgument(resultAction);
             }
 
-            var descriptor = ServiceDescriptor.Singleton(typeof(ResolverBase), new AsyncDelegateResolver(resultAction));
+            var descriptor = ServiceDescriptor.Singleton(typeof(ResultResolverBase), new AsyncDelegateResolver(resultAction));
 
             collection.TryAddEnumerable(descriptor);
             collection.TryAddSingleton<CommandFinalizer>();
@@ -144,7 +144,7 @@ namespace Commands.Helpers
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection ConfigureCommands(this IServiceCollection collection)
         {
-            return collection.ConfigureCommands<CommandManager>(null);
+            return collection.ConfigureCommands<CommandManager>(x => { });
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace Commands.Helpers
         /// <param name="contextDelegate">Configures the context responsible for determining the build process.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection ConfigureCommands(this IServiceCollection collection,
-            Action<BuildingContext> contextDelegate)
+            Action<BuildOptions> contextDelegate)
         {
             collection.ConfigureCommands<CommandManager>(contextDelegate);
 
@@ -169,10 +169,10 @@ namespace Commands.Helpers
         /// <param name="contextDelegate">Configures the context responsible for determining the build process.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         public static IServiceCollection ConfigureCommands<T>(this IServiceCollection collection,
-            Action<BuildingContext> contextDelegate)
+            Action<BuildOptions> contextDelegate)
             where T : CommandManager
         {
-            var configuration = new BuildingContext();
+            var configuration = new BuildOptions();
 
             contextDelegate?.Invoke(configuration);
 
@@ -190,7 +190,7 @@ namespace Commands.Helpers
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IServiceCollection ConfigureCommands<T>(this IServiceCollection collection,
-            BuildingContext context)
+            BuildOptions context)
             where T : CommandManager
         {
             collection.TryAddSingleton<CommandFinalizer>();
@@ -217,7 +217,7 @@ namespace Commands.Helpers
         /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static IServiceCollection TryAddModules(this IServiceCollection collection,
-            BuildingContext context)
+            BuildOptions context)
         {
             var rootType = typeof(ModuleBase);
 

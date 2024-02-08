@@ -37,22 +37,30 @@ namespace Commands.Core
         public CommandAttribute([DisallowNull] string name, params string[] aliases)
         {
             if (string.IsNullOrWhiteSpace(name))
+            {
                 ThrowHelpers.ThrowInvalidArgument(name);
+            }
 
             var arr = new string[aliases.Length + 1];
             for (int i = 0; i < aliases.Length; i++)
             {
                 if (string.IsNullOrWhiteSpace(aliases[i]))
+                {
                     ThrowHelpers.ThrowInvalidArgument(aliases);
+                }
 
                 if (arr.Contains(aliases[i]))
+                {
                     ThrowHelpers.NotDistinct(aliases);
+                }
 
                 arr[i + 1] = aliases[i];
             }
 
             if (arr.Contains(name))
+            {
                 ThrowHelpers.NotDistinct(aliases);
+            }
 
             arr[0] = name;
 

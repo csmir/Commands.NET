@@ -4,13 +4,13 @@ using System.Diagnostics.CodeAnalysis;
 namespace Commands.Resolvers
 {
     internal sealed class DelegateResolver(
-        [DisallowNull] Action<ConsumerBase, ICommandResult, IServiceProvider> action)
-        : ResolverBase
+        [DisallowNull] Action<ConsumerBase, IRunResult, IServiceProvider> action)
+        : ResultResolverBase
     {
-        private readonly Action<ConsumerBase, ICommandResult, IServiceProvider> _action = action;
+        private readonly Action<ConsumerBase, IRunResult, IServiceProvider> _action = action;
 
         public override ValueTask EvaluateAsync(
-            ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ConsumerBase consumer, IRunResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             _action(consumer, result, services);
 

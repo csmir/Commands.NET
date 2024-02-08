@@ -14,7 +14,7 @@ var collection = new ServiceCollection()
     .AddLogging(configure =>
     {
         configure.AddSimpleConsole();
-        configure.SetMinimumLevel(LogLevel.Information);
+        configure.SetMinimumLevel(LogLevel.Critical);
     });
 
 var services = collection.BuildServiceProvider();
@@ -27,6 +27,6 @@ while (true)
 
     await framework.TryExecuteAsync(new ConsumerBase(), input, new()
     {
-        AsyncApproach = AsyncApproach.Discard
+        AsyncMode = AsyncMode.Discard
     });
 }

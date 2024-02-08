@@ -32,9 +32,9 @@ namespace Commands.Helpers
         }
 
         public static async Task<ConvertResult[]> RecursiveConvertAsync(this IArgument[] param,
-            ConsumerBase consumer, IServiceProvider services, object[] args, int index, Core.RequestContext context)
+            ConsumerBase consumer, object[] args, int index, CommandOptions options)
         {
-            static async ValueTask<ConvertResult> ConvertAsync(IArgument param, ConsumerBase consumer, IServiceProvider services, object arg, RequestContext context)
+            static async ValueTask<ConvertResult> ConvertAsync(IArgument param, ConsumerBase consumer, object arg, CommandOptions options)
             {
                 if (param.IsNullable && arg is null or "null" or "nothing")
                     return new(value: null);
@@ -42,7 +42,7 @@ namespace Commands.Helpers
                 if (param.Type == typeof(string) || param.Type == typeof(object))
                     return new(value: arg);
 
-                return await param.Converter.ObjectEvaluateAsync(consumer, param, arg, services, context.CancellationToken);
+                return await param.Converter.ObjectEvaluateAsync(consumer, param, arg, options.Scope.ServiceProvider, options.CancellationToken);
             }
 
             var results = new ConvertResult[param.Length];
@@ -57,7 +57,7 @@ namespace Commands.Helpers
                     if (parameter.Type == typeof(string))
                         results[i] = new(input);
                     else
-                        results[i] = await ConvertAsync(parameter, consumer, services, input, context);
+                        results[i] = await ConvertAsync(parameter, consumer, input, options);
 
                     break;
                 }
@@ -70,7 +70,7 @@ namespace Commands.Helpers
 
                 if (parameter is ComplexArgumentInfo complex)
                 {
-                    var result = await complex.Arguments.RecursiveConvertAsync(consumer, services, args, index, context);
+                    var result = await complex.Arguments.RecursiveConvertAsync(consumer, args, index, options);
 
                     index += result.Length;
 
@@ -89,7 +89,7 @@ namespace Commands.Helpers
                     continue;
                 }
 
-                results[i] = await ConvertAsync(parameter, consumer, services, args[index], context);
+                results[i] = await ConvertAsync(parameter, consumer, args[index], options);
                 index++;
             }
 

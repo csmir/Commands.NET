@@ -7,7 +7,7 @@ namespace Commands.Core
     ///     The result of a search operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("Success = {Success()}")]
-    public readonly struct SearchResult : ICommandResult
+    public readonly struct SearchResult : IRunResult
     {
         /// <inheritdoc />
         public Exception Exception { get; } = null;

@@ -12,6 +12,18 @@ namespace Commands.Helpers
     public static class ThrowHelpers
     {
         /// <summary>
+        ///     Throws <see cref="ArgumentException"/> for regex match failure.
+        /// </summary>
+        /// <param name="value">The value for which to throw.</param>
+        /// <param name="arg"></param>
+        /// <exception cref="ArgumentException"></exception>
+        public static void ThrowInvalidNaming(
+            string value, [CallerArgumentExpression(nameof(value))] string arg = null)
+        {
+            throw new ArgumentException("Value does not match expression.", arg);
+        }
+
+        /// <summary>
         ///     Throws <see cref="InvalidOperationException"/> for any use.
         /// </summary>
         /// <param name="failureMessage">The message to throw.</param>

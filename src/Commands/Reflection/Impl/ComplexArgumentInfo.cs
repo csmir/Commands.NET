@@ -1,4 +1,5 @@
-﻿using Commands.Helpers;
+﻿using Commands.Core;
+using Commands.Helpers;
 using Commands.TypeConverters;
 using System.Reflection;
 
@@ -51,7 +52,7 @@ namespace Commands.Reflection
         public ConstructorInfo Constructor { get; }
 
         internal ComplexArgumentInfo(
-            ParameterInfo parameterInfo, IDictionary<Type, TypeConverterBase> converters)
+            ParameterInfo parameterInfo, BuildOptions options)
         {
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);
@@ -73,7 +74,7 @@ namespace Commands.Reflection
                 IsOptional = false;
 
             var constructor = Type.GetConstructors()[0];
-            var parameters = constructor.GetParameters(converters);
+            var parameters = constructor.GetParameters(options);
 
             if (parameters.Length == 0)
             {

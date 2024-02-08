@@ -9,7 +9,7 @@ namespace Commands.Conditions
     ///     An attribute that defines that a check should succeed before a command can be executed.
     /// </summary>
     /// <remarks>
-    ///     The <see cref="EvaluateAsync(ConsumerBase, ICommandResult, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
+    ///     The <see cref="EvaluateAsync(ConsumerBase, IRunResult, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
     ///     Custom implementations of <see cref="PostconditionAttribute"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
@@ -29,14 +29,14 @@ namespace Commands.Conditions
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
         public abstract ValueTask<ConditionResult> EvaluateAsync(
-            ConsumerBase context, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken);
+            ConsumerBase context, IRunResult result, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Creates a new <see cref="ConditionResult"/> representing a failed evaluation.
         /// </summary>
         /// <param name="exception">The exception that caused the evaluation to fail.</param>
         /// <returns>A <see cref="ConditionResult"/> representing the failed evaluation.</returns>
-        public static ConditionResult Error([DisallowNull] Exception exception)
+        protected ConditionResult Error([DisallowNull] Exception exception)
         {
             if (exception == null)
                 ThrowHelpers.ThrowInvalidArgument(exception);
@@ -53,7 +53,7 @@ namespace Commands.Conditions
         /// </summary>
         /// <param name="error">The error that caused the evaluation to fail.</param>
         /// <returns>A <see cref="ConditionResult"/> representing the failed evaluation.</returns>
-        public virtual ConditionResult Error([DisallowNull] string error)
+        protected ConditionResult Error([DisallowNull] string error)
         {
             if (string.IsNullOrEmpty(error))
                 ThrowHelpers.ThrowInvalidArgument(error);
@@ -65,7 +65,7 @@ namespace Commands.Conditions
         ///     Creates a new <see cref="ConditionResult"/> representing a successful evaluation.
         /// </summary>
         /// <returns>A <see cref="ConditionResult"/> representing the successful evaluation.</returns>
-        public virtual ConditionResult Success()
+        protected ConditionResult Success()
         {
             return new();
         }

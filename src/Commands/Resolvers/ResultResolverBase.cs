@@ -8,7 +8,7 @@ namespace Commands.Resolvers
     /// <remarks>
     ///     Implementing this type allows you to treat result data and scope finalization, regardless on whether the command execution succeeded or not.
     /// </remarks>
-    public abstract class ResolverBase
+    public abstract class ResultResolverBase
     {
         /// <summary>
         ///     Evaluates the post-execution data, carrying result data, consumer data and the scoped <see cref="IServiceProvider"/> for the current execution.
@@ -19,6 +19,6 @@ namespace Commands.Resolvers
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/>.</returns>
         public abstract ValueTask EvaluateAsync(
-            ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken);
+            ConsumerBase consumer, IRunResult result, IServiceProvider services, CancellationToken cancellationToken);
     }
 }

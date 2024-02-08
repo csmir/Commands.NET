@@ -9,12 +9,12 @@ namespace Commands.Helpers
     internal static class ReflectionHelpers
     {
         public static IEnumerable<ModuleInfo> BuildComponents(
-            IEnumerable<TypeConverterBase> converters, BuildingContext context)
+            IEnumerable<TypeConverterBase> converters, BuildOptions options)
         {
-            var unionConverters = TypeConverterBase.BuildDefaults().UnionBy(converters, x => x.Type).ToDictionary(x => x.Type, x => x);
+            options.SetKeyedConverters(converters);
 
             var rootType = typeof(ModuleBase);
-            foreach (var assembly in context.Assemblies)
+            foreach (var assembly in options.Assemblies)
             {
                 foreach (var type in assembly.GetTypes())
                 {
@@ -22,14 +22,37 @@ namespace Commands.Helpers
                         && !type.IsAbstract
                         && !type.ContainsGenericParameters)
                     {
-                        yield return new ModuleInfo(type, unionConverters);
+                        var aliases = Array.Empty<string>();
+
+                        foreach (var attribute in type.GetCustomAttributes(true))
+                        {
+                            if (attribute is GroupAttribute gattribute)
+                            {
+                                foreach (var alias in gattribute.Aliases)
+                                {
+                                    if (!options.NamingRegex.IsMatch(alias))
+                                    {
+                                        if (options.ThrowOnMatchFailure)
+                                        {
+                                            ThrowHelpers.ThrowInvalidNaming(alias);
+                                        }
+
+                                        continue;
+                                    }
+                                }
+
+                                aliases = gattribute.Aliases;
+                            }
+                        }
+
+                        yield return new ModuleInfo(type, null, aliases, options);
                     }
                 }
             }
         }
 
         public static IEnumerable<ModuleInfo> GetModules(
-            ModuleInfo module, IDictionary<Type, TypeConverterBase> converters)
+            ModuleInfo module, BuildOptions options)
         {
             foreach (var group in module.Type.GetNestedTypes())
             {
@@ -37,13 +60,26 @@ namespace Commands.Helpers
                 {
                     if (attribute is GroupAttribute gattribute)
                     {
-                        yield return new ModuleInfo(group, converters, module, gattribute.Name, gattribute.Aliases);
+                        foreach (var alias in gattribute.Aliases)
+                        {
+                            if (!options.NamingRegex.IsMatch(alias))
+                            {
+                                if (options.ThrowOnMatchFailure)
+                                {
+                                    ThrowHelpers.ThrowInvalidNaming(alias);
+                                }
+
+                                continue;
+                            }
+                        }
+
+                        yield return new ModuleInfo(group, module, gattribute.Aliases, options);
                     }
                 }
             }
         }
 
-        public static IEnumerable<CommandInfo> GetCommands(ModuleInfo module, IDictionary<Type, TypeConverterBase> typeReaders)
+        public static IEnumerable<CommandInfo> GetCommands(ModuleInfo module, BuildOptions options)
         {
             foreach (var method in module.Type.GetMethods())
             {
@@ -54,6 +90,19 @@ namespace Commands.Helpers
                 {
                     if (attribute is CommandAttribute cmd)
                     {
+                        foreach (var alias in cmd.Aliases)
+                        {
+                            if (!options.NamingRegex.IsMatch(alias))
+                            {
+                                if (options.ThrowOnMatchFailure)
+                                {
+                                    ThrowHelpers.ThrowInvalidNaming(alias);
+                                }
+
+                                continue;
+                            }
+                        }
+
                         aliases = cmd.Aliases;
                     }
                 }
@@ -63,23 +112,23 @@ namespace Commands.Helpers
                     continue;
                 }
 
-                yield return new CommandInfo(module, method, aliases, typeReaders);
+                yield return new CommandInfo(module, method, aliases, options);
             }
         }
 
-        public static IConditional[] GetComponents(this ModuleInfo module, IDictionary<Type, TypeConverterBase> typeReaders)
+        public static IConditional[] GetComponents(this ModuleInfo module, BuildOptions options)
         {
-            var commands = (IEnumerable<IConditional>)GetCommands(module, typeReaders)
+            var commands = (IEnumerable<IConditional>)GetCommands(module, options)
                 .OrderBy(x => x.Arguments.Length);
 
-            var modules = (IEnumerable<IConditional>)GetModules(module, typeReaders)
+            var modules = (IEnumerable<IConditional>)GetModules(module, options)
                 .OrderBy(x => x.Components.Length);
 
             return commands.Concat(modules)
                 .ToArray();
         }
 
-        public static IArgument[] GetParameters(this MethodBase method, IDictionary<Type, TypeConverterBase> typeReaders)
+        public static IArgument[] GetParameters(this MethodBase method, BuildOptions options)
         {
             var parameters = method.GetParameters();
 
@@ -88,11 +137,11 @@ namespace Commands.Helpers
             {
                 if (parameters[i].GetCustomAttributes().Any(x => x is ComplexAttribute))
                 {
-                    arr[i] = new ComplexArgumentInfo(parameters[i], typeReaders);
+                    arr[i] = new ComplexArgumentInfo(parameters[i], options);
                 }
                 else
                 {
-                    arr[i] = new ArgumentInfo(parameters[i], typeReaders);
+                    arr[i] = new ArgumentInfo(parameters[i], options);
                 }
             }
 

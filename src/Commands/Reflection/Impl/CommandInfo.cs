@@ -57,13 +57,13 @@ namespace Commands.Reflection
         public MethodInfo Target { get; }
 
         internal CommandInfo(
-            ModuleInfo module, MethodInfo method, string[] aliases, IDictionary<Type, TypeConverterBase> converters)
+            ModuleInfo module, MethodInfo method, string[] aliases, BuildOptions options)
         {
             var attributes = method.GetAttributes(true);
             var preconditions = attributes.GetPreconditions();
             var postconditions = attributes.GetPostconditions();
 
-            var parameters = method.GetParameters(converters);
+            var parameters = method.GetParameters(options);
 
             var (minLength, maxLength) = parameters.GetLength();
 
@@ -73,11 +73,6 @@ namespace Commands.Reflection
                 {
                     ThrowHelpers.ThrowInvalidOperation($"{nameof(RemainderAttribute)} can only exist on the last parameter of a method.");
                 }
-            }
-
-            if (method.ReturnType == typeof(Task))
-            {
-
             }
 
             Priority = attributes.SelectFirstOrDefault<PriorityAttribute>()?.Priority ?? 0;

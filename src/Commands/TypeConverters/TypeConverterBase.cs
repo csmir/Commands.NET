@@ -71,7 +71,7 @@ namespace Commands.TypeConverters
         /// </summary>
         /// <param name="exception">The exception that caused the evaluation to fail.</param>
         /// <returns>A <see cref="ConvertResult"/> representing the failed evaluation.</returns>
-        public virtual ConvertResult Error([DisallowNull] Exception exception)
+        protected ConvertResult Error([DisallowNull] Exception exception)
         {
             if (exception == null)
             {
@@ -90,7 +90,7 @@ namespace Commands.TypeConverters
         /// </summary>
         /// <param name="error">The error that caused the evaluation to fail.</param>
         /// <returns>A <see cref="ConvertResult"/> representing the failed evaluation.</returns>
-        public virtual ConvertResult Error([DisallowNull] string error)
+        protected ConvertResult Error([DisallowNull] string error)
         {
             if (string.IsNullOrEmpty(error))
             {
@@ -105,7 +105,7 @@ namespace Commands.TypeConverters
         /// </summary>
         /// <param name="value">The value converted from a raw argument into the target type of this converter.</param>
         /// <returns>A <see cref="ConvertResult"/> representing the successful evaluation.</returns>
-        public virtual ConvertResult Success(object value)
+        protected ConvertResult Success(object value)
         {
             return new(value);
         }

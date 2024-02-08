@@ -6,7 +6,7 @@ namespace Commands.Core
     ///     The result of a check operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("Success = {Success()}")]
-    public readonly struct ConditionResult : ICommandResult
+    public readonly struct ConditionResult : IRunResult
     {
         /// <inheritdoc />
         public Exception Exception { get; } = null;

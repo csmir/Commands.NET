@@ -1,4 +1,5 @@
 ﻿using Commands.Conditions;
+using Commands.Core;
 using Commands.Helpers;
 using Commands.TypeConverters;
 
@@ -43,7 +44,7 @@ namespace Commands.Reflection
         public ModuleInfo Root { get; }
 
         internal ModuleInfo(
-            Type type, IDictionary<Type, TypeConverterBase> converters, ModuleInfo root = null, string expectedName = null, string[] aliases = null)
+            Type type, ModuleInfo root, string[] aliases, BuildOptions options)
         {
             var attributes = type.GetAttributes(true);
             var preconditions = attributes.GetPreconditions();
@@ -56,10 +57,18 @@ namespace Commands.Reflection
             Preconditions = preconditions;
             PostConditions = postconditions;
 
-            Components = this.GetComponents(converters);
+            Components = this.GetComponents(options);
 
-            Name = expectedName ?? type.Name;
-            Aliases = aliases ?? [Name];
+            if (aliases.Length > 0)
+            {
+                Name = aliases[0];
+            }
+            else
+            {
+                Name = type.Name;
+            }
+
+            Aliases = aliases;
         }
 
         /// <inheritdoc />

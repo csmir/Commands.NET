@@ -21,7 +21,9 @@ namespace Commands.Core
         public DescriptionAttribute([DisallowNull] string description)
         {
             if (string.IsNullOrWhiteSpace(description))
+            {
                 ThrowHelpers.ThrowInvalidArgument(description);
+            }
 
             Description = description;
         }

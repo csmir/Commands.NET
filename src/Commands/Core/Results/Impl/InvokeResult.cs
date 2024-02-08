@@ -7,7 +7,7 @@ namespace Commands.Core
     ///     The result of an invocation operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("Success = {Success()}")]
-    public readonly struct InvokeResult : ICommandResult
+    public readonly struct InvokeResult : IRunResult
     {
         /// <inheritdoc />
         public Exception Exception { get; } = null;

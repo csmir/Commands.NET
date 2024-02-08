@@ -20,7 +20,7 @@ namespace Commands.Core
     ///         </item>
     ///     </list>
     /// </remarks>
-    public enum AsyncApproach
+    public enum AsyncMode
     {
         /// <summary>
         ///     The default option.

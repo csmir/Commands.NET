@@ -7,7 +7,7 @@
     ///     This interface encompasses a number of results that each represent a different step in the execution pipeline.
     ///     To deduce which 
     /// </remarks>
-    public interface ICommandResult
+    public interface IRunResult
     {
         /// <summary>
         ///     Gets the exception that represents the reason and context of a failed operation.
