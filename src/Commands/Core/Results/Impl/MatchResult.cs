@@ -12,6 +12,15 @@ namespace Commands.Core
         /// <inheritdoc />
         public Exception Exception { get; } = null;
 
+        /// <inheritdoc />
+        public bool Success
+        {
+            get
+            {
+                return Exception == null;
+            }
+        }
+
         /// <summary>
         ///     Gets the command known during the matching operation.
         /// </summary>
@@ -30,12 +39,6 @@ namespace Commands.Core
             Command = command;
 
             Exception = exception;
-        }
-
-        /// <inheritdoc />
-        public bool Success()
-        {
-            return Exception == null;
         }
 
         /// <inheritdoc />

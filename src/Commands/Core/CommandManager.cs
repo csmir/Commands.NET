@@ -5,8 +5,6 @@ using Commands.TypeConverters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using System.Text;
-using System.Text.Json;
 
 [assembly: CLSCompliant(true)]
 
@@ -30,9 +28,9 @@ namespace Commands.Core
     public class CommandManager(
         IServiceProvider services, ILoggerFactory logFactory, CommandFinalizer finalizer, IEnumerable<TypeConverterBase> converters, BuildOptions options)
     {
-        private long _scopeId = 0;
+        private long scopeid = 0;
 
-        private readonly object _searchLock = new();
+        private readonly object s_lock = new();
 
         private readonly CommandFinalizer _finalizer = finalizer;
         private readonly IServiceProvider _services = services;
@@ -104,9 +102,9 @@ namespace Commands.Core
             }
 
             // recursively search for commands in the execution.
-            lock (_searchLock)
+            lock (s_lock)
             {
-                return Commands.RecursiveSearch(args, 0);
+                return Commands.SearchMany(args, 0);
             }
         }
 
@@ -121,108 +119,114 @@ namespace Commands.Core
             T consumer, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
+            IRunResult result = null;
+
             var searches = Search(args);
 
             options.Scope ??= _services.CreateAsyncScope();
-            options.Logger ??= _logFactory.CreateLogger($"Commands.Request[{Interlocked.Increment(ref _scopeId)}]");
+            options.Logger ??= _logFactory.CreateLogger($"Commands.Request[{Interlocked.Increment(ref scopeid)}]");
 
-            options.Logger.LogDebug("Resolved workflow: {}", options.AsyncMode);
+            options.Logger.LogDebug("Scope started. Resolved mode: {}", options.AsyncMode);
 
-            var c = 0;
-
-            foreach (var search in searches.OrderByDescending(x => x.Command.Priority))
+            foreach (var search in searches.OrderByDescending(x => x.Component.Priority))
             {
-                c++;
-
-                var match = await MatchAsync(consumer, search, args, options);
-
-                // enter the invocation logic when a match is successful.
-                if (match.Success())
+                if (search.Component is CommandInfo command)
                 {
-                    var result = await InvokeAsync(consumer, match, options);
+                    var match = await MatchAsync(consumer, command, search.SearchHeight, args, options);
 
-                    await _finalizer.FinalizeAsync(consumer, result, options);
+                    // enter the invocation logic when a match is successful.
+                    if (match.Success)
+                    {
+                        result = await InvokeAsync(consumer, match, options);
+                        break;
+                    }
 
-                    return;
+                    // We set the failed match if it was not yet set.
+                    result ??= match;
+
+                    continue;
                 }
 
-                options.TrySetResult(match);
+                // We set the sub module if it was not yet set.
+                result ??= search;
+
+                continue;
             }
 
-            await _finalizer.FinalizeAsync(consumer, null, options);
+            // we set the failed search if it was not yet set.
+            result ??= new SearchResult(SearchException.NotFound());
+
+            await _finalizer.FinalizeAsync(consumer, result, options);
         }
 
         /// <summary>
-        ///     Matches the provided <paramref name="search"/> based on the provided <paramref name="args"/> and returns the result.
+        ///     Matches the provided <paramref name="command"/> based on the provided <paramref name="args"/> and returns the result.
         /// </summary>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="search"></param>
+        /// <param name="command">A command intended to be matched.</param>
+        /// <param name="argHeight">The height at which the command name ends and argument input starts.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the matching process.</returns>
         protected virtual async ValueTask<MatchResult> MatchAsync<T>(
-            T consumer, SearchResult search, object[] args, CommandOptions options)
+            T consumer, CommandInfo command, int argHeight, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
-            options.Logger.LogDebug("Match process starting on search {}", search.Command);
-
             // check command preconditions.
-            var check = await CheckAsync(consumer, search, options);
+            var check = await CheckAsync(consumer, command, options);
 
             // verify check success, if not, return the failure.
-            if (!check.Success())
-                return new(search.Command, new MatchException("Command failed to reach execution. View inner exception for more details.", check.Exception));
+            if (!check.Success)
+                return new(command, MatchException.Failed(check.Exception));
 
             // read the command parameters in right order.
-            var readResult = await ConvertAsync(consumer, search, args, options);
+            var readResult = await ConvertAsync(consumer, command, argHeight, args, options);
 
             // exchange the reads for result, verifying successes in the process.
             var reads = new object[readResult.Length];
             for (int i = 0; i < readResult.Length; i++)
             {
                 // check for read success.
-                if (!readResult[i].Success())
-                    return new(search.Command, readResult[i].Exception);
+                if (!readResult[i].Success)
+                    return new(command, readResult[i].Exception);
 
                 reads[i] = readResult[i].Value;
             }
 
             // return successful match if execution reaches here.
-            return new(search.Command, reads);
+            return new(command, reads);
         }
 
         /// <summary>
-        ///     Evaluates the preconditions of provided <paramref name="result"/> and returns the result.
+        ///     Evaluates the preconditions of provided <paramref name="command"/> and returns the result.
         /// </summary>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="result">The found command intended to be evaluated.</param>
+        /// <param name="command">The found command intended to be evaluated.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the checking process.</returns>
         protected virtual async ValueTask<ConditionResult> CheckAsync<T>(
-            T consumer, SearchResult result, CommandOptions options)
+            T consumer, CommandInfo command, CommandOptions options)
             where T : ConsumerBase
         {
             if (options.SkipPreconditions)
             {
-                options.Logger.LogDebug("Precondition evaluation skipped for {}", result.Command);
+                options.Logger.LogDebug("Precondition evaluation skipped for {}", command);
 
                 return new(null);
             }
 
-            options.Logger.LogDebug("Precondition evaluation starting for {}", result.Command);
-
-            foreach (var precon in result.Command.Preconditions)
+            foreach (var precon in command.Preconditions)
             {
-                var checkResult = await precon.EvaluateAsync(consumer, result, options.Scope.ServiceProvider, options.CancellationToken);
+                var checkResult = await precon.EvaluateAsync(consumer, command, options.Scope.ServiceProvider, options.CancellationToken);
 
-                if (!checkResult.Success())
+                if (!checkResult.Success)
                 {
-                    options.Logger.LogError("Precondition evaluation failed for {}", result.Command);
+                    options.Logger.LogError("Precondition evaluation failed for {}", command);
                     return checkResult;
                 }
             }
 
-            options.Logger.LogInformation("Precondition evaluation succeeded for {}", result.Command);
+            options.Logger.LogInformation("Precondition evaluation succeeded for {}", command);
 
             return new(null);
         }
@@ -244,13 +248,11 @@ namespace Commands.Core
                 return new(null);
             }
 
-            options.Logger.LogDebug("Postcondition evaluation starting for {}", result.Command);
-
             foreach (var postcon in result.Command.PostConditions)
             {
                 var checkResult = await postcon.EvaluateAsync(consumer, result, options.Scope.ServiceProvider, options.CancellationToken);
 
-                if (!checkResult.Success())
+                if (!checkResult.Success)
                 {
                     options.Logger.LogError("Postcondition evaluation failed for {}", result.Command);
                     return checkResult;
@@ -263,57 +265,56 @@ namespace Commands.Core
         }
 
         /// <summary>
-        ///     Converts the provided <paramref name="search"/> based on the provided <paramref name="args"/> and returns the result.
+        ///     Converts the provided <paramref name="command"/> based on the provided <paramref name="args"/> and returns the result.
         /// </summary>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="search">The result of the search intended to be converted.</param>
+        /// <param name="command">A command intended to be converted.</param>
+        /// <param name="argHeight">The height at which the command name ends and argument input starts.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the results of the conversion process.</returns>
         protected virtual async ValueTask<ConvertResult[]> ConvertAsync<T>(
-            T consumer, SearchResult search, object[] args, CommandOptions options)
+            T consumer, CommandInfo command, int argHeight, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
             // skip if no parameters exist.
-            if (!search.Command.HasArguments)
+            if (!command.HasArguments)
             {
-                options.Logger.LogDebug("Argument evaluation skipped for {}", search.Command);
+                options.Logger.LogDebug("Argument evaluation skipped for {}", command);
                 return [];
             }
 
-            options.Logger.LogDebug("Argument evaluation starting for {}", search.Command);
-
             // determine height of search to discover command name.
-            var length = args.Length - search.SearchHeight;
+            var length = args.Length - argHeight;
 
             // check if input equals command length.
-            if (search.Command.MaxLength == length)
+            if (command.MaxLength == length)
             {
-                return await search.Command.Arguments.RecursiveConvertAsync(consumer, args[^length..], 0, options);
+                return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
             }
 
             // check if input is longer than command, but remainder to concatenate.
-            if (search.Command.MaxLength <= length && search.Command.HasRemainder)
+            if (command.MaxLength <= length && command.HasRemainder)
             {
-                return await search.Command.Arguments.RecursiveConvertAsync(consumer, args[^length..], 0, options);
+                return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
             }
 
             // check if input is shorter than command, but optional parameters to replace.
-            if (search.Command.MaxLength > length && search.Command.MinLength <= length)
+            if (command.MaxLength > length && command.MinLength <= length)
             {
-                return await search.Command.Arguments.RecursiveConvertAsync(consumer, args[^length..], 0, options);
+                return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
             }
 
-            options.Logger.LogError("Argument evaluation failed for {}", search.Command);
+            options.Logger.LogError("Argument evaluation failed for {}", command);
 
             // check if input is too short.
-            if (search.Command.MinLength > length)
+            if (command.MinLength > length)
             {
-                return [new ConvertResult(exception: new ConvertException("Query is too short for best match."))];
+                return [new ConvertResult(exception: ConvertException.TooShort())];
             }
 
             // input is too long.
-            return [new ConvertResult(exception: new ConvertException("Query is too long for best match."))];
+            return [new ConvertResult(exception: ConvertException.TooLong())];
         }
 
         /// <summary>
@@ -350,9 +351,9 @@ namespace Commands.Core
 
                 var checkResult = await CheckAsync(consumer, result, options);
 
-                if (!checkResult.Success())
+                if (!checkResult.Success)
                 {
-                    return new InvokeResult(match.Command, new RunException("Command failed to finalize execution. View inner exception for more details.", checkResult.Exception));
+                    return new InvokeResult(match.Command, RunException.Failed(checkResult.Exception));
                 }
 
                 return result;

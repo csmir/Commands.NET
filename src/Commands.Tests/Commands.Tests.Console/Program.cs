@@ -8,7 +8,7 @@ var collection = new ServiceCollection()
     .ConfigureCommands()
     .TryAddResolver((context, result, services) =>
     {
-        if (!result.Success())
+        if (!result.Success)
             Console.WriteLine(result);
     })
     .AddLogging(configure =>

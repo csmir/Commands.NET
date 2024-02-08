@@ -9,6 +9,8 @@ namespace Commands.Core
     /// </summary>
     public class BuildOptions()
     {
+        const string DEFAULT_REGEX = @"^[a-z0-9_-]*$";
+
         private Dictionary<Type, TypeConverterBase> _keyedConverters;
 
         /// <summary>
@@ -36,7 +38,7 @@ namespace Commands.Core
         /// <remarks>
         ///     Default: <c>@"^[a-z0-9_-]*$"</c>
         /// </remarks>
-        public Regex NamingRegex { get; set; } = new(@"^[a-z0-9_-]*$", RegexOptions.Compiled);
+        public Regex NamingRegex { get; set; } = new(DEFAULT_REGEX, RegexOptions.Compiled);
 
         internal Dictionary<Type, TypeConverterBase> KeyedConverters
         {

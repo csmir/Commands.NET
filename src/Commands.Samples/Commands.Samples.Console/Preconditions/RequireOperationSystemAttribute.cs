@@ -2,6 +2,7 @@
 
 using Commands.Conditions;
 using Commands.Core;
+using Commands.Reflection;
 
 namespace Commands.Samples
 {
@@ -9,7 +10,7 @@ namespace Commands.Samples
     {
         public PlatformID Platform { get; } = platform;
 
-        public override ValueTask<ConditionResult> EvaluateAsync(ConsumerBase context, SearchResult search, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConditionResult> EvaluateAsync(ConsumerBase context, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Environment.OSVersion.Platform == Platform)
                 return ValueTask.FromResult(Success());

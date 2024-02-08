@@ -18,6 +18,11 @@ namespace Commands.Reflection
         public bool IsQueryable { get; }
 
         /// <summary>
+        ///     Gets the priority of the component.
+        /// </summary>
+        public byte Priority { get; }
+
+        /// <summary>
         ///     Gets an array of <see cref="PreconditionAttribute"/>'s defined atop this component.
         /// </summary>
         public PreconditionAttribute[] Preconditions { get; }

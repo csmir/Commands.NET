@@ -8,6 +8,11 @@
     public sealed class RunException(string message, Exception innerException = null)
         : ExecutionException(message, innerException)
     {
+        const string RUN_FAILED = "Command failed to finalize execution. View inner exception for more details.";
 
+        internal static RunException Failed(Exception innerException)
+        {
+            return new(RUN_FAILED, innerException);
+        }
     }
 }

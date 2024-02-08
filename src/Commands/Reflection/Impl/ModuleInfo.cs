@@ -1,8 +1,6 @@
 ﻿using Commands.Conditions;
 using Commands.Core;
 using Commands.Helpers;
-using Commands.TypeConverters;
-using System.Text.RegularExpressions;
 
 namespace Commands.Reflection
 {
@@ -29,6 +27,9 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public PostconditionAttribute[] PostConditions { get; }
 
+        /// <inheritdoc />
+        public byte Priority { get; }
+
         /// <summary>
         ///     Gets an array containing nested modules or commands inside this module.
         /// </summary>
@@ -50,6 +51,8 @@ namespace Commands.Reflection
         internal ModuleInfo(
             Type type, ModuleInfo root, string[] aliases, BuildOptions options)
         {
+            Priority = 0;
+
             var attributes = type.GetAttributes(true);
             var preconditions = attributes.GetPreconditions();
             var postconditions = attributes.GetPostconditions();

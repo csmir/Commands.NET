@@ -1,10 +1,5 @@
 ﻿using Commands.Core;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Commands.Results
 {
@@ -16,6 +11,15 @@ namespace Commands.Results
     {
         /// <inheritdoc />
         public Exception Exception { get; } = null;
+
+        /// <inheritdoc />
+        public bool Success
+        {
+            get
+            {
+                return Exception == null;
+            }
+        }
 
         internal ConsumerBase Consumer { get; } = null;
 
@@ -30,12 +34,6 @@ namespace Commands.Results
         internal SourceResult(Exception exception)
         {
             Exception = exception;
-        }
-
-        /// <inheritdoc />
-        public bool Success()
-        {
-            return Exception == null;
         }
 
         /// <inheritdoc />

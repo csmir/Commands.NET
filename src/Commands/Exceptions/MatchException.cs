@@ -8,6 +8,11 @@
     public class MatchException(string message, Exception innerException = null)
         : ExecutionException(message, innerException)
     {
+        const string MATCH_FAILED = "Command failed to reach execution. View inner exception for more details.";
 
+        internal static MatchException Failed(Exception innerException)
+        {
+            return new(MATCH_FAILED, innerException);
+        }
     }
 }

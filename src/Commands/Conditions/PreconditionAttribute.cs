@@ -1,6 +1,7 @@
 ﻿using Commands.Core;
 using Commands.Exceptions;
 using Commands.Helpers;
+using Commands.Reflection;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.Conditions
@@ -9,15 +10,13 @@ namespace Commands.Conditions
     ///     An attribute that defines that a check should succeed before a command can be executed.
     /// </summary>
     /// <remarks>
-    ///     The <see cref="EvaluateAsync(ConsumerBase, SearchResult, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
+    ///     The <see cref="EvaluateAsync(ConsumerBase, CommandInfo, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
     ///     Custom implementations of <see cref="PreconditionAttribute"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     ///     If multiple commands are found during matching, multiple sequences of preconditions will be ran to find a match that succeeds.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public abstract class PreconditionAttribute : Attribute
     {
-        const string _exHeader = "Precondition evaluation failed. View inner exception for more details.";
-
         /// <summary>
         ///     Evaluates the known data about a command at the point of pre-execution, in order to determine if it can be executed or not.
         /// </summary>
@@ -26,11 +25,11 @@ namespace Commands.Conditions
         /// </remarks>
         /// <param name="context">Context of the current execution.</param>
         /// <param name="services">The provider used to register modules and inject services.</param>
-        /// <param name="result">Information about the command currently targetted.</param>
+        /// <param name="command">Information about the command currently targetted.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
         public abstract ValueTask<ConditionResult> EvaluateAsync(
-            ConsumerBase context, SearchResult result, IServiceProvider services, CancellationToken cancellationToken);
+            ConsumerBase context, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Creates a new <see cref="ConditionResult"/> representing a failed evaluation.
@@ -46,7 +45,8 @@ namespace Commands.Conditions
             {
                 return new(checkEx);
             }
-            return new(new ConditionException(_exHeader, exception));
+
+            return new(ConditionException.FailedPre(exception));
         }
 
         /// <summary>

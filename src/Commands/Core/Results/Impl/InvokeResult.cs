@@ -12,26 +12,29 @@ namespace Commands.Core
         /// <inheritdoc />
         public Exception Exception { get; } = null;
 
+        /// <inheritdoc />
+        public bool Success
+        {
+            get
+            {
+                return Exception == null;
+            }
+        }
+
         /// <summary>
         ///     Gets the command responsible for the invocation.
         /// </summary>
         public CommandInfo Command { get; }
-
-        internal InvokeResult(CommandInfo command, Exception exception)
-        {
-            Exception = exception;
-            Command = command;
-        }
 
         internal InvokeResult(CommandInfo command)
         {
             Command = command;
         }
 
-        /// <inheritdoc />
-        public bool Success()
+        internal InvokeResult(CommandInfo command, Exception exception)
         {
-            return Exception == null;
+            Exception = exception;
+            Command = command;
         }
 
         /// <inheritdoc />

@@ -1,7 +1,6 @@
 ﻿using Commands.Conditions;
 using Commands.Core;
 using Commands.Helpers;
-using Commands.TypeConverters;
 using System.Reflection;
 
 namespace Commands.Reflection
@@ -44,9 +43,7 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public int MaxLength { get; }
 
-        /// <summary>
-        ///     Gets the priority of this command.
-        /// </summary>
+        /// <inheritdoc />
         public byte Priority { get; }
 
         /// <summary>

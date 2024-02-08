@@ -1,16 +1,11 @@
 ﻿using Commands.Resolvers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Commands.Core
 {
     public sealed class CommandRunner(
-        CommandManager manager, SourceResolverBase resolver, ILogger logger) 
+        CommandManager manager, SourceResolverBase resolver, ILogger logger)
         : IHostedService
     {
         private readonly ILogger _logger = logger;
@@ -35,7 +30,7 @@ namespace Commands.Core
             {
                 var source = await _resolver.EvaluateAsync();
 
-                if (!source.Success())
+                if (!source.Success)
                 {
                     _logger.LogWarning("Source resolver failed to succeed acquirement iteration.");
                     continue;

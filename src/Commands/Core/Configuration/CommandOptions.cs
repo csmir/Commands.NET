@@ -1,19 +1,15 @@
 ﻿using Commands.Conditions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.Core
 {
     /// <summary>
     ///     A set of options for handling command queries and determining the workflow in the command scope.
     /// </summary>
-    public sealed class CommandOptions() : IAsyncDisposable
+    public sealed class CommandOptions()
     {
-        private bool _disposed;
-
-        private ILogger _logger      = null;
-        private IRunResult _result   = null;
+        private ILogger _logger = null;
         private IServiceScope _scope = null;
 
         /// <summary>
@@ -94,50 +90,5 @@ namespace Commands.Core
         ///     Default: <see langword="false"/>
         /// </remarks>
         public bool SkipPreconditions { get; set; } = false;
-
-        internal bool TryGetResult([NotNullWhen(true)] out IRunResult result)
-        {
-            result = _result;
-
-            return _result != null;
-        }
-
-        internal void TrySetResult(IRunResult result)
-        {
-            _result ??= result;
-        }
-
-        #region Disposer
-        /// <inheritdoc />
-        public async ValueTask DisposeAsync()
-        {
-            await DisposeAsync(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private async ValueTask DisposeAsync(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    if (Scope is AsyncServiceScope scope)
-                    {
-                        await scope.DisposeAsync();
-                    }
-                    else
-                    {
-                        Scope.Dispose();
-                    }
-                }
-
-                _result = null;
-                _logger = null;
-                _scope  = null;
-
-                _disposed = true;
-            }
-        }
-        #endregion
     }
 }

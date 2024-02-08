@@ -35,8 +35,6 @@ namespace Commands.TypeConverters
     /// </remarks>
     public abstract class TypeConverterBase
     {
-        const string _exHeader = "TypeConverter failed to parse provided value as '{0}'. View inner exception for more details.";
-
         /// <summary>
         ///     Gets the type that should be converted to. This value determines what command arguments will use this converter.
         /// </summary>
@@ -57,15 +55,6 @@ namespace Commands.TypeConverters
         public abstract ValueTask<ConvertResult> EvaluateAsync(
             ConsumerBase consumer, IArgument argument, string value, IServiceProvider services, CancellationToken cancellationToken);
 
-        internal ValueTask<ConvertResult> ObjectEvaluateAsync(
-            ConsumerBase consumer, IArgument argument, object value, IServiceProvider services, CancellationToken cancellationToken)
-        {
-            if (value is string str)
-                return EvaluateAsync(consumer, argument, str, services, cancellationToken);
-
-            return EvaluateAsync(consumer, argument, value.ToString(), services, cancellationToken);
-        }
-
         /// <summary>
         ///     Creates a new <see cref="ConvertResult"/> representing a failed evaluation.
         /// </summary>
@@ -82,7 +71,7 @@ namespace Commands.TypeConverters
             {
                 return new(convertEx);
             }
-            return new(new ConvertException(string.Format(_exHeader, Type.Name), exception));
+            return new(ConvertException.Failed(Type, exception));
         }
 
         /// <summary>
@@ -117,35 +106,6 @@ namespace Commands.TypeConverters
             new TimeSpanConverter().AddTo(ref arr);
 
             return arr;
-        }
-
-        internal class EqualityComparer : IEqualityComparer<TypeConverterBase>
-        {
-            private static readonly Lazy<EqualityComparer> _i = new();
-
-            public bool Equals(TypeConverterBase x, TypeConverterBase y)
-            {
-                if (x == y)
-                    return true;
-
-                if (x.Type == y.Type)
-                    return true;
-
-                return false;
-            }
-
-            public int GetHashCode([DisallowNull] TypeConverterBase obj)
-            {
-                return obj.GetHashCode();
-            }
-
-            public static EqualityComparer Default
-            {
-                get
-                {
-                    return _i.Value;
-                }
-            }
         }
     }
 }

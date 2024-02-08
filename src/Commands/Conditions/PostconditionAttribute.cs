@@ -15,8 +15,6 @@ namespace Commands.Conditions
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public abstract class PostconditionAttribute : Attribute
     {
-        const string _exHeader = "Postcondition evaluation failed. View inner exception for more details.";
-
         /// <summary>
         ///     Evaluates the known data about a command at the point of post-execution, in order to determine if command execution was succesful or not.
         /// </summary>
@@ -45,7 +43,8 @@ namespace Commands.Conditions
             {
                 return new(checkEx);
             }
-            return new(new ConditionException(_exHeader, exception));
+
+            return new(ConditionException.FailedPost(exception));
         }
 
         /// <summary>

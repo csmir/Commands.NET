@@ -23,12 +23,12 @@ namespace Commands.Helpers
                 if (component.IsQueryable)
                 {
                     yield return component;
-                } 
+                }
                 // if this is not the case, its subcomponents will be added as top level components.
                 else foreach (var subComponent in component.Components)
-                {
-                    yield return subComponent;
-                }
+                    {
+                        yield return subComponent;
+                    }
             }
         }
 

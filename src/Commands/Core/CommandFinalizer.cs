@@ -1,6 +1,4 @@
-﻿using Commands.Exceptions;
-using Commands.Resolvers;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Commands.Resolvers;
 using Microsoft.Extensions.Logging;
 
 namespace Commands.Core
@@ -18,21 +16,14 @@ namespace Commands.Core
         internal async ValueTask FinalizeAsync(
             ConsumerBase consumer, IRunResult result, CommandOptions options)
         {
-            options.Logger.LogDebug("Finalizing execution...");
-
-            if (result == null && !options.TryGetResult(out result))
-            {
-                result = new SearchResult(new SearchException("No commands were found with the provided input."));
-            }
-
             foreach (var resolver in _resolvers)
             {
                 await resolver.EvaluateAsync(consumer, result, options.Scope.ServiceProvider, options.CancellationToken);
             }
 
-            options.Logger.LogDebug("Disposing resources...");
+            options.Logger.LogDebug("Scope complete.");
 
-            await options.DisposeAsync();
+            options.Scope.Dispose();
         }
 
         internal static CommandFinalizer Default

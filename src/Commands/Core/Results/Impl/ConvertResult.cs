@@ -11,6 +11,15 @@ namespace Commands.Core
         /// <inheritdoc />
         public Exception Exception { get; } = null;
 
+        /// <inheritdoc />
+        public bool Success
+        {
+            get
+            {
+                return Exception == null;
+            }
+        }
+
         internal object Value { get; } = null;
 
         internal ConvertResult(object value)
@@ -21,12 +30,6 @@ namespace Commands.Core
         internal ConvertResult(Exception exception)
         {
             Exception = exception;
-        }
-
-        /// <inheritdoc />
-        public bool Success()
-        {
-            return Exception == null;
         }
 
         /// <inheritdoc />

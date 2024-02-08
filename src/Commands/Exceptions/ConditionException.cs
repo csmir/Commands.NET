@@ -8,5 +8,17 @@
     public sealed class ConditionException(string message, Exception innerException = null)
         : ExecutionException(message, innerException)
     {
+        const string POSTCONDITION_FAILED = "Postcondition evaluation failed. View inner exception for more details.";
+        const string PRECONDITION_FAILED = "Precondition evaluation failed. View inner exception for more details.";
+
+        internal static ConditionException FailedPre(Exception innerException)
+        {
+            return new(PRECONDITION_FAILED, innerException);
+        }
+
+        internal static ConditionException FailedPost(Exception innerException)
+        {
+            return new(POSTCONDITION_FAILED, innerException);
+        }
     }
 }

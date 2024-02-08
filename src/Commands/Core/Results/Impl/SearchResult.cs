@@ -1,4 +1,5 @@
-﻿using Commands.Reflection;
+﻿using Commands.Exceptions;
+using Commands.Reflection;
 using System.Diagnostics;
 
 namespace Commands.Core
@@ -12,38 +13,47 @@ namespace Commands.Core
         /// <inheritdoc />
         public Exception Exception { get; } = null;
 
+        /// <inheritdoc />
+        public bool Success
+        {
+            get
+            {
+                return Exception == null;
+            }
+        }
+
         /// <summary>
         ///     Gets the command that was found for this result.
         /// </summary>
-        /// <remarks>
-        ///     Will be <see langword="null"/> if <see cref="Success"/> returns <see langword="false"/>.
-        /// </remarks>
-        public CommandInfo Command { get; } = null;
+        public IConditional Component { get; } = null;
 
         internal int SearchHeight { get; }
 
-        internal SearchResult(CommandInfo command, int srcHeight)
+        internal SearchResult(IConditional command, int srcHeight)
         {
-            Command = command;
+            Component = command;
             SearchHeight = srcHeight;
+        }
+
+        internal SearchResult(ModuleInfo module)
+        {
+            SearchHeight = 0;
+
+            Component = module;
+            Exception = SearchException.Incomplete();
         }
 
         internal SearchResult(Exception exception)
         {
-            Exception = exception;
             SearchHeight = 0;
-        }
 
-        /// <inheritdoc />
-        public bool Success()
-        {
-            return Exception == null;
+            Exception = exception;
         }
 
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"{(Command != null ? $"Command = {Command} \n" : "")}Success = {(Exception == null ? "True" : $"False \nException = {Exception}")}";
+            return $"{(Component != null ? $"Command = {Component} \n" : "")}Success = {(Exception == null ? "True" : $"False \nException = {Exception}")}";
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Commands.Core
     ///     Creates a new <see cref="PriorityAttribute"/> with provided priority.
     /// </remarks>
     /// <param name="priority">The priority of this command, which can be between 0 and 255.</param>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
     public sealed class PriorityAttribute([DisallowNull] byte priority) : Attribute
     {
         /// <summary>
