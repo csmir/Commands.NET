@@ -15,6 +15,12 @@ namespace Commands.Reflection
         public string Name { get; }
 
         /// <inheritdoc />
+        public string[] Aliases { get; }
+
+        /// <inheritdoc />
+        public bool IsQueryable { get; }
+
+        /// <inheritdoc />
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
@@ -37,9 +43,6 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public int MaxLength { get; }
-
-        /// <inheritdoc />
-        public string[] Aliases { get; }
 
         /// <summary>
         ///     Gets the priority of this command.
@@ -90,6 +93,7 @@ namespace Commands.Reflection
 
             Name = aliases[0];
             Aliases = aliases;
+            IsQueryable = true;
 
             MinLength = minLength;
             MaxLength = maxLength;

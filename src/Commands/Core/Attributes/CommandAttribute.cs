@@ -1,5 +1,6 @@
 ﻿using Commands.Helpers;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 
 namespace Commands.Core
 {
@@ -66,6 +67,17 @@ namespace Commands.Core
 
             Name = name;
             Aliases = arr;
+        }
+
+        internal void ValidateAliases(Regex regex)
+        {
+            foreach (var alias in Aliases)
+            {
+                if (!regex.IsMatch(alias))
+                {
+                    ThrowHelpers.ThrowInvalidNaming(alias);
+                }
+            }
         }
     }
 }

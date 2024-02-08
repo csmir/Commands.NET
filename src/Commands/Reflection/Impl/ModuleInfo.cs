@@ -2,6 +2,7 @@
 using Commands.Core;
 using Commands.Helpers;
 using Commands.TypeConverters;
+using System.Text.RegularExpressions;
 
 namespace Commands.Reflection
 {
@@ -15,6 +16,9 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public string[] Aliases { get; }
+
+        /// <inheritdoc />
+        public bool IsQueryable { get; }
 
         /// <inheritdoc />
         public Attribute[] Attributes { get; }
@@ -61,10 +65,12 @@ namespace Commands.Reflection
 
             if (aliases.Length > 0)
             {
+                IsQueryable = true;
                 Name = aliases[0];
             }
             else
             {
+                IsQueryable = false;
                 Name = type.Name;
             }
 

@@ -38,14 +38,6 @@ namespace Commands.Core
         /// </remarks>
         public Regex NamingRegex { get; set; } = new(@"^[a-z0-9_-]*$", RegexOptions.Compiled);
 
-        /// <summary>
-        ///     Gets or sets whether commands not matching <see cref="NamingRegex"/> will throw during command registration.
-        /// </summary>
-        /// <remarks>
-        ///     Default: <see langword="true"/>
-        /// </remarks>
-        public bool ThrowOnMatchFailure { get; set; } = true;
-
         internal Dictionary<Type, TypeConverterBase> KeyedConverters
         {
             get

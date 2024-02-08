@@ -13,6 +13,11 @@ namespace Commands.Reflection
         public string[] Aliases { get; }
 
         /// <summary>
+        ///     Gets if the component name is queryable.
+        /// </summary>
+        public bool IsQueryable { get; }
+
+        /// <summary>
         ///     Gets an array of <see cref="PreconditionAttribute"/>'s defined atop this component.
         /// </summary>
         public PreconditionAttribute[] Preconditions { get; }

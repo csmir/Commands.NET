@@ -8,45 +8,56 @@ namespace Commands.Helpers
 {
     internal static class ReflectionHelpers
     {
-        public static IEnumerable<ModuleInfo> BuildComponents(
-            IEnumerable<TypeConverterBase> converters, BuildOptions options)
+        private static readonly Type m_type = typeof(ModuleBase);
+
+        public static IEnumerable<IConditional> BuildComponents(IEnumerable<TypeConverterBase> converters, BuildOptions options)
         {
             options.SetKeyedConverters(converters);
 
-            var rootType = typeof(ModuleBase);
+            var components = BuildComponents(options);
+
+            foreach (var component in components)
+            {
+                if (component.IsQueryable)
+                {
+                    yield return component;
+                }
+                else foreach (var subComponent in component.Components)
+                {
+                    yield return subComponent;
+                }
+            }
+        }
+
+        public static IEnumerable<ModuleInfo> BuildComponents(BuildOptions options)
+        {
             foreach (var assembly in options.Assemblies)
             {
                 foreach (var type in assembly.GetTypes())
                 {
-                    if (rootType.IsAssignableFrom(type)
-                        && !type.IsAbstract
-                        && !type.ContainsGenericParameters)
+                    // if the type does not match module type.
+                    if (!m_type.IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
                     {
-                        var aliases = Array.Empty<string>();
+                        continue;
+                    }
 
-                        foreach (var attribute in type.GetCustomAttributes(true))
+                    var aliases = Array.Empty<string>();
+
+                    // search all attributes for occurrence of group, in which case we validate aliases
+                    foreach (var attribute in type.GetCustomAttributes(true))
+                    {
+                        // if attribute is not group, we can skip it.
+                        if (attribute is not GroupAttribute group)
                         {
-                            if (attribute is GroupAttribute gattribute)
-                            {
-                                foreach (var alias in gattribute.Aliases)
-                                {
-                                    if (!options.NamingRegex.IsMatch(alias))
-                                    {
-                                        if (options.ThrowOnMatchFailure)
-                                        {
-                                            ThrowHelpers.ThrowInvalidNaming(alias);
-                                        }
-
-                                        continue;
-                                    }
-                                }
-
-                                aliases = gattribute.Aliases;
-                            }
+                            continue;
                         }
 
-                        yield return new ModuleInfo(type, null, aliases, options);
+                        group.ValidateAliases(options.NamingRegex);
+
+                        aliases = group.Aliases;
                     }
+
+                    yield return new ModuleInfo(type, null, aliases, options);
                 }
             }
         }
@@ -54,27 +65,18 @@ namespace Commands.Helpers
         public static IEnumerable<ModuleInfo> GetModules(
             ModuleInfo module, BuildOptions options)
         {
-            foreach (var group in module.Type.GetNestedTypes())
+            foreach (var type in module.Type.GetNestedTypes())
             {
-                foreach (var attribute in group.GetCustomAttributes(true))
+                foreach (var attribute in type.GetCustomAttributes(true))
                 {
-                    if (attribute is GroupAttribute gattribute)
+                    if (attribute is not GroupAttribute group)
                     {
-                        foreach (var alias in gattribute.Aliases)
-                        {
-                            if (!options.NamingRegex.IsMatch(alias))
-                            {
-                                if (options.ThrowOnMatchFailure)
-                                {
-                                    ThrowHelpers.ThrowInvalidNaming(alias);
-                                }
-
-                                continue;
-                            }
-                        }
-
-                        yield return new ModuleInfo(group, module, gattribute.Aliases, options);
+                        continue;
                     }
+
+                    group.ValidateAliases(options.NamingRegex);
+
+                    yield return new ModuleInfo(type, module, group.Aliases, options);
                 }
             }
         }
@@ -83,36 +85,19 @@ namespace Commands.Helpers
         {
             foreach (var method in module.Type.GetMethods())
             {
-                var attributes = method.GetCustomAttributes(true);
+                var aliases = Array.Empty<string>();
 
-                string[] aliases = [];
-                foreach (var attribute in attributes)
+                foreach (var attribute in method.GetCustomAttributes(true))
                 {
-                    if (attribute is CommandAttribute cmd)
+                    if (attribute is not CommandAttribute command)
                     {
-                        foreach (var alias in cmd.Aliases)
-                        {
-                            if (!options.NamingRegex.IsMatch(alias))
-                            {
-                                if (options.ThrowOnMatchFailure)
-                                {
-                                    ThrowHelpers.ThrowInvalidNaming(alias);
-                                }
-
-                                continue;
-                            }
-                        }
-
-                        aliases = cmd.Aliases;
+                        continue;
                     }
-                }
 
-                if (aliases.Length == 0)
-                {
-                    continue;
-                }
+                    command.ValidateAliases(options.NamingRegex);
 
-                yield return new CommandInfo(module, method, aliases, options);
+                    yield return new CommandInfo(module, method, command.Aliases, options);
+                }
             }
         }
 

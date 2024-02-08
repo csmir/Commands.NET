@@ -41,9 +41,7 @@ namespace Commands.Core
         /// <summary>
         ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="BuildOptions"/> provided when creating the manager.
         /// </summary>
-        public IReadOnlySet<IConditional> Commands { get; } = ReflectionHelpers.BuildComponents(converters, options)
-            .SelectMany(x => x.Components)
-            .ToHashSet();
+        public IReadOnlySet<IConditional> Commands { get; } = ReflectionHelpers.BuildComponents(converters, options).ToHashSet();
 
         /// <summary>
         ///     Makes an attempt at executing a command from provided <paramref name="args"/>.
