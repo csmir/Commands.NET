@@ -5,11 +5,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 var collection = new ServiceCollection()
-    .ConfigureCommands()
-    .TryAddResolver((context, result, services) =>
+    .ConfigureCommands(configure =>
     {
-        if (!result.Success)
-            Console.WriteLine(result);
+        configure.AddResultResolver((c, r, s) =>
+        {
+            if (!r.Success)
+                Console.WriteLine(r);
+        });
     })
     .AddLogging(configure =>
     {

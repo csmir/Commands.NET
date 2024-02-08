@@ -9,9 +9,9 @@ using Commands.Samples;
 using Microsoft.Extensions.DependencyInjection;
 
 var collection = new ServiceCollection()
-    .ConfigureCommands()
-    .TryAddConverter<ReflectionTypeConverter>()
-    .TryAddResolver((context, result, provider) => Console.WriteLine(result));
+    .ConfigureCommands(configure => configure
+        .AddResultResolver((c, r, p) => Console.WriteLine(r))
+        .AddTypeConverter<ReflectionTypeConverter>());
 
 var services = collection.BuildServiceProvider();
 

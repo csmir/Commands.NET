@@ -5,17 +5,15 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 await Host.CreateDefaultBuilder(args)
-    .ConfigureCommands((context, configuration) =>
+    .ConfigureCommands((context, builder) =>
     {
-
+        builder.AddResultResolver((c, r, s) =>
+        {
+            Console.WriteLine(r);
+        });
     })
     .ConfigureServices((context, services) =>
     {
-        services.TryAddResolver((context, result, services) =>
-        {
-            Console.WriteLine(result);
-        });
-
         services.AddHostedService<CommandHandler>();
     })
     .ConfigureLogging(x =>

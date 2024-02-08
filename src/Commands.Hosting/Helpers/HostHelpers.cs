@@ -1,6 +1,4 @@
 ﻿using Commands.Core;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
@@ -19,7 +17,8 @@ namespace Commands.Helpers
         /// <param name="builder"></param>
         /// <param name="configureDelegate">A delegate to configure the <see cref="BuildOptions"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
         /// <returns>The same <see cref="IHostBuilder"/> for call chaining.</returns>
-        public static IHostBuilder ConfigureCommands(this IHostBuilder builder, [DisallowNull] Action<HostBuilderContext, BuildOptions> configureDelegate)
+        public static IHostBuilder ConfigureCommands(this IHostBuilder builder,
+            [DisallowNull] Action<HostBuilderContext, ManagerBuilder<CommandManager>> configureDelegate)
         {
             return builder.ConfigureCommands<CommandManager>(configureDelegate);
         }
@@ -31,7 +30,8 @@ namespace Commands.Helpers
         /// <param name="builder"></param>
         /// <param name="configureDelegate">A delegate to configure the <see cref="BuildOptions"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
         /// <returns>The same <see cref="IHostBuilder"/> for call chaining.</returns>
-        public static IHostBuilder ConfigureCommands<TManager>(this IHostBuilder builder, [DisallowNull] Action<HostBuilderContext, BuildOptions> configureDelegate)
+        public static IHostBuilder ConfigureCommands<TManager>(this IHostBuilder builder,
+            [DisallowNull] Action<HostBuilderContext, ManagerBuilder<TManager>> configureDelegate)
             where TManager : CommandManager
         {
             if (configureDelegate == null)
@@ -41,19 +41,11 @@ namespace Commands.Helpers
 
             builder.ConfigureServices((context, services) =>
             {
-                var buildContext = new BuildOptions();
+                var builder = new ManagerBuilder<TManager>(services);
 
-                configureDelegate(context, buildContext);
+                configureDelegate(context, builder);
 
-                services.TryAddModules(buildContext);
-                services.TryAddSingleton<CommandFinalizer>();
-
-                var descriptor = ServiceDescriptor.Singleton(services =>
-                {
-                    return ActivatorUtilities.CreateInstance<TManager>(services, buildContext);
-                });
-
-                services.TryAdd(descriptor);
+                builder.FinalizeConfiguration();
             });
 
             return builder;
