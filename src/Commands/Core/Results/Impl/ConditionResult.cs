@@ -9,7 +9,7 @@ namespace Commands.Core
     public readonly struct ConditionResult : IRunResult
     {
         /// <inheritdoc />
-        public Exception Exception { get; } = null;
+        public Exception Exception { get; }
 
         /// <inheritdoc />
         public bool Success
@@ -20,9 +20,28 @@ namespace Commands.Core
             }
         }
 
-        internal ConditionResult(Exception exception)
+        private ConditionResult(Exception exception)
         {
             Exception = exception;
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="ConditionResult"/> resembling a successful check operation.
+        /// </summary>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static ConditionResult FromSuccess()
+        {
+            return new(null);
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="ConditionResult"/> resembling a failed check operation.
+        /// </summary>
+        /// <param name="exception">The exception that occurred during the check operation.</param>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static ConditionResult FromError(Exception exception)
+        {
+            return new(exception);
         }
 
         /// <inheritdoc />

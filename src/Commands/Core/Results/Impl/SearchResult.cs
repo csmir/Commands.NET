@@ -1,6 +1,7 @@
 ﻿using Commands.Exceptions;
 using Commands.Reflection;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Commands.Core
 {
@@ -11,7 +12,7 @@ namespace Commands.Core
     public readonly struct SearchResult : IRunResult
     {
         /// <inheritdoc />
-        public Exception Exception { get; } = null;
+        public Exception Exception { get; }
 
         /// <inheritdoc />
         public bool Success
@@ -23,31 +24,66 @@ namespace Commands.Core
         }
 
         /// <summary>
-        ///     Gets the command that was found for this result.
+        ///     Gets the component that was discovered for this result.
         /// </summary>
-        public IConditional Component { get; } = null;
+        public IConditional Component { get; }
 
         internal int SearchHeight { get; }
 
-        internal SearchResult(IConditional command, int srcHeight)
+        private SearchResult(IConditional component, int searchHeight, Exception exception)
         {
-            Component = command;
-            SearchHeight = srcHeight;
-        }
-
-        internal SearchResult(ModuleInfo module)
-        {
-            SearchHeight = 0;
-
-            Component = module;
-            Exception = SearchException.SearchIncomplete();
-        }
-
-        internal SearchResult(Exception exception)
-        {
-            SearchHeight = 0;
-
+            Component = component;
+            SearchHeight = searchHeight;
             Exception = exception;
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="SearchResult"/> resembling a successful search operation.
+        /// </summary>
+        /// <param name="component">The discovered component.</param>
+        /// <param name="searchHeight">The argument index of the discovered component.</param>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static SearchResult FromSuccess(IConditional component, int searchHeight)
+        {
+            return new(component, searchHeight, null);
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="SearchResult"/> resembling a failed search operation.
+        /// </summary>
+        /// <remarks>
+        ///     This overload is called when searching discovers a module but no commands to target.
+        /// </remarks>
+        /// <param name="module">The module that was found, of which no commands were parsed.</param>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static SearchResult FromError(ModuleInfo module)
+        {
+            return new(module, 0, SearchException.SearchIncomplete());
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="SearchResult"/> resembling a failed search operation.
+        /// </summary>
+        /// <remarks>
+        ///     This overload is called when searching throws an error.
+        /// </remarks>
+        /// <param name="exception">The exception that caused the search to fail.</param>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static SearchResult FromError(Exception exception)
+        {
+            return new(null, 0, exception);
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="SearchResult"/> resembling a failed search operation.
+        /// </summary>
+        /// <remarks>
+        ///     This overload is called when no commands or modules are found.
+        /// </remarks>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static SearchResult FromError()
+        {
+            return new(null, 0, SearchException.SearchNotFound());  
         }
 
         /// <inheritdoc />

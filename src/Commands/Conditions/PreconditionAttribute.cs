@@ -43,10 +43,10 @@ namespace Commands.Conditions
 
             if (exception is ConditionException checkEx)
             {
-                return new(checkEx);
+                return ConditionResult.FromError(checkEx);
             }
 
-            return new(ConditionException.PreconditionFailed(exception));
+            return ConditionResult.FromError(ConditionException.PreconditionFailed(exception));
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Commands.Conditions
             if (string.IsNullOrEmpty(error))
                 ThrowHelpers.ThrowInvalidArgument(error);
 
-            return new(new ConditionException(error));
+            return ConditionResult.FromError(new ConditionException(error));
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Commands.Conditions
         /// <returns>A <see cref="ConditionResult"/> representing the successful evaluation.</returns>
         protected ConditionResult Success()
         {
-            return new();
+            return ConditionResult.FromSuccess();
         }
     }
 }

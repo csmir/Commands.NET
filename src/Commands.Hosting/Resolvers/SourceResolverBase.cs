@@ -31,9 +31,9 @@ namespace Commands.Resolvers
 
             if (exception is SourceException convertEx)
             {
-                return new(convertEx);
+                return SourceResult.FromError(convertEx);
             }
-            return new(SourceException.SourceAcquirementFailed(exception));
+            return SourceResult.FromError(SourceException.SourceAcquirementFailed(exception));
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Commands.Resolvers
                 ThrowHelpers.ThrowInvalidArgument(error);
             }
 
-            return new(new SourceException(error));
+            return SourceResult.FromError(new SourceException(error));
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Commands.Resolvers
         protected SourceResult Success<T>(T consumer, params object[] args)
             where T : ConsumerBase
         {
-            return new(consumer, args);
+            return SourceResult.FromSuccess(consumer, args);
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Commands.Resolvers
         protected SourceResult Success<T>(T consumer, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
-            return new(consumer, args, options);
+            return SourceResult.FromSuccess(consumer, args, options);
         }
     }
 }

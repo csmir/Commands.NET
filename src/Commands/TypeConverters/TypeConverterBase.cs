@@ -69,9 +69,9 @@ namespace Commands.TypeConverters
 
             if (exception is ConvertException convertEx)
             {
-                return new(convertEx);
+                return ConvertResult.FromError(convertEx);
             }
-            return new(ConvertException.ConvertFailed(Type, exception));
+            return ConvertResult.FromError(ConvertException.ConvertFailed(Type, exception));
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Commands.TypeConverters
                 ThrowHelpers.ThrowInvalidArgument(error);
             }
 
-            return new(new ConvertException(error));
+            return ConvertResult.FromError(new ConvertException(error));
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Commands.TypeConverters
         /// <returns>A <see cref="ConvertResult"/> representing the successful evaluation.</returns>
         protected ConvertResult Success(object value)
         {
-            return new(value);
+            return ConvertResult.FromSuccess(value);
         }
 
         internal static TypeConverterBase[] BuildDefaults()

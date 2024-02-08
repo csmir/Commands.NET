@@ -91,7 +91,7 @@ namespace Commands.Core
                     break;
             }
 
-            return new(Command);
+            return InvokeResult.FromSuccess(Command);
         }
     }
 }

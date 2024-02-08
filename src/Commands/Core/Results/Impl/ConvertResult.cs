@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using Commands.Reflection;
+using Commands.TypeConverters;
+using System.Diagnostics;
 
 namespace Commands.Core
 {
@@ -9,7 +11,7 @@ namespace Commands.Core
     public readonly struct ConvertResult : IRunResult
     {
         /// <inheritdoc />
-        public Exception Exception { get; } = null;
+        public Exception Exception { get; }
 
         /// <inheritdoc />
         public bool Success
@@ -20,16 +22,47 @@ namespace Commands.Core
             }
         }
 
-        internal object Value { get; } = null;
+        internal object Value { get; }
 
-        internal ConvertResult(object value)
+        private ConvertResult(Exception exception, object value)
         {
+            Exception = exception;
             Value = value;
         }
 
-        internal ConvertResult(Exception exception)
+        /// <summary>
+        ///     Creates a new <see cref="ConvertResult"/> resembling a successful conversion operation.
+        /// </summary>
+        /// <remarks>
+        ///     This overload is called when conversion succeeds with a value.
+        /// </remarks>
+        /// <param name="value">The converted value of the operation.</param>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static ConvertResult FromSuccess(object value)
         {
-            Exception = exception;
+            return new(null, value);
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="ConvertResult"/> resembling a successful conversion operation.
+        /// </summary>
+        /// <remarks>
+        ///     This overload is called when conversion succeeds with a null value. This should not be called when implementing <see cref="TypeConverterBase.EvaluateAsync(ConsumerBase, IArgument, string, IServiceProvider, CancellationToken)"/>.
+        /// </remarks>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static ConvertResult FromSuccess()
+        {
+            return new(null, null);
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="ConvertResult"/> resembling a failed conversion operation.
+        /// </summary>
+        /// <param name="exception">The exception that occurred during the conversion operation.</param>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static ConvertResult FromError(Exception exception)
+        {
+            return new(exception, null);
         }
 
         /// <inheritdoc />

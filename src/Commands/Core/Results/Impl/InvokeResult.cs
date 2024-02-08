@@ -1,5 +1,6 @@
 ﻿using Commands.Reflection;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 
 namespace Commands.Core
 {
@@ -10,7 +11,7 @@ namespace Commands.Core
     public readonly struct InvokeResult : IRunResult
     {
         /// <inheritdoc />
-        public Exception Exception { get; } = null;
+        public Exception Exception { get; }
 
         /// <inheritdoc />
         public bool Success
@@ -26,15 +27,31 @@ namespace Commands.Core
         /// </summary>
         public CommandInfo Command { get; }
 
-        internal InvokeResult(CommandInfo command)
+        private InvokeResult(CommandInfo command, Exception exception)
         {
             Command = command;
+            Exception = exception;
         }
 
-        internal InvokeResult(CommandInfo command, Exception exception)
+        /// <summary>
+        ///     Creates a new <see cref="InvokeResult"/> resembling a successful invocation operation.
+        /// </summary>
+        /// <param name="command">The command that was invoked.</param>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static InvokeResult FromSuccess(CommandInfo command)
         {
-            Exception = exception;
-            Command = command;
+            return new(command, null);
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="InvokeResult"/> resembling a failed invocation operation.
+        /// </summary>
+        /// <param name="command">The command that failed to be invoked</param>
+        /// <param name="exception">The exception that occurred during command invocation.</param>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static InvokeResult FromError(CommandInfo command, Exception exception)
+        {
+            return new(command, exception);
         }
 
         /// <inheritdoc />

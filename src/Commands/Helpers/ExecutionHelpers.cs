@@ -33,11 +33,11 @@ namespace Commands.Helpers
                     discovered.AddRange(nested);
 
                     // add fallback overloads for module discovery.
-                    discovered.Add(new(module));
+                    discovered.Add(SearchResult.FromError(module));
                 }
                 else
                     // add the top level matches immediately.
-                    discovered.Add(new(component, searchHeight + 1));
+                    discovered.Add(SearchResult.FromSuccess(component, searchHeight + 1));
             }
 
             return discovered;
@@ -56,14 +56,14 @@ namespace Commands.Helpers
                 // parse remainder.
                 if (argument.IsRemainder)
                 {
-                    var input = string.Join(STR_WHITESPACE, args.Skip(index));
+                    var remainder = string.Join(STR_WHITESPACE, args.Skip(index));
                     if (argument.Type == s_type)
                     {
-                        results[i] = new(input);
+                        results[i] = ConvertResult.FromSuccess(remainder);
                     }
                     else
                     {
-                        results[i] = await argument.ConvertAsync(consumer, input, options);
+                        results[i] = await argument.ConvertAsync(consumer, remainder, options);
                     }
 
                     // end loop as remainder is last param.
@@ -73,7 +73,7 @@ namespace Commands.Helpers
                 // parse missing optional argument.
                 if (argument.IsOptional && args.Length <= index)
                 {
-                    results[i] = new(Type.Missing);
+                    results[i] = ConvertResult.FromSuccess(Type.Missing);
 
                     // continue looking for more optionals.
                     continue;
@@ -90,12 +90,12 @@ namespace Commands.Helpers
                     {
                         try
                         {
-                            var obj = complexArgument.Constructor.Invoke(result.Select(x => x.Value).ToArray());
-                            results[i] = new(obj);
+                            var instance = complexArgument.Constructor.Invoke(result.Select(x => x.Value).ToArray());
+                            results[i] = ConvertResult.FromSuccess(instance);
                         }
                         catch (Exception ex)
                         {
-                            results[i] = new(exception: ex);
+                            results[i] = ConvertResult.FromError(ex);
                         }
                     }
 
@@ -116,11 +116,11 @@ namespace Commands.Helpers
         {
             // if value is nullable and value is null.
             if (argument.IsNullable && value is STR_NULL)
-                return new(value: null);
+                return ConvertResult.FromSuccess();
 
             // if value is string or object.
             if (argument.Type == s_type || argument.Type == o_type)
-                return new(value: value);
+                return ConvertResult.FromSuccess(value);
 
             // run parser.
             return await argument.Converter.EvaluateAsync(consumer, argument, value.ToString(), options.Scope.ServiceProvider, options.CancellationToken);

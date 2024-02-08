@@ -154,7 +154,7 @@ namespace Commands.Core
             }
 
             // we set the failed search if it was not yet set.
-            result ??= new SearchResult(SearchException.SearchNotFound());
+            result ??= SearchResult.FromError();
 
             await _finalizer.FinalizeAsync(consumer, result, options);
         }
@@ -173,28 +173,28 @@ namespace Commands.Core
             where T : ConsumerBase
         {
             // check command preconditions.
-            var check = await CheckAsync(consumer, command, options);
+            var precondition = await CheckAsync(consumer, command, options);
 
             // verify check success, if not, return the failure.
-            if (!check.Success)
-                return new(command, MatchException.MatchFailed(check.Exception));
+            if (!precondition.Success)
+                return MatchResult.FromError(command, MatchException.MatchFailed(precondition.Exception));
 
             // read the command parameters in right order.
-            var readResult = await ConvertAsync(consumer, command, argHeight, args, options);
+            var conversion = await ConvertAsync(consumer, command, argHeight, args, options);
 
             // exchange the reads for result, verifying successes in the process.
-            var reads = new object[readResult.Length];
-            for (int i = 0; i < readResult.Length; i++)
+            var arguments = new object[conversion.Length];
+            for (int i = 0; i < conversion.Length; i++)
             {
                 // check for read success.
-                if (!readResult[i].Success)
-                    return new(command, readResult[i].Exception);
+                if (!conversion[i].Success)
+                    return MatchResult.FromError(command, conversion[i].Exception);
 
-                reads[i] = readResult[i].Value;
+                arguments[i] = conversion[i].Value;
             }
 
             // return successful match if execution reaches here.
-            return new(command, reads);
+            return MatchResult.FromSuccess(command, arguments);
         }
 
         /// <summary>
@@ -212,7 +212,7 @@ namespace Commands.Core
             {
                 options.Logger.LogDebug("Precondition evaluation skipped for {}", command);
 
-                return new(null);
+                return ConditionResult.FromSuccess();
             }
 
             foreach (var precon in command.Preconditions)
@@ -228,7 +228,7 @@ namespace Commands.Core
 
             options.Logger.LogInformation("Precondition evaluation succeeded for {}", command);
 
-            return new(null);
+            return ConditionResult.FromSuccess();
         }
 
         /// <summary>
@@ -245,7 +245,7 @@ namespace Commands.Core
             if (options.SkipPostconditions)
             {
                 options.Logger.LogDebug("Skipped postcondition evaluation for {}", result.Command);
-                return new(null);
+                return ConditionResult.FromSuccess();
             }
 
             foreach (var postcon in result.Command.PostConditions)
@@ -261,7 +261,7 @@ namespace Commands.Core
 
             options.Logger.LogInformation("Postcondition evaluation succeeded for {}", result.Command);
 
-            return new(null);
+            return ConditionResult.FromSuccess();
         }
 
         /// <summary>
@@ -310,11 +310,11 @@ namespace Commands.Core
             // check if input is too short.
             if (command.MinLength > length)
             {
-                return [new ConvertResult(exception: ConvertException.InputTooShort())];
+                return [ConvertResult.FromError(ConvertException.InputTooShort())];
             }
 
             // input is too long.
-            return [new ConvertResult(exception: ConvertException.InputTooLong())];
+            return [ConvertResult.FromError(ConvertException.InputTooLong())];
         }
 
         /// <summary>
@@ -343,7 +343,7 @@ namespace Commands.Core
 
                 options.Logger.LogDebug("Starting invocation of {}", match.Command);
 
-                var value = match.Command.Target.Invoke(module, match.Reads);
+                var value = match.Command.Target.Invoke(module, match.Arguments);
 
                 var result = await module.ResolveReturnAsync(value);
 
@@ -353,7 +353,7 @@ namespace Commands.Core
 
                 if (!checkResult.Success)
                 {
-                    return new InvokeResult(match.Command, InvokeException.InvokeFailed(checkResult.Exception));
+                    return InvokeResult.FromError(match.Command, InvokeException.InvokeFailed(checkResult.Exception));
                 }
 
                 return result;
@@ -362,7 +362,7 @@ namespace Commands.Core
             {
                 options.Logger.LogError("Invocation failed for {}", match.Command);
 
-                return new(match.Command, exception);
+                return InvokeResult.FromError(match.Command, exception);
             }
         }
     }

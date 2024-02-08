@@ -10,7 +10,7 @@ namespace Commands.Core
     public readonly struct MatchResult : IRunResult
     {
         /// <inheritdoc />
-        public Exception Exception { get; } = null;
+        public Exception Exception { get; }
 
         /// <inheritdoc />
         public bool Success
@@ -26,19 +26,35 @@ namespace Commands.Core
         /// </summary>
         public CommandInfo Command { get; }
 
-        internal object[] Reads { get; } = null;
+        internal object[] Arguments { get; }
 
-        internal MatchResult(CommandInfo command, object[] reads)
+        private MatchResult(CommandInfo command, object[] arguments, Exception exception)
         {
             Command = command;
-            Reads = reads;
+            Arguments = arguments;
+            Exception = exception;
         }
 
-        internal MatchResult(CommandInfo command, Exception exception)
+        /// <summary>
+        ///     Creates a new <see cref="MatchResult"/> resembling a successful match operation.
+        /// </summary>
+        /// <param name="command">The match command.</param>
+        /// <param name="arguments">The converted arguments of the command.</param>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static MatchResult FromSuccess(CommandInfo command, object[] arguments)
         {
-            Command = command;
+            return new(command, arguments, null);
+        }
 
-            Exception = exception;
+        /// <summary>
+        ///     Creates a new <see cref="MatchResult"/> resembling a failed match operation.
+        /// </summary>
+        /// <param name="command">The match command.</param>
+        /// <param name="exception">The exception that occurred during the matching process.</param>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static MatchResult FromError(CommandInfo command, Exception exception)
+        {
+            return new(command, null, exception);
         }
 
         /// <inheritdoc />

@@ -8,15 +8,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Commands.Tests.Hosting.Resolvers
+namespace Commands.Tests
 {
     internal class CustomSourceResolver : SourceResolverBase
     {
-        public CustomSourceResolver()
-        {
-
-        }
-
         public override ValueTask<SourceResult> EvaluateAsync(CancellationToken cancellationToken)
         {
             var src = Console.ReadLine();

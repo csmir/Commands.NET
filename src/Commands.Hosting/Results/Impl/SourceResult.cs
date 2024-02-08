@@ -10,7 +10,7 @@ namespace Commands.Results
     public readonly struct SourceResult : IRunResult
     {
         /// <inheritdoc />
-        public Exception Exception { get; } = null;
+        public Exception Exception { get; }
 
         /// <inheritdoc />
         public bool Success
@@ -21,61 +21,51 @@ namespace Commands.Results
             }
         }
 
-        internal CommandOptions Options { get; } = null;
+        internal CommandOptions Options { get; }
 
-        internal ConsumerBase Consumer { get; } = null;
+        internal ConsumerBase Consumer { get; }
 
-        internal object[] Args { get; } = null;
+        internal object[] Args { get; }
 
-        internal SourceResult(ConsumerBase consumer, object[] args, CommandOptions options)
+        private SourceResult(ConsumerBase consumer, object[] args, CommandOptions options, Exception exception)
         {
             Options = options;
             Consumer = consumer;
             Args = args;
-        }
-
-        internal SourceResult(ConsumerBase consumer, object[] args)
-            : this(consumer, args, null)
-        {
-
-        }
-
-        internal SourceResult(Exception exception)
-        {
             Exception = exception;
         }
 
         /// <summary>
-        ///     Creates a new successful <see cref="SourceResult"/>.
+        ///     Creates a new <see cref="SourceResult"/> resembling a successful sourcing operation.
         /// </summary>
         /// <param name="consumer">The consumer of the command.</param>
         /// <param name="args">A parsed command query.</param>
         /// <param name="options">A set of options that determine logic in the command execution.</param>
-        /// <returns>A new <see cref="SourceResult"/> from provided arguments.</returns>
+        /// <returns>A new result containing information about the operation.</returns>
         public static SourceResult FromSuccess(ConsumerBase consumer, object[] args, CommandOptions options)
         {
-            return new(consumer, args, options);
+            return new(consumer, args, options, null);
         }
 
         /// <summary>
-        ///     Creates a new successful <see cref="SourceResult"/>.
+        ///     Creates a new <see cref="SourceResult"/> resembling a successful sourcing operation.
         /// </summary>
         /// <param name="consumer">The consumer of the command.</param>
         /// <param name="args">A parsed command query.</param>
-        /// <returns>A new <see cref="SourceResult"/> from provided arguments.</returns>
+        /// <returns>A new result containing information about the operation.</returns>
         public static SourceResult FromSuccess(ConsumerBase consumer, object[] args)
         {
-            return new(consumer, args);
+            return new(consumer, args, null, null);
         }
 
         /// <summary>
-        ///     Creates a new unsuccessful <see cref="SourceResult"/>.
+        ///     Creates a new <see cref="SourceResult"/> resembling a failed sourcing operation.
         /// </summary>
         /// <param name="exception">An exception describing the failed process.</param>
-        /// <returns>A new <see cref="SourceResult"/> from provided arguments.</returns>
+        /// <returns>A new result containing information about the operation.</returns>
         public static SourceResult FromError(Exception exception)
         {
-            return new(exception);
+            return new(null, null, null, exception);
         }
 
         /// <inheritdoc />
