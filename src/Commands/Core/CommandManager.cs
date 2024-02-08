@@ -339,6 +339,7 @@ namespace Commands.Core
 
                 module.Consumer = consumer;
                 module.Command = match.Command;
+                module.Logger = options.Logger;
 
                 options.Logger.LogDebug("Starting invocation of {}", match.Command);
 
