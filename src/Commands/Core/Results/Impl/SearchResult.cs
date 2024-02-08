@@ -5,7 +5,6 @@ using System.Reflection.Metadata.Ecma335;
 
 namespace Commands.Core
 {
-#nullable enable
     /// <summary>
     ///     The result of a search operation within the command execution pipeline.
     /// </summary>

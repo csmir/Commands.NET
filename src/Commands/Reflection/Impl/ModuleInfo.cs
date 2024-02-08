@@ -46,10 +46,10 @@ namespace Commands.Reflection
         /// <remarks>
         ///     Will be <see langword="null"/> if this module is not nested.
         /// </remarks>
-        public ModuleInfo Root { get; }
+        public ModuleInfo? Root { get; }
 
         internal ModuleInfo(
-            Type type, ModuleInfo root, string[] aliases, BuildOptions options)
+            Type type, ModuleInfo? root, string[] aliases, BuildOptions options)
         {
             Priority = 0;
 

@@ -1,6 +1,5 @@
 ﻿namespace Commands.Core
 {
-#nullable enable
     /// <summary>
     ///     The result of any operation within the command execution pipeline.
     /// </summary>

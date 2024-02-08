@@ -43,13 +43,13 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public int MaxLength { get; }
 
-        /// <inheritdoc />
-        public TypeConverterBase Converter { get; }
-
         /// <summary>
         ///     Gets the invocation target of this complex argument.
         /// </summary>
         public ConstructorInfo Constructor { get; }
+
+        /// <inheritdoc />
+        public TypeConverterBase? Converter { get; } = null;
 
         internal ComplexArgumentInfo(
             ParameterInfo parameterInfo, BuildOptions options)
@@ -84,7 +84,6 @@ namespace Commands.Reflection
             var (minLength, maxLength) = parameters.GetLength();
 
             IsRemainder = false;
-            Converter = null;
 
             MinLength = minLength;
             MaxLength = maxLength;
@@ -96,7 +95,8 @@ namespace Commands.Reflection
             Attributes = attributes;
 
             ExposedType = parameterInfo.ParameterType;
-            Name = parameterInfo.Name;
+
+            Name = parameterInfo.Name ?? "";
         }
 
         /// <inheritdoc />

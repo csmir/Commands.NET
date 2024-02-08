@@ -11,8 +11,8 @@ namespace Commands.Helpers
                     yield return @out;
         }
 
-        public static T SelectFirstOrDefault<T>(this IEnumerable input,
-            T defaultValue = default)
+        public static T? SelectFirstOrDefault<T>(this IEnumerable input,
+            T? defaultValue = default)
         {
             foreach (var @in in input)
                 if (@in is T @out)

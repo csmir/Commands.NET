@@ -5,14 +5,14 @@ namespace Commands.TypeConverters
 {
     internal sealed class ValueTypeConverter<T> : TypeConverterBase<T>
     {
-        private delegate bool Parser<TValue>(string str, out TValue value);
+        private delegate bool Parser<TValue>(string? str, out TValue value);
 
         private readonly static Lazy<IReadOnlyDictionary<Type, Delegate>> _container = new(ValueGenerator);
 
         public override ValueTask<ConvertResult> EvaluateAsync(
-            ConsumerBase consumer, IArgument parameter, string value, IServiceProvider services, CancellationToken cancellationToken)
+            ConsumerBase consumer, IArgument parameter, string? value, IServiceProvider services, CancellationToken cancellationToken)
         {
-            var parser = _container.Value[Type] as Parser<T>;
+            var parser = (_container.Value[Type] as Parser<T>)!; // never null in cast use.
 
             if (parser(value, out var result))
                 return ValueTask.FromResult(Success(result));

@@ -42,8 +42,8 @@ namespace Commands.Reflection
         ///     Gets the converter for this argument.
         /// </summary>
         /// <remarks>
-        ///     Will be <see langword="null"/> if <see cref="Type"/> is <see cref="string"/> or <see cref="object"/>.
+        ///     Will be <see langword="null"/> if <see cref="Type"/> is <see cref="string"/>, <see cref="object"/>, or if this argument is <see cref="ComplexArgumentInfo"/>.
         /// </remarks>
-        public TypeConverterBase Converter { get; }
+        public TypeConverterBase? Converter { get; }
     }
 }

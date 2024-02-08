@@ -11,7 +11,7 @@ namespace Commands.Core
     public abstract class ModuleBase<T> : ModuleBase
         where T : ConsumerBase
     {
-        private T _consumer;
+        private T? _consumer;
 
         /// <summary>
         ///     Gets the consumer for the command currently in scope.
@@ -52,17 +52,22 @@ namespace Commands.Core
         /// <summary>
         ///     Gets the consumer for the command currently in scope.
         /// </summary>
-        public ConsumerBase Consumer { get; internal set; }
+        /// <remarks>
+        ///     Can be null if not provided by <see cref="CommandManager.TryExecuteAsync{T}(T, object[], CommandOptions?)"/>.
+        /// </remarks>
+        public ConsumerBase? Consumer { get; internal set; }
 
         /// <summary>
         ///     Gets the reflection information about the command currently in scope.
         /// </summary>
-        public CommandInfo Command { get; internal set; }
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
+        public CommandInfo Command { get; internal set; } // never null as set internally.
 
         /// <summary>
         ///     Gets the logger that logs information for the command currently in scope.
         /// </summary>
-        public ILogger Logger { get; internal set; }
+        public ILogger Logger { get; internal set; } // never null as set internally.
+#pragma warning restore CS8618
 
         /// <summary>
         ///     Represents an overridable operation that is responsible for resolving unknown invocation results.
@@ -74,7 +79,7 @@ namespace Commands.Core
             await Task.CompletedTask;
         }
 
-        internal async Task<InvokeResult> ResolveReturnAsync(object value)
+        internal async Task<InvokeResult> ResolveReturnAsync(object? value)
         {
             switch (value)
             {

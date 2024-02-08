@@ -18,7 +18,7 @@ namespace Commands.Helpers
         /// <param name="arg"></param>
         /// <exception cref="ArgumentException"></exception>
         public static void ThrowInvalidNaming(
-            string value, [CallerArgumentExpression(nameof(value))] string arg = null)
+            string? value, [CallerArgumentExpression(nameof(value))] string? arg = null)
         {
             throw new ArgumentException("Value does not match expression.", arg);
         }
@@ -44,7 +44,7 @@ namespace Commands.Helpers
         [DoesNotReturn]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void ThrowInvalidArgument(
-            object value, [CallerArgumentExpression(nameof(value))] string arg = null)
+            object? value, [CallerArgumentExpression(nameof(value))] string? arg = null)
         {
             // should resolve overload when a collection is null or empty.
             if (value is ICollection or IEnumerable)
@@ -86,7 +86,7 @@ namespace Commands.Helpers
         [DoesNotReturn]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public static void NotDistinct(
-            object value, [CallerArgumentExpression(nameof(value))] string arg = null)
+            object? value, [CallerArgumentExpression(nameof(value))] string? arg = null)
         {
             throw new ArgumentException(
                 message: "Provided collection cannot contain duplicate values.",

@@ -36,11 +36,11 @@ namespace Commands.TypeConverters
         }
 
         public override ValueTask<ConvertResult> EvaluateAsync(
-            ConsumerBase consumer, IArgument parameter, string value, IServiceProvider services, CancellationToken cancellationToken)
+            ConsumerBase consumer, IArgument parameter, string? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (!TimeSpan.TryParse(value, out TimeSpan span))
             {
-                value = value.ToLower().Trim();
+                value = value?.ToLower()?.Trim() ?? "";
                 MatchCollection matches = _regex.Matches(value);
                 if (matches.Count != 0)
                 {

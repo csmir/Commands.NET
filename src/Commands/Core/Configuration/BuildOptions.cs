@@ -11,7 +11,7 @@ namespace Commands.Core
     {
         const string DEFAULT_REGEX = @"^[a-z0-9_-]*$";
 
-        private Dictionary<Type, TypeConverterBase> _keyedConverters;
+        private Dictionary<Type, TypeConverterBase>? _keyedConverters;
 
         /// <summary>
         ///     Gets or sets a collection of assemblies that are to be used to discover created modules.
@@ -19,7 +19,7 @@ namespace Commands.Core
         /// <remarks>
         ///     Default: <see cref="Assembly.GetEntryAssembly"/>
         /// </remarks>
-        public Assembly[] Assemblies { get; set; } = [Assembly.GetEntryAssembly()];
+        public Assembly[] Assemblies { get; set; } = [ Assembly.GetEntryAssembly()! ]; // never null in managed context.
 
         /// <summary>
         ///     Gets or sets a collection of <see cref="TypeConverterBase"/>'s representing predefined <see cref="ValueType"/> conversion.
@@ -48,18 +48,20 @@ namespace Commands.Core
             {
                 if (_keyedConverters == null)
                 {
-                    SetKeyedConverters(null);
+                    return SetKeyedConverters(null);
                 }
 
                 return _keyedConverters;
             }
         }
 
-        internal void SetKeyedConverters(IEnumerable<TypeConverterBase> converters)
+        internal Dictionary<Type, TypeConverterBase> SetKeyedConverters(IEnumerable<TypeConverterBase>? converters)
         {
             _keyedConverters = TypeConverters
-                .UnionBy(converters, x => x.Type)
+                .UnionBy(converters ?? [], x => x.Type)
                 .ToDictionary(x => x.Type, x => x);
+
+            return _keyedConverters;
         }
     }
 }

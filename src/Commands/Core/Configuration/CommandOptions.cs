@@ -1,4 +1,5 @@
 ﻿using Commands.Conditions;
+using Commands.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -9,8 +10,8 @@ namespace Commands.Core
     /// </summary>
     public sealed class CommandOptions()
     {
-        private ILogger _logger = null;
-        private IServiceScope _scope = null;
+        private ILogger? _logger = null;
+        private IServiceScope? _scope = null;
 
         /// <summary>
         ///     Gets or sets the approach to asynchronousity in command execution.
@@ -46,6 +47,11 @@ namespace Commands.Core
         {
             get
             {
+                if (_logger == null)
+                {
+                    ThrowHelpers.ThrowInvalidOperation("Consider populating this property before use, or wait for the CommandManager to generate a scope.");
+                }
+
                 return _logger;
             }
             set
@@ -67,6 +73,11 @@ namespace Commands.Core
         {
             get
             {
+                if (_scope == null)
+                {
+                    ThrowHelpers.ThrowInvalidOperation("Consider populating this property before use, or wait for the CommandManager to generate a scope.");
+                }
+
                 return _scope;
             }
             set

@@ -2,7 +2,6 @@
 
 namespace Commands.Core
 {
-#nullable enable
     /// <summary>
     ///     The result of a check operation within the command execution pipeline.
     /// </summary>

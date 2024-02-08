@@ -3,7 +3,6 @@ using System.Diagnostics;
 
 namespace Commands.Results
 {
-#nullable enable
     /// <summary>
     ///     The result of the source acquirement within the command execution pipeline.
     /// </summary>

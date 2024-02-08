@@ -30,7 +30,7 @@ namespace Commands.Reflection
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
-        public TypeConverterBase Converter { get; }
+        public TypeConverterBase? Converter { get; } = null;
 
         internal ArgumentInfo(
             ParameterInfo parameterInfo, BuildOptions options)
@@ -67,7 +67,7 @@ namespace Commands.Reflection
 
             Attributes = attributes;
             ExposedType = parameterInfo.ParameterType;
-            Name = parameterInfo.Name;
+            Name = parameterInfo.Name ?? "";
         }
 
         /// <inheritdoc />

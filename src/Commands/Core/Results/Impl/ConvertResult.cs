@@ -4,7 +4,6 @@ using System.Diagnostics;
 
 namespace Commands.Core
 {
-#nullable enable
     /// <summary>
     ///     The result of a convert operation within the command execution pipeline.
     /// </summary>

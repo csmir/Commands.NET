@@ -4,7 +4,6 @@ using System.Net.Http.Headers;
 
 namespace Commands.Core
 {
-#nullable enable
     /// <summary>
     ///     The result of an invocation operation within the command execution pipeline.
     /// </summary>

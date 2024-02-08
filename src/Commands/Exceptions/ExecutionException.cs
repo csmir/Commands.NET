@@ -20,7 +20,7 @@
         /// </summary>
         /// <param name="message">The message that represents the reason of the exception being thrown.</param>
         /// <param name="innerException">An exception thrown by an inner operation, if present.</param>
-        public ExecutionException(string message, Exception innerException = null)
+        public ExecutionException(string message, Exception? innerException = null)
             : base(message, innerException)
         {
 

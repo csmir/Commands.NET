@@ -32,7 +32,7 @@ namespace Commands.Parsing
         ///         </item>
         ///     </list>
         /// </remarks>
-        public static object[] Parse(string toParse)
+        public static object[] Parse(string? toParse)
         {
             // return empty range on empty object.
             if (string.IsNullOrWhiteSpace(toParse))

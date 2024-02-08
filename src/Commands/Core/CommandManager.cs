@@ -16,9 +16,6 @@ namespace Commands.Core
     /// <remarks>
     ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
     /// </remarks>
-    /// <remarks>
-    /// 
-    /// </remarks>
     /// <param name="services"></param>
     /// <param name="logFactory"></param>
     /// <param name="finalizer"></param>
@@ -64,9 +61,11 @@ namespace Commands.Core
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Discard"/>.</returns>
         public virtual async Task TryExecuteAsync<T>(
-            T consumer, object[] args, CommandOptions options = default)
+            T consumer, object[] args, CommandOptions? options = default)
             where T : ConsumerBase
         {
+            options ??= new CommandOptions();
+
             switch (options.AsyncMode)
             {
                 case AsyncMode.Await:
@@ -119,7 +118,7 @@ namespace Commands.Core
             T consumer, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
-            IRunResult result = null;
+            IRunResult? result = null;
 
             var searches = Search(args);
 
@@ -128,7 +127,7 @@ namespace Commands.Core
 
             options.Logger.LogDebug("Scope started. Resolved mode: {}", options.AsyncMode);
 
-            foreach (var search in searches.OrderByDescending(x => x.Component.Priority))
+            foreach (var search in searches.OrderByDescending(x => x.Component!.Priority)) // never null in search result.
             {
                 if (search.Component is CommandInfo command)
                 {
@@ -177,7 +176,7 @@ namespace Commands.Core
 
             // verify check success, if not, return the failure.
             if (!precondition.Success)
-                return MatchResult.FromError(command, MatchException.MatchFailed(precondition.Exception));
+                return MatchResult.FromError(command, MatchException.MatchFailed(precondition.Exception!)); // never null if precondition failed.
 
             // read the command parameters in right order.
             var conversion = await ConvertAsync(consumer, command, argHeight, args, options);
@@ -188,9 +187,9 @@ namespace Commands.Core
             {
                 // check for read success.
                 if (!conversion[i].Success)
-                    return MatchResult.FromError(command, conversion[i].Exception);
+                    return MatchResult.FromError(command, conversion[i].Exception!); // never null if conversion failed.
 
-                arguments[i] = conversion[i].Value;
+                arguments[i] = conversion[i].Value!; // never null if conversion is successful.
             }
 
             // return successful match if execution reaches here.
@@ -334,9 +333,9 @@ namespace Commands.Core
 
                 var targetInstance = options.Scope.ServiceProvider.GetService(match.Command.Module.Type);
 
-                var module = targetInstance != null
-                    ? targetInstance as ModuleBase
-                    : ActivatorUtilities.CreateInstance(options.Scope.ServiceProvider, match.Command.Module.Type) as ModuleBase;
+                var module = targetInstance != null // never null in casting logic.
+                    ? (targetInstance as ModuleBase)!
+                    : (ActivatorUtilities.CreateInstance(options.Scope.ServiceProvider, match.Command.Module.Type) as ModuleBase)!;
 
                 module.Consumer = consumer;
                 module.Command = match.Command;
@@ -353,7 +352,7 @@ namespace Commands.Core
 
                 if (!checkResult.Success)
                 {
-                    return InvokeResult.FromError(match.Command, InvokeException.InvokeFailed(checkResult.Exception));
+                    return InvokeResult.FromError(match.Command, InvokeException.InvokeFailed(checkResult.Exception!)); // never null when check failed.
                 }
 
                 return result;
