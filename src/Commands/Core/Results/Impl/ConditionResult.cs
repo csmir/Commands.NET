@@ -2,6 +2,7 @@
 
 namespace Commands.Core
 {
+#nullable enable
     /// <summary>
     ///     The result of a check operation within the command execution pipeline.
     /// </summary>
@@ -9,7 +10,7 @@ namespace Commands.Core
     public readonly struct ConditionResult : IRunResult
     {
         /// <inheritdoc />
-        public Exception Exception { get; }
+        public Exception? Exception { get; }
 
         /// <inheritdoc />
         public bool Success
@@ -20,7 +21,7 @@ namespace Commands.Core
             }
         }
 
-        private ConditionResult(Exception exception)
+        private ConditionResult(Exception? exception)
         {
             Exception = exception;
         }

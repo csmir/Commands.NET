@@ -1,5 +1,6 @@
 ﻿namespace Commands.Core
 {
+#nullable enable
     /// <summary>
     ///     The result of any operation within the command execution pipeline.
     /// </summary>
@@ -15,7 +16,7 @@
         /// <remarks>
         ///     Will be <see langword="null"/> if <see cref="Success"/> returns <see langword="true"/>.
         /// </remarks>
-        public Exception Exception { get; }
+        public Exception? Exception { get; }
 
         /// <summary>
         ///     Gets if the result was successful or not.

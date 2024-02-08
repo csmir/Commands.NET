@@ -3,6 +3,7 @@ using System.Diagnostics;
 
 namespace Commands.Core
 {
+#nullable enable
     /// <summary>
     ///     The result of a match operation within the command execution pipeline.
     /// </summary>
@@ -10,7 +11,7 @@ namespace Commands.Core
     public readonly struct MatchResult : IRunResult
     {
         /// <inheritdoc />
-        public Exception Exception { get; }
+        public Exception? Exception { get; }
 
         /// <inheritdoc />
         public bool Success
@@ -26,9 +27,9 @@ namespace Commands.Core
         /// </summary>
         public CommandInfo Command { get; }
 
-        internal object[] Arguments { get; }
+        internal object[]? Arguments { get; }
 
-        private MatchResult(CommandInfo command, object[] arguments, Exception exception)
+        private MatchResult(CommandInfo command, object[]? arguments, Exception? exception)
         {
             Command = command;
             Arguments = arguments;

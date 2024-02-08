@@ -3,6 +3,7 @@ using System.Diagnostics;
 
 namespace Commands.Results
 {
+#nullable enable
     /// <summary>
     ///     The result of the source acquirement within the command execution pipeline.
     /// </summary>
@@ -10,7 +11,7 @@ namespace Commands.Results
     public readonly struct SourceResult : IRunResult
     {
         /// <inheritdoc />
-        public Exception Exception { get; }
+        public Exception? Exception { get; }
 
         /// <inheritdoc />
         public bool Success
@@ -21,13 +22,13 @@ namespace Commands.Results
             }
         }
 
-        internal CommandOptions Options { get; }
+        internal CommandOptions? Options { get; }
 
-        internal ConsumerBase Consumer { get; }
+        internal ConsumerBase? Consumer { get; }
 
-        internal object[] Args { get; }
+        internal object[]? Args { get; }
 
-        private SourceResult(ConsumerBase consumer, object[] args, CommandOptions options, Exception exception)
+        private SourceResult(ConsumerBase? consumer, object[]? args, CommandOptions? options, Exception? exception)
         {
             Options = options;
             Consumer = consumer;

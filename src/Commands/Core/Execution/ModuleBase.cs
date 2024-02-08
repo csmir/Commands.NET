@@ -32,7 +32,7 @@ namespace Commands.Core
                     }
                     else
                     {
-                        ThrowHelpers.ThrowInvalidOperation("The consumer does not match as T.");
+                        ThrowHelpers.ThrowInvalidOperation($"{Consumer.GetType()} cannot be cast to {typeof(T)}.");
                     }
                 }
                 return _consumer;

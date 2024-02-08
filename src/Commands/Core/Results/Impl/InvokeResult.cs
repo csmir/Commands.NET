@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 
 namespace Commands.Core
 {
+#nullable enable
     /// <summary>
     ///     The result of an invocation operation within the command execution pipeline.
     /// </summary>
@@ -11,7 +12,7 @@ namespace Commands.Core
     public readonly struct InvokeResult : IRunResult
     {
         /// <inheritdoc />
-        public Exception Exception { get; }
+        public Exception? Exception { get; }
 
         /// <inheritdoc />
         public bool Success
@@ -27,7 +28,7 @@ namespace Commands.Core
         /// </summary>
         public CommandInfo Command { get; }
 
-        private InvokeResult(CommandInfo command, Exception exception)
+        private InvokeResult(CommandInfo command, Exception? exception)
         {
             Command = command;
             Exception = exception;

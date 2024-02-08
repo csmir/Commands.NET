@@ -5,6 +5,7 @@ using System.Reflection.Metadata.Ecma335;
 
 namespace Commands.Core
 {
+#nullable enable
     /// <summary>
     ///     The result of a search operation within the command execution pipeline.
     /// </summary>
@@ -12,7 +13,7 @@ namespace Commands.Core
     public readonly struct SearchResult : IRunResult
     {
         /// <inheritdoc />
-        public Exception Exception { get; }
+        public Exception? Exception { get; }
 
         /// <inheritdoc />
         public bool Success
@@ -26,11 +27,11 @@ namespace Commands.Core
         /// <summary>
         ///     Gets the component that was discovered for this result.
         /// </summary>
-        public IConditional Component { get; }
+        public IConditional? Component { get; }
 
         internal int SearchHeight { get; }
 
-        private SearchResult(IConditional component, int searchHeight, Exception exception)
+        private SearchResult(IConditional? component, int searchHeight, Exception? exception)
         {
             Component = component;
             SearchHeight = searchHeight;

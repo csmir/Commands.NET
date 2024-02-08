@@ -4,6 +4,7 @@ using System.Diagnostics;
 
 namespace Commands.Core
 {
+#nullable enable
     /// <summary>
     ///     The result of a convert operation within the command execution pipeline.
     /// </summary>
@@ -11,7 +12,7 @@ namespace Commands.Core
     public readonly struct ConvertResult : IRunResult
     {
         /// <inheritdoc />
-        public Exception Exception { get; }
+        public Exception? Exception { get; }
 
         /// <inheritdoc />
         public bool Success
@@ -22,9 +23,9 @@ namespace Commands.Core
             }
         }
 
-        internal object Value { get; }
+        internal object? Value { get; }
 
-        private ConvertResult(Exception exception, object value)
+        private ConvertResult(Exception? exception, object? value)
         {
             Exception = exception;
             Value = value;
