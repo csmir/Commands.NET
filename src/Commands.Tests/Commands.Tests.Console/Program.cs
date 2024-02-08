@@ -27,6 +27,6 @@ while (true)
 
     await framework.TryExecuteAsync(new ConsumerBase(), input, new()
     {
-        AsyncMode = AsyncMode.Discard
+        AsyncMode = AsyncMode.Await
     });
 }

@@ -101,8 +101,13 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public override string ToString()
+            => ToString(true);
+
+        /// <inheritdoc cref="ToString()"/>
+        /// <param name="withModuleInfo">Defines if the module information should be appended on the command level.</param>
+        public string ToString(bool withModuleInfo)
         {
-            return $"{Module}.{Target.Name}['{Name}']({string.Join<IArgument>(", ", Arguments)})";
+            return $"{(withModuleInfo ? $"{Module}." : "")}{Target.Name}['{Name}']({string.Join<IArgument>(", ", Arguments)})";
         }
     }
 }

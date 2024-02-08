@@ -16,12 +16,15 @@ namespace Commands.Helpers
 
             var components = BuildComponents(options);
 
+            // run through components to discovery queryability
             foreach (var component in components)
             {
+                // if module is queryable, it can serve as a top level component.
                 if (component.IsQueryable)
                 {
                     yield return component;
-                }
+                } 
+                // if this is not the case, its subcomponents will be added as top level components.
                 else foreach (var subComponent in component.Components)
                 {
                     yield return subComponent;
@@ -31,12 +34,14 @@ namespace Commands.Helpers
 
         public static IEnumerable<ModuleInfo> BuildComponents(BuildOptions options)
         {
+            // run through all defined assemblies.
             foreach (var assembly in options.Assemblies)
             {
+                // run through every type of the assembly.
                 foreach (var type in assembly.GetTypes())
                 {
                     // if the type does not match module type.
-                    if (!m_type.IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
+                    if (!m_type.IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters || type.IsNested)
                     {
                         continue;
                     }
@@ -52,11 +57,13 @@ namespace Commands.Helpers
                             continue;
                         }
 
+                        // validate and set aliases.
                         group.ValidateAliases(options.NamingRegex);
 
                         aliases = group.Aliases;
                     }
 
+                    // yield a new module with or without aliases.
                     yield return new ModuleInfo(type, null, aliases, options);
                 }
             }
@@ -65,17 +72,22 @@ namespace Commands.Helpers
         public static IEnumerable<ModuleInfo> GetModules(
             ModuleInfo module, BuildOptions options)
         {
+            // run through all subtypes of type.
             foreach (var type in module.Type.GetNestedTypes())
             {
+                // run through all attributes.
                 foreach (var attribute in type.GetCustomAttributes(true))
                 {
+                    // skip attribute if its not group.
                     if (attribute is not GroupAttribute group)
                     {
                         continue;
                     }
 
+                    // validate aliases.
                     group.ValidateAliases(options.NamingRegex);
 
+                    // yield a new module if all aliases are valid.
                     yield return new ModuleInfo(type, module, group.Aliases, options);
                 }
             }
@@ -83,19 +95,22 @@ namespace Commands.Helpers
 
         public static IEnumerable<CommandInfo> GetCommands(ModuleInfo module, BuildOptions options)
         {
+            // run through all type methods.
             foreach (var method in module.Type.GetMethods())
             {
-                var aliases = Array.Empty<string>();
-
+                // run through attributes.
                 foreach (var attribute in method.GetCustomAttributes(true))
                 {
+                    // skip attribute if its not command.
                     if (attribute is not CommandAttribute command)
                     {
                         continue;
                     }
 
+                    // validate aliases.
                     command.ValidateAliases(options.NamingRegex);
 
+                    // yield a new command if all aliases are valid.
                     yield return new CommandInfo(module, method, command.Aliases, options);
                 }
             }

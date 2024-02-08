@@ -2,6 +2,7 @@
 
 namespace Commands.Tests
 {
+    [Group("command")]
     public class Module : ModuleBase<ConsumerBase>
     {
         [Command("priority")]
@@ -34,7 +35,7 @@ namespace Commands.Tests
         [Command("multiple")]
         public void Test(bool truee, bool falsee)
         {
-            System.Console.WriteLine($"Success: {truee}, {falsee}");
+            Console.WriteLine($"Success: {truee}, {falsee}");
         }
 
         [Command("multiple")]

@@ -10,6 +10,11 @@ namespace Commands.Helpers
         {
             List<SearchResult> discovered = [];
 
+            if (args.Length == searchHeight)
+            {
+                return discovered;
+            }
+
             // select command by name or alias.
             var selection = components.Where(command => command.Aliases.Any(x => x == (string)args[searchHeight]));
 
