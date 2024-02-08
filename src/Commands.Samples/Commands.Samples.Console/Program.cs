@@ -8,10 +8,13 @@ using Commands.Samples;
 
 using Microsoft.Extensions.DependencyInjection;
 
-var collection = new ServiceCollection()
-    .ConfigureCommands(configure => configure
-        .AddResultResolver((c, r, p) => Console.WriteLine(r))
-        .AddTypeConverter<ReflectionTypeConverter>());
+var collection = new ServiceCollection();
+
+collection.ConfigureCommands(configure =>
+{
+    configure.AddResultResolver((c, r, p) => Console.WriteLine(r));
+    configure.AddTypeConverter<ReflectionTypeConverter>();
+});
 
 var services = collection.BuildServiceProvider();
 

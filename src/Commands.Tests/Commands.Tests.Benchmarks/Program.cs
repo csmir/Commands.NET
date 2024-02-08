@@ -5,44 +5,47 @@ using Commands.Helpers;
 using Commands.Parsing;
 using Microsoft.Extensions.DependencyInjection;
 
-public class Program
+namespace Commands.Tests
 {
-    private readonly CommandManager _manager;
-
-    public Program()
+    public class Program
     {
-        var services = new ServiceCollection()
-            .ConfigureCommands()
-            .AddLogging()
-            .BuildServiceProvider();
+        private readonly CommandManager _manager;
 
-        _manager = services.GetRequiredService<CommandManager>();
-    }
+        public Program()
+        {
+            var services = new ServiceCollection()
+                .ConfigureCommands()
+                .AddLogging()
+                .BuildServiceProvider();
 
-    static void Main()
-        => BenchmarkRunner.Run<Program>();
+            _manager = services.GetRequiredService<CommandManager>();
+        }
 
-    [Benchmark]
-    public void ParseText()
-    {
-        StringParser.Parse("command");
-    }
+        static void Main()
+            => BenchmarkRunner.Run<Program>();
 
-    [Benchmark]
-    public async Task RunCommand()
-    {
-        await _manager!.TryExecuteAsync(new ConsumerBase(), ["base-test"]);
-    }
+        [Benchmark]
+        public void ParseText()
+        {
+            StringParser.Parse("command");
+        }
 
-    [Benchmark]
-    public async Task RunParametered()
-    {
-        await _manager!.TryExecuteAsync(new ConsumerBase(), ["param-test", "1"]);
-    }
+        [Benchmark]
+        public async Task RunCommand()
+        {
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["base-test"]);
+        }
 
-    [Benchmark]
-    public async Task RunNested()
-    {
-        await _manager!.TryExecuteAsync(new ConsumerBase(), ["nested", "test"]);
+        [Benchmark]
+        public async Task RunParametered()
+        {
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["param-test", "1"]);
+        }
+
+        [Benchmark]
+        public async Task RunNested()
+        {
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["nested", "test"]);
+        }
     }
 }

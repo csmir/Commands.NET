@@ -3,14 +3,9 @@ using Commands.Reflection;
 
 namespace Commands.Tests
 {
-    public sealed class HelpModule : ModuleBase
+    public sealed class HelpModule(CommandManager manager) : ModuleBase
     {
-        private readonly CommandManager _manager;
-
-        public HelpModule(CommandManager manager)
-        {
-            _manager = manager;
-        }
+        private readonly CommandManager _manager = manager;
 
         [Command("help")]
         public void Help()

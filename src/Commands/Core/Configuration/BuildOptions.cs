@@ -38,7 +38,9 @@ namespace Commands.Core
         /// <remarks>
         ///     Default: <c>@"^[a-z0-9_-]*$"</c>
         /// </remarks>
+#pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'. We don't do this because it can be changed in source.
         public Regex NamingRegex { get; set; } = new(DEFAULT_REGEX, RegexOptions.Compiled);
+#pragma warning restore SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
 
         internal Dictionary<Type, TypeConverterBase> KeyedConverters
         {

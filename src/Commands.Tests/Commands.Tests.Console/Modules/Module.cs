@@ -9,14 +9,14 @@ namespace Commands.Tests
         [Priority(1)]
         public void Priority1(bool optional)
         {
-            Console.WriteLine($"Success: {Command.Priority}");
+            Console.WriteLine($"Success: {Command.Priority} {optional}");
         }
 
         [Command("priority")]
         [Priority(2)]
         public Task Priority2(bool optional)
         {
-            Console.WriteLine($"Success: {Command.Priority}");
+            Console.WriteLine($"Success: {Command.Priority} {optional}");
             return Task.CompletedTask;
         }
 

@@ -10,13 +10,22 @@ namespace Commands.Helpers
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static class ServiceHelpers
     {
-        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
+        /// <summary>
+        ///     Configures the <see cref="IServiceCollection"/> for use of a <see cref="CommandManager"/>.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
         public static IServiceCollection ConfigureCommands(this IServiceCollection collection)
         {
             return collection.ConfigureCommands<CommandManager>(x => { });
         }
 
-        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
+        /// <summary>
+        ///     Configures the <see cref="IServiceCollection"/> for use of a <see cref="CommandManager"/> with the provided builder configuration.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="configureDelegate">A delegate to configure the <see cref="ManagerBuilder{T}"/> responsible for customizing the <see cref="CommandManager"/> setup.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
         public static IServiceCollection ConfigureCommands(this IServiceCollection collection,
             Action<ManagerBuilder<CommandManager>> configureDelegate)
         {
@@ -25,7 +34,13 @@ namespace Commands.Helpers
             return collection;
         }
 
-        /// <returns>The same <see cref="IServiceCollection"/> for call chaining.</returns>
+        /// <summary>
+        ///     Configures the <see cref="IServiceCollection"/> for use of a <see cref="CommandManager"/> with the provided builder configuration.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="configureDelegate">A delegate to configure the <see cref="ManagerBuilder{T}"/> responsible for customizing the <see cref="CommandManager"/> setup.</param>
+        /// <param name="parameters">Constructor arguments of <typeparamref name="T"/> that are not provided by the <see cref="IServiceCollection"/>.</param>
+        /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
         public static IServiceCollection ConfigureCommands<T>(this IServiceCollection collection,
             Action<ManagerBuilder<T>> configureDelegate, params object[] parameters)
             where T : CommandManager

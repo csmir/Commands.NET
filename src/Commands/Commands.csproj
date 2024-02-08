@@ -1,36 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+<!-- DEFAULTS -->
     <TargetFramework>net8.0</TargetFramework>
 	<ImplicitUsings>enable</ImplicitUsings>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	  
+	  <!-- Do not warn CA1822 for deliberate instance-access design. -->
+	<NoWarn>CA1822</NoWarn>
+<!-- END DEFAULTS -->
 
+<!-- VERSIONS -->
 	<AssemblyVersion>1.0</AssemblyVersion>
-	<PackageVersion>1-alpha</PackageVersion>
+	<PackageVersion>1-alpha1</PackageVersion>
 	<FileVersion>1.0.0.0</FileVersion>
+<!-- END VERSIONS -->
 
+<!-- PACKAGE -->
+	<PackageId>Commands.NET</PackageId>
+	  
 	<Authors>Commands.NET contributors.</Authors>
-
+	<Title>Commands.NET</Title>
+	<Description>A robust command library to listen to virtually any input source and handle it effectively at small or large scale.</Description>
+	<PackageTags>commands, cli, console, text, chat</PackageTags>
+	<NeutralLanguage>en-US</NeutralLanguage>
+	  
 	<PackageProjectUrl>https://github.com/csmir/Commands.NET</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/csmir/Commands.NET</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 
-	<PackageTags>commands, cli, console, text, chat</PackageTags>
-	  
-	<Title>Commands.NET</Title>
-	<Description>A robust command library to listen to virtually any input source and handle it effectively at small or large scale.</Description>
-	
-	<NeutralLanguage>en-US</NeutralLanguage>
-
-	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	<PackageId>Commands.NET</PackageId>
-
 	<PackageReadmeFile>README.md</PackageReadmeFile>
-
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
+<!-- END PACKAGE-->
   </PropertyGroup>
 
   <ItemGroup>
+<!-- PACKAGE -->
     <None Include="..\..\LICENSE">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
@@ -39,6 +45,7 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+<!-- END PACKAGE-->
   </ItemGroup>
 
   <ItemGroup>

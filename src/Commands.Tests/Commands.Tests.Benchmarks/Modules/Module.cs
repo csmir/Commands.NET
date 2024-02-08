@@ -13,7 +13,8 @@ namespace Commands.Tests
         [Command("param-test")]
         public void Test(int i)
         {
-
+            if (i == 0)
+                return;
         }
 
         [Group("nested")]

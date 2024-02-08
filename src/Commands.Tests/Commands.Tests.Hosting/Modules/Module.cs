@@ -2,10 +2,8 @@
 
 namespace Commands.Tests
 {
-    public sealed class Module(IServiceProvider provider) : ModuleBase
+    public sealed class Module : ModuleBase
     {
-        private readonly IServiceProvider _provider = provider;
-
         [Command("test")]
         public void Test()
         {
