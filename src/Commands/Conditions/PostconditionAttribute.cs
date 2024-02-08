@@ -44,7 +44,7 @@ namespace Commands.Conditions
                 return new(checkEx);
             }
 
-            return new(ConditionException.FailedPost(exception));
+            return new(ConditionException.PostconditionFailed(exception));
         }
 
         /// <summary>

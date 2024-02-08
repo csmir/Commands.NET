@@ -8,5 +8,11 @@
     public sealed class SourceException(string message, Exception innerException = null)
         : ExecutionException(message, innerException)
     {
+        const string SOURCE_FAILED = "Failed to acquire source data. View inner exception for more details.";
+
+        internal static SourceException SourceAcquirementFailed(Exception innerException)
+        {
+            return new SourceException(SOURCE_FAILED, innerException);
+        }
     }
 }

@@ -11,12 +11,12 @@
         const string POSTCONDITION_FAILED = "Postcondition evaluation failed. View inner exception for more details.";
         const string PRECONDITION_FAILED = "Precondition evaluation failed. View inner exception for more details.";
 
-        internal static ConditionException FailedPre(Exception innerException)
+        internal static ConditionException PreconditionFailed(Exception innerException)
         {
             return new(PRECONDITION_FAILED, innerException);
         }
 
-        internal static ConditionException FailedPost(Exception innerException)
+        internal static ConditionException PostconditionFailed(Exception innerException)
         {
             return new(POSTCONDITION_FAILED, innerException);
         }

@@ -10,7 +10,7 @@
     {
         const string MATCH_FAILED = "Command failed to reach execution. View inner exception for more details.";
 
-        internal static MatchException Failed(Exception innerException)
+        internal static MatchException MatchFailed(Exception innerException)
         {
             return new(MATCH_FAILED, innerException);
         }

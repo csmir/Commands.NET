@@ -8,7 +8,7 @@ namespace Commands.Resolvers
     {
         private readonly Func<ValueTask<SourceResult>> _func = func;
 
-        public override ValueTask<SourceResult> EvaluateAsync()
+        public override ValueTask<SourceResult> EvaluateAsync(CancellationToken cancellationToken)
         {
             return _func();
         }

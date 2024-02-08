@@ -8,7 +8,7 @@ namespace Commands.Resolvers
     {
         private readonly Func<SourceResult> _func = func;
 
-        public override async ValueTask<SourceResult> EvaluateAsync()
+        public override async ValueTask<SourceResult> EvaluateAsync(CancellationToken cancellationToken)
         {
             await ValueTask.CompletedTask;
 

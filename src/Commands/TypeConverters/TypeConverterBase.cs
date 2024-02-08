@@ -31,7 +31,7 @@ namespace Commands.TypeConverters
     /// </summary>
     /// <remarks>
     ///     Registering custom <see cref="TypeConverterBase"/>'s is not an automated process. 
-    ///     To register them for the <see cref="CommandManager"/> to use, add them to your <see cref="IServiceProvider"/> using <see cref="ServiceHelpers.TryAddConverter(Microsoft.Extensions.DependencyInjection.IServiceCollection, TypeConverterBase)"/>
+    ///     To register them for the <see cref="CommandManager"/> to use, add them to your <see cref="IServiceProvider"/> using <see cref="ManagerBuilder{T}.AddTypeConverter{TConverter}()"/>
     /// </remarks>
     public abstract class TypeConverterBase
     {
@@ -71,7 +71,7 @@ namespace Commands.TypeConverters
             {
                 return new(convertEx);
             }
-            return new(ConvertException.Failed(Type, exception));
+            return new(ConvertException.ConvertFailed(Type, exception));
         }
 
         /// <summary>

@@ -40,7 +40,7 @@ namespace Commands.Core
             SearchHeight = 0;
 
             Component = module;
-            Exception = SearchException.Incomplete();
+            Exception = SearchException.SearchIncomplete();
         }
 
         internal SearchResult(Exception exception)

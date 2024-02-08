@@ -18,7 +18,7 @@ namespace Commands.Helpers
         /// <param name="configureDelegate">A delegate to configure the <see cref="BuildOptions"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
         /// <returns>The same <see cref="IHostBuilder"/> for call chaining.</returns>
         public static IHostBuilder ConfigureCommands(this IHostBuilder builder,
-            [DisallowNull] Action<HostBuilderContext, ManagerBuilder<CommandManager>> configureDelegate)
+            [DisallowNull] Action<HostBuilderContext, HostManagerBuilder<CommandManager>> configureDelegate)
         {
             return builder.ConfigureCommands<CommandManager>(configureDelegate);
         }
@@ -31,7 +31,7 @@ namespace Commands.Helpers
         /// <param name="configureDelegate">A delegate to configure the <see cref="BuildOptions"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
         /// <returns>The same <see cref="IHostBuilder"/> for call chaining.</returns>
         public static IHostBuilder ConfigureCommands<TManager>(this IHostBuilder builder,
-            [DisallowNull] Action<HostBuilderContext, ManagerBuilder<TManager>> configureDelegate)
+            [DisallowNull] Action<HostBuilderContext, HostManagerBuilder<TManager>> configureDelegate)
             where TManager : CommandManager
         {
             if (configureDelegate == null)
@@ -41,7 +41,7 @@ namespace Commands.Helpers
 
             builder.ConfigureServices((context, services) =>
             {
-                var builder = new ManagerBuilder<TManager>(services);
+                var builder = new HostManagerBuilder<TManager>(services);
 
                 configureDelegate(context, builder);
 

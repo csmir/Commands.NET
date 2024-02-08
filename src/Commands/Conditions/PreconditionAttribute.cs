@@ -46,7 +46,7 @@ namespace Commands.Conditions
                 return new(checkEx);
             }
 
-            return new(ConditionException.FailedPre(exception));
+            return new(ConditionException.PreconditionFailed(exception));
         }
 
         /// <summary>

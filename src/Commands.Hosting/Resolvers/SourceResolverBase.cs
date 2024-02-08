@@ -6,11 +6,16 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.Resolvers
 {
+    /// <summary>
+    ///     A handler for pre-execution processes.
+    /// </summary>
     public abstract class SourceResolverBase
     {
-        const string _exHeader = "Postcondition evaluation failed. View inner exception for more details.";
-
-        public abstract ValueTask<SourceResult> EvaluateAsync();
+        /// <summary>
+        ///     Evaluates pre-execution data, generating consumer data, query data and configuring execution options.
+        /// </summary>
+        /// <returns>An awaitable <see cref="ValueTask"/> containing the consumer, query and options for the command to be executed.</returns>
+        public abstract ValueTask<SourceResult> EvaluateAsync(CancellationToken cancellationToken);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> representing a failed evaluation.
@@ -28,7 +33,7 @@ namespace Commands.Resolvers
             {
                 return new(convertEx);
             }
-            return new(new SourceException(_exHeader, exception));
+            return new(SourceException.SourceAcquirementFailed(exception));
         }
 
         /// <summary>
@@ -56,6 +61,19 @@ namespace Commands.Resolvers
             where T : ConsumerBase
         {
             return new(consumer, args);
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="SourceResult"/> representing a successful evaluation.
+        /// </summary>
+        /// <param name="consumer">The consumer of the scope created for the execution of this source.</param>
+        /// <param name="args">The arguments to be used to run a command.</param>
+        /// <param name="options">The options used to configure command execution.</param>
+        /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
+        protected SourceResult Success<T>(T consumer, object[] args, CommandOptions options)
+            where T : ConsumerBase
+        {
+            return new(consumer, args, options);
         }
     }
 }

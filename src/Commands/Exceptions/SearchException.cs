@@ -11,12 +11,12 @@
         const string NOT_FOUND = "No commands were found with the provided input.";
         const string INCOMPLETE = "A module was found with provided input, but no command to target was discovered.";
 
-        internal static SearchException NotFound()
+        internal static SearchException SearchNotFound()
         {
             return new(NOT_FOUND);
         }
 
-        internal static SearchException Incomplete()
+        internal static SearchException SearchIncomplete()
         {
             return new(INCOMPLETE);
         }

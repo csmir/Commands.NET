@@ -30,7 +30,6 @@ namespace Commands.Core
         where T : CommandManager
     {
         private bool actionset = false;
-        private bool configured = false;
 
         /// <summary>
         ///     Gets the services to be configured with added resolvers, converters and options.
@@ -45,6 +44,11 @@ namespace Commands.Core
         ///     The <see cref="AddAssemblies(Assembly[])"/> and <see cref="AddAssembly(Assembly)"/> methods are responsible for adding individual assemblies.
         /// </remarks>
         public BuildOptions Options { get; } = new();
+
+        /// <summary>
+        ///     Gets or sets whether this builder has called <see cref="FinalizeConfiguration(object[])"/> yet.
+        /// </summary>
+        protected bool Configured { get; set; } = false;
 
         /// <summary>
         ///     Creates a new <see cref="ManagerBuilder{T}"/> from the provided <paramref name="services"/>.
@@ -251,7 +255,7 @@ namespace Commands.Core
         /// <returns>The same <see cref="ManagerBuilder{T}"/> for call-chaining.</returns>
         public virtual ManagerBuilder<T> FinalizeConfiguration(params object[] parameters)
         {
-            if (configured)
+            if (Configured)
             {
                 return this;
             }
@@ -266,7 +270,7 @@ namespace Commands.Core
 
             Services.TryAdd(descriptor);
 
-            configured = true;
+            Configured = true;
 
             return this;
         }

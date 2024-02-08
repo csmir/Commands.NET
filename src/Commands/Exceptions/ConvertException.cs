@@ -12,17 +12,17 @@
         const string TOO_SHORT = "Query is too short for best match.";
         const string TOO_LONG = "Query is too long for best match.";
 
-        internal static ConvertException Failed(Type type, Exception innerException)
+        internal static ConvertException ConvertFailed(Type type, Exception innerException)
         {
             return new(string.Format(CONVERTER_FAILED, type), innerException);
         }
 
-        internal static ConvertException TooLong()
+        internal static ConvertException InputTooLong()
         {
             return new(TOO_LONG);
         }
 
-        internal static ConvertException TooShort()
+        internal static ConvertException InputTooShort()
         {
             return new(TOO_SHORT);
         }

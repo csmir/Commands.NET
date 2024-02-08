@@ -154,7 +154,7 @@ namespace Commands.Core
             }
 
             // we set the failed search if it was not yet set.
-            result ??= new SearchResult(SearchException.NotFound());
+            result ??= new SearchResult(SearchException.SearchNotFound());
 
             await _finalizer.FinalizeAsync(consumer, result, options);
         }
@@ -177,7 +177,7 @@ namespace Commands.Core
 
             // verify check success, if not, return the failure.
             if (!check.Success)
-                return new(command, MatchException.Failed(check.Exception));
+                return new(command, MatchException.MatchFailed(check.Exception));
 
             // read the command parameters in right order.
             var readResult = await ConvertAsync(consumer, command, argHeight, args, options);
@@ -310,11 +310,11 @@ namespace Commands.Core
             // check if input is too short.
             if (command.MinLength > length)
             {
-                return [new ConvertResult(exception: ConvertException.TooShort())];
+                return [new ConvertResult(exception: ConvertException.InputTooShort())];
             }
 
             // input is too long.
-            return [new ConvertResult(exception: ConvertException.TooLong())];
+            return [new ConvertResult(exception: ConvertException.InputTooLong())];
         }
 
         /// <summary>
@@ -353,7 +353,7 @@ namespace Commands.Core
 
                 if (!checkResult.Success)
                 {
-                    return new InvokeResult(match.Command, RunException.Failed(checkResult.Exception));
+                    return new InvokeResult(match.Command, InvokeException.InvokeFailed(checkResult.Exception));
                 }
 
                 return result;
