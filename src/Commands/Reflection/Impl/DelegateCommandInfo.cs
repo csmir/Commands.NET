@@ -1,14 +1,17 @@
 ﻿using Commands.Conditions;
 using Commands.Core;
 using Commands.Helpers;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Commands.Reflection
+namespace Commands.Reflection.Impl
 {
-    /// <summary>
-    ///     Reveals information about a command.
-    /// </summary>
-    public sealed class CommandInfo : IConditional, IArgumentBucket, IInvokable
+    public sealed class DelegateCommandInfo : IConditional, IArgumentBucket, IInvokable
     {
         /// <inheritdoc />
         public string Name { get; }
@@ -50,34 +53,28 @@ namespace Commands.Reflection
         public bool IsDelegate { get; }
 
         /// <summary>
-        ///     Gets if the command method is static or not.
-        /// </summary>
-        public bool IsStatic { get; }
-
-        /// <summary>
         ///     Gets the module in which the command is known.
         /// </summary>
         /// <remarks>
-        ///     Will be <see langword="null"/> if the command is <see langword="static"/>.
+        ///     Will be <see langword="null"/> if the command is <see langword="static"/> or a <see langword="delegate"/>.
         /// </remarks>
         public ModuleInfo? Module { get; }
 
         /// <summary>
-        ///     Gets the invocation target of this command.
+        ///     Represents a delegate that will 
         /// </summary>
-        public MethodInfo Target { get; }
+        public Delegate Target { get; }
 
-        internal CommandInfo(
-            ModuleInfo? module, MethodInfo method, string[] aliases, BuildOptions options)
+        internal DelegateCommandInfo(Delegate action, string[] aliases, BuildOptions options)
         {
             IsQueryable = true;
-            IsDelegate = false;
+            IsDelegate = true;
 
-            var attributes = method.GetAttributes(true);
+            var attributes = action.Method.GetAttributes(true);
             var preconditions = attributes.GetPreconditions();
             var postconditions = attributes.GetPostconditions();
 
-            var parameters = method.GetParameters(options);
+            var parameters = action.Method.GetParameters(options);
 
             var (minLength, maxLength) = parameters.GetLength();
 
@@ -91,10 +88,7 @@ namespace Commands.Reflection
 
             Priority = attributes.SelectFirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
 
-            Target = method;
-            Module = module;
-
-            IsStatic = module == null;
+            Target = action;
 
             Attributes = attributes;
             Preconditions = preconditions;
@@ -114,23 +108,7 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public object? Invoke(object? context, params object[]? args)
         {
-            if (IsStatic) // the first argument of the static member will be the context, it takes no instance for the invocation.
-            {
-                return Target.Invoke(null, [context, .. args]);
-            }
-
-            return Target.Invoke(context, args);
-        }
-
-        /// <inheritdoc />
-        public override string ToString()
-            => ToString(true);
-
-        /// <inheritdoc cref="ToString()"/>
-        /// <param name="withModuleInfo">Defines if the module information should be appended on the command level.</param>
-        public string ToString(bool withModuleInfo)
-        {
-            return $"{(withModuleInfo ? $"{Module}." : "")}{Target.Name}['{Name}']({string.Join<IArgument>(", ", Arguments)})";
+            return Target.DynamicInvoke([context, ..args]);
         }
     }
 }
