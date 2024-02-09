@@ -26,7 +26,7 @@ namespace Commands.Core
         /// </summary>
         public CommandInfo Command { get; }
 
-        internal object[]? Arguments { get; }
+        internal object?[]? Arguments { get; }
 
         private MatchResult(CommandInfo command, object[]? arguments, Exception? exception)
         {

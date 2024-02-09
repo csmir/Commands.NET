@@ -16,8 +16,6 @@ namespace Commands.Tests
         {
             var src = Console.ReadLine();
 
-            Console.WriteLine(src);
-
             return ValueTask.FromResult(Success(new ConsumerBase(), StringParser.Parse(src)));   
         }
     }

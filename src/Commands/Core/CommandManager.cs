@@ -36,7 +36,7 @@ namespace Commands.Core
         /// <summary>
         ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="BuildOptions"/> provided when creating the manager.
         /// </summary>
-        public IReadOnlySet<IConditional> Commands { get; } = ReflectionHelpers.BuildComponents(converters, options).ToHashSet();
+        public IReadOnlySet<IConditional> Commands { get; } = ReflectionHelpers.BuildComponents(converters, options).Concat(options.Commands).ToHashSet();
 
         /// <summary>
         ///     Makes an attempt at executing a command from provided <paramref name="args"/>.
@@ -136,7 +136,7 @@ namespace Commands.Core
                     // enter the invocation logic when a match is successful.
                     if (match.Success)
                     {
-                        result = await InvokeAsync(consumer, match, options);
+                        result = await InvokeAsync(consumer, match.Command, match.Arguments!, options); // will never be null when match succeeds.
                         break;
                     }
 
@@ -209,7 +209,7 @@ namespace Commands.Core
         {
             if (options.SkipPreconditions)
             {
-                options.Logger.LogDebug("Precondition evaluation skipped for {}", command);
+                options.Logger!.LogDebug("Precondition evaluation skipped for {}", command);
 
                 return ConditionResult.FromSuccess();
             }
@@ -220,12 +220,12 @@ namespace Commands.Core
 
                 if (!checkResult.Success)
                 {
-                    options.Logger.LogError("Precondition evaluation failed for {}", command);
+                    options.Logger!.LogError("Precondition evaluation failed for {}", command);
                     return checkResult;
                 }
             }
 
-            options.Logger.LogInformation("Precondition evaluation succeeded for {}", command);
+            options.Logger!.LogInformation("Precondition evaluation succeeded for {}", command);
 
             return ConditionResult.FromSuccess();
         }
@@ -243,7 +243,7 @@ namespace Commands.Core
         {
             if (options.SkipPostconditions)
             {
-                options.Logger.LogDebug("Skipped postcondition evaluation for {}", result.Command);
+                options.Logger!.LogDebug("Skipped postcondition evaluation for {}", result.Command);
                 return ConditionResult.FromSuccess();
             }
 
@@ -253,12 +253,12 @@ namespace Commands.Core
 
                 if (!checkResult.Success)
                 {
-                    options.Logger.LogError("Postcondition evaluation failed for {}", result.Command);
+                    options.Logger!.LogError("Postcondition evaluation failed for {}", result.Command);
                     return checkResult;
                 }
             }
 
-            options.Logger.LogInformation("Postcondition evaluation succeeded for {}", result.Command);
+            options.Logger!.LogInformation("Postcondition evaluation succeeded for {}", result.Command);
 
             return ConditionResult.FromSuccess();
         }
@@ -279,7 +279,7 @@ namespace Commands.Core
             // skip if no parameters exist.
             if (!command.HasArguments)
             {
-                options.Logger.LogDebug("Argument evaluation skipped for {}", command);
+                options.Logger!.LogDebug("Argument evaluation skipped for {}", command);
                 return [];
             }
 
@@ -304,7 +304,7 @@ namespace Commands.Core
                 return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
             }
 
-            options.Logger.LogError("Argument evaluation failed for {}", command);
+            options.Logger!.LogError("Argument evaluation failed for {}", command);
 
             // check if input is too short.
             if (command.MinLength > length)
@@ -317,52 +317,37 @@ namespace Commands.Core
         }
 
         /// <summary>
-        ///     Invokes the provided <paramref name="match"/> and returns the result.
+        ///     Invokes the provided <paramref name="command"/> and returns the result.
         /// </summary>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="match">The result of the match intended to be ran.</param>
+        /// <param name="command">The result of the match intended to be ran.</param>
+        /// <param name="args">The converted arguments of the match intended to be ran.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation process.</returns>
         protected virtual async ValueTask<InvokeResult> InvokeAsync<T>(
-            T consumer, MatchResult match, CommandOptions options)
+            T consumer, CommandInfo command, object?[] args, CommandOptions options)
             where T : ConsumerBase
         {
             try
             {
-                options.Logger.LogDebug("Resolving targets for {}", match.Command);
+                var result = await command.Invoker.InvokeAsync(consumer, command, args, options);
 
-                var targetInstance = options.Scope.ServiceProvider.GetService(match.Command.Module.Type);
-
-                var module = targetInstance != null // never null in casting logic.
-                    ? (targetInstance as ModuleBase)!
-                    : (ActivatorUtilities.CreateInstance(options.Scope.ServiceProvider, match.Command.Module.Type) as ModuleBase)!;
-
-                module.Consumer = consumer;
-                module.Command = match.Command;
-                module.Logger = options.Logger;
-
-                options.Logger.LogDebug("Starting invocation of {}", match.Command);
-
-                var value = match.Command.Target.Invoke(module, match.Arguments);
-
-                var result = await module.ResolveReturnAsync(value);
-
-                options.Logger.LogInformation("Invocation succeeded for {}", match.Command);
+                options.Logger!.LogInformation("Invocation succeeded for {}", command);
 
                 var checkResult = await CheckAsync(consumer, result, options);
 
                 if (!checkResult.Success)
                 {
-                    return InvokeResult.FromError(match.Command, InvokeException.InvokeFailed(checkResult.Exception!)); // never null when check failed.
+                    return InvokeResult.FromError(command, InvokeException.InvokeFailed(checkResult.Exception!)); // never null when check failed.
                 }
 
                 return result;
             }
             catch (Exception exception)
             {
-                options.Logger.LogError("Invocation failed for {}", match.Command);
+                options.Logger!.LogError("Invocation failed for {}", command);
 
-                return InvokeResult.FromError(match.Command, exception);
+                return InvokeResult.FromError(command, exception);
             }
         }
     }

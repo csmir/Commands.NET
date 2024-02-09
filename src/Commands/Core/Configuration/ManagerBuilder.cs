@@ -1,8 +1,10 @@
 ﻿using Commands.Helpers;
+using Commands.Reflection;
 using Commands.Resolvers;
 using Commands.TypeConverters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -64,6 +66,7 @@ namespace Commands.Core
             Services = services;
         }
 
+        #region Resolvers
         /// <summary>
         ///     Configures an action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
         /// </summary>
@@ -159,7 +162,9 @@ namespace Commands.Core
 
             return this;
         }
+        #endregion
 
+        #region Converters
         /// <summary>
         ///     Adds a <see cref="TypeConverterBase"/> to the <see cref="Services"/> of this builder that will later be injected into the <see cref="CommandManager"/> for command registration.
         /// </summary>
@@ -194,7 +199,9 @@ namespace Commands.Core
 
             return this;
         }
+        #endregion
 
+        #region Assemblies
         /// <summary>
         ///     Configures the <see cref="Options"/> with an additional assembly.
         /// </summary>
@@ -225,6 +232,24 @@ namespace Commands.Core
             }
 
             Options.Assemblies = [.. assemblies, .. Options.Assemblies];
+            return this;
+        }
+        #endregion
+
+        public virtual ManagerBuilder<T> AddCommand(Delegate commandAction, params string[] aliases)
+        {
+            if (commandAction == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(commandAction);
+            }
+
+            if (aliases == null || aliases.Length == 0)
+            {
+                ThrowHelpers.ThrowInvalidArgument(aliases);
+            }
+
+            Options.Commands = [new CommandInfo(new DelegateInvoker(commandAction.Method, commandAction.Target), aliases, Options), ..Options.Commands];
+
             return this;
         }
 
