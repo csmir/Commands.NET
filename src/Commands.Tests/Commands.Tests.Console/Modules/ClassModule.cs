@@ -10,9 +10,9 @@ namespace Commands.Tests
     [Name("class-based", "cb")]
     public class ClassModule : ModuleBase
     {
-        public void Run()
+        public static void Run(CommandContext context)
         {
-            Console.WriteLine("Success!");
+            Console.WriteLine("Succesfully ran " + context.Command.ToString());
         }
     }
 }

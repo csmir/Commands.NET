@@ -93,14 +93,6 @@ namespace Commands.Reflection
 
             var parameters = invoker.Target.GetParameters(hasContext, options);
 
-            if (hasContext)
-            {
-                if (parameters.Length == 0 || parameters[0].Type != typeof(CommandContext))
-                {
-                    ThrowHelpers.ThrowInvalidOperation($"A delegate or static command signature must implement {nameof(CommandContext)} as the first parameter.");
-                }
-            }
-
             var (minLength, maxLength) = parameters.GetLength();
 
             if (parameters.Any(x => x.Attributes.Contains<RemainderAttribute>(false)))

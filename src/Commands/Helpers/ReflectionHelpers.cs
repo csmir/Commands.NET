@@ -26,9 +26,9 @@ namespace Commands.Helpers
                 }
                 // if this is not the case, its subcomponents will be added as top level components.
                 else foreach (var subComponent in component.Components)
-                    {
-                        yield return subComponent;
-                    }
+                {
+                    yield return subComponent;
+                }
             }
         }
 
@@ -96,7 +96,10 @@ namespace Commands.Helpers
         public static IEnumerable<CommandInfo> GetCommands(ModuleInfo module, bool withDefaults, BuildOptions options)
         {
             // run through all type methods.
-            foreach (var method in module.Type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public))
+
+            var methods = module.Type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
+
+            foreach (var method in methods)
             {
                 var aliases = Array.Empty<string>();
 
@@ -112,7 +115,14 @@ namespace Commands.Helpers
 
                 if (withDefaults || aliases.Length > 0)
                 {
-                    yield return new CommandInfo(module, new InstanceInvoker(method), aliases, false, options);
+                    if (method.IsStatic)
+                    {
+                        yield return new CommandInfo(module, new StaticInvoker(method), aliases, true, options);
+                    }
+                    else
+                    {
+                        yield return new CommandInfo(module, new InstanceInvoker(method), aliases, false, options);
+                    }
                 }
             }
         }
@@ -134,7 +144,14 @@ namespace Commands.Helpers
             var parameters = method.GetParameters();
 
             if (hasContext)
+            {
+                if (parameters.Length == 0)
+                {
+                    ThrowHelpers.ThrowInvalidOperation($"A delegate or static command signature must implement {nameof(CommandContext)} as the first parameter.");
+                }
+
                 parameters = parameters.Skip(1).ToArray();
+            }
 
             var arr = new IArgument[parameters.Length];
 
