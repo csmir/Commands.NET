@@ -93,10 +93,10 @@ namespace Commands.Helpers
             }
         }
 
-        public static IEnumerable<CommandInfo> GetCommands(ModuleInfo module, bool hasAliases, BuildOptions options)
+        public static IEnumerable<CommandInfo> GetCommands(ModuleInfo module, bool withDefaults, BuildOptions options)
         {
             // run through all type methods.
-            foreach (var method in module.Type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
+            foreach (var method in module.Type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Public))
             {
                 var aliases = Array.Empty<string>();
 
@@ -110,16 +110,16 @@ namespace Commands.Helpers
                     }
                 }
 
-                if (hasAliases || aliases.Length > 0)
+                if (withDefaults || aliases.Length > 0)
                 {
                     yield return new CommandInfo(module, new InstanceInvoker(method), aliases, false, options);
                 }
             }
         }
 
-        public static IConditional[] GetComponents(this ModuleInfo module, bool hasAliases, BuildOptions options)
+        public static IConditional[] GetComponents(this ModuleInfo module, bool withDefaults, BuildOptions options)
         {
-            var commands = (IEnumerable<IConditional>)GetCommands(module, hasAliases, options)
+            var commands = (IEnumerable<IConditional>)GetCommands(module, withDefaults, options)
                 .OrderBy(x => x.Arguments.Length);
 
             var modules = (IEnumerable<IConditional>)GetModules(module, options)
