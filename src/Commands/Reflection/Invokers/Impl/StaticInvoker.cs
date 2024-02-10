@@ -10,10 +10,20 @@ using System.Threading.Tasks;
 
 namespace Commands.Reflection
 {
+    /// <summary>
+    ///     An invoker for static commands.
+    /// </summary>
     public sealed class StaticInvoker : IInvokable
     {
+        /// <inheritdoc />
         public MethodInfo Target { get; }
 
+        internal StaticInvoker(MethodInfo target)
+        {
+            Target = target;
+        }
+
+        /// <inheritdoc />
         public async ValueTask<InvokeResult> InvokeAsync(ConsumerBase consumer, CommandInfo command, object?[] args, CommandOptions options)
         {
             var context = new CommandContext(consumer, command, options);

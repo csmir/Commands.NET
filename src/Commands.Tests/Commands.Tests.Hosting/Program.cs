@@ -10,11 +10,10 @@ await Host.CreateDefaultBuilder(args)
         builder.AddResultResolver<CustomResultResolver>();
         builder.AddSourceResolver<CustomSourceResolver>();
 
-        builder.AddCommand((CommandContext context) =>
+        builder.AddCommand("command", (CommandContext context) =>
         {
             Console.WriteLine("test");
-
-        }, "command");
+        });
     })
     .ConfigureLogging(builder =>
     {

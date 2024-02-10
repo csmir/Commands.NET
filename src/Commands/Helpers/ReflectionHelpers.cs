@@ -111,7 +111,7 @@ namespace Commands.Helpers
                     command.ValidateAliases(options.NamingRegex);
 
                     // yield a new command if all aliases are valid.
-                    yield return new CommandInfo(module, new ModuleInvoker(method), command.Aliases, false, options);
+                    yield return new CommandInfo(module, new InstanceInvoker(method), command.Aliases, false, options);
                 }
             }
         }

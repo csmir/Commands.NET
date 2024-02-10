@@ -10,10 +10,14 @@ using System.Threading.Tasks;
 
 namespace Commands.Reflection
 {
+    /// <summary>
+    ///     An invoker for delegate commands.
+    /// </summary>
     public sealed class DelegateInvoker : IInvokable
     {
         private readonly object? _instance;
 
+        /// <inheritdoc />
         public MethodInfo Target { get; }
 
         internal DelegateInvoker(MethodInfo target, object? instance)
@@ -22,6 +26,7 @@ namespace Commands.Reflection
             Target = target;
         }
 
+        /// <inheritdoc />
         public async ValueTask<InvokeResult> InvokeAsync(ConsumerBase consumer, CommandInfo command, object?[] args, CommandOptions options)
         {
             var context = new CommandContext(consumer, command, options);

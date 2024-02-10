@@ -216,7 +216,7 @@ namespace Commands.Core
 
             foreach (var precon in command.Preconditions)
             {
-                var checkResult = await precon.EvaluateAsync(consumer, command, options.Scope.ServiceProvider, options.CancellationToken);
+                var checkResult = await precon.EvaluateAsync(consumer, command, options.Scope!.ServiceProvider, options.CancellationToken);
 
                 if (!checkResult.Success)
                 {
@@ -249,7 +249,7 @@ namespace Commands.Core
 
             foreach (var postcon in result.Command.PostConditions)
             {
-                var checkResult = await postcon.EvaluateAsync(consumer, result, options.Scope.ServiceProvider, options.CancellationToken);
+                var checkResult = await postcon.EvaluateAsync(consumer, result, options.Scope!.ServiceProvider, options.CancellationToken);
 
                 if (!checkResult.Success)
                 {

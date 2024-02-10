@@ -55,7 +55,7 @@ namespace Commands.Core
 
                 if (arr.Contains(aliases[i]))
                 {
-                    ThrowHelpers.NotDistinct(aliases);
+                    ThrowHelpers.ThrowNotDistinct(aliases);
                 }
 
                 arr[i + 1] = aliases[i];
@@ -63,7 +63,7 @@ namespace Commands.Core
 
             if (arr.Contains(name))
             {
-                ThrowHelpers.NotDistinct(aliases);
+                ThrowHelpers.ThrowNotDistinct(aliases);
             }
 
             arr[0] = name;
@@ -78,7 +78,7 @@ namespace Commands.Core
             {
                 if (!regex.IsMatch(alias))
                 {
-                    ThrowHelpers.ThrowInvalidNaming(alias);
+                    ThrowHelpers.ThrowNotMatched(alias);
                 }
             }
         }

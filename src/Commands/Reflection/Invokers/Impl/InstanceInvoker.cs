@@ -11,18 +11,23 @@ using System.Threading.Tasks;
 
 namespace Commands.Reflection
 {
-    public sealed class ModuleInvoker : IInvokable
+    /// <summary>
+    ///     An invoker for instanced commands.
+    /// </summary>
+    public sealed class InstanceInvoker : IInvokable
     {
+        /// <inheritdoc />
         public MethodInfo Target { get; }
 
-        internal ModuleInvoker(MethodInfo target)
+        internal InstanceInvoker(MethodInfo target)
         {
             Target = target;
         }
 
+        /// <inheritdoc />
         public async ValueTask<InvokeResult> InvokeAsync(ConsumerBase consumer, CommandInfo command, object?[] args, CommandOptions options)
         {
-            var targetInstance = options.Scope.ServiceProvider.GetService(command.Module!.Type); // never null for ModuleInvoker.
+            var targetInstance = options.Scope!.ServiceProvider.GetService(command.Module!.Type); // never null for ModuleInvoker.
 
             var module = targetInstance != null // never null in casting logic.
                 ? (targetInstance as ModuleBase)!
@@ -30,7 +35,7 @@ namespace Commands.Reflection
 
             module.Consumer = consumer;
             module.Command = command;
-            module.Logger = options.Logger;
+            module.Logger = options.Logger!;
 
             var value = Target.Invoke(module, args);
 

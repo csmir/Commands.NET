@@ -18,12 +18,12 @@ namespace Commands.Core
         {
             foreach (var resolver in _resolvers)
             {
-                await resolver.EvaluateAsync(consumer, result, options.Scope.ServiceProvider, options.CancellationToken);
+                await resolver.EvaluateAsync(consumer, result, options.Scope!.ServiceProvider, options.CancellationToken);
             }
 
-            options.Logger.LogDebug("Scope complete.");
+            options.Logger!.LogDebug("Scope complete.");
 
-            options.Scope.Dispose();
+            options.Scope!.Dispose();
         }
 
         internal static CommandFinalizer Default
