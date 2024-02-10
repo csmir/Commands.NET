@@ -9,10 +9,16 @@
         : ExecutionException(message, innerException)
     {
         const string RUN_FAILED = "Command failed to finalize execution. View inner exception for more details.";
+        const string RETURN_UNRESOLVED = "Command failed to handle unknown return type. Implement either void, ValueTask or Task.";
 
         internal static InvokeException InvokeFailed(Exception innerException)
         {
             return new(RUN_FAILED, innerException);
+        }
+
+        internal static InvokeException ReturnUnresolved()
+        {
+            return new(RETURN_UNRESOLVED);
         }
     }
 }

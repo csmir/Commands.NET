@@ -1,4 +1,6 @@
-﻿using Commands.TypeConverters;
+﻿using Commands.Reflection;
+using Commands.TypeConverters;
+using System.ComponentModel;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -19,10 +21,10 @@ namespace Commands.Core
         /// <remarks>
         ///     Default: <see cref="Assembly.GetEntryAssembly"/>
         /// </remarks>
-        public Assembly[] Assemblies { get; set; } = [ Assembly.GetEntryAssembly()! ]; // never null in managed context.
+        public List<Assembly> Assemblies { get; set; } = [Assembly.GetEntryAssembly()!]; // never null in managed context.
 
         /// <summary>
-        ///     Gets or sets a collection of <see cref="TypeConverterBase"/>'s representing predefined <see cref="ValueType"/> conversion.
+        ///     Gets or sets a collection of <see cref="TypeConverterBase"/>'s representing predefined <see cref="Type"/> conversion.
         /// </summary>
         /// <remarks>
         ///     This dictionary can be changed to remove base converters that should be replaced by local implementations.
@@ -30,7 +32,12 @@ namespace Commands.Core
         ///     <br/>
         ///     Default: <see cref="TypeConverterBase.BuildDefaults"/>.
         /// </remarks>
-        public TypeConverterBase[] TypeConverters { get; set; } = TypeConverterBase.BuildDefaults();
+        public List<TypeConverterBase> TypeConverters { get; set; } = [..TypeConverterBase.BuildDefaults()];
+
+        /// <summary>
+        ///     Gets or sets a collection of <see cref="IComponent"/>'s that are manually created before the registration process runs.
+        /// </summary>
+        public List<CommandInfo> Commands { get; set; } = [];
 
         /// <summary>
         ///     Gets or sets the naming convention of commands and groups being registered into the <see cref="CommandManager"/>.

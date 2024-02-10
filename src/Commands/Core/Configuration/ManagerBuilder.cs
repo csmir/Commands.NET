@@ -1,10 +1,13 @@
 ﻿using Commands.Helpers;
+using Commands.Reflection;
 using Commands.Resolvers;
 using Commands.TypeConverters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Commands.Core
 {
@@ -30,6 +33,8 @@ namespace Commands.Core
         where T : CommandManager
     {
         private bool actionset = false;
+
+        private readonly List<Action<BuildOptions>> _commandAdders = [];
 
         /// <summary>
         ///     Gets the services to be configured with added resolvers, converters and options.
@@ -64,6 +69,7 @@ namespace Commands.Core
             Services = services;
         }
 
+        #region Resolvers
         /// <summary>
         ///     Configures an action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
         /// </summary>
@@ -159,7 +165,9 @@ namespace Commands.Core
 
             return this;
         }
+        #endregion
 
+        #region Converters
         /// <summary>
         ///     Adds a <see cref="TypeConverterBase"/> to the <see cref="Services"/> of this builder that will later be injected into the <see cref="CommandManager"/> for command registration.
         /// </summary>
@@ -194,7 +202,9 @@ namespace Commands.Core
 
             return this;
         }
+        #endregion
 
+        #region Assemblies
         /// <summary>
         ///     Configures the <see cref="Options"/> with an additional assembly.
         /// </summary>
@@ -227,6 +237,56 @@ namespace Commands.Core
             Options.Assemblies = [.. assemblies, .. Options.Assemblies];
             return this;
         }
+        #endregion
+
+        #region Commands
+        /// <summary>
+        ///     Adds a new <see cref="Delegate"/> based command to the <see cref="BuildOptions"/>.
+        /// </summary>
+        /// <remarks>
+        ///     Delegate commands <b>require</b> the first parameter to be <see cref="CommandContext"/>, which holds scope and execution information of the created command during its execution.
+        /// </remarks>
+        /// <param name="name">The command name.</param>
+        /// <param name="commandAction">The action of the command.</param>
+        /// <param name="aliases">The aliases of the command.</param>
+        /// <returns>The same <see cref="ManagerBuilder{T}"/> for call-chaining.</returns>
+        public virtual ManagerBuilder<T> AddCommand(string name, Delegate commandAction, params string[] aliases)
+        {
+            if (commandAction == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(commandAction);
+            }
+
+            if (aliases == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(aliases);
+            }
+
+            aliases = [name, .. aliases];
+
+            var action = new Action<BuildOptions>((BuildOptions options) =>
+            {
+                foreach (var alias in aliases)
+                {
+                    if (aliases.Contains(alias))
+                    {
+                        ThrowHelpers.ThrowNotDistinct(alias);
+                    }
+
+                    if (!options.NamingRegex.IsMatch(alias))
+                    {
+                        ThrowHelpers.ThrowNotMatched(alias);
+                    }
+                }
+
+                options.Commands.Add(new CommandInfo(new DelegateInvoker(commandAction.Method, commandAction.Target), aliases, options));
+            });
+
+            _commandAdders.Add(action);
+
+            return this;
+        }
+        #endregion
 
         /// <summary>
         ///     Configures the <see cref="Options"/> of this builder.
@@ -261,7 +321,9 @@ namespace Commands.Core
             }
 
             AddFinalizer();
+
             AddModules();
+            AddCommands();
 
             var descriptor = ServiceDescriptor.Singleton((services) =>
             {
@@ -279,7 +341,7 @@ namespace Commands.Core
         ///     Adds all modules known by <see cref="BuildOptions.Assemblies"/> to the <see cref="Services"/> for registration.
         /// </summary>
         /// <returns>The same <see cref="ManagerBuilder{T}"/> for call-chaining.</returns>
-        protected virtual ManagerBuilder<T> AddModules()
+        protected virtual void AddModules()
         {
             var rootType = typeof(ModuleBase);
 
@@ -293,19 +355,27 @@ namespace Commands.Core
                     }
                 }
             }
+        }
 
-            return this;
+        /// <summary>
+        ///     Adds all command delegates as configured by <see cref="AddCommand(string, Delegate, string[])"/> to the <see cref="BuildOptions"/>.
+        /// </summary>
+        /// <returns>The same <see cref="ManagerBuilder{T}"/> for call-chaining.</returns>
+        protected virtual void AddCommands()
+        {
+            foreach (var action in _commandAdders)
+            {
+                action(Options);
+            }
         }
 
         /// <summary>
         ///     Adds the <see cref="CommandFinalizer"/> to the <see cref="Services"/> for result publishing and scope disposal.
         /// </summary>
         /// <returns>The same <see cref="ManagerBuilder{T}"/> for call-chaining.</returns>
-        protected virtual ManagerBuilder<T> AddFinalizer()
+        protected virtual void AddFinalizer()
         {
             Services.TryAddSingleton<CommandFinalizer>();
-
-            return this;
         }
 
         /// <summary>

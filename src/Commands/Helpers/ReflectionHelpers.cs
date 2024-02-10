@@ -111,7 +111,7 @@ namespace Commands.Helpers
                     command.ValidateAliases(options.NamingRegex);
 
                     // yield a new command if all aliases are valid.
-                    yield return new CommandInfo(module, method, command.Aliases, options);
+                    yield return new CommandInfo(module, new InstanceInvoker(method), command.Aliases, false, options);
                 }
             }
         }
@@ -128,12 +128,16 @@ namespace Commands.Helpers
                 .ToArray();
         }
 
-        public static IArgument[] GetParameters(this MethodBase method, BuildOptions options)
+        public static IArgument[] GetParameters(this MethodBase method, bool hasContext, BuildOptions options)
         {
             var parameters = method.GetParameters();
 
+            if (hasContext)
+                parameters = parameters.Skip(1).ToArray();
+
             var arr = new IArgument[parameters.Length];
-            for (int i = 0; i < parameters.Length; i++)
+
+            for (var i = 0; i < parameters.Length; i++)
             {
                 if (parameters[i].GetCustomAttributes().Any(x => x is ComplexAttribute))
                 {

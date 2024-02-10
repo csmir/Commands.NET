@@ -1,6 +1,7 @@
 ﻿using Commands.Conditions;
 using Commands.Core;
 using Commands.Helpers;
+using System.Dynamic;
 using System.Reflection;
 
 namespace Commands.Reflection
@@ -49,21 +50,44 @@ namespace Commands.Reflection
         /// <summary>
         ///     Gets the module in which the command is known.
         /// </summary>
-        public ModuleInfo Module { get; }
+        /// <remarks>
+        ///     Will be <see langword="null"/> when the <see cref="IInvokable"/> of this command is <see cref="StaticInvoker"/> or <see cref="DelegateInvoker"/>.
+        /// </remarks>
+        public ModuleInfo? Module { get; }
 
         /// <summary>
         ///     Gets the invocation target of this command.
         /// </summary>
-        public MethodInfo Target { get; }
+        public IInvokable Invoker { get; }
+
+        internal CommandInfo(StaticInvoker invoker, string[] aliases, BuildOptions options)
+            : this(null, invoker, aliases, true, options)
+        {
+        }
+
+        internal CommandInfo(DelegateInvoker invoker, string[] aliases, BuildOptions options)
+            : this(null, invoker, aliases, true, options)
+        {
+        }
 
         internal CommandInfo(
-            ModuleInfo module, MethodInfo method, string[] aliases, BuildOptions options)
+            ModuleInfo? module, IInvokable invoker, string[] aliases, bool hasContext, BuildOptions options)
         {
-            var attributes = method.GetAttributes(true);
+            IsQueryable = true;
+
+            var attributes = invoker.Target.GetAttributes(true);
             var preconditions = attributes.GetPreconditions();
             var postconditions = attributes.GetPostconditions();
 
-            var parameters = method.GetParameters(options);
+            var parameters = invoker.Target.GetParameters(hasContext, options);
+
+            if (hasContext)
+            {
+                if (parameters.Length == 0 || parameters[0].Type != typeof(CommandContext))
+                {
+                    ThrowHelpers.ThrowInvalidOperation($"A delegate or static command signature must implement {nameof(CommandContext)} as the first parameter.");
+                }
+            }
 
             var (minLength, maxLength) = parameters.GetLength();
 
@@ -71,13 +95,13 @@ namespace Commands.Reflection
             {
                 if (parameters.Length > 1 && parameters[^1].IsRemainder)
                 {
-                    ThrowHelpers.ThrowInvalidOperation($"{nameof(RemainderAttribute)} can only exist on the last parameter of a method.");
+                    ThrowHelpers.ThrowInvalidOperation($"{nameof(RemainderAttribute)} can only exist on the last parameter of a command signature.");
                 }
             }
 
             Priority = attributes.SelectFirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
 
-            Target = method;
+            Invoker = invoker;
             Module = module;
 
             Attributes = attributes;
@@ -90,7 +114,6 @@ namespace Commands.Reflection
 
             Name = aliases[0];
             Aliases = aliases;
-            IsQueryable = true;
 
             MinLength = minLength;
             MaxLength = maxLength;
@@ -104,7 +127,7 @@ namespace Commands.Reflection
         /// <param name="withModuleInfo">Defines if the module information should be appended on the command level.</param>
         public string ToString(bool withModuleInfo)
         {
-            return $"{(withModuleInfo ? $"{Module}." : "")}{Target.Name}['{Name}']({string.Join<IArgument>(", ", Arguments)})";
+            return $"{(withModuleInfo ? $"{Module}." : "")}{Invoker.Target.Name}['{Name}']({string.Join<IArgument>(", ", Arguments)})";
         }
     }
 }

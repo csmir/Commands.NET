@@ -12,18 +12,6 @@ namespace Commands.Helpers
     public static class ThrowHelpers
     {
         /// <summary>
-        ///     Throws <see cref="ArgumentException"/> for regex match failure.
-        /// </summary>
-        /// <param name="value">The value for which to throw.</param>
-        /// <param name="arg"></param>
-        /// <exception cref="ArgumentException"></exception>
-        public static void ThrowInvalidNaming(
-            string? value, [CallerArgumentExpression(nameof(value))] string? arg = null)
-        {
-            throw new ArgumentException("Value does not match expression.", arg);
-        }
-
-        /// <summary>
         ///     Throws <see cref="InvalidOperationException"/> for any use.
         /// </summary>
         /// <param name="failureMessage">The message to throw.</param>
@@ -78,6 +66,22 @@ namespace Commands.Helpers
         }
 
         /// <summary>
+        ///     Throws <see cref="ArgumentException"/> for regex match failure.
+        /// </summary>
+        /// <param name="value">The value for which to throw.</param>
+        /// <param name="arg"></param>
+        /// <exception cref="ArgumentException"></exception>
+        [DoesNotReturn]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public static void ThrowNotMatched(
+            string? value, [CallerArgumentExpression(nameof(value))] string? arg = null)
+        {
+            throw new ArgumentException(
+                message: "Value does not match expression.",
+                paramName: arg);
+        }
+
+        /// <summary>
         ///     Throws <see cref="ArgumentException"/> for duplicate values in a collection.
         /// </summary>
         /// <param name="value">The object for which to throw.</param>
@@ -85,7 +89,7 @@ namespace Commands.Helpers
         /// <exception cref="ArgumentException"></exception>
         [DoesNotReturn]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void NotDistinct(
+        public static void ThrowNotDistinct(
             object? value, [CallerArgumentExpression(nameof(value))] string? arg = null)
         {
             throw new ArgumentException(

@@ -123,7 +123,7 @@ namespace Commands.Helpers
                 return ConvertResult.FromSuccess(value);
 
             // run parser.
-            return await argument.Converter!.EvaluateAsync(consumer, argument, value.ToString(), options.Scope.ServiceProvider, options.CancellationToken);
+            return await argument.Converter!.EvaluateAsync(consumer, argument, value.ToString(), options.Scope!.ServiceProvider, options.CancellationToken);
         }
     }
 }

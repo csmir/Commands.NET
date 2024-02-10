@@ -43,15 +43,10 @@ namespace Commands.Core
         ///     <br/>
         ///     Default: <see langword="null"/>
         /// </remarks>
-        public ILogger Logger
+        public ILogger? Logger
         {
             get
             {
-                if (_logger == null)
-                {
-                    ThrowHelpers.ThrowInvalidOperation("Consider populating this property before use, or wait for the CommandManager to generate a scope.");
-                }
-
                 return _logger;
             }
             set
@@ -69,15 +64,10 @@ namespace Commands.Core
         ///     <br/>
         ///     Default: <see langword="null"/>
         /// </remarks>
-        public IServiceScope Scope
+        public IServiceScope? Scope
         {
             get
             {
-                if (_scope == null)
-                {
-                    ThrowHelpers.ThrowInvalidOperation("Consider populating this property before use, or wait for the CommandManager to generate a scope.");
-                }
-
                 return _scope;
             }
             set

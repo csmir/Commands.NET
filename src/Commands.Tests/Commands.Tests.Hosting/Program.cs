@@ -1,4 +1,5 @@
-﻿using Commands.Helpers;
+﻿using Commands.Core;
+using Commands.Helpers;
 using Commands.Tests;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -8,6 +9,11 @@ await Host.CreateDefaultBuilder(args)
     {
         builder.AddResultResolver<CustomResultResolver>();
         builder.AddSourceResolver<CustomSourceResolver>();
+
+        builder.AddCommand("command", (CommandContext context) =>
+        {
+            Console.WriteLine("test");
+        });
     })
     .ConfigureLogging(builder =>
     {

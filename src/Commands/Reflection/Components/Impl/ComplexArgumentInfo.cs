@@ -74,7 +74,7 @@ namespace Commands.Reflection
                 IsOptional = false;
 
             var constructor = Type.GetConstructors()[0];
-            var parameters = constructor.GetParameters(options);
+            var parameters = constructor.GetParameters(false, options);
 
             if (parameters.Length == 0)
             {
