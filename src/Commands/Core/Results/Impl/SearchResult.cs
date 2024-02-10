@@ -89,7 +89,7 @@ namespace Commands.Core
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"{(Component != null ? $"Command = {Component} \n" : "")}Success = {(Exception == null ? "True" : $"False \nException = {Exception}")}";
+            return $"{(Component != null ? $"Component = {Component} \n" : "")}Success = {(Exception == null ? "True" : $"False \nException = {Exception}")}";
         }
     }
 }

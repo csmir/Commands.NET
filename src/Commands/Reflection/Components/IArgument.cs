@@ -5,7 +5,7 @@ namespace Commands.Reflection
     /// <summary>
     ///     Reveals information about an invocation argument of a command or any complex member.
     /// </summary>
-    public interface IArgument : INameable
+    public interface IArgument : IScoreable
     {
         /// <summary>
         ///     Gets the type of this argument.

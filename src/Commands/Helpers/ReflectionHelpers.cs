@@ -52,15 +52,15 @@ namespace Commands.Helpers
                     foreach (var attribute in type.GetCustomAttributes(true))
                     {
                         // if attribute is not group, we can skip it.
-                        if (attribute is not GroupAttribute group)
+                        if (attribute is not NameAttribute names)
                         {
                             continue;
                         }
 
                         // validate and set aliases.
-                        group.ValidateAliases(options.NamingRegex);
+                        names.ValidateAliases(options.NamingRegex);
 
-                        aliases = group.Aliases;
+                        aliases = names.Aliases;
                     }
 
                     // yield a new module with or without aliases.
@@ -79,50 +79,51 @@ namespace Commands.Helpers
                 foreach (var attribute in type.GetCustomAttributes(true))
                 {
                     // skip attribute if its not group.
-                    if (attribute is not GroupAttribute group)
+                    if (attribute is not NameAttribute names)
                     {
                         continue;
                     }
 
                     // validate aliases.
-                    group.ValidateAliases(options.NamingRegex);
+                    names.ValidateAliases(options.NamingRegex);
 
                     // yield a new module if all aliases are valid.
-                    yield return new ModuleInfo(type, module, group.Aliases, options);
+                    yield return new ModuleInfo(type, module, names.Aliases, options);
                 }
             }
         }
 
-        public static IEnumerable<CommandInfo> GetCommands(ModuleInfo module, BuildOptions options)
+        public static IEnumerable<CommandInfo> GetCommands(ModuleInfo module, bool hasAliases, BuildOptions options)
         {
             // run through all type methods.
-            foreach (var method in module.Type.GetMethods())
+            foreach (var method in module.Type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
             {
-                // run through attributes.
+                var aliases = Array.Empty<string>();
+
                 foreach (var attribute in method.GetCustomAttributes(true))
                 {
-                    // skip attribute if its not command.
-                    if (attribute is not CommandAttribute command)
+                    if (attribute is NameAttribute names)
                     {
-                        continue;
+                        names.ValidateAliases(options.NamingRegex);
+
+                        aliases = names.Aliases;
                     }
+                }
 
-                    // validate aliases.
-                    command.ValidateAliases(options.NamingRegex);
-
-                    // yield a new command if all aliases are valid.
-                    yield return new CommandInfo(module, new InstanceInvoker(method), command.Aliases, false, options);
+                if (hasAliases || aliases.Length > 0)
+                {
+                    yield return new CommandInfo(module, new InstanceInvoker(method), aliases, false, options);
                 }
             }
         }
 
-        public static IConditional[] GetComponents(this ModuleInfo module, BuildOptions options)
+        public static IConditional[] GetComponents(this ModuleInfo module, bool hasAliases, BuildOptions options)
         {
-            var commands = (IEnumerable<IConditional>)GetCommands(module, options)
+            var commands = (IEnumerable<IConditional>)GetCommands(module, hasAliases, options)
                 .OrderBy(x => x.Arguments.Length);
 
             var modules = (IEnumerable<IConditional>)GetModules(module, options)
-                .OrderBy(x => x.Components.Length);
+                .OrderBy(x => x.Components.Count);
 
             return commands.Concat(modules)
                 .ToArray();

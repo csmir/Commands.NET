@@ -7,7 +7,7 @@ namespace Commands.Tests
     {
         private readonly CommandManager _manager = manager;
 
-        [Command("help")]
+        [Name("help")]
         public void Help()
         {
             foreach (var command in _manager.Commands)
@@ -18,7 +18,7 @@ namespace Commands.Tests
                 }
                 else
                 {
-                    Console.WriteLine(command);
+                    Console.WriteLine(command.ToString() + " Score: " + command.Score);
                 }
             }
         }
@@ -33,7 +33,7 @@ namespace Commands.Tests
                 }
                 else if (component is CommandInfo commandInfo)
                 {
-                    Console.WriteLine(commandInfo.ToString());
+                    Console.WriteLine(commandInfo.ToString() + " Score: " + commandInfo.Score);
                 }
             }
         }

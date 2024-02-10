@@ -36,7 +36,10 @@ namespace Commands.Core
         /// <summary>
         ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="BuildOptions"/> provided when creating the manager.
         /// </summary>
-        public IReadOnlySet<IConditional> Commands { get; } = ReflectionHelpers.BuildComponents(converters, options).Concat(options.Commands).ToHashSet();
+        public IReadOnlySet<IConditional> Commands { get; } = ReflectionHelpers.BuildComponents(converters, options)
+            .Concat(options.Commands)
+            .OrderByDescending(x => x.Score)
+            .ToHashSet();
 
         /// <summary>
         ///     Makes an attempt at executing a command from provided <paramref name="args"/>.
@@ -103,7 +106,7 @@ namespace Commands.Core
             // recursively search for commands in the execution.
             lock (s_lock)
             {
-                return Commands.SearchMany(args, 0);
+                return Commands.SearchMany(args, 0, false);
             }
         }
 
@@ -127,7 +130,7 @@ namespace Commands.Core
 
             options.Logger.LogDebug("Scope started. Resolved mode: {}", options.AsyncMode);
 
-            foreach (var search in searches.OrderByDescending(x => x.Component!.Priority)) // never null in search result.
+            foreach (var search in searches)
             {
                 if (search.Component is CommandInfo command)
                 {

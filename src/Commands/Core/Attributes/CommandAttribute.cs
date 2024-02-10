@@ -7,6 +7,7 @@ namespace Commands.Core
     /// <summary>
     ///     An attribute that signifies a method as a command.
     /// </summary>
+    [Obsolete("CommandAttribute has been superseded by NameAttribute.")]
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public sealed class CommandAttribute : Attribute
     {

@@ -5,7 +5,7 @@ namespace Commands.Reflection
     /// <summary>
     ///     Reveals information about a conditional component, needing validation in order to become part of execution.
     /// </summary>
-    public interface IConditional : INameable
+    public interface IConditional : IScoreable
     {
         /// <summary>
         ///     Gets an array of aliases for this component.
@@ -18,9 +18,22 @@ namespace Commands.Reflection
         public bool IsQueryable { get; }
 
         /// <summary>
+        ///     Gets if the component is the default of a module-layer.
+        /// </summary>
+        public bool IsDefault { get; }
+
+        /// <summary>
         ///     Gets the priority of the component.
         /// </summary>
         public byte Priority { get; }
+
+        /// <summary>
+        ///     Gets the score of the component.
+        /// </summary>
+        /// <remarks>
+        ///     Score defines the match priority of a component over another. This score is computed based on complexity, argument length and conversion.
+        /// </remarks>
+        public float Score { get; }
 
         /// <summary>
         ///     Gets an array of <see cref="PreconditionAttribute"/>'s defined atop this component.

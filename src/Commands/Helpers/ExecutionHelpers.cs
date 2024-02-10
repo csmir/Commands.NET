@@ -12,24 +12,35 @@ namespace Commands.Helpers
         private static readonly Type s_type = typeof(string);
 
         public static IEnumerable<SearchResult> SearchMany(this IEnumerable<IConditional> components,
-            object[] args, int searchHeight)
+            object[] args, int searchHeight, bool isGrouped)
         {
             List<SearchResult> discovered = [];
 
-            if (args.Length == searchHeight)
+            foreach (var component in components)
             {
-                return discovered;
-            }
+                // we should add defaults even if there are more args to resolve.
+                if (component.IsDefault && isGrouped)
+                {
+                    discovered.Add(SearchResult.FromSuccess(component, searchHeight));
+                }
 
-            // select command by name or alias.
-            var selection = components.Where(command => command.Aliases.Any(x => x == (string)args[searchHeight]));
+                // if the search is already done, we simply continue and only look for defaults.
+                if (args.Length == searchHeight)
+                {
+                    continue;
+                }
 
-            foreach (var component in selection)
-            {
+                // if no aliases match the current arg, we skip at this point.
+                if (!component.Aliases.Any(x => x == (string)args[searchHeight]))
+                {
+                    continue;
+                }
+
+                // if the search found a module, we do inner module checks.
                 if (component is ModuleInfo module)
                 {
                     // add the cluster found in the next iteration, if any.
-                    var nested = module.Components.SearchMany(args, searchHeight + 1);
+                    var nested = module.Components.SearchMany(args, searchHeight + 1, true);
                     discovered.AddRange(nested);
 
                     // add fallback overloads for module discovery.

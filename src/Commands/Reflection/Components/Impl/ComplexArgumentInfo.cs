@@ -100,6 +100,25 @@ namespace Commands.Reflection
         }
 
         /// <inheritdoc />
+        public float GetScore()
+        {
+            var score = 1.0f;
+
+            if (IsOptional)
+                score -= 0.5f;
+
+            if (IsNullable)
+                score -= 0.25f;
+
+            foreach (var arg in Arguments)
+            {
+                score += arg.GetScore();
+            }
+
+            return score;
+        }
+
+        /// <inheritdoc />
         public override string ToString()
             => ToString(false);
 

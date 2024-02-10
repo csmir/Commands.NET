@@ -4,7 +4,7 @@ namespace Commands.Samples.Hosting.Modules
 {
     public sealed class Module : ModuleBase<ConsumerBase>
     {
-        [Command("help")]
+        [Name("help")]
         public void Help()
             => Console.WriteLine("Helped");
     }

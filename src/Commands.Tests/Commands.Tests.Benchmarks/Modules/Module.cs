@@ -4,23 +4,23 @@ namespace Commands.Tests
 {
     public sealed class Module : ModuleBase<ConsumerBase>
     {
-        [Command("base-test")]
+        [Name("base-test")]
         public void Test()
         {
 
         }
 
-        [Command("param-test")]
+        [Name("param-test")]
         public void Test(int i)
         {
             if (i == 0)
                 return;
         }
 
-        [Group("nested")]
+        [Name("nested")]
         public sealed class NestedModule : ModuleBase<ConsumerBase>
         {
-            [Command("test")]
+            [Name("test")]
             public void Test()
             {
 

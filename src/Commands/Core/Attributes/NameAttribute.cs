@@ -1,42 +1,46 @@
 ﻿using Commands.Helpers;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Commands.Core
 {
     /// <summary>
-    ///     An attribute that signifies a module to be a group, allowing functionality much like subcommands.
+    ///     An attribute that defines the name of a module (<see cref="ModuleBase"/>), a module subtype, a 
     /// </summary>
-    [Obsolete("GroupAttribute has been superseded by NameAttribute.")]
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public sealed class GroupAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Parameter)]
+    public sealed class NameAttribute : Attribute
     {
         /// <summary>
-        ///     Represents the name of a group.
+        ///     Represents the name of this component.
         /// </summary>
         public string Name { get; }
 
         /// <summary>
-        ///     The aliases of this group.
+        ///     The aliases of this component.
         /// </summary>
         public string[] Aliases { get; }
 
         /// <summary>
-        ///     Creates a new <see cref="GroupAttribute"/> with defined name.
+        ///     Creates a new <see cref="NameAttribute"/> with defined name.
         /// </summary>
-        /// <param name="name">The group name.</param>
-        public GroupAttribute([DisallowNull] string name)
+        /// <param name="name">The component name.</param>
+        public NameAttribute([DisallowNull] string name)
             : this(name, [])
         {
 
         }
 
         /// <summary>
-        ///     Creates a new <see cref="GroupAttribute"/> with defined name.
+        ///     Creates a new <see cref="NameAttribute"/> with defined name.
         /// </summary>
-        /// <param name="name">The group name.</param>
-        /// <param name="aliases">The group's aliases.</param>
-        public GroupAttribute([DisallowNull] string name, params string[] aliases)
+        /// <param name="name">The name of the component.</param>
+        /// <param name="aliases">The component's aliases.</param>
+        public NameAttribute([DisallowNull] string name, params string[] aliases)
         {
             if (string.IsNullOrWhiteSpace(name))
             {

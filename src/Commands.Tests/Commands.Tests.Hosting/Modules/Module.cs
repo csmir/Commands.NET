@@ -4,7 +4,7 @@ namespace Commands.Tests
 {
     public sealed class Module : ModuleBase
     {
-        [Command("test")]
+        [Name("test")]
         public void Test()
         {
             Console.WriteLine("Tested");

@@ -5,6 +5,7 @@ namespace Commands.Samples
 {
     public class CopyModule : ModuleBase
     {
+        [Name("copy")]
         [RequireOperatingSystem(PlatformID.Win32NT)]
         public void Copy([Remainder] string toCopy)
         {

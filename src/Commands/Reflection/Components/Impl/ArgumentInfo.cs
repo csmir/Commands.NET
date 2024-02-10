@@ -50,24 +50,56 @@ namespace Commands.Reflection
             }
 
             if (parameterInfo.IsOptional)
+            {
                 IsOptional = true;
+            }
             else
+            {
                 IsOptional = false;
+            }
 
             if (attributes.Contains<RemainderAttribute>(false))
+            {
                 IsRemainder = true;
+            }
             else
+            {
                 IsRemainder = false;
+            }
 
             if (Type.IsEnum)
+            {
                 Converter = EnumTypeReader.GetOrCreate(Type);
+            }
 
             else if (Type != typeof(string) && Type != typeof(object))
+            {
                 Converter = options.KeyedConverters[Type];
+            }
 
             Attributes = attributes;
             ExposedType = parameterInfo.ParameterType;
             Name = parameterInfo.Name ?? "";
+        }
+
+        /// <inheritdoc />
+        public float GetScore()
+        {
+            var score = 1.0f;
+
+            if (IsOptional)
+                score -= 0.5f;
+
+            if (IsRemainder)
+                score -= 1f;
+
+            if (IsNullable)
+                score -= 0.25f;
+
+            if (Converter != null)
+                score += 0.5f;
+
+            return score;
         }
 
         /// <inheritdoc />

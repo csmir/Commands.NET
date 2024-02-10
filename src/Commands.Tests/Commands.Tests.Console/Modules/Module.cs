@@ -1,111 +1,111 @@
-﻿using Commands.Core;
+﻿//using Commands.Core;
 
-namespace Commands.Tests
-{
-    [Group("command")]
-    public class Module : ModuleBase<ConsumerBase>
-    {
-        [Command("priority")]
-        [Priority(1)]
-        public void Priority1(bool optional)
-        {
-            Console.WriteLine($"Success: {Command.Priority} {optional}");
-        }
+//namespace Commands.Tests
+//{
+//    [Group("command")]
+//    public class Module : ModuleBase<ConsumerBase>
+//    {
+//        [Command("priority")]
+//        [Priority(1)]
+//        public void Priority1(bool optional)
+//        {
+//            Console.WriteLine($"Success: {Command.Priority} {optional}");
+//        }
 
-        [Command("priority")]
-        [Priority(2)]
-        public Task Priority2(bool optional)
-        {
-            Console.WriteLine($"Success: {Command.Priority} {optional}");
-            return Task.CompletedTask;
-        }
+//        [Command("priority")]
+//        [Priority(2)]
+//        public Task Priority2(bool optional)
+//        {
+//            Console.WriteLine($"Success: {Command.Priority} {optional}");
+//            return Task.CompletedTask;
+//        }
 
-        [Command("remainder")]
-        public void Remainder([Remainder] string values)
-        {
-            Console.WriteLine($"Success: {values}");
-        }
+//        [Command("remainder")]
+//        public void Remainder([Remainder] string values)
+//        {
+//            Console.WriteLine($"Success: {values}");
+//        }
 
-        [Command("time")]
-        public void TimeOnly(TimeOnly time)
-        {
-            Console.WriteLine($"Success: {time}");
-        }
+//        [Command("time")]
+//        public void TimeOnly(TimeOnly time)
+//        {
+//            Console.WriteLine($"Success: {time}");
+//        }
 
-        [Command("multiple")]
-        public void Test(bool truee, bool falsee)
-        {
-            Console.WriteLine($"Success: {truee}, {falsee}");
-        }
+//        [Command("multiple")]
+//        public void Test(bool truee, bool falsee)
+//        {
+//            Console.WriteLine($"Success: {truee}, {falsee}");
+//        }
 
-        [Command("multiple")]
-        public void Test(int i1, int i2)
-        {
-            Console.WriteLine($"Success: {i1}, {i2}");
-        }
+//        [Command("multiple")]
+//        public void Test(int i1, int i2)
+//        {
+//            Console.WriteLine($"Success: {i1}, {i2}");
+//        }
 
-        [Command("optional")]
-        public void Test(int i = 0, string str = "")
-        {
-            Console.WriteLine($"Success: {i}, {str}");
-        }
+//        [Command("optional")]
+//        public void Test(int i = 0, string str = "")
+//        {
+//            Console.WriteLine($"Success: {i}, {str}");
+//        }
 
-        [Command("nullable")]
-        public void Nullable(long? l)
-        {
-            Console.WriteLine($"Success: {l}");
-        }
+//        [Command("nullable")]
+//        public void Nullable(long? l)
+//        {
+//            Console.WriteLine($"Success: {l}");
+//        }
 
-        [Command("complex")]
-        public void Complex([Complex] ComplexType complex)
-        {
-            Console.WriteLine($"({complex.X}, {complex.Y}, {complex.Z}) {complex.Complexer}: {complex.Complexer.X}, {complex.Complexer.Y}, {complex.Complexer.Z}");
-        }
+//        [Command("complex")]
+//        public void Complex([Complex] ComplexType complex)
+//        {
+//            Console.WriteLine($"({complex.X}, {complex.Y}, {complex.Z}) {complex.Complexer}: {complex.Complexer.X}, {complex.Complexer.Y}, {complex.Complexer.Z}");
+//        }
 
-        [Command("complexnullable")]
-        public void Complex([Complex] ComplexerType? complex)
-        {
-            Console.WriteLine($"({complex?.X}, {complex?.Y}, {complex?.Z})");
-        }
+//        [Command("complexnullable")]
+//        public void Complex([Complex] ComplexerType? complex)
+//        {
+//            Console.WriteLine($"({complex?.X}, {complex?.Y}, {complex?.Z})");
+//        }
 
-        [Group("nested")]
-        public class NestedModule : ModuleBase<ConsumerBase>
-        {
-            [Command("multiple")]
-            public void Test(bool truee, bool falsee)
-            {
-                Console.WriteLine($"Success: {truee}, {falsee}");
-            }
+//        [Group("nested")]
+//        public class NestedModule : ModuleBase<ConsumerBase>
+//        {
+//            [Command("multiple")]
+//            public void Test(bool truee, bool falsee)
+//            {
+//                Console.WriteLine($"Success: {truee}, {falsee}");
+//            }
 
-            [Command("multiple")]
-            public void Test(int i1, int i2)
-            {
-                Console.WriteLine($"Success: {i1}, {i2}");
-            }
+//            [Command("multiple")]
+//            public void Test(int i1, int i2)
+//            {
+//                Console.WriteLine($"Success: {i1}, {i2}");
+//            }
 
-            [Command("optional")]
-            public void Test(int i = 0, string str = "")
-            {
-                Console.WriteLine($"Success: {i}, {str}");
-            }
+//            [Command("optional")]
+//            public void Test(int i = 0, string str = "")
+//            {
+//                Console.WriteLine($"Success: {i}, {str}");
+//            }
 
-            [Command("nullable")]
-            public void Nullable(long? l)
-            {
-                Console.WriteLine($"Success: {l}");
-            }
+//            [Command("nullable")]
+//            public void Nullable(long? l)
+//            {
+//                Console.WriteLine($"Success: {l}");
+//            }
 
-            [Command("complex")]
-            public void Complex([Complex] ComplexType complex)
-            {
-                Console.WriteLine($"({complex.X}, {complex.Y}, {complex.Z}) {complex.Complexer}: {complex.Complexer.X}, {complex.Complexer.Y}, {complex.Complexer.Z}");
-            }
+//            [Command("complex")]
+//            public void Complex([Complex] ComplexType complex)
+//            {
+//                Console.WriteLine($"({complex.X}, {complex.Y}, {complex.Z}) {complex.Complexer}: {complex.Complexer.X}, {complex.Complexer.Y}, {complex.Complexer.Z}");
+//            }
 
-            [Command("complexnullable")]
-            public void Complex([Complex] ComplexerType? complex)
-            {
-                Console.WriteLine($"({complex?.X}, {complex?.Y}, {complex?.Z})");
-            }
-        }
-    }
-}
+//            [Command("complexnullable")]
+//            public void Complex([Complex] ComplexerType? complex)
+//            {
+//                Console.WriteLine($"({complex?.X}, {complex?.Y}, {complex?.Z})");
+//            }
+//        }
+//    }
+//}

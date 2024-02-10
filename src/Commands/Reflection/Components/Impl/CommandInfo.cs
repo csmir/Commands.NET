@@ -12,13 +12,16 @@ namespace Commands.Reflection
     public sealed class CommandInfo : IConditional, IArgumentBucket
     {
         /// <inheritdoc />
-        public string Name { get; }
+        public string? Name { get; }
 
         /// <inheritdoc />
         public string[] Aliases { get; }
 
         /// <inheritdoc />
         public bool IsQueryable { get; }
+
+        /// <inheritdoc />
+        public bool IsDefault { get; }
 
         /// <inheritdoc />
         public Attribute[] Attributes { get; }
@@ -59,6 +62,15 @@ namespace Commands.Reflection
         ///     Gets the invocation target of this command.
         /// </summary>
         public IInvokable Invoker { get; }
+
+        /// <inheritdoc />
+        public float Score
+        {
+            get
+            {
+                return GetScore();
+            }
+        }
 
         internal CommandInfo(StaticInvoker invoker, string[] aliases, BuildOptions options)
             : this(null, invoker, aliases, true, options)
@@ -112,11 +124,36 @@ namespace Commands.Reflection
             HasArguments = parameters.Length > 0;
             HasRemainder = parameters.Any(x => x.IsRemainder);
 
-            Name = aliases[0];
             Aliases = aliases;
+
+            if (aliases.Length > 0)
+            {
+                IsDefault = false;
+                Name = aliases[0];
+            }
+            else
+            {
+                IsDefault = true;
+                Name = null;
+            }
 
             MinLength = minLength;
             MaxLength = maxLength;
+        }
+
+        /// <inheritdoc />
+        public float GetScore()
+        {
+            var score = 1.0f;
+
+            foreach (var argument in Arguments)
+            {
+                score += argument.GetScore();
+            }
+
+            score += Priority;
+
+            return score;
         }
 
         /// <inheritdoc />
@@ -127,7 +164,7 @@ namespace Commands.Reflection
         /// <param name="withModuleInfo">Defines if the module information should be appended on the command level.</param>
         public string ToString(bool withModuleInfo)
         {
-            return $"{(withModuleInfo ? $"{Module}." : "")}{Invoker.Target.Name}['{Name}']({string.Join<IArgument>(", ", Arguments)})";
+            return $"{(withModuleInfo ? $"{Module}." : "")}{Invoker.Target.Name}{(Name != null ? $"['{Name}']" : "")}({string.Join<IArgument>(", ", Arguments)})";
         }
     }
 }
