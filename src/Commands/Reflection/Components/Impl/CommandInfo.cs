@@ -81,13 +81,21 @@ namespace Commands.Reflection
 
             var parameters = invoker.Target.GetParameters(hasContext, options);
 
+            if (hasContext)
+            {
+                if (parameters.Length == 0 || parameters[0].Type != typeof(CommandContext))
+                {
+                    ThrowHelpers.ThrowInvalidOperation($"A delegate or static command signature must implement {nameof(CommandContext)} as the first parameter.")
+                }
+            }
+
             var (minLength, maxLength) = parameters.GetLength();
 
             if (parameters.Any(x => x.Attributes.Contains<RemainderAttribute>(false)))
             {
                 if (parameters.Length > 1 && parameters[^1].IsRemainder)
                 {
-                    ThrowHelpers.ThrowInvalidOperation($"{nameof(RemainderAttribute)} can only exist on the last parameter of a method.");
+                    ThrowHelpers.ThrowInvalidOperation($"{nameof(RemainderAttribute)} can only exist on the last parameter of a command signature.");
                 }
             }
 
