@@ -58,22 +58,22 @@ namespace Commands.Reflection
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, BuildOptions options)
         {
-            Priority = 0;
-
             var attributes = type.GetAttributes(true);
-            var preconditions = attributes.GetPreconditions();
-            var postconditions = attributes.GetPostconditions();
+
+            var preconditions = attributes.CastWhere<PreconditionAttribute>()
+                .Distinct();
+
+            var postconditions = attributes.CastWhere<PostconditionAttribute>()
+                .Distinct();
 
             Module = root;
             Type = type;
 
-            Attributes = attributes;
-            Preconditions = preconditions;
-            PostConditions = postconditions;
+            Attributes = attributes.ToArray();
+            Preconditions = preconditions.ToArray();
+            PostConditions = postconditions.ToArray();
 
-            Components = this.GetComponents(aliases.Length > 0, options)
-                .OrderByDescending(x => x.Score)
-                .ToHashSet();
+            Priority = attributes.SelectFirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
 
             Aliases = aliases;
 
@@ -89,6 +89,10 @@ namespace Commands.Reflection
             }
 
             IsDefault = false;
+
+            Components = ReflectionHelpers.GetComponents(this, aliases.Length > 0, options)
+                .OrderByDescending(x => x.Score)
+                .ToHashSet();
         }
 
         /// <inheritdoc />

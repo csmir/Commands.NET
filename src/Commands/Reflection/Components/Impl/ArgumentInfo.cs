@@ -77,7 +77,7 @@ namespace Commands.Reflection
                 Converter = options.KeyedConverters[Type];
             }
 
-            Attributes = attributes;
+            Attributes = attributes.ToArray();
             ExposedType = parameterInfo.ParameterType;
             Name = parameterInfo.Name ?? "";
         }

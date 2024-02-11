@@ -33,9 +33,9 @@ namespace Commands.Core
         /// </summary>
         public HashSet<IConditional> Commands { get; } =
         [
-            .. ReflectionHelpers.BuildComponents(converters, options)
-                        .Concat(options.Commands)
-                        .OrderByDescending(x => x.Score)
+            .. ReflectionHelpers.GetTopLevelComponents(converters, options)
+                .Concat(options.Commands)
+                .OrderByDescending(x => x.Score)
         ];
 
         /// <summary>

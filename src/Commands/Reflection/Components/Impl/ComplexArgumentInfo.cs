@@ -92,7 +92,7 @@ namespace Commands.Reflection
             Arguments = parameters;
             HasArguments = parameters.Length > 0;
 
-            Attributes = attributes;
+            Attributes = attributes.ToArray();
 
             ExposedType = parameterInfo.ParameterType;
 

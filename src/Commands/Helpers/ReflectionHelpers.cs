@@ -10,80 +10,49 @@ namespace Commands.Helpers
     {
         private static readonly Type m_type = typeof(ModuleBase);
 
-        public static IEnumerable<IConditional> BuildComponents(IEnumerable<TypeConverterBase> converters, BuildOptions options)
+        public static IEnumerable<IConditional> GetTopLevelComponents(IEnumerable<TypeConverterBase> converters, BuildOptions options)
         {
             options.SetKeyedConverters(converters);
 
-            var components = BuildComponents(options);
+            var modules = GetTopLevelModules(options);
 
             // run through components to discovery queryability
-            foreach (var component in components)
+            foreach (var module in modules)
             {
                 // if module is queryable, it can serve as a top level component.
-                if (component.IsQueryable)
+                if (module.IsQueryable)
                 {
-                    yield return component;
+                    yield return module;
                 }
                 // if this is not the case, its subcomponents will be added as top level components.
-                else foreach (var subComponent in component.Components)
+                else
+                {
+                    foreach (var subComponent in (module as ModuleInfo)!.Components)
                     {
                         yield return subComponent;
                     }
-            }
-        }
-
-        public static IEnumerable<ModuleInfo> BuildComponents(BuildOptions options)
-        {
-            // run through all defined assemblies.
-            foreach (var assembly in options.Assemblies)
-            {
-                // run through every type of the assembly.
-                foreach (var type in assembly.GetTypes())
-                {
-                    // if the type does not match module type.
-                    if (!m_type.IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters || type.IsNested)
-                    {
-                        continue;
-                    }
-
-                    var aliases = Array.Empty<string>();
-
-                    var skip = false;
-                    // search all attributes for occurrence of group, in which case we validate aliases
-                    foreach (var attribute in type.GetCustomAttributes(true))
-                    {
-                        // if attribute is not group, we can skip it.
-                        if (attribute is not NameAttribute names)
-                        {
-                            continue;
-                        }
-
-                        if (attribute is DoNotRegister doSkip)
-                        {
-                            skip = true;
-                            break;
-                        }
-
-                        // validate and set aliases.
-                        names.ValidateAliases(options.NamingRegex);
-
-                        aliases = names.Aliases;
-                    }
-
-                    if (!skip)
-                    {
-                        // yield a new module with or without aliases.
-                        yield return new ModuleInfo(type, null, aliases, options);
-                    }
                 }
             }
         }
 
-        public static IEnumerable<ModuleInfo> GetModules(
-            ModuleInfo module, BuildOptions options)
+        public static IEnumerable<IConditional> GetTopLevelModules(BuildOptions options)
+        {
+            var arr = new IEnumerable<IConditional>[options.Assemblies.Count];
+
+            // run through all defined assemblies.
+            for (int i = 0; i < options.Assemblies.Count; i++)
+            {
+                arr[i] = GetModules(options.Assemblies[i].GetTypes().Where(x => !x.IsNested), null, options);
+            }
+
+            return arr.SelectMany(x => x);
+        }
+
+        public static IEnumerable<IConditional> GetModules(IEnumerable<Type> types,
+            ModuleInfo? module, BuildOptions options)
         {
             // run through all subtypes of type.
-            foreach (var type in module.Type.GetNestedTypes())
+            foreach (var type in types)
             {
                 if (!m_type.IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
                 {
@@ -120,7 +89,7 @@ namespace Commands.Helpers
             }
         }
 
-        public static IEnumerable<CommandInfo> GetCommands(ModuleInfo module, bool withDefaults, BuildOptions options)
+        public static IEnumerable<IConditional> GetCommands(ModuleInfo module, bool withDefaults, BuildOptions options)
         {
             // run through all type methods.
 
@@ -162,13 +131,11 @@ namespace Commands.Helpers
             }
         }
 
-        public static IConditional[] GetComponents(this ModuleInfo module, bool withDefaults, BuildOptions options)
+        public static IConditional[] GetComponents(ModuleInfo module, bool withDefaults, BuildOptions options)
         {
-            var commands = (IEnumerable<IConditional>)GetCommands(module, withDefaults, options)
-                .OrderBy(x => x.Arguments.Length);
+            var commands = GetCommands(module, withDefaults, options);
 
-            var modules = (IEnumerable<IConditional>)GetModules(module, options)
-                .OrderBy(x => x.Components.Count);
+            var modules = GetModules(module.Type.GetNestedTypes(), module, options);
 
             return commands.Concat(modules)
                 .ToArray();
@@ -205,14 +172,11 @@ namespace Commands.Helpers
             return arr;
         }
 
-        public static PreconditionAttribute[] GetPreconditions(this Attribute[] attributes)
-            => attributes.CastWhere<PreconditionAttribute>().ToArray();
-
-        public static PostconditionAttribute[] GetPostconditions(this Attribute[] attributes)
-            => attributes.CastWhere<PostconditionAttribute>().ToArray();
-
-        public static Attribute[] GetAttributes(this ICustomAttributeProvider provider, bool inherit)
-            => provider.GetCustomAttributes(inherit).CastWhere<Attribute>().ToArray();
+        public static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
+        {
+            return provider.GetCustomAttributes(inherit)
+                .CastWhere<Attribute>();
+        }
 
         public static Tuple<int, int> GetLength(this IArgument[] parameters)
         {

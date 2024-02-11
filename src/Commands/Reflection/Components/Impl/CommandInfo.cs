@@ -81,8 +81,12 @@ namespace Commands.Reflection
             IsQueryable = true;
 
             var attributes = invoker.Target.GetAttributes(true);
-            var preconditions = attributes.GetPreconditions();
-            var postconditions = attributes.GetPostconditions();
+
+            var preconditions = attributes.CastWhere<PreconditionAttribute>()
+                .Distinct();
+
+            var postconditions = attributes.CastWhere<PostconditionAttribute>()
+                .Distinct();
 
             var parameters = invoker.Target.GetParameters(hasContext, options);
 
@@ -101,9 +105,9 @@ namespace Commands.Reflection
             Invoker = invoker;
             Module = module;
 
-            Attributes = attributes;
-            Preconditions = preconditions;
-            PostConditions = postconditions;
+            Attributes = attributes.ToArray();
+            Preconditions = preconditions.ToArray();
+            PostConditions = postconditions.ToArray();
 
             Arguments = parameters;
             HasArguments = parameters.Length > 0;
