@@ -2,7 +2,6 @@
 using Commands.Helpers;
 using Commands.Parsing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 var services = new ServiceCollection()
     .ConfigureCommands(configure =>
@@ -12,10 +11,6 @@ var services = new ServiceCollection()
             if (!r.Success)
                 Console.WriteLine(r);
         });
-    })
-    .AddLogging(configure =>
-    {
-        configure.AddSimpleConsole();
     })
     .BuildServiceProvider();
 

@@ -16,7 +16,6 @@ namespace Commands.Tests
         {
             var services = new ServiceCollection()
                 .ConfigureCommands()
-                .AddLogging()
                 .BuildServiceProvider();
 
             _manager = services.GetRequiredService<CommandManager>();

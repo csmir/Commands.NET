@@ -91,7 +91,7 @@ namespace Commands.Reflection
                 score -= 0.5f;
 
             if (IsRemainder)
-                score -= 1f;
+                score -= 0.25f;
 
             if (IsNullable)
                 score -= 0.25f;

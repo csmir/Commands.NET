@@ -182,12 +182,17 @@ namespace Commands.Core
             T consumer, CommandInfo command, int argHeight, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
+            var length = args.Length - argHeight;
+
             if (!command.HasArguments)
             {
+                if (length > 0)
+                {
+                    return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
+                }
+
                 return [];
             }
-
-            var length = args.Length - argHeight;
 
             if (command.MaxLength == length)
             {

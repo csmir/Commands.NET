@@ -48,6 +48,7 @@ namespace Commands.Helpers
 
                     var aliases = Array.Empty<string>();
 
+                    var skip = false;
                     // search all attributes for occurrence of group, in which case we validate aliases
                     foreach (var attribute in type.GetCustomAttributes(true))
                     {
@@ -57,14 +58,23 @@ namespace Commands.Helpers
                             continue;
                         }
 
+                        if (attribute is DoNotRegister doSkip)
+                        {
+                            skip = true;
+                            break;
+                        }
+
                         // validate and set aliases.
                         names.ValidateAliases(options.NamingRegex);
 
                         aliases = names.Aliases;
                     }
 
-                    // yield a new module with or without aliases.
-                    yield return new ModuleInfo(type, null, aliases, options);
+                    if (!skip)
+                    {
+                        // yield a new module with or without aliases.
+                        yield return new ModuleInfo(type, null, aliases, options);
+                    }
                 }
             }
         }
@@ -75,20 +85,37 @@ namespace Commands.Helpers
             // run through all subtypes of type.
             foreach (var type in module.Type.GetNestedTypes())
             {
+                if (!m_type.IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
+                {
+                    continue;
+                }
+
+                var aliases = Array.Empty<string>();
+
+                var skip = false;
                 // run through all attributes.
                 foreach (var attribute in type.GetCustomAttributes(true))
                 {
-                    // skip attribute if its not group.
-                    if (attribute is not NameAttribute names)
+                    if (attribute is NameAttribute names)
                     {
+                        // validate aliases.
+                        names.ValidateAliases(options.NamingRegex);
+
+                        aliases = names.Aliases;
                         continue;
                     }
 
-                    // validate aliases.
-                    names.ValidateAliases(options.NamingRegex);
+                    if (attribute is DoNotRegister doSkip)
+                    {
+                        skip = true;
+                        break;
+                    }
+                }
 
-                    // yield a new module if all aliases are valid.
-                    yield return new ModuleInfo(type, module, names.Aliases, options);
+                if (!skip && aliases.Length != 0)
+                {
+                    // yield a new module if all aliases are valid and it shouldn't be skipped.
+                    yield return new ModuleInfo(type, module, aliases, options);
                 }
             }
         }
@@ -103,6 +130,7 @@ namespace Commands.Helpers
             {
                 var aliases = Array.Empty<string>();
 
+                var skip = false;
                 foreach (var attribute in method.GetCustomAttributes(true))
                 {
                     if (attribute is NameAttribute names)
@@ -110,10 +138,17 @@ namespace Commands.Helpers
                         names.ValidateAliases(options.NamingRegex);
 
                         aliases = names.Aliases;
+                        continue;
+                    }
+
+                    if (attribute is DoNotRegister doSkip)
+                    {
+                        skip = true;
+                        break;
                     }
                 }
 
-                if (withDefaults || aliases.Length > 0)
+                if (!skip && (withDefaults || aliases.Length > 0))
                 {
                     if (method.IsStatic)
                     {

@@ -8,7 +8,7 @@ namespace Commands.Tests
         [Name("command")]
         public void ByBool(bool b)
         {
-            Console.WriteLine("ByString " + b);
+            Console.WriteLine("ByBool " + b);
         }
 
         [Name("command")]
@@ -22,7 +22,7 @@ namespace Commands.Tests
             Console.WriteLine("This is a default overload");
         }
 
-        public void Default([Remainder] string args)
+        public void Default([Remainder] string? args = null)
         {
             Console.WriteLine($"This is a default overload with args: {args}");
         }
