@@ -1,5 +1,4 @@
-﻿using Commands.Core;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Commands.Samples
 {

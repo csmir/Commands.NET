@@ -1,5 +1,4 @@
-﻿using Commands.Core;
-using Commands.Resolvers;
+﻿using Commands.Resolvers;
 
 namespace Commands.Tests
 {

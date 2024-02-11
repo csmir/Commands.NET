@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     A set of options determining the build process for modules and commands.

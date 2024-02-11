@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     An attribute that can prioritize one result over another when multiple matches were found.

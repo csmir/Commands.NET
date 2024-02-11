@@ -1,5 +1,4 @@
-﻿using Commands.Core;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 

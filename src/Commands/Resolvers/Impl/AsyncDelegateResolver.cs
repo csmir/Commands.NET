@@ -1,5 +1,4 @@
-﻿using Commands.Core;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.Resolvers
 {

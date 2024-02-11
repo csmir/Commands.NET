@@ -1,7 +1,7 @@
 ﻿using Commands.Reflection;
 using Commands.TypeConverters;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     The result of a convert operation within the command execution pipeline.

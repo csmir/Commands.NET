@@ -1,6 +1,4 @@
-﻿using Commands.Core;
-
-namespace Commands.Samples
+﻿namespace Commands.Samples
 {
     public class ExampleModule : ModuleBase
     {

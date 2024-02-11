@@ -1,6 +1,4 @@
-﻿using Commands.Core;
-
-namespace Commands.Samples.Hosting.Modules
+﻿namespace Commands.Samples
 {
     public sealed class Module : ModuleBase<ConsumerBase>
     {

@@ -1,12 +1,10 @@
-﻿using Commands.Core;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Commands.Results
 {
     /// <summary>
     ///     The result of the source acquirement within the command execution pipeline.
     /// </summary>
-    [DebuggerDisplay("Success = {Success()}")]
     public readonly struct SourceResult : ICommandResult
     {
         /// <inheritdoc />

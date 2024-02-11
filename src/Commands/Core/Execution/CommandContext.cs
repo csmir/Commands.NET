@@ -1,6 +1,6 @@
 ﻿using Commands.Reflection;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     Represents data about a command, as a <see cref="ModuleBase"/> normally would. 

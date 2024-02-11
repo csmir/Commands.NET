@@ -1,5 +1,4 @@
-﻿using Commands.Core;
-using Commands.Exceptions;
+﻿using Commands.Exceptions;
 using System.Reflection;
 
 namespace Commands.Reflection

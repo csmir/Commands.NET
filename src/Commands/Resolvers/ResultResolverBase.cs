@@ -1,6 +1,4 @@
-﻿using Commands.Core;
-
-namespace Commands.Resolvers
+﻿namespace Commands.Resolvers
 {
     /// <summary>
     ///     A handler for post-execution processes.

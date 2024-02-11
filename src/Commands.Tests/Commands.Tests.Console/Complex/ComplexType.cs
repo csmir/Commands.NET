@@ -1,6 +1,4 @@
-﻿using Commands.Core;
-
-namespace Commands.Tests
+﻿namespace Commands.Tests
 {
     public class ComplexType(int x, int y, int z, [Complex] ComplexerType complexer)
     {

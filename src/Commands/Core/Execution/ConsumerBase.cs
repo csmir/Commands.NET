@@ -1,4 +1,4 @@
-﻿namespace Commands.Core
+﻿namespace Commands
 {
     /// <summary>
     ///     Represents the data about the consumer of the command.

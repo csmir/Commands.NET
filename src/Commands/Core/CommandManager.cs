@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 [assembly: CLSCompliant(true)]
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     The root type serving as a basis for all operations and functionality as provided by Commands.NET.
@@ -15,28 +15,41 @@ namespace Commands.Core
     /// <remarks>
     ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
     /// </remarks>
-    /// <param name="services"></param>
-    /// <param name="finalizer"></param>
-    /// <param name="converters"></param>
-    /// <param name="options"></param>
     [DebuggerDisplay("Commands = {Commands}")]
-    public class CommandManager(
-        IServiceProvider services, CommandFinalizer finalizer, IEnumerable<TypeConverterBase> converters, BuildOptions options)
+    public class CommandManager
     {
         private readonly object s_lock = new();
 
-        private readonly CommandFinalizer _finalizer = finalizer;
-        private readonly IServiceProvider _services = services;
+        private readonly CommandFinalizer _finalizer;
+        private readonly IServiceProvider _services;
 
         /// <summary>
         ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="BuildOptions"/> provided when creating the manager.
         /// </summary>
-        public HashSet<IConditional> Commands { get; } =
-        [
-            .. ReflectionHelpers.GetTopLevelComponents(converters, options)
-                .Concat(options.Commands)
-                .OrderByDescending(x => x.Score)
-        ];
+        public HashSet<ISearchable> Commands { get; }
+        
+        /// <summary>
+        ///     Creates a new <see cref="CommandManager"/> based on the provided arguments.
+        /// </summary>
+        /// <param name="services">The serviceprovider used to register, inject and activate modules on-demand.</param>
+        /// <param name="finalizer">The finalizer responsible for command result callbacks.</param>
+        /// <param name="converters">An enumerable of custom <see cref="TypeConverterBase"/> implementations.</param>
+        /// <param name="options">The options through which to construct the collection of <see cref="Commands"/>.</param>
+        public CommandManager(IServiceProvider services, CommandFinalizer finalizer, IEnumerable<TypeConverterBase> converters, BuildOptions options)
+        {
+            options.SetKeyedConverters(converters);
+
+            _finalizer = finalizer;
+            _services = services;
+
+            Commands =
+            [
+                .. ReflectionUtilities.GetTopLevelComponents(options)
+                                .Concat(options.Commands)
+                                .OrderByDescending(x => x.Score)
+,
+            ];
+        }
 
         /// <summary>
         ///     Makes an attempt at executing a command from provided <paramref name="args"/>.

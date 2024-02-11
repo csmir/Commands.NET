@@ -1,5 +1,4 @@
 ﻿using Commands.Conditions;
-using Commands.Core;
 using Commands.Helpers;
 
 namespace Commands.Reflection
@@ -7,12 +6,12 @@ namespace Commands.Reflection
     /// <summary>
     ///     Reveals information about a command module, hosting zero-or-more commands.
     /// </summary>
-    public sealed class ModuleInfo : IConditional
+    public sealed class ModuleInfo : ISearchable
     {
         /// <summary>
         ///     Gets an array containing nested modules or commands inside this module.
         /// </summary>
-        public IReadOnlySet<IConditional> Components { get; }
+        public IReadOnlySet<ISearchable> Components { get; }
 
         /// <summary>
         ///     Gets the type of this module.
@@ -26,7 +25,7 @@ namespace Commands.Reflection
         public string[] Aliases { get; }
 
         /// <inheritdoc />
-        public bool IsQueryable { get; }
+        public bool IsSearchable { get; }
 
         /// <inheritdoc />
         public bool IsDefault { get; }
@@ -79,18 +78,18 @@ namespace Commands.Reflection
 
             if (aliases.Length > 0)
             {
-                IsQueryable = true;
+                IsDefault = true;
+                IsSearchable = true;
                 Name = aliases[0];
             }
             else
             {
-                IsQueryable = false;
+                IsDefault = false;
+                IsSearchable = false;
                 Name = null;
             }
 
-            IsDefault = false;
-
-            Components = ReflectionHelpers.GetComponents(this, aliases.Length > 0, options)
+            Components = ReflectionUtilities.GetComponents(this, options)
                 .OrderByDescending(x => x.Score)
                 .ToHashSet();
         }

@@ -1,5 +1,4 @@
-﻿using Commands.Core;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Commands.Reflection
 {

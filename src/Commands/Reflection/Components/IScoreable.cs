@@ -1,6 +1,4 @@
-﻿using Commands.Core;
-
-namespace Commands.Reflection
+﻿namespace Commands.Reflection
 {
     /// <summary>
     ///     Reveals a name and potential attributes of a component necessary for execution.

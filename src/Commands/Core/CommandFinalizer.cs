@@ -1,6 +1,6 @@
 ﻿using Commands.Resolvers;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     A container that is responsible for finalizing the command scope and notifying post-execution processes.

@@ -1,7 +1,7 @@
 ﻿using Commands.Conditions;
 using Commands.TypeConverters;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     Defines a setting that tells the command execution pipeline to wait on command execution to finish or to slip thread.

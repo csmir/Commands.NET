@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     A generator for command execution scopes, listening to data within the provided <paramref name="resolvers"/> to run a new command.

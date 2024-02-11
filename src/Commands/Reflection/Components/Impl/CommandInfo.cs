@@ -1,5 +1,4 @@
 ﻿using Commands.Conditions;
-using Commands.Core;
 using Commands.Helpers;
 
 namespace Commands.Reflection
@@ -7,7 +6,7 @@ namespace Commands.Reflection
     /// <summary>
     ///     Reveals information about a command.
     /// </summary>
-    public sealed class CommandInfo : IConditional, IArgumentBucket
+    public sealed class CommandInfo : ISearchable, IArgumentBucket
     {
         /// <summary>
         ///     Gets the invocation target of this command.
@@ -21,7 +20,7 @@ namespace Commands.Reflection
         public string[] Aliases { get; }
 
         /// <inheritdoc />
-        public bool IsQueryable { get; }
+        public bool IsSearchable { get; }
 
         /// <inheritdoc />
         public bool IsDefault { get; }
@@ -78,7 +77,7 @@ namespace Commands.Reflection
         internal CommandInfo(
             ModuleInfo? module, IInvokable invoker, string[] aliases, bool hasContext, BuildOptions options)
         {
-            IsQueryable = true;
+            IsSearchable = true;
 
             var attributes = invoker.Target.GetAttributes(true);
 

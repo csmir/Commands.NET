@@ -1,7 +1,7 @@
 ﻿using Commands.Helpers;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     An attribute to give a description to a command, argument or module.

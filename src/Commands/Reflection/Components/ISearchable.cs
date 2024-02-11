@@ -5,7 +5,7 @@ namespace Commands.Reflection
     /// <summary>
     ///     Reveals information about a conditional component, needing validation in order to become part of execution.
     /// </summary>
-    public interface IConditional : IScoreable
+    public interface ISearchable : IScoreable
     {
         /// <summary>
         ///     Gets an array of aliases for this component.
@@ -15,7 +15,7 @@ namespace Commands.Reflection
         /// <summary>
         ///     Gets if the component name is queryable.
         /// </summary>
-        public bool IsQueryable { get; }
+        public bool IsSearchable { get; }
 
         /// <summary>
         ///     Gets if the component is the default of a module-layer.

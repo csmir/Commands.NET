@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     An attribute that signifies a module to be a group, allowing functionality much like subcommands.

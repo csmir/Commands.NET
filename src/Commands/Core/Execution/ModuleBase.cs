@@ -1,7 +1,7 @@
 ﻿using Commands.Helpers;
 using Commands.Reflection;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     Represents a <see cref="ModuleBase"/> that implements an implementation-friendly accessor to the <see cref="ConsumerBase"/>.

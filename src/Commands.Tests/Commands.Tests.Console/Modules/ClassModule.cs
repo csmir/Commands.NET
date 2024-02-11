@@ -1,6 +1,4 @@
-﻿using Commands.Core;
-
-namespace Commands.Tests
+﻿namespace Commands.Tests
 {
     [Name("class-based", "cb")]
     public class ClassModule : ModuleBase

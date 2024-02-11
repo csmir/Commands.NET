@@ -1,4 +1,4 @@
-﻿namespace Commands.Core
+﻿namespace Commands
 {
     /// <summary>
     ///     An attribute to define that a final parameter should use the remainder of the command query.

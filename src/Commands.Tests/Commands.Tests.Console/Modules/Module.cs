@@ -1,6 +1,4 @@
-﻿using Commands.Core;
-
-namespace Commands.Tests
+﻿namespace Commands.Tests
 {
     [Name("command")]
     public class Module : ModuleBase<ConsumerBase>

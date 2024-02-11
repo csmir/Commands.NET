@@ -1,5 +1,4 @@
-﻿using Commands.Core;
-using Commands.Reflection;
+﻿using Commands.Reflection;
 
 namespace Commands.Helpers
 {
@@ -11,7 +10,7 @@ namespace Commands.Helpers
         private static readonly Type o_type = typeof(object);
         private static readonly Type s_type = typeof(string);
 
-        public static IEnumerable<SearchResult> SearchMany(this IEnumerable<IConditional> components,
+        public static IEnumerable<SearchResult> SearchMany(this IEnumerable<ISearchable> components,
             object[] args, int searchHeight, bool isGrouped)
         {
             List<SearchResult> discovered = [];

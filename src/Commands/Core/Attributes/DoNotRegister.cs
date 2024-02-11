@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     An attribute that signifies that a module or command should <b>not</b> be registered automatically.

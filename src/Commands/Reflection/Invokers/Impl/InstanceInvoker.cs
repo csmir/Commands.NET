@@ -1,5 +1,4 @@
-﻿using Commands.Core;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 namespace Commands.Reflection

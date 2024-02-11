@@ -1,6 +1,6 @@
 ﻿using Commands.Reflection;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     The result of an invocation operation within the command execution pipeline.

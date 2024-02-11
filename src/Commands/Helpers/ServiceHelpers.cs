@@ -1,5 +1,4 @@
-﻿using Commands.Core;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 
 namespace Commands.Helpers

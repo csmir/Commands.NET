@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     Represents a builder that is responsible for configuring a <see cref="IServiceCollection"/> for use with a <see cref="CommandManager"/>.

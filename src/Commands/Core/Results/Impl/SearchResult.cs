@@ -1,7 +1,7 @@
 ﻿using Commands.Exceptions;
 using Commands.Reflection;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     The result of a search operation within the command execution pipeline.
@@ -11,7 +11,7 @@ namespace Commands.Core
         /// <summary>
         ///     Gets the component that was discovered for this result.
         /// </summary>
-        public IConditional? Component { get; }
+        public ISearchable? Component { get; }
 
         /// <inheritdoc />
         public Exception? Exception { get; }
@@ -27,7 +27,7 @@ namespace Commands.Core
 
         internal int SearchHeight { get; }
 
-        private SearchResult(IConditional? component, int searchHeight, Exception? exception)
+        private SearchResult(ISearchable? component, int searchHeight, Exception? exception)
         {
             Component = component;
             SearchHeight = searchHeight;
@@ -40,7 +40,7 @@ namespace Commands.Core
         /// <param name="component">The discovered component.</param>
         /// <param name="searchHeight">The argument index of the discovered component.</param>
         /// <returns>A new result containing information about the operation.</returns>
-        public static SearchResult FromSuccess(IConditional component, int searchHeight)
+        public static SearchResult FromSuccess(ISearchable component, int searchHeight)
         {
             return new(component, searchHeight, null);
         }

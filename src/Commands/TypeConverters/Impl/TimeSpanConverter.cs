@@ -1,5 +1,4 @@
-﻿using Commands.Core;
-using Commands.Reflection;
+﻿using Commands.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Commands.TypeConverters

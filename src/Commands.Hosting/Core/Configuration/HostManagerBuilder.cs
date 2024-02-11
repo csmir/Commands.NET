@@ -5,7 +5,7 @@ using Commands.TypeConverters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     Represents a builder that is responsible for configuring a <see cref="IServiceCollection"/> for use with a <see cref="CommandManager"/>.

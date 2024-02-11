@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     An attribute that defines the name of a module (<see cref="ModuleBase"/>), a module subtype, a 

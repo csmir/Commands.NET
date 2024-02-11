@@ -1,4 +1,4 @@
-﻿using Commands.Core;
+﻿using Commands;
 using Commands.Helpers;
 using Commands.Parsing;
 using Microsoft.Extensions.DependencyInjection;

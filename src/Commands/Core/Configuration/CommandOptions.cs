@@ -1,7 +1,7 @@
 ﻿using Commands.Conditions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Commands.Core
+namespace Commands
 {
     /// <summary>
     ///     A set of options for handling command queries and determining the workflow in the command scope.
@@ -25,7 +25,7 @@ namespace Commands.Core
         /// <remarks>
         ///     If set to <see cref="AsyncMode.Await"/>, the manager will wait for a command to finish before allowing another to be executed.
         ///     If set to <see cref="AsyncMode.Discard"/>, the manager will seperate the command execution from the entry stack, and slip it to another thread. 
-        ///     Only change this value if you have read the documentation of <see cref="Core.AsyncMode"/> and understand the definitions.
+        ///     Only change this value if you have read the documentation of <see cref="AsyncMode"/> and understand the definitions.
         ///     <br/>
         ///     <br/>
         ///     Default: <see cref="AsyncMode.Default"/> (await).
