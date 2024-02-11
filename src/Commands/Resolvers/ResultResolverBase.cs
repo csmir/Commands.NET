@@ -19,7 +19,7 @@ namespace Commands.Resolvers
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         public virtual ValueTask EvaluateAsync(
-            ConsumerBase consumer, IRunResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (!result.Success)
             {
@@ -145,7 +145,7 @@ namespace Commands.Resolvers
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         protected virtual ValueTask UnhandledFailure(
-            ConsumerBase consumer, IRunResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             return ValueTask.CompletedTask;
         }

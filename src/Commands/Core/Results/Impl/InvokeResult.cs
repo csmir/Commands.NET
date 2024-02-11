@@ -8,7 +8,7 @@ namespace Commands.Core
     ///     The result of an invocation operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("Success = {Success()}")]
-    public readonly struct InvokeResult : IRunResult
+    public readonly struct InvokeResult : ICommandResult
     {
         /// <summary>
         ///     Gets the command responsible for the invocation.

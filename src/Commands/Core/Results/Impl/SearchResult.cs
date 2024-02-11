@@ -9,7 +9,7 @@ namespace Commands.Core
     ///     The result of a search operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("Success = {Success()}")]
-    public readonly struct SearchResult : IRunResult
+    public readonly struct SearchResult : ICommandResult
     {
         /// <summary>
         ///     Gets the component that was discovered for this result.

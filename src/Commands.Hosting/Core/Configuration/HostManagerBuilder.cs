@@ -37,8 +37,8 @@ namespace Commands.Core
         ///     Configures an action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
         /// </summary>
         /// <remarks>
-        ///     The <see cref="IRunResult"/> revealed by this action contains data about command success. 
-        ///     Check <see cref="IRunResult.Success"/> to determine whether or not the command ran successfully.
+        ///     The <see cref="ICommandResult"/> revealed by this action contains data about command success. 
+        ///     Check <see cref="ICommandResult.Success"/> to determine whether or not the command ran successfully.
         /// </remarks>
         /// <param name="sourceGenerator">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="ManagerBuilder{T}"/> for call-chaining.</returns>
@@ -67,8 +67,8 @@ namespace Commands.Core
         ///     Configures an asynchronous action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
         /// </summary>
         /// <remarks>
-        ///     The <see cref="IRunResult"/> revealed by this action contains data about command success. 
-        ///     Check <see cref="IRunResult.Success"/> to determine whether or not the command ran successfully.
+        ///     The <see cref="ICommandResult"/> revealed by this action contains data about command success. 
+        ///     Check <see cref="ICommandResult.Success"/> to determine whether or not the command ran successfully.
         /// </remarks>
         /// <param name="sourceGenerator">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="ManagerBuilder{T}"/> for call-chaining.</returns>

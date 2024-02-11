@@ -7,7 +7,7 @@ namespace Commands.Results
     ///     The result of the source acquirement within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("Success = {Success()}")]
-    public readonly struct SourceResult : IRunResult
+    public readonly struct SourceResult : ICommandResult
     {
         /// <inheritdoc />
         public Exception? Exception { get; }

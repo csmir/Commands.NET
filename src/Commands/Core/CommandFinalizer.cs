@@ -14,7 +14,7 @@ namespace Commands.Core
         private readonly ResultResolverBase[] _resolvers = resolvers.ToArray();
 
         internal async ValueTask FinalizeAsync(
-            ConsumerBase consumer, IRunResult result, CommandOptions options)
+            ConsumerBase consumer, ICommandResult result, CommandOptions options)
         {
             foreach (var resolver in _resolvers)
             {

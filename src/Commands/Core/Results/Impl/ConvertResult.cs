@@ -8,7 +8,7 @@ namespace Commands.Core
     ///     The result of a convert operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("Success = {Success()}")]
-    public readonly struct ConvertResult : IRunResult
+    public readonly struct ConvertResult : ICommandResult
     {
         /// <inheritdoc />
         public Exception? Exception { get; }

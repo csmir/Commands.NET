@@ -40,7 +40,7 @@ namespace Commands.Tests
             return base.SearchIncomplete(consumer, result, services, cancellationToken);
         }
 
-        protected override ValueTask UnhandledFailure(ConsumerBase consumer, IRunResult result, IServiceProvider services, CancellationToken cancellationToken)
+        protected override ValueTask UnhandledFailure(ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             return base.UnhandledFailure(consumer, result, services, cancellationToken);
         }

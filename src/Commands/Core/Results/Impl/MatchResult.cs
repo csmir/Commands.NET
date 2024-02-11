@@ -7,7 +7,7 @@ namespace Commands.Core
     ///     The result of a match operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("Success = {Success()}")]
-    public readonly struct MatchResult : IRunResult
+    public readonly struct MatchResult : ICommandResult
     {
         /// <summary>
         ///     Gets the command known during the matching operation.

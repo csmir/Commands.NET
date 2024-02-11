@@ -102,7 +102,7 @@ namespace Commands.Core
             T consumer, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
-            IRunResult? result = null;
+            ICommandResult? result = null;
 
             var searches = Search(args);
 
@@ -140,7 +140,7 @@ namespace Commands.Core
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation process.</returns>
-        protected virtual async ValueTask<IRunResult> RunAsync<T>(
+        protected virtual async ValueTask<ICommandResult> RunAsync<T>(
             T consumer, CommandInfo command, int argHeight, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
