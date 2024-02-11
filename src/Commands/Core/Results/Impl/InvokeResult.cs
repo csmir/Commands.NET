@@ -1,13 +1,10 @@
 ﻿using Commands.Reflection;
-using System.Diagnostics;
-using System.Net.Http.Headers;
 
 namespace Commands.Core
 {
     /// <summary>
     ///     The result of an invocation operation within the command execution pipeline.
     /// </summary>
-    [DebuggerDisplay("Success = {Success()}")]
     public readonly struct InvokeResult : ICommandResult
     {
         /// <summary>

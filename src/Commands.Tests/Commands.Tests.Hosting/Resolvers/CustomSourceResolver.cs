@@ -2,11 +2,6 @@
 using Commands.Parsing;
 using Commands.Resolvers;
 using Commands.Results;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Commands.Tests
 {
@@ -16,7 +11,7 @@ namespace Commands.Tests
         {
             var src = Console.ReadLine();
 
-            return ValueTask.FromResult(Success(new ConsumerBase(), StringParser.Parse(src)));   
+            return ValueTask.FromResult(Success(new ConsumerBase(), StringParser.Parse(src)));
         }
     }
 }

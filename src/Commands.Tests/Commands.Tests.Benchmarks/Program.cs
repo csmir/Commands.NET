@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Commands.Tests
 {
+    [MemoryDiagnoser]
     public class Program
     {
         private readonly CommandManager _manager;

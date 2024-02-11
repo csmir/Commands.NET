@@ -1,13 +1,11 @@
 ﻿using Commands.Reflection;
 using Commands.TypeConverters;
-using System.Diagnostics;
 
 namespace Commands.Core
 {
     /// <summary>
     ///     The result of a convert operation within the command execution pipeline.
     /// </summary>
-    [DebuggerDisplay("Success = {Success()}")]
     public readonly struct ConvertResult : ICommandResult
     {
         /// <inheritdoc />

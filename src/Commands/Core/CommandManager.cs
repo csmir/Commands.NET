@@ -3,8 +3,6 @@ using Commands.Helpers;
 using Commands.Reflection;
 using Commands.TypeConverters;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System.Buffers;
 using System.Diagnostics;
 
 [assembly: CLSCompliant(true)]
@@ -18,19 +16,17 @@ namespace Commands.Core
     ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
     /// </remarks>
     /// <param name="services"></param>
-    /// <param name="logFactory"></param>
     /// <param name="finalizer"></param>
     /// <param name="converters"></param>
     /// <param name="options"></param>
     [DebuggerDisplay("Commands = {Commands}")]
     public class CommandManager(
-        IServiceProvider services, ILoggerFactory logFactory, CommandFinalizer finalizer, IEnumerable<TypeConverterBase> converters, BuildOptions options)
+        IServiceProvider services, CommandFinalizer finalizer, IEnumerable<TypeConverterBase> converters, BuildOptions options)
     {
         private readonly object s_lock = new();
 
         private readonly CommandFinalizer _finalizer = finalizer;
         private readonly IServiceProvider _services = services;
-        private readonly ILoggerFactory _logFactory = logFactory;
 
         /// <summary>
         ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="BuildOptions"/> provided when creating the manager.
@@ -113,7 +109,7 @@ namespace Commands.Core
                 if (search.Component is CommandInfo command)
                 {
                     result = await RunAsync(consumer, command, search.SearchHeight, args, options);
-                    
+
                     if (!result.Success)
                     {
                         continue;

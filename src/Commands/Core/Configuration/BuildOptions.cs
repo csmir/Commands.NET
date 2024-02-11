@@ -32,7 +32,7 @@ namespace Commands.Core
         ///     <br/>
         ///     Default: <see cref="TypeConverterBase.BuildDefaults"/>.
         /// </remarks>
-        public List<TypeConverterBase> TypeConverters { get; set; } = [..TypeConverterBase.BuildDefaults()];
+        public List<TypeConverterBase> TypeConverters { get; set; } = [.. TypeConverterBase.BuildDefaults()];
 
         /// <summary>
         ///     Gets or sets a collection of <see cref="IComponent"/>'s that are manually created before the registration process runs.

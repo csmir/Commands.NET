@@ -1,5 +1,4 @@
 ﻿using Commands.Core;
-using Commands.Reflection;
 
 namespace Commands.Resolvers
 {
@@ -51,7 +50,7 @@ namespace Commands.Resolvers
                         }
                     default:
                         {
-                            return UnhandledFailure(consumer, result, services, cancellationToken);  
+                            return UnhandledFailure(consumer, result, services, cancellationToken);
                         }
                 }
             }

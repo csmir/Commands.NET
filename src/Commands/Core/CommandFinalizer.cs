@@ -1,5 +1,4 @@
 ﻿using Commands.Resolvers;
-using Microsoft.Extensions.Logging;
 
 namespace Commands.Core
 {

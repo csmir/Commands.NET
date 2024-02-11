@@ -1,12 +1,10 @@
 ﻿using Commands.Reflection;
-using System.Diagnostics;
 
 namespace Commands.Core
 {
     /// <summary>
     ///     The result of a match operation within the command execution pipeline.
     /// </summary>
-    [DebuggerDisplay("Success = {Success()}")]
     public readonly struct MatchResult : ICommandResult
     {
         /// <summary>

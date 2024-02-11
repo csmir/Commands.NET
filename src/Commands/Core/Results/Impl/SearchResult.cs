@@ -1,14 +1,11 @@
 ﻿using Commands.Exceptions;
 using Commands.Reflection;
-using System.Diagnostics;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Commands.Core
 {
     /// <summary>
     ///     The result of a search operation within the command execution pipeline.
     /// </summary>
-    [DebuggerDisplay("Success = {Success()}")]
     public readonly struct SearchResult : ICommandResult
     {
         /// <summary>
@@ -83,7 +80,7 @@ namespace Commands.Core
         /// <returns>A new result containing information about the operation.</returns>
         public static SearchResult FromError()
         {
-            return new(null, 0, SearchException.SearchNotFound());  
+            return new(null, 0, SearchException.SearchNotFound());
         }
 
         /// <inheritdoc />

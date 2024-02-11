@@ -1,7 +1,6 @@
 ﻿using Commands.Resolvers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Collections;
 
 namespace Commands.Core
 {

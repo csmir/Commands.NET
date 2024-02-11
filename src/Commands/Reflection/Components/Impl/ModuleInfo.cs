@@ -88,7 +88,7 @@ namespace Commands.Reflection
                 Name = null;
             }
 
-            IsDefault = true;
+            IsDefault = false;
         }
 
         /// <inheritdoc />
