@@ -54,7 +54,7 @@ namespace Commands.Helpers
             return discovered;
         }
 
-        public static async Task<ConvertResult[]> ConvertManyAsync(this IArgument[] arguments,
+        public static async ValueTask<ConvertResult[]> ConvertManyAsync(this IArgument[] arguments,
             ConsumerBase consumer, object[] args, int index, CommandOptions options)
         {
             var results = new ConvertResult[arguments.Length];

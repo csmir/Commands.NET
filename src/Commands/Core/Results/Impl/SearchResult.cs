@@ -11,6 +11,11 @@ namespace Commands.Core
     [DebuggerDisplay("Success = {Success()}")]
     public readonly struct SearchResult : IRunResult
     {
+        /// <summary>
+        ///     Gets the component that was discovered for this result.
+        /// </summary>
+        public IConditional? Component { get; }
+
         /// <inheritdoc />
         public Exception? Exception { get; }
 
@@ -22,11 +27,6 @@ namespace Commands.Core
                 return Exception == null;
             }
         }
-
-        /// <summary>
-        ///     Gets the component that was discovered for this result.
-        /// </summary>
-        public IConditional? Component { get; }
 
         internal int SearchHeight { get; }
 

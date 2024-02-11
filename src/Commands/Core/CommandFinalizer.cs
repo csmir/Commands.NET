@@ -20,9 +20,6 @@ namespace Commands.Core
             {
                 await resolver.EvaluateAsync(consumer, result, options.Scope!.ServiceProvider, options.CancellationToken);
             }
-
-            options.Logger!.LogDebug("Scope complete.");
-
             options.Scope!.Dispose();
         }
 

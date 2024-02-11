@@ -9,6 +9,16 @@ namespace Commands.Reflection
     /// </summary>
     public sealed class ModuleInfo : IConditional
     {
+        /// <summary>
+        ///     Gets an array containing nested modules or commands inside this module.
+        /// </summary>
+        public IReadOnlySet<IConditional> Components { get; }
+
+        /// <summary>
+        ///     Gets the type of this module.
+        /// </summary>
+        public Type Type { get; }
+
         /// <inheritdoc />
         public string? Name { get; }
 
@@ -33,23 +43,8 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public byte Priority { get; }
 
-        /// <summary>
-        ///     Gets an array containing nested modules or commands inside this module.
-        /// </summary>
-        public IReadOnlySet<IConditional> Components { get; }
-
-        /// <summary>
-        ///     Gets the type of this module.
-        /// </summary>
-        public Type Type { get; }
-
-        /// <summary>
-        ///     Gets the root module.
-        /// </summary>
-        /// <remarks>
-        ///     Will be <see langword="null"/> if this module is not nested.
-        /// </remarks>
-        public ModuleInfo? Root { get; }
+        /// <inheritdoc />
+        public ModuleInfo? Module { get; }
 
         /// <inheritdoc />
         public float Score
@@ -69,7 +64,7 @@ namespace Commands.Reflection
             var preconditions = attributes.GetPreconditions();
             var postconditions = attributes.GetPostconditions();
 
-            Root = root;
+            Module = root;
             Type = type;
 
             Attributes = attributes;
@@ -120,7 +115,7 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"{(Root != null ? $"{Root}." : "")}{(Name != null ? $"{Type.Name}['{Name}']" : $"{Type.Name}")}";
+            return $"{(Module != null ? $"{Module}." : "")}{(Name != null ? $"{Type.Name}['{Name}']" : $"{Type.Name}")}";
         }
     }
 }

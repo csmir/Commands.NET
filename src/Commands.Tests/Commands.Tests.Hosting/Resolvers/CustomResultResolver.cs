@@ -10,11 +10,39 @@ namespace Commands.Tests
 {
     internal class CustomResultResolver : ResultResolverBase
     {
-        public override ValueTask EvaluateAsync(ConsumerBase consumer, IRunResult result, IServiceProvider services, CancellationToken cancellationToken)
+        protected override ValueTask ArgumentMismatch(ConsumerBase consumer, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            Console.WriteLine(result);
+            return base.ArgumentMismatch(consumer, result, services, cancellationToken);
+        }
 
-            return ValueTask.CompletedTask;
+        protected override ValueTask CommandNotFound(ConsumerBase consumer, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
+        {
+            return base.CommandNotFound(consumer, result, services, cancellationToken);
+        }
+
+        protected override ValueTask ConditionUnmet(ConsumerBase consumer, ConditionResult result, IServiceProvider services, CancellationToken cancellationToken)
+        {
+            return base.ConditionUnmet(consumer, result, services, cancellationToken);
+        }
+
+        protected override ValueTask ConversionFailed(ConsumerBase consumer, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
+        {
+            return base.ConversionFailed(consumer, result, services, cancellationToken);
+        }
+
+        protected override ValueTask InvocationFailed(ConsumerBase consumer, InvokeResult result, IServiceProvider services, CancellationToken cancellationToken)
+        {
+            return base.InvocationFailed(consumer, result, services, cancellationToken);
+        }
+
+        protected override ValueTask SearchIncomplete(ConsumerBase consumer, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
+        {
+            return base.SearchIncomplete(consumer, result, services, cancellationToken);
+        }
+
+        protected override ValueTask UnhandledFailure(ConsumerBase consumer, IRunResult result, IServiceProvider services, CancellationToken cancellationToken)
+        {
+            return base.UnhandledFailure(consumer, result, services, cancellationToken);
         }
     }
 }

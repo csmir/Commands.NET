@@ -35,7 +35,6 @@ namespace Commands.Reflection
 
             module.Consumer = consumer;
             module.Command = command;
-            module.Logger = options.Logger!;
 
             var value = Target.Invoke(module, args);
 

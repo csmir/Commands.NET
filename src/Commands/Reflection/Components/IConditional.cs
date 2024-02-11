@@ -36,6 +36,14 @@ namespace Commands.Reflection
         public float Score { get; }
 
         /// <summary>
+        ///     Gets the root module.
+        /// </summary>
+        /// <remarks>
+        ///     Will be <see langword="null"/> if the component is not nested in a module.
+        /// </remarks>
+        public ModuleInfo? Module { get; }
+
+        /// <summary>
         ///     Gets an array of <see cref="PreconditionAttribute"/>'s defined atop this component.
         /// </summary>
         public PreconditionAttribute[] Preconditions { get; }

@@ -62,11 +62,6 @@ namespace Commands.Core
         /// </summary>
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
         public CommandInfo Command { get; internal set; } // never null as set internally.
-
-        /// <summary>
-        ///     Gets the logger that logs information for the command currently in scope.
-        /// </summary>
-        public ILogger Logger { get; internal set; } // never null as set internally.
 #pragma warning restore CS8618
 
         /// <summary>

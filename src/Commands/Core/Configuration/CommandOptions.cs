@@ -10,8 +10,16 @@ namespace Commands.Core
     /// </summary>
     public sealed class CommandOptions()
     {
-        private ILogger? _logger = null;
-        private IServiceScope? _scope = null;
+        /// <summary>
+        ///     Gets or sets the scope for running the request.
+        /// </summary>
+        /// <remarks>
+        ///     If not set, this value will be automatically populated by the <see cref="IServiceProvider"/> injected into the <see cref="CommandManager"/>.
+        ///     <br/>
+        ///     <br/>
+        ///     Default: <see langword="default"/>
+        /// </remarks>
+        public IServiceScope Scope { get; internal set; } = default!;
 
         /// <summary>
         ///     Gets or sets the approach to asynchronousity in command execution.
@@ -33,48 +41,6 @@ namespace Commands.Core
         ///     Default: <see langword="default"/>
         /// </remarks> 
         public CancellationToken CancellationToken { get; set; } = default;
-
-        /// <summary>
-        ///     Gets or sets a logger that can log information about the command scope.
-        /// </summary>
-        /// <remarks>
-        ///     If not set, this value will be automatically populated by the <see cref="ILoggerFactory"/> injected into the <see cref="CommandManager"/>.
-        ///     <br/>
-        ///     <br/>
-        ///     Default: <see langword="null"/>
-        /// </remarks>
-        public ILogger? Logger
-        {
-            get
-            {
-                return _logger;
-            }
-            set
-            {
-                _logger = value;
-            }
-        }
-
-        /// <summary>
-        ///     Gets or sets the scope for running the request.
-        /// </summary>
-        /// <remarks>
-        ///     If not set, this value will be automatically populated by the <see cref="IServiceProvider"/> injected into the <see cref="CommandManager"/>.
-        ///     <br/>
-        ///     <br/>
-        ///     Default: <see langword="null"/>
-        /// </remarks>
-        public IServiceScope? Scope
-        {
-            get
-            {
-                return _scope;
-            }
-            set
-            {
-                _scope = value;
-            }
-        }
 
         /// <summary>
         ///     Gets or sets whether the defined <see cref="PostconditionAttribute"/>'s for this execution should be ran.

@@ -1,6 +1,7 @@
 ﻿using Commands.Conditions;
 using Commands.Core;
 using Commands.Helpers;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Reflection;
 
@@ -11,6 +12,11 @@ namespace Commands.Reflection
     /// </summary>
     public sealed class CommandInfo : IConditional, IArgumentBucket
     {
+        /// <summary>
+        ///     Gets the invocation target of this command.
+        /// </summary>
+        public IInvokable Invoker { get; }
+
         /// <inheritdoc />
         public string? Name { get; }
 
@@ -50,18 +56,8 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public byte Priority { get; }
 
-        /// <summary>
-        ///     Gets the module in which the command is known.
-        /// </summary>
-        /// <remarks>
-        ///     Will be <see langword="null"/> when the <see cref="IInvokable"/> of this command is <see cref="StaticInvoker"/> or <see cref="DelegateInvoker"/>.
-        /// </remarks>
+        /// <inheritdoc />
         public ModuleInfo? Module { get; }
-
-        /// <summary>
-        ///     Gets the invocation target of this command.
-        /// </summary>
-        public IInvokable Invoker { get; }
 
         /// <inheritdoc />
         public float Score

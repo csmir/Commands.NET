@@ -9,22 +9,16 @@
         : ExecutionException(message, innerException)
     {
         const string CONVERTER_FAILED = "TypeConverter failed to parse provided value as '{0}'. View inner exception for more details.";
-        const string TOO_SHORT = "Query is too short for best match.";
-        const string TOO_LONG = "Query is too long for best match.";
+        const string ARGUMENT_MISMATCH = "Argument mismatch between best target and input.";
 
         internal static ConvertException ConvertFailed(Type type, Exception innerException)
         {
             return new(string.Format(CONVERTER_FAILED, type), innerException);
         }
 
-        internal static ConvertException InputTooLong()
+        internal static ConvertException ArgumentMismatch()
         {
-            return new(TOO_LONG);
-        }
-
-        internal static ConvertException InputTooShort()
-        {
-            return new(TOO_SHORT);
+            return new(ARGUMENT_MISMATCH);
         }
     }
 }

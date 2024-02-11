@@ -26,5 +26,5 @@ while (true)
 
     var context = new ConsumerBase();
 
-    framework.TryExecute(context, input);
+    await framework.TryExecuteAsync(context, input);
 }

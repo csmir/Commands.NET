@@ -9,6 +9,11 @@ namespace Commands.Core
     [DebuggerDisplay("Success = {Success()}")]
     public readonly struct MatchResult : IRunResult
     {
+        /// <summary>
+        ///     Gets the command known during the matching operation.
+        /// </summary>
+        public CommandInfo Command { get; }
+
         /// <inheritdoc />
         public Exception? Exception { get; }
 
@@ -20,11 +25,6 @@ namespace Commands.Core
                 return Exception == null;
             }
         }
-
-        /// <summary>
-        ///     Gets the command known during the matching operation.
-        /// </summary>
-        public CommandInfo Command { get; }
 
         internal object?[]? Arguments { get; }
 

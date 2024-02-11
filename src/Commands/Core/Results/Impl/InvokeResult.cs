@@ -10,6 +10,11 @@ namespace Commands.Core
     [DebuggerDisplay("Success = {Success()}")]
     public readonly struct InvokeResult : IRunResult
     {
+        /// <summary>
+        ///     Gets the command responsible for the invocation.
+        /// </summary>
+        public CommandInfo Command { get; }
+
         /// <inheritdoc />
         public Exception? Exception { get; }
 
@@ -21,11 +26,6 @@ namespace Commands.Core
                 return Exception == null;
             }
         }
-
-        /// <summary>
-        ///     Gets the command responsible for the invocation.
-        /// </summary>
-        public CommandInfo Command { get; }
 
         private InvokeResult(CommandInfo command, Exception? exception)
         {
