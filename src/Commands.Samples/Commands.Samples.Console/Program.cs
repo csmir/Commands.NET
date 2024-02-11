@@ -5,7 +5,6 @@ using Commands;
 using Commands.Helpers;
 using Commands.Parsing;
 using Commands.Samples;
-
 using Microsoft.Extensions.DependencyInjection;
 
 var collection = new ServiceCollection();

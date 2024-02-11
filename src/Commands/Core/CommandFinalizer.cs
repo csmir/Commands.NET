@@ -17,9 +17,8 @@ namespace Commands
         {
             foreach (var resolver in _resolvers)
             {
-                await resolver.EvaluateAsync(consumer, result, options.Scope!.ServiceProvider, options.CancellationToken);
+                await resolver.EvaluateAsync(consumer, result, options.Services, options.CancellationToken);
             }
-            options.Scope!.Dispose();
         }
 
         internal static CommandFinalizer Default

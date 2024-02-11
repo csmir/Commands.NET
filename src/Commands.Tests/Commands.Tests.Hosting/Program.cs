@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 await Host.CreateDefaultBuilder(args)
     .ConfigureCommands((context, builder) =>
     {
-        builder.AddResultResolver<CustomResultResolver>();
+        builder.AddResultResolver(new CustomResultResolver());
         builder.AddSourceResolver<CustomSourceResolver>();
 
         builder.AddCommand("command", (CommandContext context) =>

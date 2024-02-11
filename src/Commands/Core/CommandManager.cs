@@ -1,8 +1,6 @@
 ﻿using Commands.Exceptions;
 using Commands.Helpers;
 using Commands.Reflection;
-using Commands.TypeConverters;
-using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 
 [assembly: CLSCompliant(true)]
@@ -21,7 +19,6 @@ namespace Commands
         private readonly object s_lock = new();
 
         private readonly CommandFinalizer _finalizer;
-        private readonly IServiceProvider _services;
 
         /// <summary>
         ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="BuildOptions"/> provided when creating the manager.
@@ -31,16 +28,10 @@ namespace Commands
         /// <summary>
         ///     Creates a new <see cref="CommandManager"/> based on the provided arguments.
         /// </summary>
-        /// <param name="services">The serviceprovider used to register, inject and activate modules on-demand.</param>
-        /// <param name="finalizer">The finalizer responsible for command result callbacks.</param>
-        /// <param name="converters">An enumerable of custom <see cref="TypeConverterBase"/> implementations.</param>
         /// <param name="options">The options through which to construct the collection of <see cref="Commands"/>.</param>
-        public CommandManager(IServiceProvider services, CommandFinalizer finalizer, IEnumerable<TypeConverterBase> converters, BuildOptions options)
+        public CommandManager(BuildOptions options)
         {
-            options.SetKeyedConverters(converters);
-
-            _finalizer = finalizer;
-            _services = services;
+            _finalizer = new CommandFinalizer(options.ResultResolvers);
 
             var commands = ReflectionUtilities.GetTopLevelComponents(options)
                 .Concat(options.Commands)
@@ -112,8 +103,6 @@ namespace Commands
             ICommandResult? result = null;
 
             var searches = Search(args);
-
-            options.Scope ??= _services.CreateAsyncScope();
 
             foreach (var search in searches)
             {
@@ -265,7 +254,7 @@ namespace Commands
             {
                 foreach (var precon in command.Preconditions)
                 {
-                    var checkResult = await precon.EvaluateAsync(consumer, command, options.Scope!.ServiceProvider, options.CancellationToken);
+                    var checkResult = await precon.EvaluateAsync(consumer, command, options.Services, options.CancellationToken);
 
                     if (!checkResult.Success)
                     {
@@ -285,7 +274,7 @@ namespace Commands
             {
                 foreach (var postcon in command.PostConditions)
                 {
-                    var checkResult = await postcon.EvaluateAsync(consumer, command, options.Scope.ServiceProvider, options.CancellationToken);
+                    var checkResult = await postcon.EvaluateAsync(consumer, command, options.Services, options.CancellationToken);
 
                     if (!checkResult.Success)
                     {

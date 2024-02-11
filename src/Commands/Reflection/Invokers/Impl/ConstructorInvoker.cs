@@ -69,13 +69,13 @@ namespace Commands.Reflection
             {
                 var parameter = Parameters[i];
 
-                var service = options.Scope.ServiceProvider.GetService(parameter.Type);
+                var service = options.Services.GetService(parameter.Type);
 
                 if (service == null)
                 {
                     if (parameter.Type == c_serviceType)
                     {
-                        services[i] = options.Scope.ServiceProvider;
+                        services[i] = options.Services;
                         continue;
                     }
 

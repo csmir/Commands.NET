@@ -1,5 +1,4 @@
 ﻿using Commands.Conditions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Commands
 {
@@ -9,15 +8,12 @@ namespace Commands
     public sealed class CommandOptions()
     {
         /// <summary>
-        ///     Gets or sets the scope for running the request.
+        ///     Gets or sets the services for running the request.
         /// </summary>
         /// <remarks>
-        ///     If not set, this value will be automatically populated by the <see cref="IServiceProvider"/> injected into the <see cref="CommandManager"/>.
-        ///     <br/>
-        ///     <br/>
-        ///     Default: <see langword="default"/>
+        ///     Default: <see cref="EmptyServiceProvider" />
         /// </remarks>
-        public IServiceScope Scope { get; internal set; } = null!;
+        public IServiceProvider Services { get; set; } = EmptyServiceProvider.Instance;
 
         /// <summary>
         ///     Gets or sets the approach to asynchronousity in command execution.
@@ -55,5 +51,25 @@ namespace Commands
         ///     Default: <see langword="false"/>
         /// </remarks>
         public bool SkipPreconditions { get; set; } = false;
+
+        /// <inheritdoc />
+        public sealed class EmptyServiceProvider : IServiceProvider
+        {
+            private static readonly Lazy<EmptyServiceProvider> _i = new();
+
+            internal static EmptyServiceProvider Instance
+            {
+                get
+                {
+                    return _i.Value;
+                }
+            }
+
+            /// <inheritdoc />
+            public object? GetService(Type serviceType)
+            {
+                return null;
+            }
+        }
     }
 }
