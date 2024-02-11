@@ -17,7 +17,7 @@ namespace Commands
         ///     <br/>
         ///     Default: <see langword="default"/>
         /// </remarks>
-        public IServiceScope Scope { get; internal set; } = default!;
+        public IServiceScope Scope { get; internal set; } = null!;
 
         /// <summary>
         ///     Gets or sets the approach to asynchronousity in command execution.

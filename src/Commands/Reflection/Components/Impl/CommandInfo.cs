@@ -8,10 +8,8 @@ namespace Commands.Reflection
     /// </summary>
     public sealed class CommandInfo : ISearchable, IArgumentBucket
     {
-        /// <summary>
-        ///     Gets the invocation target of this command.
-        /// </summary>
-        public IInvokable Invoker { get; }
+        /// <inheritdoc />
+        public IInvoker Invoker { get; }
 
         /// <inheritdoc />
         public string? Name { get; }
@@ -75,7 +73,7 @@ namespace Commands.Reflection
         }
 
         internal CommandInfo(
-            ModuleInfo? module, IInvokable invoker, string[] aliases, bool hasContext, BuildOptions options)
+            ModuleInfo? module, IInvoker invoker, string[] aliases, bool hasContext, BuildOptions options)
         {
             IsSearchable = true;
 
@@ -87,7 +85,7 @@ namespace Commands.Reflection
             var postconditions = attributes.CastWhere<PostconditionAttribute>()
                 .Distinct();
 
-            var parameters = invoker.Target.GetParameters(hasContext, options);
+            var parameters = invoker.Target.GetArguments(hasContext, options);
 
             var (minLength, maxLength) = parameters.GetLength();
 

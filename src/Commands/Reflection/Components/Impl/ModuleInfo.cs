@@ -1,5 +1,6 @@
 ﻿using Commands.Conditions;
 using Commands.Helpers;
+using System.Reflection;
 
 namespace Commands.Reflection
 {
@@ -17,6 +18,9 @@ namespace Commands.Reflection
         ///     Gets the type of this module.
         /// </summary>
         public Type Type { get; }
+
+        /// <inheritdoc />
+        public IInvoker Invoker { get; }
 
         /// <inheritdoc />
         public string? Name { get; }
@@ -78,16 +82,18 @@ namespace Commands.Reflection
 
             if (aliases.Length > 0)
             {
-                IsDefault = true;
                 IsSearchable = true;
                 Name = aliases[0];
             }
             else
             {
-                IsDefault = false;
                 IsSearchable = false;
                 Name = null;
             }
+
+            IsDefault = false;
+
+            Invoker = new ConstructorInvoker(type, options);
 
             Components = ReflectionUtilities.GetComponents(this, options)
                 .OrderByDescending(x => x.Score)

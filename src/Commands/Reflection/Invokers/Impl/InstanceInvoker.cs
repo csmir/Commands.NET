@@ -6,10 +6,10 @@ namespace Commands.Reflection
     /// <summary>
     ///     An invoker for instanced commands.
     /// </summary>
-    public sealed class InstanceInvoker : IInvokable
+    public sealed class InstanceInvoker : IInvoker
     {
         /// <inheritdoc />
-        public MethodInfo Target { get; }
+        public MethodBase Target { get; }
 
         internal InstanceInvoker(MethodInfo target)
         {
@@ -17,22 +17,14 @@ namespace Commands.Reflection
         }
 
         /// <inheritdoc />
-        public async ValueTask<InvokeResult> InvokeAsync(ConsumerBase consumer, CommandInfo command, object?[] args, CommandOptions options)
+        public object? Invoke(ConsumerBase consumer, CommandInfo command, object?[] args, CommandOptions options)
         {
-            var targetInstance = options.Scope!.ServiceProvider.GetService(command.Module!.Type); // never null for ModuleInvoker.
+            var module = command.Module!.Invoker.Invoke(consumer, command, args, options) as ModuleBase;
 
-            var module = targetInstance != null // never null in casting logic.
-                ? (targetInstance as ModuleBase)!
-                : (ActivatorUtilities.CreateInstance(options.Scope.ServiceProvider, command.Module.Type) as ModuleBase)!;
+            module!.Consumer = consumer;
+            module!.Command = command;
 
-            module.Consumer = consumer;
-            module.Command = command;
-
-            var value = Target.Invoke(module, args);
-
-            var result = await module.ResolveReturnAsync(value);
-
-            return result;
+            return Target.Invoke(module, args);
         }
     }
 }

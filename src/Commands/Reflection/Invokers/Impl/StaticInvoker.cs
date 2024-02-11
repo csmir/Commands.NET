@@ -6,10 +6,10 @@ namespace Commands.Reflection
     /// <summary>
     ///     An invoker for static commands.
     /// </summary>
-    public sealed class StaticInvoker : IInvokable
+    public sealed class StaticInvoker : IInvoker
     {
         /// <inheritdoc />
-        public MethodInfo Target { get; }
+        public MethodBase Target { get; }
 
         internal StaticInvoker(MethodInfo target)
         {
@@ -17,33 +17,11 @@ namespace Commands.Reflection
         }
 
         /// <inheritdoc />
-        public async ValueTask<InvokeResult> InvokeAsync(ConsumerBase consumer, CommandInfo command, object?[] args, CommandOptions options)
+        public object? Invoke(ConsumerBase consumer, CommandInfo command, object?[] args, CommandOptions options)
         {
             var context = new CommandContext(consumer, command, options);
 
-            var result = Target.Invoke(null, [context, .. args]);
-
-            switch (result)
-            {
-                case Task task:
-                    {
-                        await task;
-                        return InvokeResult.FromSuccess(command);
-                    }
-                case ValueTask valueTask:
-                    {
-                        await valueTask;
-                        return InvokeResult.FromSuccess(command);
-                    }
-                case null:
-                    {
-                        return InvokeResult.FromSuccess(command);
-                    }
-                default:
-                    {
-                        return InvokeResult.FromError(command, InvokeException.ReturnUnresolved());
-                    }
-            }
+            return Target.Invoke(null, [context, .. args]);
         }
     }
 }

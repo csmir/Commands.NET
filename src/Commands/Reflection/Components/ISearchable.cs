@@ -52,5 +52,10 @@ namespace Commands.Reflection
         ///     Gets an array of <see cref="PostconditionAttribute"/>'s defined atop this component.
         /// </summary>
         public PostconditionAttribute[] PostConditions { get; }
+
+        /// <summary>
+        ///     Gets the invocation target of this component.
+        /// </summary>
+        public IInvoker Invoker { get; }
     }
 }

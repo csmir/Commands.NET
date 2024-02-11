@@ -15,7 +15,7 @@ namespace Commands
     /// <remarks>
     ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
     /// </remarks>
-    [DebuggerDisplay("Commands = {Commands}")]
+    [DebuggerDisplay("Commands = {Commands},nq")]
     public class CommandManager
     {
         private readonly object s_lock = new();
@@ -42,13 +42,11 @@ namespace Commands
             _finalizer = finalizer;
             _services = services;
 
-            Commands =
-            [
-                .. ReflectionUtilities.GetTopLevelComponents(options)
-                                .Concat(options.Commands)
-                                .OrderByDescending(x => x.Score)
-,
-            ];
+            var commands = ReflectionUtilities.GetTopLevelComponents(options)
+                .Concat(options.Commands)
+                .OrderByDescending(command => command.Score);
+
+            Commands = [.. commands];
         }
 
         /// <summary>
@@ -174,9 +172,11 @@ namespace Commands
                     return preCheckResult;
                 }
 
-                var result = await command.Invoker.InvokeAsync(consumer, command, arguments, options);
+                var value = command.Invoker.Invoke(consumer, command, arguments, options);
 
-                var postCheckResult = await CheckPostconditionsAsync(consumer, result, options);
+                var result = await HandleReturnTypeAsync(consumer, command, value, options);
+
+                var postCheckResult = await CheckPostconditionsAsync(consumer, command, options);
 
                 if (!postCheckResult.Success)
                 {
@@ -191,35 +191,67 @@ namespace Commands
             }
         }
 
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="consumer"></param>
+        /// <param name="command"></param>
+        /// <param name="value"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        protected virtual async ValueTask<InvokeResult> HandleReturnTypeAsync<T>(
+            T consumer, CommandInfo command, object? value, CommandOptions options)
+        {
+            switch (value)
+            {
+                case Task awaitablet:
+                    {
+                        await awaitablet;
+                        return InvokeResult.FromSuccess(command);
+                    }
+                case ValueTask awaitablevt:
+                    {
+                        await awaitablevt;
+                        return InvokeResult.FromSuccess(command);
+                    }
+                case null: // (void)
+                    {
+                        return InvokeResult.FromSuccess(command);
+                    }
+                default:
+                    {
+                        return InvokeResult.FromError(command, InvokeException.ReturnUnresolved());
+                    }
+            }
+        }
+
         private async ValueTask<ConvertResult[]> ConvertAsync<T>(
             T consumer, CommandInfo command, int argHeight, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
             var length = args.Length - argHeight;
 
-            if (!command.HasArguments)
+            if (command.HasArguments)
             {
-                if (length > 0)
+                if (command.MaxLength == length)
                 {
-                    return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
+                    return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
                 }
 
+                if (command.MaxLength <= length && command.HasRemainder)
+                {
+                    return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
+                }
+
+                if (command.MaxLength > length && command.MinLength <= length)
+                {
+                    return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
+                }
+            }
+            else if (length == 0)
+            {
                 return [];
-            }
-
-            if (command.MaxLength == length)
-            {
-                return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
-            }
-
-            if (command.MaxLength <= length && command.HasRemainder)
-            {
-                return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
-            }
-
-            if (command.MaxLength > length && command.MinLength <= length)
-            {
-                return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
             }
 
             return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
@@ -229,18 +261,16 @@ namespace Commands
             T consumer, CommandInfo command, CommandOptions options)
             where T : ConsumerBase
         {
-            if (options.SkipPreconditions)
+            if (!options.SkipPreconditions)
             {
-                return ConditionResult.FromSuccess();
-            }
-
-            foreach (var precon in command.Preconditions)
-            {
-                var checkResult = await precon.EvaluateAsync(consumer, command, options.Scope!.ServiceProvider, options.CancellationToken);
-
-                if (!checkResult.Success)
+                foreach (var precon in command.Preconditions)
                 {
-                    return checkResult;
+                    var checkResult = await precon.EvaluateAsync(consumer, command, options.Scope!.ServiceProvider, options.CancellationToken);
+
+                    if (!checkResult.Success)
+                    {
+                        return checkResult;
+                    }
                 }
             }
 
@@ -248,21 +278,19 @@ namespace Commands
         }
 
         private async ValueTask<ConditionResult> CheckPostconditionsAsync<T>(
-            T consumer, InvokeResult result, CommandOptions options)
+            T consumer, CommandInfo command, CommandOptions options)
             where T : ConsumerBase
         {
-            if (options.SkipPostconditions)
+            if (!options.SkipPostconditions)
             {
-                return ConditionResult.FromSuccess();
-            }
-
-            foreach (var postcon in result.Command.PostConditions)
-            {
-                var checkResult = await postcon.EvaluateAsync(consumer, result, options.Scope.ServiceProvider, options.CancellationToken);
-
-                if (!checkResult.Success)
+                foreach (var postcon in command.PostConditions)
                 {
-                    return checkResult;
+                    var checkResult = await postcon.EvaluateAsync(consumer, command, options.Scope.ServiceProvider, options.CancellationToken);
+
+                    if (!checkResult.Success)
+                    {
+                        return checkResult;
+                    }
                 }
             }
 

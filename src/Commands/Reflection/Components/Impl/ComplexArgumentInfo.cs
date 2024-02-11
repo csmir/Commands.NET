@@ -9,6 +9,11 @@ namespace Commands.Reflection
     /// </summary>
     public class ComplexArgumentInfo : IArgument, IArgumentBucket
     {
+        /// <summary>
+        ///     Gets the invocation target of this complex argument.
+        /// </summary>
+        public ConstructorInfo Constructor { get; }
+
         /// <inheritdoc />
         public string Name { get; }
 
@@ -42,11 +47,6 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public int MaxLength { get; }
 
-        /// <summary>
-        ///     Gets the invocation target of this complex argument.
-        /// </summary>
-        public ConstructorInfo Constructor { get; }
-
         /// <inheritdoc />
         public TypeConverterBase? Converter { get; } = null;
 
@@ -73,7 +73,7 @@ namespace Commands.Reflection
                 IsOptional = false;
 
             var constructor = Type.GetConstructors()[0];
-            var parameters = constructor.GetParameters(false, options);
+            var parameters = constructor.GetArguments(false, options);
 
             if (parameters.Length == 0)
             {

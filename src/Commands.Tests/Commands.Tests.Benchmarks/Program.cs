@@ -21,9 +21,11 @@ namespace Commands.Tests
         }
 
         static void Main()
-            => BenchmarkRunner.Run<Program>();
+        {
+            BenchmarkRunner.Run<Program>();
+        }
 
-        [Benchmark]
+        //[Benchmark]
         public void ParseText()
         {
             StringParser.Parse("command");

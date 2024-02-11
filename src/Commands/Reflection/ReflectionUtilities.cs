@@ -121,14 +121,14 @@ namespace Commands.Reflection
                         continue;
                     }
 
-                    if (attribute is DoNotRegister doSkip)
+                    if (attribute is SkipAttribute doSkip)
                     {
                         skip = true;
                         break;
                     }
                 }
 
-                if (!skip && aliases.Length != 0)
+                if (!skip)
                 {
                     // yield a new module if all aliases are valid and it shouldn't be skipped.
                     yield return new ModuleInfo(type, module, aliases, options);
@@ -165,7 +165,7 @@ namespace Commands.Reflection
                         continue;
                     }
 
-                    if (attribute is DoNotRegister doSkip)
+                    if (attribute is SkipAttribute doSkip)
                     {
                         skip = true;
                         break;
@@ -202,7 +202,7 @@ namespace Commands.Reflection
                 .ToArray();
         }
 
-        internal static IArgument[] GetParameters(this MethodBase method, bool hasContext, BuildOptions options)
+        internal static IArgument[] GetArguments(this MethodBase method, bool hasContext, BuildOptions options)
         {
             var parameters = method.GetParameters();
 
@@ -228,6 +228,20 @@ namespace Commands.Reflection
                 {
                     arr[i] = new ArgumentInfo(parameters[i], options);
                 }
+            }
+
+            return arr;
+        }
+
+        internal static IParameter[] GetParameters(this MethodBase method, BuildOptions _)
+        {
+            var parameters = method.GetParameters();
+
+            var arr = new IParameter[parameters.Length];
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                arr[i] = new ServiceInfo(parameters[i]);
             }
 
             return arr;

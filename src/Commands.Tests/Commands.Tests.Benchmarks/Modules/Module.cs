@@ -5,7 +5,7 @@
         [Name("base-test")]
         public void Test()
         {
-
+            
         }
 
         [Name("param-test")]
@@ -16,12 +16,14 @@
         }
 
         [Name("nested")]
-        public sealed class NestedModule : ModuleBase<ConsumerBase>
+        public sealed class NestedModule(IServiceProvider services) : ModuleBase<ConsumerBase>
         {
+            private readonly IServiceProvider _services = services;
+
             [Name("test")]
             public void Test()
             {
-
+                Console.WriteLine(_services);
             }
         }
     }
