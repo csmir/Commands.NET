@@ -32,7 +32,7 @@ namespace Commands.Reflection
         public TypeConverterBase? Converter { get; } = null;
 
         internal ArgumentInfo(
-            ParameterInfo parameterInfo, BuildOptions options)
+            ParameterInfo parameterInfo, ICommandBuilder options)
         {
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);

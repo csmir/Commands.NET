@@ -18,17 +18,16 @@ namespace Commands
     ///         <item>Registration of <see cref="SourceResolverBase"/> implementations to handle pre-execution command generation.</item>
     ///         <item>Configuration of base post-execution handlers through delegates.</item>
     ///         <item>Configuration of base pre-execution handlers through delegates.</item>
-    ///         <item>Configuration of the <see cref="BuildOptions"/> responsible for the build process of commands and modules.</item>
     ///     </list>
     ///     In post-build processing, the context provided by builder will also do the following:
     ///     <list type="bullet">
-    ///         <item>Discovery of <see cref="ModuleBase"/> through the provided <see cref="BuildOptions.Assemblies"/> for scope creation.</item>
+    ///         <item>Discovery of <see cref="ModuleBase"/> through the provided <see cref="ICommandBuilder.Assemblies"/> for scope creation.</item>
     ///         <item>Setup of the default <see cref="CommandFinalizer"/> to dispose command scopes and publish results.</item>
     ///         <item>Setup of the default <see cref="CommandGenerator"/> to activate source resolvers and run commands.</item>
     ///     </list>
     /// </remarks>
     /// <typeparam name="T">The implementation of the <see cref="CommandManager"/> to be configured.</typeparam>
-    public class HostBuildOptions<T>(IServiceCollection services) : BuildOptions
+    public class HostCommandBuilder<T>(IServiceCollection services) : CommandBuilder<T>
         where T : CommandManager
     {
         private bool actionset = false;
@@ -46,8 +45,8 @@ namespace Commands
         ///     Check <see cref="ICommandResult.Success"/> to determine whether or not the command ran successfully.
         /// </remarks>
         /// <param name="sourceGenerator">The action resembling a post-execution action based on the command result.</param>
-        /// <returns>The same <see cref="HostBuildOptions{T}"/> for call-chaining.</returns>
-        public virtual HostBuildOptions<T> AddSourceResolver(Func<SourceResult> sourceGenerator)
+        /// <returns>The same <see cref="HostCommandBuilder{T}"/> for call-chaining.</returns>
+        public virtual HostCommandBuilder<T> AddSourceResolver(Func<SourceResult> sourceGenerator)
         {
             if (actionset)
             {
@@ -76,8 +75,8 @@ namespace Commands
         ///     Check <see cref="ICommandResult.Success"/> to determine whether or not the command ran successfully.
         /// </remarks>
         /// <param name="sourceGenerator">The action resembling a post-execution action based on the command result.</param>
-        /// <returns>The same <see cref="HostBuildOptions{T}"/> for call-chaining.</returns>
-        public virtual HostBuildOptions<T> AddSourceResolver(Func<ValueTask<SourceResult>> sourceGenerator)
+        /// <returns>The same <see cref="HostCommandBuilder{T}"/> for call-chaining.</returns>
+        public virtual HostCommandBuilder<T> AddSourceResolver(Func<ValueTask<SourceResult>> sourceGenerator)
         {
             if (actionset)
             {
@@ -99,11 +98,11 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Adds a <see cref="SourceResolverBase"/> to the <see cref="HostBuildOptions{T}.Services"/> of this builder that will later be injected into the configured <see cref="CommandGenerator"/> for source creation.
+        ///     Adds a <see cref="SourceResolverBase"/> to the <see cref="HostCommandBuilder{T}.Services"/> of this builder that will later be injected into the configured <see cref="CommandGenerator"/> for source creation.
         /// </summary>
-        /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolverBase"/> to add to the <see cref="HostBuildOptions{T}.Services"/>.</typeparam>
-        /// <returns>The same <see cref="HostBuildOptions{T}"/> for call-chaining.</returns>
-        public virtual HostBuildOptions<T> AddSourceResolver<TResolver>()
+        /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolverBase"/> to add to the <see cref="HostCommandBuilder{T}.Services"/>.</typeparam>
+        /// <returns>The same <see cref="HostCommandBuilder{T}"/> for call-chaining.</returns>
+        public virtual HostCommandBuilder<T> AddSourceResolver<TResolver>()
             where TResolver : SourceResolverBase
         {
             var descriptor = ServiceDescriptor.Singleton<SourceResolverBase, TResolver>();
@@ -114,11 +113,11 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Adds a <see cref="SourceResolverBase"/> to the <see cref="HostBuildOptions{T}.Services"/> of this builder that will later be injected into the configured <see cref="CommandGenerator"/> for source craetion.
+        ///     Adds a <see cref="SourceResolverBase"/> to the <see cref="HostCommandBuilder{T}.Services"/> of this builder that will later be injected into the configured <see cref="CommandGenerator"/> for source craetion.
         /// </summary>
-        /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolverBase"/> to add to the <see cref="HostBuildOptions{T}.Services"/>.</typeparam>
-        /// <returns>The same <see cref="HostBuildOptions{T}"/> for call-chaining.</returns>
-        public virtual HostBuildOptions<T> AddSourceResolver<TResolver>(TResolver resolver)
+        /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolverBase"/> to add to the <see cref="HostCommandBuilder{T}.Services"/>.</typeparam>
+        /// <returns>The same <see cref="HostCommandBuilder{T}"/> for call-chaining.</returns>
+        public virtual HostCommandBuilder<T> AddSourceResolver<TResolver>(TResolver resolver)
             where TResolver : SourceResolverBase
         {
             if (resolver == null)
@@ -134,13 +133,13 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Finalizes the configuration of this <see cref="HostBuildOptions{T}"/>, configuring the manager and the source resolver.
+        ///     Finalizes the configuration of this <see cref="HostCommandBuilder{T}"/>, configuring the manager and the source resolver.
         /// </summary>
         /// <remarks>
         ///     If the builder is configured via the generic HostBuilder or <see cref="ServiceCollection"/>, this call is unnecessary.
         /// </remarks>
-        /// <returns>The same <see cref="HostBuildOptions{T}"/> for call-chaining.</returns>
-        public new HostBuildOptions<T> FinalizeConfiguration()
+        /// <returns>The same <see cref="HostCommandBuilder{T}"/> for call-chaining.</returns>
+        public new HostCommandBuilder<T> FinalizeConfiguration()
         {
             AddStarter();
 
@@ -157,10 +156,10 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Adds the <see cref="CommandFinalizer"/> to the <see cref="HostBuildOptions{T}.Services"/> for emitting a looping pattern to the injected <see cref="SourceResolverBase"/>'s"/>.
+        ///     Adds the <see cref="CommandFinalizer"/> to the <see cref="HostCommandBuilder{T}.Services"/> for emitting a looping pattern to the injected <see cref="SourceResolverBase"/>'s"/>.
         /// </summary>
-        /// <returns>The same <see cref="HostBuildOptions{T}"/> for call-chaining.</returns>
-        protected virtual HostBuildOptions<T> AddStarter()
+        /// <returns>The same <see cref="HostCommandBuilder{T}"/> for call-chaining.</returns>
+        protected virtual HostCommandBuilder<T> AddStarter()
         {
             Services.AddHostedService<CommandGenerator>();
 

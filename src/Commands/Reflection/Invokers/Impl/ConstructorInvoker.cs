@@ -31,7 +31,7 @@ namespace Commands.Reflection
         /// </summary>
         public IParameter[] Parameters { get; }
 
-        internal ConstructorInvoker(Type type, BuildOptions options)
+        internal ConstructorInvoker(Type type, ICommandBuilder options)
         {
             var ctor = GetConstructor(type);
 

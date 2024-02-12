@@ -21,7 +21,7 @@ namespace Commands
         private readonly CommandFinalizer _finalizer;
 
         /// <summary>
-        ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="BuildOptions"/> provided when creating the manager.
+        ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="ICommandBuilder"/> provided when creating the manager.
         /// </summary>
         public HashSet<ISearchable> Commands { get; }
         
@@ -29,7 +29,7 @@ namespace Commands
         ///     Creates a new <see cref="CommandManager"/> based on the provided arguments.
         /// </summary>
         /// <param name="options">The options through which to construct the collection of <see cref="Commands"/>.</param>
-        public CommandManager(BuildOptions options)
+        public CommandManager(ICommandBuilder options)
         {
             _finalizer = new CommandFinalizer(options.ResultResolvers);
 
@@ -284,6 +284,15 @@ namespace Commands
             }
 
             return ConditionResult.FromSuccess();
+        }
+
+        /// <summary>
+        ///     Creates a builder that is responsible for setting up all required arguments to discover and populate <see cref="Commands"/>.
+        /// </summary>
+        /// <returns>A new <see cref="ICommandBuilder"/> that implements <see cref="CommandManager"/></returns>
+        public static CommandBuilder<CommandManager> CreateBuilder()
+        {
+            return new CommandBuilder<CommandManager>();
         }
     }
 }

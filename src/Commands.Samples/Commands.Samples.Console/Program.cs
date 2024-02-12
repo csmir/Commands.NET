@@ -12,7 +12,7 @@ var collection = new ServiceCollection();
 collection.ConfigureCommands(configure =>
 {
     configure.AddResultResolver((c, r, p) => Console.WriteLine(r));
-    configure.AddTypeConverter<ReflectionTypeConverter>();
+    configure.AddTypeConverter(new ReflectionTypeConverter(true));
 });
 
 var services = collection.BuildServiceProvider();

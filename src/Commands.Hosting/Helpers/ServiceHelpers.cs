@@ -23,10 +23,10 @@ namespace Commands.Helpers
         ///     Configures the <see cref="IServiceCollection"/> for use of a <see cref="CommandManager"/> with the provided builder configuration.
         /// </summary>
         /// <param name="collection"></param>
-        /// <param name="configureDelegate">A delegate to configure the <see cref="HostBuildOptions{T}"/> responsible for customizing the <see cref="CommandManager"/> setup.</param>
+        /// <param name="configureDelegate">A delegate to configure the <see cref="HostCommandBuilder{T}"/> responsible for customizing the <see cref="CommandManager"/> setup.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
         public static IServiceCollection ConfigureCommands(this IServiceCollection collection,
-            Action<BuildOptions> configureDelegate)
+            Action<CommandBuilder<CommandManager>> configureDelegate)
         {
             collection.ConfigureCommands<CommandManager>(configureDelegate);
 
@@ -37,10 +37,10 @@ namespace Commands.Helpers
         ///     Configures the <see cref="IServiceCollection"/> for use of a <see cref="CommandManager"/> with the provided builder configuration.
         /// </summary>
         /// <param name="collection"></param>
-        /// <param name="configureDelegate">A delegate to configure the <see cref="BuildOptions"/> responsible for customizing the <see cref="CommandManager"/> setup.</param>
+        /// <param name="configureDelegate">A delegate to configure the <see cref="ICommandBuilder"/> responsible for customizing the <see cref="CommandManager"/> setup.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
         public static IServiceCollection ConfigureCommands<T>(this IServiceCollection collection,
-            Action<BuildOptions> configureDelegate)
+            Action<CommandBuilder<T>> configureDelegate)
             where T : CommandManager
         {
             if (configureDelegate == null)
@@ -48,7 +48,7 @@ namespace Commands.Helpers
                 ThrowHelpers.ThrowInvalidArgument(configureDelegate);
             }
 
-            var options = new BuildOptions();
+            var options = new CommandBuilder<T>();
 
             configureDelegate(options);
 
