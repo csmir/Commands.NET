@@ -18,8 +18,6 @@ namespace Commands
 
         private static readonly Type c_type = typeof(T);
 
-        private Dictionary<Type, TypeConverterBase>? keyedConverters;
-
         private readonly List<Action<CommandBuilder<T>>> _commandAdders = [];
 
         /// <inheritdoc />

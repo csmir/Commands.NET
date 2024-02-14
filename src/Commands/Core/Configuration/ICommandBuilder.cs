@@ -24,7 +24,7 @@ namespace Commands
         /// <summary>
         ///     Gets or sets a collection of <see cref="TypeConverterBase"/>'s representing predefined <see cref="Type"/> conversion.
         /// </summary>
-        public List<TypeConverterBase> TypeConverters { get; set; }
+        public Dictionary<Type, TypeConverterBase> TypeConverters { get; set; }
 
         /// <summary>
         ///     Gets or sets a collection of <see cref="ResultResolverBase"/>'s that serve as post-execution handlers.

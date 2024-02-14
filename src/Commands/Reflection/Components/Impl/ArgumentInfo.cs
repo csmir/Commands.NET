@@ -73,7 +73,7 @@ namespace Commands.Reflection
 
             else if (Type != typeof(string) && Type != typeof(object))
             {
-                Converter = options.KeyedConverters[Type];
+                Converter = options.TypeConverters[Type];
             }
 
             Attributes = attributes.ToArray();
