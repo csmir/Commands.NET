@@ -40,13 +40,5 @@ namespace Commands
         ///     Gets or sets the naming convention of commands and groups being registered into the <see cref="CommandManager"/>.
         /// </summary>
         public Regex NamingRegex { get; set; }
-
-        /// <summary>
-        ///     Gets a keyed collection of all registered implementations of <see cref="TypeConverterBase"/>.
-        /// </summary>
-        /// <remarks>
-        ///     This collection is not regenerated after being called once. It is not adviced to manipulate it before adding all custom converters to <see cref="TypeConverters"/>.
-        /// </remarks>
-        public Dictionary<Type, TypeConverterBase> KeyedConverters { get; }
     }
 }

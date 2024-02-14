@@ -103,13 +103,13 @@ namespace Commands.TypeConverters
             return ConvertResult.FromSuccess(value);
         }
 
-        internal static TypeConverterBase[] BuildDefaults()
+        internal static Dictionary<Type, TypeConverterBase> BuildDefaults()
         {
             var arr = ValueTypeConverter.CreateBaseConverters();
 
             new TimeSpanConverter().AddTo(ref arr);
 
-            return arr;
+            return arr.ToDictionary(x => x.Type, x => x);
         }
     }
 }

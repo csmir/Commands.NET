@@ -2,6 +2,7 @@
 using Commands.Reflection;
 using Commands.Resolvers;
 using Commands.TypeConverters;
+using System;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -31,7 +32,7 @@ namespace Commands
         /// <remarks>
         ///     Default: <see cref="TypeConverterBase.BuildDefaults"/>
         /// </remarks>
-        public List<TypeConverterBase> TypeConverters { get; set; } = [.. TypeConverterBase.BuildDefaults()];
+        public Dictionary<Type, TypeConverterBase> TypeConverters { get; set; } = TypeConverterBase.BuildDefaults();
 
         /// <inheritdoc />
         public List<ResultResolverBase> ResultResolvers { get; set; } = [];
@@ -46,15 +47,6 @@ namespace Commands
 #pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'. We don't do this because it can be changed in source.
         public Regex NamingRegex { get; set; } = new(DEFAULT_REGEX, RegexOptions.Compiled);
 #pragma warning restore SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
-
-        /// <inheritdoc />
-        public Dictionary<Type, TypeConverterBase> KeyedConverters
-        {
-            get
-            {
-                return keyedConverters ??= TypeConverters.ToDictionary(x => x.Type, x => x);
-            }
-        }
 
         /// <summary>
         ///     Configures an action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
@@ -131,7 +123,35 @@ namespace Commands
                 ThrowHelpers.ThrowInvalidArgument(converter);
             }
 
-            TypeConverters.Add(converter);
+            TypeConverters[converter.Type] = converter;
+
+            return this;
+        }
+
+        public virtual CommandBuilder<T> AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, string?, IServiceProvider, ConvertResult> convertAction)
+        {
+            if (convertAction == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(convertAction);
+            }
+
+            var converter = new DelegateConverter<TConvertable>(convertAction);
+
+            TypeConverters[converter.Type] = converter;
+
+            return this;
+        }
+
+        public virtual CommandBuilder<T> AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
+        {
+            if (convertAction == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(convertAction);
+            }
+
+            var converter = new AsyncDelegateConverter<TConvertable>(convertAction);
+
+            TypeConverters[converter.Type] = converter;
 
             return this;
         }
