@@ -8,6 +8,7 @@ var manager = CommandManager.CreateBuilder()
         if (!r.Success)
             Console.WriteLine(r);
     })
+    .AddCommand("j", () => Console.WriteLine("est"))
     .Build();
 
 var services = new ServiceCollection();

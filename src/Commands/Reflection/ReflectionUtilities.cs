@@ -14,6 +14,7 @@ namespace Commands.Reflection
     public static class ReflectionUtilities
     {
         private static readonly Type m_type = typeof(ModuleBase);
+        private static readonly Type c_type = typeof(CommandContext);
 
         /// <summary>
         ///     Iterates through all assemblies registered in <paramref name="options"/> and creates a top-level enumerable with all discovered members that can be directly searched for.
@@ -176,7 +177,15 @@ namespace Commands.Reflection
                 {
                     if (method.IsStatic)
                     {
-                        yield return new CommandInfo(module, new StaticInvoker(method), aliases, true, options);
+                        var param = method.GetParameters();
+
+                        var hasContext = false;
+                        if (param.Length > 0 && param[0].ParameterType == c_type)
+                        {
+                            hasContext = true;
+                        }
+
+                        yield return new CommandInfo(module, new StaticInvoker(method, hasContext), aliases, hasContext, options);
                     }
                     else
                     {
@@ -202,17 +211,12 @@ namespace Commands.Reflection
                 .ToArray();
         }
 
-        internal static IArgument[] GetArguments(this MethodBase method, bool hasContext, ICommandBuilder options)
+        internal static IArgument[] GetArguments(this MethodBase method, bool withContext, ICommandBuilder options)
         {
             var parameters = method.GetParameters();
 
-            if (hasContext)
+            if (withContext)
             {
-                if (parameters.Length == 0)
-                {
-                    ThrowHelpers.ThrowInvalidOperation($"A delegate or static command signature must implement {nameof(CommandContext)} as the first parameter.");
-                }
-
                 parameters = parameters.Skip(1).ToArray();
             }
 

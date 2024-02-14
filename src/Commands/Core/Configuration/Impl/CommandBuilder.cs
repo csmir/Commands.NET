@@ -223,22 +223,27 @@ namespace Commands
 
             aliases = [name, .. aliases];
 
+            aliases = aliases.Distinct().ToArray();
+
             var action = new Action<CommandBuilder<T>>((CommandBuilder<T> options) =>
             {
                 foreach (var alias in aliases)
                 {
-                    if (aliases.Contains(alias))
-                    {
-                        ThrowHelpers.ThrowNotDistinct(alias);
-                    }
-
                     if (!options.NamingRegex.IsMatch(alias))
                     {
                         ThrowHelpers.ThrowNotMatched(alias);
                     }
                 }
 
-                options.Commands.Add(new CommandInfo(new DelegateInvoker(commandAction.Method, commandAction.Target), aliases, options));
+                var param = commandAction.Method.GetParameters();
+
+                var hasContext = false;
+                if (param.Length > 0 && param[0].ParameterType == c_type)
+                {
+                    hasContext = true;
+                }
+
+                options.Commands.Add(new CommandInfo(new DelegateInvoker(commandAction.Method, commandAction.Target, hasContext), aliases, hasContext, options));
             });
 
             _commandAdders.Add(action);

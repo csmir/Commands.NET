@@ -9,12 +9,14 @@ namespace Commands.Reflection
     public sealed class DelegateInvoker : IInvoker
     {
         private readonly object? _instance;
+        private readonly bool _withContext;
 
         /// <inheritdoc />
         public MethodBase Target { get; }
 
-        internal DelegateInvoker(MethodInfo target, object? instance)
+        internal DelegateInvoker(MethodInfo target, object? instance, bool withContext)
         {
+            _withContext = withContext;
             _instance = instance;
             Target = target;
         }
@@ -22,9 +24,14 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public object? Invoke(ConsumerBase consumer, CommandInfo command, object?[] args, CommandOptions options)
         {
-            var context = new CommandContext(consumer, command, options);
+            if (_withContext)
+            {
+                var context = new CommandContext(consumer, command, options);
 
-            return Target.Invoke(_instance, [context, .. args]);
+                return Target.Invoke(_instance, [context, .. args]);
+            }
+
+            return Target.Invoke(_instance, args);
         }
     }
 }

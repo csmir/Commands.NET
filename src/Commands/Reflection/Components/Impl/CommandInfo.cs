@@ -62,13 +62,13 @@ namespace Commands.Reflection
             }
         }
 
-        internal CommandInfo(StaticInvoker invoker, string[] aliases, ICommandBuilder options)
-            : this(null, invoker, aliases, true, options)
+        internal CommandInfo(StaticInvoker invoker, string[] aliases, bool hasContext, ICommandBuilder options)
+            : this(null, invoker, aliases, hasContext, options)
         {
         }
 
-        internal CommandInfo(DelegateInvoker invoker, string[] aliases, ICommandBuilder options)
-            : this(null, invoker, aliases, true, options)
+        internal CommandInfo(DelegateInvoker invoker, string[] aliases, bool hasContext, ICommandBuilder options)
+            : this(null, invoker, aliases, hasContext, options)
         {
         }
 
