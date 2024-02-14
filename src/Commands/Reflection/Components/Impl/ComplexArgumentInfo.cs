@@ -51,7 +51,7 @@ namespace Commands.Reflection
         public TypeConverterBase? Converter { get; } = null;
 
         internal ComplexArgumentInfo(
-            ParameterInfo parameterInfo, ICommandBuilder options)
+            ParameterInfo parameterInfo, string? name, ICommandBuilder options)
         {
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);
@@ -95,7 +95,14 @@ namespace Commands.Reflection
 
             ExposedType = parameterInfo.ParameterType;
 
-            Name = parameterInfo.Name ?? "";
+            if (!string.IsNullOrEmpty(name))
+            {
+                Name = name;
+            }
+            else
+            {
+                Name = parameterInfo.Name ?? "";
+            }
         }
 
         /// <inheritdoc />

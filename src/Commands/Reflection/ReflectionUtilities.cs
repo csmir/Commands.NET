@@ -224,13 +224,29 @@ namespace Commands.Reflection
 
             for (var i = 0; i < parameters.Length; i++)
             {
-                if (parameters[i].GetCustomAttributes().Any(x => x is ComplexAttribute))
+                var complex = false;
+                var name = string.Empty;
+                foreach (var attr in parameters[i].GetCustomAttributes())
                 {
-                    arr[i] = new ComplexArgumentInfo(parameters[i], options);
+                    if (attr is ComplexAttribute)
+                    {
+                        complex = true;
+                    }
+
+                    if (attr is NameAttribute names)
+                    {
+                        // aliases is not supported for parameters.
+                        name = names.Name;
+                    } 
+                }
+
+                if (complex)
+                {
+                    arr[i] = new ComplexArgumentInfo(parameters[i], name, options);
                 }
                 else
                 {
-                    arr[i] = new ArgumentInfo(parameters[i], options);
+                    arr[i] = new ArgumentInfo(parameters[i], name, options);
                 }
             }
 
