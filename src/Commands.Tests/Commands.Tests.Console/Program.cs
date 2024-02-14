@@ -1,5 +1,6 @@
 ﻿using Commands;
 using Commands.Parsing;
+using Microsoft.Extensions.DependencyInjection;
 
 var manager = CommandManager.CreateBuilder()
     .AddResultResolver((c, r, s) =>
@@ -9,9 +10,18 @@ var manager = CommandManager.CreateBuilder()
     })
     .Build();
 
+var services = new ServiceCollection();
+
+services.AddSingleton(manager);
+
+var provider = services.BuildServiceProvider();
+
 while (true)
 {
     var input = StringParser.Parse(Console.ReadLine());
 
-    await manager.TryExecuteAsync(new ConsumerBase(), input);
+    await manager.TryExecuteAsync(new ConsumerBase(), input, new()
+    {
+        Services = provider.CreateAsyncScope().ServiceProvider
+    });
 }

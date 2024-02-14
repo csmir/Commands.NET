@@ -1,6 +1,8 @@
 ﻿using Commands.Exceptions;
 using Commands.Helpers;
 using Commands.Reflection;
+using Commands.Resolvers;
+using Commands.TypeConverters;
 using System.Diagnostics;
 
 [assembly: CLSCompliant(true)]
@@ -289,6 +291,16 @@ namespace Commands
         /// <summary>
         ///     Creates a builder that is responsible for setting up all required arguments to discover and populate <see cref="Commands"/>.
         /// </summary>
+        /// <remarks>
+        ///     This builder is able to configure the following:
+        ///     <list type="number">
+        ///         <item>Defining assemblies through which will be searched to discover modules and commands.</item>
+        ///         <item>Defining custom commands that do not appear in the assemblies.</item>
+        ///         <item>Registering implementations of <see cref="TypeConverterBase"/> which define custom argument conversion.</item>
+        ///         <item>Registering implementations of <see cref="ResultResolverBase"/> which define custom result handling.</item>
+        ///         <item>Custom naming patterns that validate naming across the whole process.</item>
+        ///     </list>
+        /// </remarks>
         /// <returns>A new <see cref="ICommandBuilder"/> that implements <see cref="CommandManager"/></returns>
         public static CommandBuilder<CommandManager> CreateBuilder()
         {
