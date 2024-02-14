@@ -26,7 +26,7 @@ namespace Commands
         ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="ICommandBuilder"/> provided when creating the manager.
         /// </summary>
         public HashSet<ISearchable> Commands { get; }
-        
+
         /// <summary>
         ///     Creates a new <see cref="CommandManager"/> based on the provided arguments.
         /// </summary>

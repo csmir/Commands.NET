@@ -1,5 +1,4 @@
-﻿using Commands;
-using Commands.Helpers;
+﻿using Commands.Helpers;
 using Microsoft.Extensions.Hosting;
 
 await Host.CreateDefaultBuilder(args)

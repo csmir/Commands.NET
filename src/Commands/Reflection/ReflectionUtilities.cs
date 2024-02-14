@@ -1,7 +1,4 @@
-﻿using Commands.Conditions;
-using Commands.Helpers;
-using Commands.Reflection;
-using Commands.TypeConverters;
+﻿using Commands.Helpers;
 using System.ComponentModel;
 using System.Reflection;
 
@@ -237,7 +234,7 @@ namespace Commands.Reflection
                     {
                         // aliases is not supported for parameters.
                         name = names.Name;
-                    } 
+                    }
                 }
 
                 if (complex)

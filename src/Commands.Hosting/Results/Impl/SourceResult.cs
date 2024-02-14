@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Commands.Results
+﻿namespace Commands.Results
 {
     /// <summary>
     ///     The result of the source acquirement within the command execution pipeline.

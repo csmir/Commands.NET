@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Commands.Reflection
+﻿namespace Commands.Reflection
 {
     /// <summary>
     ///     Reveals information about a parameter of a signature.

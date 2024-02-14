@@ -5,7 +5,7 @@
         [Name("base-test")]
         public void Test()
         {
-            
+
         }
 
         [Name("param-test")]
