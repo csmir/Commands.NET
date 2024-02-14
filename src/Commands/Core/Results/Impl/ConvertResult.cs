@@ -36,7 +36,7 @@ namespace Commands
         /// </remarks>
         /// <param name="value">The converted value of the operation.</param>
         /// <returns>A new result containing information about the operation.</returns>
-        public static ConvertResult FromSuccess(object value)
+        public static ConvertResult FromSuccess(object? value)
         {
             return new(null, value);
         }

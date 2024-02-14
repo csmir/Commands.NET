@@ -89,7 +89,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Adds a <see cref="ResultResolverBase"/> to the <see cref="ResultResolvers"/>.
+        ///     Adds an implementation of <see cref="ResultResolverBase"/> to <see cref="ResultResolvers"/>.
         /// </summary>
         /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolverBase"/> to add.</typeparam>
         /// <param name="resolver">The implementation of <see cref="ResultResolverBase"/> to add.</param>
@@ -108,24 +108,11 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Adds a <see cref="TypeConverterBase"/> to the <see cref="TypeConverters"/>.
+        ///     Configures an action that will convert a raw argument into the target type, signified by <typeparamref name="TConvertable"/>.
         /// </summary>
-        /// <typeparam name="TConverter">The implementation type of <see cref="TypeConverterBase"/> to add.</typeparam>
-        /// <param name="converter">The implementation of <see cref="TypeConverterBase"/> to add.</param>
+        /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
+        /// <param name="convertAction">The action that is responsible for the conversion process.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public virtual CommandBuilder<T> AddTypeConverter<TConverter>(TConverter converter)
-            where TConverter : TypeConverterBase
-        {
-            if (converter == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(converter);
-            }
-
-            TypeConverters[converter.Type] = converter;
-
-            return this;
-        }
-
         public virtual CommandBuilder<T> AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, string?, IServiceProvider, ConvertResult> convertAction)
         {
             if (convertAction == null)
@@ -140,6 +127,12 @@ namespace Commands
             return this;
         }
 
+        /// <summary>
+        ///     Configures an asynchronous action that will convert a raw argument into the target type, signified by <typeparamref name="TConvertable"/>.
+        /// </summary>
+        /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
+        /// <param name="convertAction">The action that is responsible for the conversion process.</param>
+        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
         public virtual CommandBuilder<T> AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
         {
             if (convertAction == null)
@@ -148,6 +141,25 @@ namespace Commands
             }
 
             var converter = new AsyncDelegateConverter<TConvertable>(convertAction);
+
+            TypeConverters[converter.Type] = converter;
+
+            return this;
+        }
+
+        /// <summary>
+        ///     Adds an implementation of <see cref="TypeConverterBase"/> to <see cref="TypeConverters"/>.
+        /// </summary>
+        /// <typeparam name="TConverter">The implementation type of <see cref="TypeConverterBase"/> to add.</typeparam>
+        /// <param name="converter">The implementation of <see cref="TypeConverterBase"/> to add.</param>
+        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
+        public virtual CommandBuilder<T> AddTypeConverter<TConverter>(TConverter converter)
+            where TConverter : TypeConverterBase
+        {
+            if (converter == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(converter);
+            }
 
             TypeConverters[converter.Type] = converter;
 
