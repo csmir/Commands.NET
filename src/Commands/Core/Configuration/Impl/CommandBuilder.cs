@@ -15,6 +15,8 @@ namespace Commands
     {
         const string DEFAULT_REGEX = @"^[a-z0-9_-]*$";
 
+        private static readonly Type c_type = typeof(T);
+
         private Dictionary<Type, TypeConverterBase>? keyedConverters;
 
         private readonly List<Action<CommandBuilder<T>>> _commandAdders = [];
@@ -217,14 +219,48 @@ namespace Commands
         /// <summary>
         ///     Builds a new instance of <typeparamref name="T"/> based on the current configuration of this builder.
         /// </summary>
+        /// <remarks>
+        ///     This method will finalize the configured values within this builder and continue onto constructor matching. 
+        ///     Constructor matching will order all found constructors based on their parameter length. It will skip a constructor when:
+        ///     <list type="bullet">
+        ///         <item>It is marked with <see cref="SkipAttribute"/>.</item>
+        ///         <item>It does <b>NOT</b> have <see cref="CommandBuilder{T}"/> as its last parameter.</item>
+        ///     </list>
+        ///     If none of the above conditions are met for any of the public constructors of <typeparamref name="T"/>, this operation will throw.
+        /// </remarks>
+        /// <param name="args">Constructor arguments to pass alongside the builder. Can be ignored if the default <see cref="CommandManager"/> is used instead of a custom implementation.</param>
         /// <returns></returns>
-        public virtual T Build()
+        /// <exception cref="InvalidOperationException">Thrown when none of the filter conditions are met.</exception>
+        public virtual T Build(params object[] args)
         {
             FinalizeConfiguration();
 
-            var ctor = typeof(T).GetConstructors()[0];
+            var ctors = typeof(T).GetConstructors()
+                .Select(x => (target: x, param: x.GetParameters()))
+                .OrderByDescending(x => x.param.Length);
 
-            return (T)ctor.Invoke([this]);
+            foreach (var (target, param) in ctors)
+            {
+                // skip if skipattribute is present on ctor.
+                if (target.GetCustomAttributes().Any(x => x is SkipAttribute skip))
+                {
+                    continue;
+                }
+
+                var last = param.LastOrDefault();
+
+                // skip if last param is not CommandBuilder<T>.
+                if (last != null && !last.ParameterType.IsAssignableFrom(typeof(CommandBuilder<>)))
+                {
+                    continue;
+                }
+
+                return (T)target.Invoke([.. args, this]);
+            }
+
+            ThrowHelpers.ThrowInvalidOperation($"{c_type.Name} was attempted to be constructed based on a best matching constructor, but no such match was found.");
+
+            return null!;
         }
 
         /// <summary>
