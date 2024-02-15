@@ -53,79 +53,78 @@ public async Task Test()
 
 > See feature [documentation](https://github.com/csmir/Commands.NET/wiki/Preconditions) for more.
 
-#### Dependency Injection
+#### Extensive Configuration
 
-You can provide an `IServiceProvider` at execution to inject modules with dependencies, in accordance to the conventions `Microsoft.Extensions.DependencyInjection` follows. 
-The `IServiceProvider` has a number of extensions that are suggested to be used when writing your codebase with Commands.NET. 
-These extensions serve you and the program, reducing boilerplate in the application setup.
+The API focusses on customizability and configuration above all else, and this is visible in the pre-execution setup.
 
-```cs
-...
-var services = new ServiceCollection()
-    .ConfigureCommands(configuration =>
-    {
-        configuration.WithAssemblies(Assembly.GetEntryAssembly());
-    });
-...
-```
-
-> See feature [documentation](https://github.com/csmir/Commands.NET/wiki/Dependency-Injection) for more.
-
-#### Informative Results
-
-Commands.NET will return results for running commands through a `ResultResolver`. 
-This resolver has a default implementation that can be configured through the `CommandConfiguration`
+Registration assemblies, result handling, delegate command definitions and more can be defined in the `CommandBuilder<T>`:
 
 ```cs
-    ...
-        configuration.ConfigureResultAction(async (context, result, services) =>
-        {
-            if (result.Success)
-            {
-                await Task.CompletedTask;
-            }
-            else
-            {
-                Console.WriteLine(result.Exception);
-            }
-        });
-    ...
+var builder = CommandManager.CreateBuilder();
+
+...
+
+var manager = builder.Build()
 ```
 
-> See feature [documentation](https://github.com/csmir/Commands.NET/wiki/Results) for more.
+> See feature [documentation](https://github.com/csmir/Commands.NET/wiki/Configuration) for more.
 
 #### Customization
 
 While already fully functional out of the box, the framework does not shy away from covering extensive applications with more specific needs, which in turn need more than the base features to function according to its developer's expectations. 
 
-Types such as `CommandContext`, `ModuleBase`, `TypeConverter`, `PreconditionAttribute` and `Parser` can all be inherited and custom ones created for environmental specifics, custom type conversion and more.
+This customization is extended into:
+
+- `ConsumerBase`
+- `ModuleBase`
+- `TypeConverterBase`
+- `ResultResolverBase`
+- `PreconditionAttribute`
+- `PostconditionAttribute` 
+
+These types can all be inherited and custom ones created for environmental specifics, custom type conversion and more.
+
+> See feature [documentation](https://github.com/csmir/Commands.NET/wiki/Customization) for more.
 
 #### Reflection
 
 The framework saves cached command data in its own reflection types. 
-These types, such as `CommandInfo`, `ArgumentInfo` and `ModuleInfo` store informative data about a command, its root module and any submembers.
+These types, such as `CommandInfo`, `ArgumentInfo` and `ModuleInfo` store informative data about a target, its root module and any submembers.
 
 The reflection data is accessible in various ways, most commonly in scope during type conversion & precondition evaluation.
 
+#### Dependency Injection
+
+Having grown into a vital part of building effective and modern applications, Dependency Injection (DI) is an incredinly useful concept to be carried along in the equally modern Commands.NET. 
+It integrates this feature deeply into its architecture and supports it across the whole API. 
+
+You can provide an `IServiceProvider` at execution to inject modules with dependencies, in accordance to the conventions `Microsoft.Extensions.DependencyInjection` follows. 
+
+```cs
+...
+manager.TryExecuteAsync(..., ..., options: new CommandOptions() { Services = ... });
+```
+
 ## Additional Packages
 
-Commands.NET is not without its own dependencies, but it tries its best to keep all dependencies within a trusted atmosphere, using packages only when they outweigh self-written implementations. So far, it only depends on packages published by official channels of the .NET ecosystem.
+Commands.NET is not without its own dependencies, but it tries its best to keep all dependencies within a trusted atmosphere, 
+using packages only when they outweigh self-written implementations. 
+So far, it only depends on packages published by official channels of the .NET ecosystem.
 
 #### Dependency Injection
 
-Having grown into a vital part of building effective and modern applications, Dependency Injection (DI) is no less important to be carried along in the equally modern Commands.NET. 
-It integrates this feature deeply into its architecture and depends on it to function from the ground up. 
-
-For applications to function with `Commands.NET`, it is necessary to install DI functionality through Microsoft's publicized package(s):
+For applications to function with `Commands.NET`, it is suggested to install DI functionality through Microsoft's publicized package(s):
 
 ```xml
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="" />
 ```
+
+> This package is *not* required. Commands.NET is independent by default, and can function as such.
 > This and other required packages can also be installed through the Package Manager, .NET CLI or from within your IDE.
 
 #### Hosting
 
-Carrying out further support within the .NET ecosystem, Commands.NET also introduces a hosting package for deploying apps with the .NET generic host. 
+Carrying out further support within the .NET ecosystem, Commands.NET also introduces a hosting package for deploying apps with the .NET generic and application host. 
 
 For applications to function with `Commands.NET.Hosting`, it is necessary to install the hosting package that it also implements, also publicized by Microsoft itself:
 
