@@ -1,4 +1,5 @@
-Preconditions are checks that ensure that the command in scope is allowed to be executed. 
+Conditions are checks that ensure that the command in scope is allowed to be executed and report success. 
+
 Let's work on an example precondition to understand how they work. 
 
 - [Creating your Precondition](#creating-your-precondition)
@@ -9,14 +10,15 @@ Let's work on an example precondition to understand how they work.
 All preconditions inherit `PreconditionAttribute`, which in turn inherits `Attribute`. To start creating your own precondition, you have to inherit `PreconditionAttribute` on a class:
 
 ```cs
-using Commands.Core;
+using Commands;
+using Commands.Conditions;
 using Commands.Reflection;
 
-namespace XProject
+namespace Commands.Samples
 {
     public class RequireOperatingSystemAttribute : PreconditionAttribute
     {
-        public override ValueTask<CheckResult> EvaluateAsync(ICommandContext context, IServiceProvider services, CommandInfo command, CancellationToken cancellationToken)
+        public override ValueTask<CheckResult> EvaluateAsync(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
         {
 
         }
@@ -29,16 +31,17 @@ With this class defined, and the method that will operate the evaluation being i
 First of all, the restriction must be compared against. To define this, we will implement a constructor parameter, automatically resolved as an attribute parameter by the IDE or code editor:
 
 ```cs
-using Commands.Core;
+using Commands;
+using Commands.Conditions;
 using Commands.Reflection;
 
-namespace XProject
+namespace Commands.Samples
 {
     public class RequireOperatingSystemAttribute(PlatformID platform) : PreconditionAttribute
     {
         public PlatformID Platform { get; } = platform;
 
-        public override ValueTask<CheckResult> EvaluateAsync(ICommandContext context, IServiceProvider services, CommandInfo command, CancellationToken cancellationToken)
+        public override ValueTask<CheckResult> EvaluateAsync(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
         {
 
         }
@@ -50,7 +53,7 @@ After this has been defined, the `Platform` property can be used to evaluate the
 
 ```cs
 ...
-        public override ValueTask<CheckResult> EvaluateAsync(ICommandContext context, IServiceProvider services, CommandInfo command, CancellationToken cancellationToken)
+        public override ValueTask<CheckResult> EvaluateAsync(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Environment.OSVersion.Platform == Platform)
                 return ValueTask.FromResult(Success());

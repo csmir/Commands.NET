@@ -1,41 +1,72 @@
 The configuration of command registration and execution can be overwhelming if you are unfamiliar with the various options exposed. This chapter introduces the various options and elaborates the functionality covered within.
 
-## The Command Configuration
+## Configuring the Manager
 
-`CommandConfiguration` serves as the base class for handling configuration options for the `CommandManager` and how it runs the execution pipeline. 
-It exposes a fair amount of options, each useful in different situations.
+`ICommandBuilder` serves as the base interface for handling configuration options for the `CommandManager` and how it registers commands/modules. 
+It exposes a large amount of options, each useful in different situations.
 
 ### Assemblies 
 
-Known assemblies are a core component to how Commands.NET functions, iterating through each type defined per-assembly to register commands and writing them to the `IReadOnlySet` exposed in `CommandManager`. This is the collection used to find, match and execute commands.
+Known assemblies are a core component to how Commands.NET functions, iterating through each type defined per-assembly to register commands and writing them to the `HashSet<ISearchable>` exposed in `CommandManager`. 
+This is the collection used to find, match and execute commands.
 
 By default, `Assemblies` is populated by `Assembly.GetEntryAssembly`, which serves as the entry-point executable to run the framework with.
 
-The `CommandConfiguration` exposes an array that is accessible by the following methods:
+### TypeConverters
 
-#### `TryAddAssembly`
+In many cases, there is need for custom `TypeConverterBase` implementations to convert types that Commands.NET does not already convert for you. 
+These all need to be registered here, in the same way as `Assemblies`.
 
-This method will attempt to add an `Assembly` to `Assemblies`, returning if the assembly was already added.
+The `CommandBuilder<T>` exposes methods to write delegate-based conversion patterns, which will automatically be registered and used as a replacement or introduction to the current `TypeConverters`
 
-#### `AddAssembly`
+### ResultResolvers
 
-This method will attempt to add an `Assembly` to `Assemblies`, throwing an exception if the assembly was already added.
+Results can be handled in an elaborate many ways, as documented [[here|Results]]. 
 
-#### `WithAssemblies`
+Implementing custom handlers can be done by implementing `ResultResolverBase` or by creating a delegate-based alternative as exposed in `CommandBuilder<T>`.
 
-This method will replace all current assemblies with `params Assembly[]` as passed into the method. Duplicates are automatically removed through calling `IEnumerable.Union`.
+### Commands
 
-### Type Converters (Converters)
+Commands.NET supports more than just module-based commands. 
+Delegate-based and static command signatures are also supported out of the box. 
 
-In many cases, there is need for custom `TypeConverter` implementations to convert types that Commands.NET does not already convert for you. These all need to be registered here, in the same way as `Assemblies`. The overloads for adding new type converters is the same as the prior, with no exceptions.
+Static signatures written inside modules will be automatically resolved, but can also be written outside of modules and manually registered.
 
-### Result Resolver (ResultResolver)
+Delegates can be added just like delegate-based `ResultResolver` and `TypeConverter` implementations. Parameters can be self defined, just as they would be in regular commands.
 
-Results can be handled in an elaborate many ways, as documented [[here|Results]]. This configuration option allows you to set a custom resolver or redefine the base implementation with `OnSuccess` or `OnFailure`.
+For both static and delegate commands, you can optionally prefix the command parameters with `CommandContext context`. 
+This parameter will not be populated by the command arguments, instead being created in-scope and populated with known command information.
 
-### Async Approach (AsyncApproach)
+### NamingRegex
 
-The `AsyncApproach` defines how commands are ran. There are two options aside from `Default`, which is set to `Await`.
+Commands signatures are often to be written in a specific culture, and casing unique constraint. Configuring this regex determines what that constraint is. 
+If a command does not match the constraint, an exception will be thrown to inform the developer.
+
+## Configuring the Pipeline
+
+`CommandOptions` is the type expected by `CommandManager.TryExecuteAsync` to configure how the pipeline is handled.
+
+### Services
+
+Commands.NET internally does not need the `IServiceProvider` to execute commands. It does however, make the process a lot more scaleable. 
+Modules in which instanced commands are based, support dependency injection as you would expect it from a `transient` service type. 
+
+For this support to work, you need to pass a scoped or root `IServiceProvider` into `CommandOptions`. 
+This provider will pass along the pipeline, containing your registered services for access in every customizable step in the process.
+
+### SkipPreconditions / SkipPostconditions
+
+This configurable option speaks for itself, being able to skip these invidual evaluation steps in the pipeline. 
+This functionality can prove useful for administrative users or consoles, which should skip evaluation in the pre- and postconditions.
+
+### CancellationToken
+
+Being an essential part to long-running asynchronous execution, a `CancellationToken` can be passed into the options, for it to be passed around in the pipeline. 
+The source of this token can be managed by the developer in order to cancel long-running operations, if necessary.
+
+### AsyncMode
+
+The `AsyncMode` defines how commands are ran. There are two options to choose from:
 
 #### Await 
 
@@ -50,7 +81,7 @@ When more than one input source is expected to be handled, this is generally the
 Changing to this setting, the following should be checked for thread-safety:
 
 - Services, specifically those created as singleton or scoped to anything but a single command.
-- Implementations of `TypeConverter`, `TypeConverter{T}` and `PreconditionAttribute`.
+- Implementations of `TypeConverterBase`, `TypeConverterBase{T}`, `ResultResolverBase`, `PreconditionAttribute` and `PostconditionAttribute`.
 - Generic collections and objects with shared access.
 
 > To ensure thread safety in any of the above situations, it is important to know what this actually means. 

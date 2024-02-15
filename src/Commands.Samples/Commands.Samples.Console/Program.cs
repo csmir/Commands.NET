@@ -2,28 +2,28 @@
 // It also implements examples for Precondition and TypeConverter documentation.
 
 using Commands;
-using Commands.Helpers;
 using Commands.Parsing;
 using Commands.Samples;
-using Microsoft.Extensions.DependencyInjection;
 
-var collection = new ServiceCollection();
+var builder = CommandManager.CreateBuilder();
 
-collection.ConfigureCommands(configure =>
+builder.AddResultResolver((consumer, result, services) =>
 {
-    configure.AddResultResolver((c, r, p) => Console.WriteLine(r));
-    configure.AddTypeConverter(new ReflectionTypeConverter(true));
+    if (!result.Success)
+    {
+        Console.WriteLine(result);
+    }
 });
 
-var services = collection.BuildServiceProvider();
+builder.AddTypeConverter(new ReflectionTypeConverter(caseIgnore: true));
 
-var framework = services.GetRequiredService<CommandManager>();
+var framework = builder.Build();
 
 while (true)
 {
     var input = StringParser.Parse(Console.ReadLine()!);
 
-    var context = new ConsumerBase();
+    var consumer = new ConsumerBase();
 
-    await framework.TryExecuteAsync(context, input);
+    await framework.TryExecuteAsync(consumer, input);
 }

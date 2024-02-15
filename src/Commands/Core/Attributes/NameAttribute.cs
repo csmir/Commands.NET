@@ -5,25 +5,32 @@ using System.Text.RegularExpressions;
 namespace Commands
 {
     /// <summary>
-    ///     An attribute that defines the name of a module (<see cref="ModuleBase"/>), a module subtype, a 
+    ///     An attribute that defines the name of a module (<see cref="ModuleBase"/>), a module's members, a command and a command parameter.
     /// </summary>
+    /// <remarks>
+    ///     This attribute defines the name of a top-level component as well as all its members. 
+    ///     If a <see cref="ModuleBase"/> is named and its invokable members (command methods) are not, they will take on the name of the module instead, serving as default overloads.
+    /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Parameter)]
     public sealed class NameAttribute : Attribute
     {
         /// <summary>
-        ///     Represents the name of this component.
+        ///     Gets the name of the target.
         /// </summary>
         public string Name { get; }
 
         /// <summary>
-        ///     The aliases of this component.
+        ///     Gets the aliases of the target.
         /// </summary>
+        /// <remarks>
+        ///     Aliases are not considered for parameter names. Parameters have only one name, defined by <see cref="Name"/>.
+        /// </remarks>
         public string[] Aliases { get; }
 
         /// <summary>
         ///     Creates a new <see cref="NameAttribute"/> with defined name.
         /// </summary>
-        /// <param name="name">The component name.</param>
+        /// <param name="name">The target name.</param>
         public NameAttribute([DisallowNull] string name)
             : this(name, [])
         {
@@ -31,10 +38,10 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Creates a new <see cref="NameAttribute"/> with defined name.
+        ///     Creates a new <see cref="NameAttribute"/> with defined name and aliases.
         /// </summary>
-        /// <param name="name">The name of the component.</param>
-        /// <param name="aliases">The component's aliases.</param>
+        /// <param name="name">The name of the target.</param>
+        /// <param name="aliases">The target's aliases. Aliases are not considered for parameter names.</param>
         public NameAttribute([DisallowNull] string name, params string[] aliases)
         {
             if (string.IsNullOrWhiteSpace(name))

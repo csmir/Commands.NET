@@ -55,7 +55,7 @@ To do that, we need to include `Commands.Core` into the usings, and change the s
 With both of those steps out of the way, it should now look like this:
 
 ```cs
-using Commands.Core;
+using Commands;
 
 namespace Commands.Samples
 {
@@ -77,7 +77,7 @@ To begin, we will write 2 commands:
 #### Command 1: Hello World
 
 Within the class declaration of the file, we will write a new method. 
-The method can return `Task` or `void`, but for the sake of simplicity, we will use `void`.
+The method can return `Task` , `ValueTask` or `void`, but for the sake of this guide, we will use `void`.
 
 ```cs
 using Commands.Core;
@@ -93,16 +93,16 @@ namespace Commands.Samples
 }
 ```
 
-Next up, we will want to decorate the method with an attribute. The `[Command]` attribute accepts a name, and registers the command by it, so we can use that name to run it from our input source. We will call the command `helloworld`. Let's add the attribute and see how that looks:
+Next up, we will want to decorate the method with an attribute. The `[Name]` attribute accepts a name, and registers the command by it, so we can use that name to run it from our input source. We will call the command `helloworld`. Let's add the attribute and see how that looks:
 
 ```cs
-using Commands.Core;
+using Commands;
 
 namespace Commands.Samples
 {
     public class ExampleModule : ModuleBase
     {
-        [Command("helloworld")]
+        [Name("helloworld")]
         public void HelloWorld()
         {
         }
@@ -113,13 +113,13 @@ namespace Commands.Samples
 Now the `HelloWorld` method will run when we run the `helloworld` command, but there is still one thing missing. The method is empty! You can add anything here, but in our case, a simple reply will do:
 
 ```cs
-using Commands.Core;
+using Commands;
 
 namespace Commands.Samples
 {
     public class ExampleModule : ModuleBase
     {
-        [Command("helloworld")]
+        [Name("helloworld")]
         public void HelloWorld()
         {
             Console.WriteLine("Hello world!");
@@ -135,19 +135,19 @@ namespace Commands.Samples
 Our next command will be quite simple as well. Just like before, we can create a new method, mark it with an attribute and give it a name. Except this time, it will accept input, and respond with it. Let's create this functionality:
 
 ```cs
-using Commands.Core;
+using Commands;
 
 namespace Commands.Samples
 {
     public class ExampleModule : ModuleBase
     {
-        [Command("helloworld")]
+        [Name("helloworld")]
         public void HelloWorld()
         {
             Respond("Hello world!");
         }
 
-        [Command("reply")]
+        [Name("reply")]
         public void Reply([Remainder] string message)
         {
             Respond(message);
@@ -156,79 +156,51 @@ namespace Commands.Samples
 }
 ```
 
-As you can see here, the reply method accepts a parameter called `message`, and replies to the command with its value. Normally, this would automatically accept a string parameter, usually a single word: `word` or multiple words connected by quotations: `"a few words"`.
+As you can see here, the reply method accepts a parameter called `message`, and replies to the command with its value. 
+Normally, this would automatically accept a string parameter, usually a single word: `word` or multiple words connected by quotations: `"a few words"`.
 
-In our case however, the command is marked with `[Remainder]`. This attribute has a special property, it ignores all parameters provided after it. Instead, it connects all of them together and makes it one long string (or object). This way you don't need to add quotation marks, making the command more intuitive to use.
+In our case however, the command is marked with `[Remainder]`. 
+This attribute has a special property, it ignores all parameters provided after it. Instead, it connects all of them together and makes it one long string (or object). 
+This way you don't need to add quotation marks, making the command more intuitive to use.
 
 ## Running your Commands
 
-Commands.NET is quite simple in that it does a very good job in doing things *for* you. Because of this, setting up your commands is not actually directly visible. But, there is one very important step, and for it, we need to look at a more advanced concept in programming. Dependency Injection!
-
-### Setting up Dependency Injection
-
-You don't actually need to understand how dependency injection works to enjoy its benefits. 
-For newcomers, it is worth it to do some research, but this guide does not depend on it. 
-Commands.NET does however, expect a component to be installed to work with it in the background. 
-For installing it, please refer to [here](https://github.com/csmir/Commands.NET/wiki/dependency-injection).
-
-> Dependency Injection is well documented by Microsoft and the .NET foundation [here](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection).
-
-To set up the framework with it, we will go back to the `Program.cs` file. 
-It may look different for everyone, but for simplicity sake, we will only focus on [top-level statements](https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/tutorials/top-level-statements).
-
-Let's start with the basics, and define a new `ServiceCollection`. 
-This collection works like a list, and things can be added to it. 
-Commands.NET already has the needed methods to configure everything, so all we have to do is call and use them:
+With the module made, we need to create our means to actually find and run the commands inside of it. 
+Most of the information to do so, is already handled internally. However, we need to define the basics still.
+For this, we will go back to our `Program.cs` file:
 
 ```cs
-using Commands.Core;
-using Commands.Helpers;
+using Commands;
 using Commands.Parsing;
 using Commands.Samples;
 
-using Microsoft.Extensions.DependencyInjection;
-
-var collection = new ServiceCollection()
-    .ConfigureCommands(configuration => 
-    {
-
-    });
+var builder = CommandManager.CreateBuilder();
 ```
 
-The `ConfigureCommands` method exposes a configuration delegate for us to use. With this delegate, we are free to configure some of the essential options to receive and bring in information about registration and execution of commands.
+The `CreateBuilder()` method creates a `CommandBuilder<T>` for us to use. 
+With this builder, we are free to configure some of the essential options to receive and bring in information about registration and execution of commands.
 
 If the command failed in any way, an `ICommandResult` brought forward by the execution will cover where it went wrong and contain the exception that occurred. 
 Here, it is simplest to see if it failed, and then throw the exception if it did. For this to be handled the way we expect it to, we need to configure it:
 
 ```cs
-    ...
-        configuration.ConfigureResultAction((context, result, services) => 
-        {
-            if (!result.Success) 
-            {
-                Console.WriteLine(result.Exception);
-            }
-
-            return Task.CompletedTask;
-        });
-    ...
-```
-
-With that out of the way, we can build the collection into a provider. 
-To do this, we call the `BuildServiceProvider` method.
-
-```cs
 ...
-var services = collection.BuildServiceProvider();
+builder.AddResultResolver((consumer, result, services) => 
+{
+    if (!result.Success)
+    {
+        Console.WriteLine(result);
+    }
+});
 ...
 ```
 
-Now that everything in the background has been built, the command manager has also been made accessible to us. 
-While staying in `Program.cs`, we can grab the manager from the new `services` variable by calling `GetRequiredService`.
+With that out of the way, we can build the builder into the manager. 
+To do this, we call the `Build()` method.
 
 ```cs
 ...
-var framework = services.GetRequiredService<CommandManager>();
+var manager = builder.Build();
 ...
 ```
 
@@ -250,20 +222,20 @@ while (true)
 {
     var input = parser.Parse(Console.ReadLine());
 
-    var context = new CommandContext();
+    var consumer = new CommandBase();
 }
 ...
 ```
 
-With this input, we can create the most important component to running a command: The context. 
-Execution accepts `ICommandContext` and will use that to parse and run the command. 
-For regular console commands, `CommandContext` is predefined by Commands.NET for you to use.
+With this input, we can create the most important component to running a command: The consumer. 
+Consumers are like users, to which the command is targetted. 
+It is exposed during the entire pipeline, holding data about itself and being able to expose methods to be responded to.
 
-### Running the Command
+### Executing the Command
 
 With the context defined, it is time to run the command. 
-By calling `TryExecute` in the `while` loop, Commands.NET will read your command input and try to find the most appropriate command to run. 
-In our case, it is an exact match to our `helloworld` command, so querying this after starting the program will succeed the search and run it.
+By calling `TryExecuteAsync` in the `while` loop, Commands.NET will read your command input and try to find the most appropriate command to run. 
+If the input you write in your console matches the signature of your `helloworld` or `reply` command, it will succeed and execute the method that implements it.
 
 ```cs
     ...
@@ -286,12 +258,12 @@ Let's take a look at the code we wrote to summarize our work.
 ### Module and Commands
 
 ```cs
-#XModule.cs
-using Commands.Core;
+#Module.cs
+using Commands;
 
-namespace XProject
+namespace Commands.Samples
 {
-    public class XModule : ModuleBase
+    public class Module : ModuleBase
     {
         [Command("helloworld")]
         public void HelloWorld()
@@ -312,36 +284,29 @@ namespace XProject
 
 ```cs
 #Program.cs
-using Commands.Core;
-using Commands.Helpers;
+using Commands;
 using Commands.Parsing;
-using Microsoft.Extensions.DependencyInjection;
+using Commands.Samples;
 
-var collection = new ServiceCollection()
-    .ConfigureCommands(configuration => 
+var builder = CommandManager.CreateBuilder();
+
+builder.AddResultResolver((consumer, result, services) =>
+{
+    if (!result.Success)
     {
-        configuration.ConfigureResultAction((context, result, services) => 
-        {
-            if (!result.Success) 
-            {
-                Console.WriteLine(result.Exception);
-            }
-            return Task.CompletedTask;
-        });
-    });
+        Console.WriteLine(result);
+    }
+});
 
-var services = collection.BuildServiceProvider();
-
-var framework = services.GetRequiredService<CommandManager>();
-var parser = new StringParser();
+var framework = builder.Build();
 
 while (true)
 {
-    var input = parser.Parse(Console.ReadLine());
+    var input = StringParser.Parse(Console.ReadLine()!);
 
-    var context = new CommandContext();
+    var consumer = new ConsumerBase();
 
-    framework.TryExecute(context, input);
+    await framework.TryExecuteAsync(consumer, input);
 }
 ```
 

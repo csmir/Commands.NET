@@ -10,10 +10,16 @@ using System.Diagnostics;
 namespace Commands
 {
     /// <summary>
-    ///     The root type serving as a basis for all operations and functionality as provided by Commands.NET.
+    ///     The root type serving as a basis for all operations and functionality as provided by Commands.NET. 
+    ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
     /// </summary>
     /// <remarks>
-    ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
+    ///     This type is not sealed, and can be implemented to override the virtual execution steps. A hosted implementation exists in the <b>Commands.NET.Hosting</b> package,
+    ///     which introduces native IoC based command operations alongside the preexisting DI support.
+    ///     <br/>
+    ///     <br/>
+    ///     To start using the manager, configure it using the <see cref="CommandBuilder{T}"/> and calling <see cref="CommandBuilder{T}.Build(object[])"/>. 
+    ///     <see cref="CommandManager.CreateBuilder"/> generates a base definition of this builder to use.
     /// </remarks>
     [DebuggerDisplay("Commands = {Commands},nq")]
     public class CommandManager
@@ -23,20 +29,20 @@ namespace Commands
         private readonly CommandFinalizer _finalizer;
 
         /// <summary>
-        ///     Gets the collection containing all commands, groups and subcommands as implemented by the assemblies that were registered in the <see cref="ICommandBuilder"/> provided when creating the manager.
+        ///     Gets the collection containing all commands, named modules and subcommands as implemented by the assemblies that were registered in the <see cref="ICommandBuilder"/> provided when creating the manager.
         /// </summary>
         public HashSet<ISearchable> Commands { get; }
 
         /// <summary>
         ///     Creates a new <see cref="CommandManager"/> based on the provided arguments.
         /// </summary>
-        /// <param name="options">The options through which to construct the collection of <see cref="Commands"/>.</param>
-        public CommandManager(ICommandBuilder options)
+        /// <param name="builder">The options through which to construct the collection of <see cref="Commands"/>.</param>
+        public CommandManager(ICommandBuilder builder)
         {
-            _finalizer = new CommandFinalizer(options.ResultResolvers);
+            _finalizer = new CommandFinalizer(builder.ResultResolvers);
 
-            var commands = ReflectionUtilities.GetTopLevelComponents(options)
-                .Concat(options.Commands)
+            var commands = ReflectionUtilities.GetTopLevelComponents(builder)
+                .Concat(builder.Commands)
                 .OrderByDescending(command => command.Score);
 
             Commands = [.. commands];

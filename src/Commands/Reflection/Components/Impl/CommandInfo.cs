@@ -48,7 +48,7 @@ namespace Commands.Reflection
         public int MaxLength { get; }
 
         /// <inheritdoc />
-        public byte Priority { get; }
+        public float Priority { get; }
 
         /// <inheritdoc />
         public ModuleInfo? Module { get; }

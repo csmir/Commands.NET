@@ -11,9 +11,9 @@ A quick start to Commands.NET and introduction to basic practices.
 
 More about how to configure Commands.NET, from module registration to command execution.
 
-### 🛑 [[Using Preconditions|Preconditions]]
+### 🛑 [[Using Pre- and Postconditions|Conditions]]
 
-Define your own pre-execution checks to ensure commands will only run when they are allowed to run.
+Define your own checks to ensure commands will only run and succeed when they are allowed to.
 
 ### 📖 [[Type Conversion|Type-Conversion]]
 
@@ -26,7 +26,3 @@ All about handling command results and treating custom return types.
 ### 🔗 [[Exploring Customization|Customization]]
 
 Customize your modules and contexts to scale up your applications, or simply to reduce code repetition.
-
-### 💉 [[Mastering Dependency Injection|Dependency-Injection]]
-
-Learning all there is to know about dependency injection in .NET and how it benefits Commands.NET. 

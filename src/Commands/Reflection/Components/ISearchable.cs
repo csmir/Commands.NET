@@ -25,7 +25,7 @@ namespace Commands.Reflection
         /// <summary>
         ///     Gets the priority of the component.
         /// </summary>
-        public byte Priority { get; }
+        public float Priority { get; }
 
         /// <summary>
         ///     Gets the score of the component.

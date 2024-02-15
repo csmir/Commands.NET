@@ -6,20 +6,20 @@ Let's work on an example to learn how they work.
 
 ## Creating your TypeConverter
 
-All TypeConverter inherit `TypeConverter<T>` or `TypeConverter`. To start creating your TypeConverter, you have to inherit one of the two on a class.
+All TypeConverter inherit `TypeConverterNase<T>` or `TypeConverterBase`. To start creating your TypeConverter, you have to inherit one of the two on a class.
 
 > For the simplicity of this documentation, only the generic type is introduced here.
 
 ```cs
-using Commands.Core;
+using Commands;
 using Commands.Reflection;
 using Commands.TypeConverters;
 
 namespace Commands.Samples
 {
-    public class ReflectionTypeConverter : TypeConverter<Type>
+    public class ReflectionTypeConverter : TypeConverterBase<Type>
     {
-        public override async ValueTask<ConvertResult> EvaluateAsync(ICommandContext context, IServiceProvider services, IArgument argument, string raw, CancellationToken cancellationToken)
+        public override async ValueTask<ConvertResult> EvaluateAsync(ConsumerBase consumer, IArgument argument, string? value, IServiceProvider services, CancellationToken cancellationToken)
         {
         }
     }
@@ -30,12 +30,12 @@ With this class defined and the method that will operate the evaluation being im
 
 ```cs
     ...
-        public override async ValueTask<ConvertResult> EvaluateAsync(ICommandContext context, IServiceProvider services, IArgument argument, string raw, CancellationToken cancellationToken)
+        public override async ValueTask<ConvertResult> EvaluateAsync(ConsumerBase consumer, IArgument argument, string? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             try
             {
                 var typeSrc = Type.GetType(
-                    typeName: raw, 
+                    typeName: value, 
                     throwOnError: true, 
                     ignoreCase: true);
 
@@ -53,7 +53,7 @@ With the logic defined, we can also add options in the converter, for example by
 
 ```cs
 ...
-    public class ReflectionTypeConverter(bool caseIgnore) : TypeConverter<Type>
+    public class ReflectionTypeConverter(bool caseIgnore) : TypeConverterBase<Type>
     {
         private readonly bool _caseIgnore = caseIgnore;
         
@@ -66,7 +66,7 @@ With the logic defined, we can also add options in the converter, for example by
 
         ...
             var typeSrc = Type.GetType(
-                typeName: raw, 
+                typeName: value, 
                 throwOnError: true, 
                 ignoreCase: _caseIgnore);
         ...
