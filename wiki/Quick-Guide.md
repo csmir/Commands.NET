@@ -80,7 +80,7 @@ Within the class declaration of the file, we will write a new method.
 The method can return `Task` , `ValueTask` or `void`, but for the sake of this guide, we will use `void`.
 
 ```cs
-using Commands.Core;
+using Commands;
 
 namespace Commands.Samples
 {
