@@ -95,8 +95,9 @@ The reflection data is accessible in various ways, most commonly in scope during
 
 #### Dependency Injection
 
-Having grown into a vital part of building effective and modern applications, Dependency Injection (DI) is an incredinly useful concept to be carried along in the equally modern Commands.NET. 
-It integrates this feature deeply into its architecture and supports it across the whole API. 
+Having grown into a vital part of building effective and modern applications, 
+Dependency Injection (DI) is an incredibly useful concept to be carried along in the equally modern Commands.NET. 
+It integrates this feature deeply into its architecture and supports use across the whole API. 
 
 You can provide an `IServiceProvider` at execution to inject modules with dependencies, in accordance to the conventions `Microsoft.Extensions.DependencyInjection` follows. 
 
