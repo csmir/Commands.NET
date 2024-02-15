@@ -43,7 +43,7 @@ namespace Commands.Reflection
         public PostconditionAttribute[] PostConditions { get; }
 
         /// <inheritdoc />
-        public byte Priority { get; }
+        public float Priority { get; }
 
         /// <inheritdoc />
         public ModuleInfo? Module { get; }
