@@ -24,8 +24,6 @@ namespace Commands
     [DebuggerDisplay("Commands = {Commands},nq")]
     public class CommandManager
     {
-        private readonly object s_lock = new();
-
         private readonly CommandFinalizer _finalizer;
 
         /// <summary>
@@ -91,10 +89,7 @@ namespace Commands
                 ThrowHelpers.ThrowInvalidArgument(args);
             }
 
-            lock (s_lock)
-            {
-                return Commands.SearchMany(args, 0, false);
-            }
+            return Commands.SearchMany(args, 0, false);
         }
 
         /// <summary>
