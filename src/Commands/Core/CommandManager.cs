@@ -62,19 +62,10 @@ namespace Commands
         {
             options ??= new CommandOptions();
 
-            switch (options.AsyncMode)
-            {
-                case AsyncMode.Await:
-                    {
-                        await ExecuteAsync(consumer, args, options);
-                    }
-                    return;
-                case AsyncMode.Discard:
-                    {
-                        _ = ExecuteAsync(consumer, args, options);
-                    }
-                    return;
-            }
+            var execution = ExecuteAsync(consumer, args, options);
+
+            if (options.AsyncMode is AsyncMode.Await)
+                await execution;
         }
 
         /// <summary>
