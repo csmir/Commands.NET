@@ -1,3 +1,5 @@
+![cnetbanner_lighttrans_outline](https://github.com/csmir/Commands.NET/assets/68127614/32004864-1c24-4081-9f21-7c741c488b1d)
+
 # Commands.NET
 
 ![Build Status](https://img.shields.io/github/actions/workflow/status/csmir/CSF.NET/dotnet.yml?branch=master&style=flat)
