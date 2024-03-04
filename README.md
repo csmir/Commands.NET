@@ -1,4 +1,4 @@
-![cnetbanner_lighttrans_outline](https://github.com/csmir/Commands.NET/assets/68127614/32004864-1c24-4081-9f21-7c741c488b1d)
+![cnetbanner_lighttrans_outline_bexp](https://github.com/csmir/Commands.NET/assets/68127614/af1b5bc4-98b6-48b1-9aaa-4063768816dc)
 
 # Commands.NET
 
