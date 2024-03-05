@@ -15,7 +15,7 @@ namespace Commands
     {
         const string DEFAULT_REGEX = @"^[a-z0-9_-]*$";
 
-        private static readonly Type c_type = typeof(T);
+        private static readonly Type c_type = typeof(CommandContext);
 
         private readonly List<Action<CommandBuilder<T>>> _commandAdders = [];
 
@@ -292,7 +292,7 @@ namespace Commands
                 return (T)target.Invoke([.. args, this]);
             }
 
-            ThrowHelpers.ThrowInvalidOperation($"{c_type.Name} was attempted to be constructed based on a best matching constructor, but no such match was found.");
+            ThrowHelpers.ThrowInvalidOperation($"{typeof(T).Name} was attempted to be constructed based on a best matching constructor, but no such match was found.");
 
             return null!;
         }
