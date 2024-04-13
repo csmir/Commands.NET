@@ -6,7 +6,7 @@ namespace Commands.TypeConverters
     internal sealed partial class TimeSpanConverter : TypeConverterBase<TimeSpan>
     {
         private readonly IReadOnlyDictionary<string, Func<string, TimeSpan>> _callback;
-        private readonly Regex _regex = GenTSRegex();
+        private readonly Regex _regex = new(@"(\d*)\s*([a-zA-Z]*)\s*(?:and|,)?\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public TimeSpanConverter()
         {
@@ -73,8 +73,5 @@ namespace Commands.TypeConverters
 
         private static TimeSpan Months(string match)
             => new(((int)(int.Parse(match) * 30.437)), 0, 0, 0);
-
-        [GeneratedRegex(@"(\d*)\s*([a-zA-Z]*)\s*(?:and|,)?\s*", RegexOptions.Compiled)]
-        private static partial Regex GenTSRegex();
     }
 }

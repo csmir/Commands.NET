@@ -10,7 +10,7 @@ namespace Commands
     /// <summary>
     ///     A set of options determining the build process for modules and commands.
     /// </summary>
-    public class CommandBuilder<T>() : ICommandBuilder
+    public class CommandBuilder<T> : ICommandBuilder
         where T : CommandManager
     {
         const string DEFAULT_REGEX = @"^[a-z0-9_-]*$";
@@ -220,9 +220,10 @@ namespace Commands
                 ThrowHelpers.ThrowInvalidArgument(aliases);
             }
 
-            aliases = [name, .. aliases];
-
-            aliases = aliases.Distinct().ToArray();
+            aliases = new string[] { name }
+                .Concat(aliases)
+                .Distinct()
+                .ToArray();
 
             var action = new Action<CommandBuilder<T>>((CommandBuilder<T> options) =>
             {

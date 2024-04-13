@@ -5,7 +5,7 @@ namespace Commands
     /// <summary>
     ///     A set of options for handling command queries and determining the workflow in the command scope.
     /// </summary>
-    public sealed class CommandOptions()
+    public sealed class CommandOptions
     {
         /// <summary>
         ///     Gets or sets the services for running the request.
