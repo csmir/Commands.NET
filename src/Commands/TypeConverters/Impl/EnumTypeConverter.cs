@@ -12,7 +12,7 @@ namespace Commands.TypeConverters
             ConsumerBase consumer, IArgument parameter, string? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Enum.TryParse(Type, value, true, out var result))
-                return ValueTask.FromResult(Success(result));
+                return ValueTask.FromResult(Success(result!));
 
             return ValueTask.FromResult(Error($"The provided value is not a part the enum specified. Expected: '{Type.Name}', got: '{value}'. At: '{parameter.Name}'"));
         }
