@@ -8,24 +8,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Commands
 {
     /// <summary>
-    ///     Represents a builder that is responsible for configuring an <see cref="IServiceCollection"/> for use with a <see cref="CommandManager"/>.
+    ///     Represents a builder that is responsible for configuring an 
+    ///     <see cref="IServiceCollection"/> for use with a <see cref="CommandManager"/>.
     /// </summary>
-    /// <remarks>
-    ///     This builder is responsible for configuring the following:
-    ///     <list type="bullet">
-    ///         <item>Registration of <see cref="TypeConverterBase"/> implementations to convert custom types.</item>
-    ///         <item>Registration of <see cref="ResultResolverBase"/> implementations to handle post-execution data.</item>
-    ///         <item>Registration of <see cref="SourceResolverBase"/> implementations to handle pre-execution command generation.</item>
-    ///         <item>Configuration of base post-execution handlers through delegates.</item>
-    ///         <item>Configuration of base pre-execution handlers through delegates.</item>
-    ///     </list>
-    ///     In post-build processing, the context provided by the builder will also do the following:
-    ///     <list type="bullet">
-    ///         <item>Discovery of <see cref="ModuleBase"/> through the provided <see cref="ICommandBuilder.Assemblies"/> for scope creation.</item>
-    ///         <item>Setup of the default <see cref="CommandFinalizer"/> to dispose command scopes and publish results.</item>
-    ///         <item>Setup of the default <see cref="CommandGenerator"/> to activate source resolvers and run commands.</item>
-    ///     </list>
-    /// </remarks>
     /// <typeparam name="T">The implementation of the <see cref="CommandManager"/> to be configured.</typeparam>
     public class HostCommandBuilder<T>(IServiceCollection services) : CommandBuilder<T>
         where T : CommandManager
