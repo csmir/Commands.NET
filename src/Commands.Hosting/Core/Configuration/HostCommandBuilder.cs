@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Commands
 {
     /// <summary>
-    ///     Represents a builder that is responsible for configuring a <see cref="IServiceCollection"/> for use with a <see cref="CommandManager"/>.
+    ///     Represents a builder that is responsible for configuring an <see cref="IServiceCollection"/> for use with a <see cref="CommandManager"/>.
     /// </summary>
     /// <remarks>
     ///     This builder is responsible for configuring the following:
@@ -19,7 +19,7 @@ namespace Commands
     ///         <item>Configuration of base post-execution handlers through delegates.</item>
     ///         <item>Configuration of base pre-execution handlers through delegates.</item>
     ///     </list>
-    ///     In post-build processing, the context provided by builder will also do the following:
+    ///     In post-build processing, the context provided by the builder will also do the following:
     ///     <list type="bullet">
     ///         <item>Discovery of <see cref="ModuleBase"/> through the provided <see cref="ICommandBuilder.Assemblies"/> for scope creation.</item>
     ///         <item>Setup of the default <see cref="CommandFinalizer"/> to dispose command scopes and publish results.</item>
