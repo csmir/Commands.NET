@@ -11,8 +11,8 @@ namespace Commands.Parsing
     /// </remarks>
     public static class StringParser
     {
-        const char quote = '"';
-        const char whitespace = ' ';
+        const char u0022 = '"';
+        const char u0020 = ' ';
 
         /// <summary>
         ///     Parses a <see cref="string"/> into an array of command arguments.
@@ -45,7 +45,7 @@ namespace Commands.Parsing
             var quoted = false;
 
             // adds SB content to array & resets.
-            void AddReset()
+            void Reset()
             {
                 // if anything exists, otherwise skip.
                 if (sb.Length > 0)
@@ -64,10 +64,10 @@ namespace Commands.Parsing
                 if (quoted)
                 {
                     // next quote occurrence.
-                    if (toParse[i] is quote)
+                    if (toParse[i] is u0022)
                     {
                         // add discovered until now, skipping quote itself.
-                        AddReset();
+                        Reset();
 
                         // set quoted to false, quoted range is handled.
                         quoted = false;
@@ -84,7 +84,7 @@ namespace Commands.Parsing
                 }
 
                 // check for startquote.
-                if (toParse[i] is quote)
+                if (toParse[i] is u0022)
                 {
                     // check end of loop, skipping add.
                     if (i + 1 == toParse.Length)
@@ -93,7 +93,7 @@ namespace Commands.Parsing
                     }
 
                     // add all before quote.
-                    AddReset();
+                    Reset();
 
                     // set startquote discovery to true.
                     quoted = true;
@@ -102,10 +102,10 @@ namespace Commands.Parsing
                 }
 
                 // check for whitespace.
-                if (toParse[i] is whitespace)
+                if (toParse[i] is u0020)
                 {
                     // add all before whitespace, skip whitespace itself.
-                    AddReset();
+                    Reset();
 
                     continue;
                 }
@@ -115,7 +115,7 @@ namespace Commands.Parsing
             }
 
             // if loop ended, do final add.
-            AddReset();
+            Reset();
 
             return arr;
         }
