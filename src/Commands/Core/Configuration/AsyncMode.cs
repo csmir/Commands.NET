@@ -8,7 +8,7 @@ namespace Commands
     /// </summary>
     /// <remarks>
     ///     The asynchronous execution approach drastically changes the expected behavior of executing a command:
-    ///     <list type="bullet">
+    ///     <list type="table">
     ///         <item>
     ///             <see cref="Await"/> is the default setting and tells the pipeline to finish executing before returning control to the caller. 
     ///             This ensures that the execution will fully finish executing, whether it failed or not, before allowing another to be executed.
