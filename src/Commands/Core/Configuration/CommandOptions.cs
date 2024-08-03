@@ -11,7 +11,7 @@ namespace Commands
         ///     Gets or sets the services for running the request.
         /// </summary>
         /// <remarks>
-        ///     Default: <see cref="EmptyServiceProvider" />
+        ///     Default: <see cref="EmptyServiceProvider.Instance" />
         /// </remarks>
         public IServiceProvider Services { get; set; } = EmptyServiceProvider.Instance;
 
@@ -21,7 +21,7 @@ namespace Commands
         /// <remarks>
         ///     If set to <see cref="AsyncMode.Await"/>, the manager will wait for a command to finish before allowing another to be executed.
         ///     If set to <see cref="AsyncMode.Discard"/>, the manager will seperate the command execution from the entry stack, and slip it to another thread. 
-        ///     Only change this value if you have read the documentation of <see cref="AsyncMode"/> and understand the definitions.
+        ///     Only change this value if you have read the documentation of <see cref="Commands.AsyncMode"/> and understand the definitions.
         ///     <br/>
         ///     <br/>
         ///     Default: <see cref="AsyncMode.Default"/> (await).

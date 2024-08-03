@@ -44,7 +44,7 @@ namespace Commands
         ///             Services, specifically those created as singleton or scoped to anything but a single command.
         ///         </item>
         ///         <item>
-        ///             Implementations of <see cref="TypeConverterBase"/>, <see cref="TypeConverterBase{T}"/> and <see cref="PreconditionAttribute"/>.
+        ///             Implementations of <see cref="TypeConverterBase"/>, <see cref="TypeConverterBase{T}"/>, <see cref="PreconditionAttribute"/> and <see cref="PostconditionAttribute"/>.
         ///         </item>
         ///         <item>
         ///             Generic collections and objects with shared access.
