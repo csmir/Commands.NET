@@ -202,7 +202,7 @@ namespace Commands
         ///     Adds a new <see cref="Delegate"/> based command to the list of <see cref="Commands"/>.
         /// </summary>
         /// <remarks>
-        ///     Delegate commands <b>require</b> the first parameter to be <see cref="CommandContext"/>, which holds scope and execution information of the created command during its execution.
+        ///     Delegate commands <b>require</b> the first parameter to be <see cref="CommandContext{T}"/>, which holds scope and execution information of the created command during its execution.
         /// </remarks>
         /// <param name="name">The command name.</param>
         /// <param name="commandAction">The action of the command.</param>
