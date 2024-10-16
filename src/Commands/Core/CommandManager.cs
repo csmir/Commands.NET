@@ -60,6 +60,9 @@ namespace Commands
             T consumer, object[] args, CommandOptions? options = default)
             where T : ConsumerBase
         {
+            ArgumentNullException.ThrowIfNull(args, nameof(args));
+            ArgumentNullException.ThrowIfNull(consumer, nameof(consumer));
+
             options ??= new CommandOptions();
 
             var execution = ExecuteAsync(consumer, args, options);
@@ -87,7 +90,7 @@ namespace Commands
         ///     Flattens the top level commands in <see cref="Commands"/> into a single enumerable collection.
         /// </summary>
         /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the flattened range of <see cref="CommandInfo"/>'s registered in this manager.</returns>
-        public virtual IEnumerable<CommandInfo> FlattenCommands()
+        public virtual IEnumerable<CommandInfo> GetCommands()
         {
             static IEnumerable<CommandInfo> Step(ModuleInfo module)
             {
@@ -124,6 +127,43 @@ namespace Commands
         }
 
         /// <summary>
+        ///     Groups the command modules in <see cref="Commands"/> info a single enumerable collection. 
+        /// </summary>
+        /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the range of <see cref="ModuleInfo"/>'s registered in this manager.</returns>
+        public virtual IEnumerable<ModuleInfo> GetModules()
+        {
+            static IEnumerable<ModuleInfo> Step(ModuleInfo module)
+            {
+                foreach (var item in module.Components)
+                {
+                    if (item is ModuleInfo subModule)
+                    {
+                        foreach (var subItem in Step(subModule))
+                        {
+                            yield return subItem;
+                        }
+
+
+                        yield return subModule;
+                    }
+                }
+            }
+
+            foreach (var command in Commands)
+            {
+                if (command is ModuleInfo m)
+                {
+                    foreach (var subItem in Step(m))
+                    {
+                        yield return subItem;
+                    }
+
+                    yield return m;
+                }
+            }
+        }
+
+        /// <summary>
         ///     Steps through the pipeline in order to execute a command based on the provided <paramref name="args"/>.
         /// </summary>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
@@ -134,6 +174,8 @@ namespace Commands
             T consumer, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
             ICommandResult? result = null;
 
             var searches = Search(args);
@@ -174,6 +216,8 @@ namespace Commands
             T consumer, CommandInfo command, int argHeight, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
             var conversion = await ConvertAsync(consumer, command, argHeight, args, options);
 
             var arguments = new object[conversion.Length];
@@ -195,7 +239,7 @@ namespace Commands
                     return preCheckResult;
                 }
 
-                var value = command.Invoker.Invoke(consumer, command, arguments, options);
+                var value = command.Invoker.Invoke(consumer, command, arguments, this, options);
 
                 var result = await HandleReturnTypeAsync(consumer, command, value, options);
 
@@ -215,42 +259,67 @@ namespace Commands
         }
 
         /// <summary>
-        ///     
+        ///     Handles the returned result from a command invocation by, if necessary, sending the result to the consumer.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="consumer"></param>
-        /// <param name="command"></param>
-        /// <param name="value"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
+        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="command">The result of the match intended to be ran.</param>
+        /// <param name="value">The returned result of this operation.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
+        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the handling process.</returns>
         protected virtual async ValueTask<InvokeResult> HandleReturnTypeAsync<T>(
             T consumer, CommandInfo command, object? value, CommandOptions options)
             where T : ConsumerBase
         {
             switch (value)
             {
+                case null: // (void)
+                    {
+                        return InvokeResult.FromSuccess(command);
+                    }
                 case Task awaitablet:
                     {
                         await awaitablet;
+
+                        var vtType = awaitablet.GetType();
+
+                        if (vtType.IsGenericType)
+                        {
+                            var result = vtType.GetProperty("Result")?.GetValue(awaitablet);
+
+                            if (result != null)
+                            {
+                                await consumer.SendAsync(result.ToString() ?? string.Empty);
+                            }
+                        }
+
                         return InvokeResult.FromSuccess(command);
                     }
                 case ValueTask awaitablevt:
                     {
                         await awaitablevt;
+
+                        var vtType = awaitablevt.GetType();
+
+                        if (vtType.IsGenericType)
+                        {
+                            var result = vtType.GetProperty("Result")?.GetValue(awaitablevt);
+
+                            if (result != null)
+                            {
+                                await consumer.SendAsync(result.ToString() ?? string.Empty);
+                            }
+                        }
+
                         return InvokeResult.FromSuccess(command);
                     }
-                case string str:
+                case object obj:
                     {
-                        await consumer.SendAsync(str);
+                        if (obj != null)
+                        {
+                            await consumer.SendAsync(obj.ToString() ?? string.Empty);
+                        }
+
                         return InvokeResult.FromSuccess(command);
-                    }
-                case null: // (void)
-                    {
-                        return InvokeResult.FromSuccess(command);
-                    }
-                default:
-                    {
-                        return InvokeResult.FromError(command, InvokeException.ReturnUnresolved());
                     }
             }
         }
@@ -259,6 +328,8 @@ namespace Commands
             T consumer, CommandInfo command, int argHeight, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
             var length = args.Length - argHeight;
 
             if (command.HasArguments)
@@ -290,6 +361,8 @@ namespace Commands
             T consumer, CommandInfo command, CommandOptions options)
             where T : ConsumerBase
         {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
             if (!options.SkipPreconditions)
             {
                 foreach (var precon in command.Preconditions)
@@ -310,6 +383,8 @@ namespace Commands
             T consumer, CommandInfo command, CommandOptions options)
             where T : ConsumerBase
         {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
             if (!options.SkipPostconditions)
             {
                 foreach (var postcon in command.PostConditions)

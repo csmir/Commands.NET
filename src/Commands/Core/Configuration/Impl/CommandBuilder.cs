@@ -238,7 +238,7 @@ namespace Commands
                 var param = commandAction.Method.GetParameters();
 
                 var hasContext = false;
-                if (param.Length > 0 && param[0].ParameterType == c_type)
+                if (param.Length > 0 && param[0].ParameterType.GetGenericTypeDefinition() == c_type)
                 {
                     hasContext = true;
                 }

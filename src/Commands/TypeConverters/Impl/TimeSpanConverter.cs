@@ -43,11 +43,9 @@ namespace Commands.TypeConverters
                 MatchCollection matches = _regex.Matches(value);
                 if (matches.Count != 0)
                 {
-#pragma warning disable IDE0220 // Add explicit cast
                     foreach (Match match in matches)
                         if (_callback.TryGetValue(match.Groups[2].Value, out var result))
                             span += result(match.Groups[1].Value);
-#pragma warning restore IDE0220 // Add explicit cast
                 }
                 else
                     return ValueTask.FromResult(Error($"The provided value is no timespan. Got: '{value}'. At: '{parameter.Name}'"));

@@ -20,7 +20,7 @@ namespace Commands.Samples
             response.AppendLine($"Fullname: {type.FullName}");
             response.AppendLine($"Assembly: {type.Assembly.FullName}");
 
-            Consumer!.SendAsync(response.ToString()).Wait();
+            Consumer.SendAsync(response.ToString()).Wait();
         }
 
         [Name("copy")]

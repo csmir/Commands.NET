@@ -51,16 +51,18 @@ namespace Commands
         /// <summary>
         ///     Gets the consumer for the command currently in scope.
         /// </summary>
-        /// <remarks>
-        ///     Can be null if not provided by <see cref="CommandManager.TryExecuteAsync{T}(T, object[], CommandOptions?)"/>.
-        /// </remarks>
-        public ConsumerBase? Consumer { get; internal set; }
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
+        public ConsumerBase Consumer { get; internal set; }
 
         /// <summary>
         ///     Gets the reflection information about the command currently in scope.
         /// </summary>
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
-        public CommandInfo Command { get; internal set; } // never null as set internally.
+        public CommandInfo Command { get; internal set; }
+
+        /// <summary>
+        ///     Gets the command manager that is responsible for the current command pipeline.
+        /// </summary>
+        public CommandManager Manager { get; internal set; }
 #pragma warning restore CS8618
 
         /// <summary>

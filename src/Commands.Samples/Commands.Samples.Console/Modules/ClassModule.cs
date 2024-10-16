@@ -7,6 +7,8 @@
     [Name("class")]
     public class ClassModule : ModuleBase
     {
+        // Conveniently, commands can also return different types of values, such as strings, integers, or even custom objects.
+        // By overriding the ToString method, you can specify the string representation of the custom object when it is sent to the consumer.
         public string ClassCommand()
         {
             return "Hello from a class command!";

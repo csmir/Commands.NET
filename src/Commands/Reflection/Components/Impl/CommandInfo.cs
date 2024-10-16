@@ -127,6 +127,24 @@ namespace Commands.Reflection
             MaxLength = maxLength;
         }
 
+        /// <summary>
+        ///     Gets the first attribute of the specified type set on this command, if it exists.
+        /// </summary>
+        /// <typeparam name="T">The attribute type to filter by.</typeparam>
+        /// <returns>An attribute of the type <typeparamref name="T"/> if it exists, otherwise <see langword="null"/></returns>
+        public T? GetAttribute<T>()
+            where T : Attribute
+        {
+            var attribute = Attributes.FirstOrDefault(x => x is T);
+
+            if (attribute is null)
+            {
+                return default;
+            }
+
+            return (T)attribute;
+        }
+
         /// <inheritdoc />
         public float GetScore()
         {

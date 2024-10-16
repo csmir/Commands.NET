@@ -18,9 +18,10 @@ namespace Commands.Reflection
         /// <param name="consumer">The consumer of the command.</param>
         /// <param name="command">Reflected information of the command.</param>
         /// <param name="args">The converted arguments to invoke the command with.</param>
+        /// <param name="manager">The command manager responsible for executing the current pipeline.</param>
         /// <param name="options">The options that determine the execution pattern of this invoker.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation.</returns>
-        public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandOptions options)
+        public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandManager manager, CommandOptions options)
             where T : ConsumerBase;
     }
 }

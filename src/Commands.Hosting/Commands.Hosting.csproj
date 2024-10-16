@@ -1,59 +1,50 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-<!-- DEFAULTS -->
-	<TargetFramework>net6.0</TargetFramework>
-	<ImplicitUsings>enable</ImplicitUsings>
-	<Nullable>enable</Nullable>
-	<LangVersion>12.0</LangVersion>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>12.0</LangVersion>
 	  
-	<GenerateDocumentationFile>true</GenerateDocumentationFile>
-	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-	  <!-- Do not warn CA1822 for deliberate instance-access design. -->
-	<NoWarn>CA1822</NoWarn>
-<!-- END DEFAULTS -->
-
-<!-- VERSIONS -->
-	<AssemblyVersion>1.0</AssemblyVersion>
-	<PackageVersion>1-alpha6</PackageVersion>
-	<FileVersion>1.0.0.0</FileVersion>
-<!-- END VERSIONS -->
-
-<!-- PACKAGE-->
-	<PackageId>Commands.NET.Hosting</PackageId>
+		<NoWarn>CA1822</NoWarn>
+		
+		<AssemblyVersion>1.0</AssemblyVersion>
+		<PackageVersion>1-alpha6</PackageVersion>
+		<FileVersion>1.0.0.0</FileVersion>
+		
+		<PackageId>Commands.NET.Hosting</PackageId>
 	  
-	<Authors>Commands.NET contributors.</Authors>
-	<Title>Commands.NET.Hosting</Title>
-	<Description>An extension for Commands.NET that adds support for Microsoft.Extensions.Hosting.</Description>
-	<PackageTags>commands, cli, console, text, chat</PackageTags>
-	<NeutralLanguage>en-US</NeutralLanguage>
+		<Authors>Commands.NET contributors.</Authors>
+		<Title>Commands.NET.Hosting</Title>
+		<Description>An extension for Commands.NET that adds support for Microsoft.Extensions.Hosting.</Description>
+		<PackageTags>commands, cli, console, text, chat</PackageTags>
+		<NeutralLanguage>en-US</NeutralLanguage>
 	  
-	<PackageProjectUrl>https://github.com/csmir/Commands.NET</PackageProjectUrl>
-	<RepositoryUrl>https://github.com/csmir/Commands.NET</RepositoryUrl>
-	<RepositoryType>git</RepositoryType>
+		<PackageProjectUrl>https://github.com/csmir/Commands.NET</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/csmir/Commands.NET</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
 	  
-	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<PackageLicenseFile>LICENSE</PackageLicenseFile>
-	<PackageIcon>cnet_nogap_bexp.png</PackageIcon>
-<!-- END PACKAGE -->
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageIcon>cnet_nogap_bexp.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
-<!-- PACKAGE -->
-	<None Include="..\..\img\cnet_nogap_bexp.png">
-	  <Pack>True</Pack>
-	  <PackagePath>\</PackagePath>
-	</None>
-	<None Include="..\..\LICENSE">
-	  <Pack>True</Pack>
-	  <PackagePath>\</PackagePath>
-	</None>
-	<None Include="..\..\README.md">
-	  <Pack>True</Pack>
-	  <PackagePath>\</PackagePath>
-	</None>
-<!-- END PACKAGE-->
+		<None Include="..\..\img\cnet_nogap_bexp.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
   </ItemGroup>
 
   <ItemGroup>

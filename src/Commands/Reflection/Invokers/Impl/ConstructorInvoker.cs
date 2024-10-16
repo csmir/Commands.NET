@@ -57,7 +57,7 @@ namespace Commands.Reflection
         }
 
         /// <inheritdoc />
-        public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandOptions options)
+        public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandManager manager, CommandOptions options)
             where T : ConsumerBase
         {
             var services = new object?[Parameters.Length];

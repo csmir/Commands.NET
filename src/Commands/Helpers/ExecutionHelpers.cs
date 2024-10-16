@@ -56,6 +56,8 @@ namespace Commands.Helpers
         public static async ValueTask<ConvertResult[]> ConvertManyAsync(this IArgument[] arguments,
             ConsumerBase consumer, object[] args, int index, CommandOptions options)
         {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
             var results = new ConvertResult[arguments.Length];
 
             // loop all arguments.
@@ -124,6 +126,8 @@ namespace Commands.Helpers
 
         public static async ValueTask<ConvertResult> ConvertAsync(this IArgument argument, ConsumerBase consumer, object value, CommandOptions options)
         {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
             // if value is nullable and value is null.
             if (argument.IsNullable && value is STR_NULL)
                 return ConvertResult.FromSuccess();
