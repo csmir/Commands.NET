@@ -20,6 +20,7 @@ namespace Commands.Reflection
         /// <param name="args">The converted arguments to invoke the command with.</param>
         /// <param name="options">The options that determine the execution pattern of this invoker.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation.</returns>
-        public object? Invoke(ConsumerBase consumer, CommandInfo command, object?[] args, CommandOptions options);
+        public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandOptions options)
+            where T : ConsumerBase;
     }
 }

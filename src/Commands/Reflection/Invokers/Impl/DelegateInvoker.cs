@@ -21,11 +21,12 @@ namespace Commands.Reflection
         }
 
         /// <inheritdoc />
-        public object? Invoke(ConsumerBase consumer, CommandInfo command, object?[] args, CommandOptions options)
+        public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandOptions options)
+            where T : ConsumerBase
         {
             if (_withContext)
             {
-                var context = new CommandContext(consumer, command, options);
+                var context = new CommandContext<T>(consumer, command, options);
 
                 return Target.Invoke(_instance, [context, .. args]);
             }

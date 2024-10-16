@@ -7,6 +7,7 @@ using Commands.Samples;
 
 var builder = CommandManager.CreateBuilder();
 
+// Adds a resolver to send errors into the console or do something else with them.
 builder.AddResultResolver((consumer, result, services) =>
 {
     if (!result.Success)
@@ -15,15 +16,23 @@ builder.AddResultResolver((consumer, result, services) =>
     }
 });
 
+// Adds a converter to convert an input, in this case, a string, into a custom type.`
 builder.AddTypeConverter(new ReflectionTypeConverter(caseIgnore: true));
 
+// Adds a command to the builder, which does not need any data to execute.
+builder.AddCommand("hello-world", () => "Hello World!");
+
+// Builds the preparation models into a framework to operate over.
 var framework = builder.Build();
 
 while (true)
 {
+    // Reads the input from the console.
     var input = StringParser.Parse(Console.ReadLine()!);
 
-    var consumer = new ConsumerBase();
+    // Creates a consumer to execute the input. This consumer is the same as a Context in other frameworks.
+    var consumer = new CustomConsumer("Harold");
 
+    // Executes the input.
     await framework.TryExecuteAsync(consumer, input);
 }

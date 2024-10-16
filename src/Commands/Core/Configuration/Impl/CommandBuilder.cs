@@ -15,7 +15,7 @@ namespace Commands
     {
         const string DEFAULT_REGEX = @"^[a-z0-9_-]*$";
 
-        private static readonly Type c_type = typeof(CommandContext);
+        private static readonly Type c_type = typeof(CommandContext<>);
 
         private readonly List<Action<CommandBuilder<T>>> _commandAdders = [];
 

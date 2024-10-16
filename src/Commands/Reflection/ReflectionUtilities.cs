@@ -11,7 +11,7 @@ namespace Commands.Reflection
     public static class ReflectionUtilities
     {
         private static readonly Type m_type = typeof(ModuleBase);
-        private static readonly Type c_type = typeof(CommandContext);
+        private static readonly Type c_type = typeof(CommandContext<>);
 
         /// <summary>
         ///     Iterates through all assemblies registered in <paramref name="options"/> and creates a top-level enumerable with all discovered members that can be directly searched for.

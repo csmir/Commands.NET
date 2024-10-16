@@ -84,6 +84,46 @@ namespace Commands
         }
 
         /// <summary>
+        ///     Flattens the top level commands in <see cref="Commands"/> into a single enumerable collection.
+        /// </summary>
+        /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the flattened range of <see cref="CommandInfo"/>'s registered in this manager.</returns>
+        public virtual IEnumerable<CommandInfo> FlattenCommands()
+        {
+            static IEnumerable<CommandInfo> Step(ModuleInfo module)
+            {
+                foreach (var item in module.Components)
+                {
+                    if (item is CommandInfo command)
+                    {
+                        yield return command;
+                    }
+                    else if (item is ModuleInfo subModule)
+                    {
+                        foreach (var subItem in Step(subModule))
+                        {
+                            yield return subItem;
+                        }
+                    }
+                }
+            }
+
+            foreach (var command in Commands)
+            {
+                if (command is CommandInfo c)
+                {
+                    yield return c;
+                }
+                else if (command is ModuleInfo m)
+                {
+                    foreach (var subItem in Step(m))
+                    {
+                        yield return subItem;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         ///     Steps through the pipeline in order to execute a command based on the provided <paramref name="args"/>.
         /// </summary>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
@@ -185,6 +225,7 @@ namespace Commands
         /// <returns></returns>
         protected virtual async ValueTask<InvokeResult> HandleReturnTypeAsync<T>(
             T consumer, CommandInfo command, object? value, CommandOptions options)
+            where T : ConsumerBase
         {
             switch (value)
             {
@@ -196,6 +237,11 @@ namespace Commands
                 case ValueTask awaitablevt:
                     {
                         await awaitablevt;
+                        return InvokeResult.FromSuccess(command);
+                    }
+                case string str:
+                    {
+                        await consumer.SendAsync(str);
                         return InvokeResult.FromSuccess(command);
                     }
                 case null: // (void)
