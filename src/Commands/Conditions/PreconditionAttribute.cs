@@ -9,7 +9,7 @@ namespace Commands.Conditions
     ///     An attribute that defines that a check should succeed before a command can be executed.
     /// </summary>
     /// <remarks>
-    ///     The <see cref="EvaluateAsync(ConsumerBase, CommandInfo, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
+    ///     The <see cref="Evaluate(ConsumerBase, CommandInfo, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
     ///     Custom implementations of <see cref="PreconditionAttribute"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     ///     If multiple commands are found during matching, multiple sequences of preconditions will be ran to find a match that succeeds.
     /// </remarks>
@@ -27,7 +27,7 @@ namespace Commands.Conditions
         /// <param name="command">Information about the command currently targetted.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
-        public abstract ValueTask<ConditionResult> EvaluateAsync(
+        public abstract ValueTask<ConditionResult> Evaluate(
             ConsumerBase context, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>

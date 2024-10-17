@@ -14,8 +14,8 @@
 
                 var description = command.GetAttribute<DescriptionAttribute>()?.Description ?? "No description available.";
 
-                await Consumer.SendAsync(command.ToString());
-                await Consumer.SendAsync(description);
+                await Consumer.Send(command.ToString());
+                await Consumer.Send(description);
             }
         }
     }

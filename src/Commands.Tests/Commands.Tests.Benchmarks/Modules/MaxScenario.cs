@@ -1,5 +1,5 @@
 ﻿namespace Commands.Tests
-{ 
+{
     public sealed class MaxScenario : ModuleBase
     {
         public class MaxScenarioFormattable

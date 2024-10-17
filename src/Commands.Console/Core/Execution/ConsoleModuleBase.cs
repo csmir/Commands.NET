@@ -6,7 +6,7 @@ namespace Commands.Console
     ///     Represents a module that can contain commands to execute, implementing <see cref="ModuleBase{TConsumer}"/> with expanded functionality for console applications.
     /// </summary>
     /// <typeparam name="TConsumer">The consumer of the command being executed.</typeparam>
-    public class ConsoleModuleBase<TConsumer> : ModuleBase<TConsumer> 
+    public class ConsoleModuleBase<TConsumer> : ModuleBase<TConsumer>
         where TConsumer : ConsoleConsumerBase
     {
         /// <summary>
@@ -16,7 +16,7 @@ namespace Commands.Console
         /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
         public virtual Task SendAsync(object response)
         {
-            return Consumer.SendAsync(response);
+            return Consumer.Send(response);
         }
 
         /// <summary>

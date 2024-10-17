@@ -34,9 +34,9 @@ namespace Commands
         /// </summary>
         /// <param name="response">The response to send to the consumer.</param>
         /// <returns>An asynchronous <see cref="Task"/> that can be awaited to wait for the response to send, otherwise dismissed.</returns>
-        public Task SendAsync(object response)
+        public Task Send(object response)
         {
-            return Consumer.SendAsync(response);
+            return Consumer.Send(response);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Commands.TypeConverters
 
         private readonly static Lazy<IReadOnlyDictionary<Type, Delegate>> _container = new(ValueGenerator);
 
-        public override ValueTask<ConvertResult> EvaluateAsync(
+        public override ValueTask<ConvertResult> Evaluate(
             ConsumerBase consumer, IArgument parameter, string? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             var parser = (_container.Value[Type] as Parser<T>)!; // never null in cast use.

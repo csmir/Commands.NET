@@ -34,7 +34,7 @@ namespace Commands.TypeConverters
             };
         }
 
-        public override ValueTask<ConvertResult> EvaluateAsync(
+        public override ValueTask<ConvertResult> Evaluate(
             ConsumerBase consumer, IArgument parameter, string? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (!TimeSpan.TryParse(value, out TimeSpan span))

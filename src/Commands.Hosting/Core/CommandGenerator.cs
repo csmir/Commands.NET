@@ -72,7 +72,7 @@ namespace Commands
 
                         options.AsyncMode = AsyncMode.Await;
 
-                        await _manager.TryExecuteAsync(source.Consumer!, source.Args!, options); // never null if source succeeded.
+                        await _manager.Execute(source.Consumer!, source.Args!, options); // never null if source succeeded.
                     }
                 });
             }

@@ -9,7 +9,7 @@
         {
             // The CommandContext contains the options used to execute this command, the command information, and the consumer that the command was executed by.
 
-            context.Consumer.SendAsync("Hello world!");
+            context.Consumer.Send("Hello world!");
         }
     }
 }

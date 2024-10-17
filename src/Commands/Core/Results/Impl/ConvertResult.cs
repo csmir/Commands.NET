@@ -47,7 +47,7 @@ namespace Commands
         ///     Creates a new <see cref="ConvertResult"/> resembling a successful conversion operation.
         /// </summary>
         /// <remarks>
-        ///     This overload is called when conversion succeeds with a null value. This should not be called when implementing <see cref="TypeConverterBase.EvaluateAsync(ConsumerBase, IArgument, string, IServiceProvider, CancellationToken)"/>.
+        ///     This overload is called when conversion succeeds with a null value. This should not be called when implementing <see cref="TypeConverterBase.Evaluate(ConsumerBase, IArgument, string, IServiceProvider, CancellationToken)"/>.
         /// </remarks>
         /// <returns>A new result containing information about the operation.</returns>
         public static ConvertResult FromSuccess()

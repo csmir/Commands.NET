@@ -10,12 +10,12 @@ namespace Commands
     {
         private readonly ResultResolverBase[] _resolvers = resolvers.ToArray();
 
-        internal async ValueTask FinalizeAsync(
+        internal async ValueTask Finalize(
             ConsumerBase consumer, ICommandResult result, CommandOptions options)
         {
             foreach (var resolver in _resolvers)
             {
-                await resolver.EvaluateAsync(consumer, result, options.Services, options.CancellationToken);
+                await resolver.Evaluate(consumer, result, options.Services, options.CancellationToken);
             }
         }
     }

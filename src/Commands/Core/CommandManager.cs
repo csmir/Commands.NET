@@ -100,30 +100,6 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Makes an attempt at executing a command from the provided <paramref name="arguments"/>.
-        /// </summary>
-        /// <remarks>
-        ///     The arguments intended for searching for a target need to be <see cref="string"/>, as <see cref="ModuleInfo"/> and <see cref="CommandInfo"/> store their aliases this way also.
-        /// </remarks>
-        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="arguments">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
-        public virtual Task TryExecuteAsync<T>(
-            [DisallowNull] T consumer, object[] arguments, CommandOptions? options = default)
-            where T : ConsumerBase
-        {
-            options ??= new CommandOptions();
-
-            var execution = ExecuteAsync(consumer, arguments, options);
-
-            if (options.AsyncMode is AsyncMode.Await)
-                return execution;
-
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
         ///     Runs a thread safe search operation over all commands for any matches of <paramref name="args"/>.
         /// </summary>
         /// <param name="args">A set of arguments intended to discover commands as a query.</param>
@@ -139,25 +115,48 @@ namespace Commands
         }
 
         /// <summary>
+        ///     Makes an attempt at executing a command from the provided <paramref name="args"/>.
+        /// </summary>
+        /// <remarks>
+        ///     The arguments intended for searching for a target need to be <see cref="string"/>, as <see cref="ModuleInfo"/> and <see cref="CommandInfo"/> store their aliases this way also.
+        /// </remarks>
+        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
+        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
+        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
+        public virtual Task Execute<T>(
+            [DisallowNull] T consumer, object[] args, CommandOptions? options = default)
+            where T : ConsumerBase
+        {
+            options ??= new CommandOptions();
+
+            var task = Enter(consumer, args, options);
+
+            if (options.AsyncMode is AsyncMode.Async)
+                return Task.CompletedTask;
+
+            return task;
+        }
+
+        /// <summary>
         ///     Steps through the pipeline in order to execute a command based on the provided <paramref name="args"/>.
         /// </summary>
-        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution.</returns>
-        protected virtual async Task ExecuteAsync<T>(
+        protected virtual async Task Enter<T>(
             T consumer, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
             ICommandResult? result = null;
 
             var searches = Search(args);
-
             foreach (var search in searches)
             {
                 if (search.Component is CommandInfo command)
                 {
-                    result = await RunAsync(consumer, command, search.SearchHeight, args, options);
+                    result = await Run(consumer, command, search.SearchHeight, args, options);
 
                     if (!result.Success)
                     {
@@ -173,25 +172,25 @@ namespace Commands
 
             result ??= SearchResult.FromError();
 
-            await _finalizer.FinalizeAsync(consumer, result, options);
+            await _finalizer.Finalize(consumer, result, options);
         }
 
         /// <summary>
         ///     Invokes the provided <paramref name="command"/> and returns the result.
         /// </summary>
-        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="command">The result of the match intended to be ran.</param>
         /// <param name="argHeight">The height at which the command name ends and argument input starts.</param>
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation process.</returns>
-        protected virtual async ValueTask<ICommandResult> RunAsync<T>(
+        protected virtual async ValueTask<ICommandResult> Run<T>(
             T consumer, CommandInfo command, int argHeight, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            var conversion = await ConvertAsync(consumer, command, argHeight, args, options);
+            var conversion = await Convert(consumer, command, argHeight, args, options);
 
             var arguments = new object[conversion.Length];
 
@@ -205,7 +204,7 @@ namespace Commands
 
             try
             {
-                var preCheckResult = await CheckPreconditionsAsync(consumer, command, options);
+                var preCheckResult = await CheckPreconditions(consumer, command, options);
 
                 if (!preCheckResult.Success)
                 {
@@ -214,9 +213,9 @@ namespace Commands
 
                 var value = command.Invoker.Invoke(consumer, command, arguments, this, options);
 
-                var result = await HandleReturnTypeAsync(consumer, command, value, options);
+                var result = await HandleReturnType(consumer, command, value, options);
 
-                var postCheckResult = await CheckPostconditionsAsync(consumer, command, options);
+                var postCheckResult = await CheckPostconditions(consumer, command, options);
 
                 if (!postCheckResult.Success)
                 {
@@ -234,12 +233,12 @@ namespace Commands
         /// <summary>
         ///     Handles the returned result from a command invocation by, if necessary, sending the result to the consumer.
         /// </summary>
-        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="command">The result of the match intended to be ran.</param>
         /// <param name="value">The returned result of this operation.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the handling process.</returns>
-        protected virtual async ValueTask<InvokeResult> HandleReturnTypeAsync<T>(
+        protected virtual async ValueTask<InvokeResult> HandleReturnType<T>(
             T consumer, CommandInfo command, object? value, CommandOptions options)
             where T : ConsumerBase
         {
@@ -254,14 +253,14 @@ namespace Commands
                         await awaitablet;
 
                         var type = command.Invoker.GetReturnType()!;
-                        
+
                         if (type.IsGenericType)
                         {
                             var result = type.GetProperty("Result")?.GetValue(awaitablet);
 
                             if (result != null)
                             {
-                                await consumer.SendAsync(result);
+                                await consumer.Send(result);
                             }
                         }
 
@@ -279,7 +278,7 @@ namespace Commands
 
                             if (result != null)
                             {
-                                await consumer.SendAsync(result);
+                                await consumer.Send(result);
                             }
                         }
 
@@ -289,7 +288,7 @@ namespace Commands
                     {
                         if (obj != null)
                         {
-                            await consumer.SendAsync(obj);
+                            await consumer.Send(obj);
                         }
 
                         return InvokeResult.FromSuccess(command);
@@ -297,7 +296,16 @@ namespace Commands
             }
         }
 
-        private async ValueTask<ConvertResult[]> ConvertAsync<T>(
+        /// <summary>
+        ///     Converts the provided <paramref name="args"/> into a set of arguments that can be used to invoke a command.
+        /// </summary>
+        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
+        /// <param name="command">The result of the match intended to be ran.</param>
+        /// <param name="argHeight">The argument level from search operation.</param>
+        /// <param name="args">The arguments intended to populate the command.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
+        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the conversion process.</returns>
+        protected async ValueTask<ConvertResult[]> Convert<T>(
             T consumer, CommandInfo command, int argHeight, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
@@ -330,7 +338,14 @@ namespace Commands
             return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
         }
 
-        private async ValueTask<ConditionResult> CheckPreconditionsAsync<T>(
+        /// <summary>
+        ///     Checks the preconditions of a command before invoking it.
+        /// </summary>
+        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
+        /// <param name="command">The result of the match intended to be ran.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
+        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the evaluation process.</returns>
+        protected async ValueTask<ConditionResult> CheckPreconditions<T>(
             T consumer, CommandInfo command, CommandOptions options)
             where T : ConsumerBase
         {
@@ -340,7 +355,7 @@ namespace Commands
             {
                 foreach (var precon in command.Preconditions)
                 {
-                    var checkResult = await precon.EvaluateAsync(consumer, command, options.Services, options.CancellationToken);
+                    var checkResult = await precon.Evaluate(consumer, command, options.Services, options.CancellationToken);
 
                     if (!checkResult.Success)
                     {
@@ -352,7 +367,14 @@ namespace Commands
             return ConditionResult.FromSuccess();
         }
 
-        private async ValueTask<ConditionResult> CheckPostconditionsAsync<T>(
+        /// <summary>
+        ///     Checks the postconditions of a command before invoking it.
+        /// </summary>
+        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
+        /// <param name="command">The result of the match intended to be ran.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
+        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the evaluation process.</returns>
+        protected async ValueTask<ConditionResult> CheckPostconditions<T>(
             T consumer, CommandInfo command, CommandOptions options)
             where T : ConsumerBase
         {
@@ -362,7 +384,7 @@ namespace Commands
             {
                 foreach (var postcon in command.PostConditions)
                 {
-                    var checkResult = await postcon.EvaluateAsync(consumer, command, options.Services, options.CancellationToken);
+                    var checkResult = await postcon.Evaluate(consumer, command, options.Services, options.CancellationToken);
 
                     if (!checkResult.Success)
                     {

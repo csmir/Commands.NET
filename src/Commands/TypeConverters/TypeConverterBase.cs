@@ -56,7 +56,7 @@ namespace Commands.TypeConverters
         /// <param name="value">The raw command query argument to convert.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
-        public abstract ValueTask<ConvertResult> EvaluateAsync(
+        public abstract ValueTask<ConvertResult> Evaluate(
             ConsumerBase consumer, IArgument argument, string? value, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>

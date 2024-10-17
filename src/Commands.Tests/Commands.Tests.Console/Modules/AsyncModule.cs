@@ -7,7 +7,9 @@
         {
             if (delay)
             {
-                await Task.Delay(Random.Shared.Next(100, 1000));
+                await Task.Delay(Random.Shared.Next(5000, 10000));
+
+                await Send("Success");
             }
         }
     }

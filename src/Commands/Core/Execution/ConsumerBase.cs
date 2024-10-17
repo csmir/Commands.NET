@@ -10,7 +10,7 @@
         /// </summary>
         /// <param name="response">The response to send.</param>
         /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
-        public virtual Task SendAsync(object response)
+        public virtual Task Send(object response)
         {
             Console.WriteLine(response);
 

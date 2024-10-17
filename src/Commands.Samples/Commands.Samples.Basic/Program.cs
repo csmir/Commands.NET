@@ -16,15 +16,15 @@ var app = CommandManager.CreateBuilder()
         {
             var description = command.GetAttribute<DescriptionAttribute>()?.Description ?? "No description available.";
 
-            ctx.SendAsync($"[yellow]{command.ToString().EscapeMarkup()}[/]");
-            ctx.SendAsync($"[blue]{description}[/]");
+            ctx.Send($"[yellow]{command.ToString().EscapeMarkup()}[/]");
+            ctx.Send($"[blue]{description}[/]");
         }
     })
     .AddResultResolver((consumer, result, services) =>
     {
         if (!result.Success)
         {
-            consumer.SendAsync(result.Exception!);
+            consumer.Send(result.Exception!);
         }
     })
     .Build();
@@ -35,5 +35,5 @@ while (true)
 
     var consumer = new ConsoleConsumerBase();
 
-    await app.TryExecuteAsync(consumer, input);
+    await app.Execute(consumer, input);
 }

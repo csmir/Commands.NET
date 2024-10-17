@@ -9,7 +9,7 @@ namespace Commands.TypeConverters
     {
         private readonly Func<ConsumerBase, IArgument, string?, IServiceProvider, ConvertResult> _func = func;
 
-        public override async ValueTask<ConvertResult> EvaluateAsync(ConsumerBase consumer, IArgument argument, string? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, string? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
 

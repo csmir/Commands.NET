@@ -137,7 +137,7 @@ namespace Commands.Helpers
                 return ConvertResult.FromSuccess(value);
 
             // run parser.
-            return await argument.Converter!.EvaluateAsync(consumer, argument, value.ToString(), options.Services, options.CancellationToken);
+            return await argument.Converter!.Evaluate(consumer, argument, value.ToString(), options.Services, options.CancellationToken);
         }
     }
 }

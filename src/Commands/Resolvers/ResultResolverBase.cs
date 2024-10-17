@@ -15,7 +15,7 @@
         /// <param name="result">The result of the command execution.</param>
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
-        public virtual ValueTask EvaluateAsync(
+        public virtual ValueTask Evaluate(
             ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (!result.Success)

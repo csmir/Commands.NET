@@ -34,7 +34,7 @@ namespace Commands.Console
         /// </summary>
         /// <param name="response">The message that should be sent in response to the console.</param>
         /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
-        public override Task SendAsync(object response)
+        public override Task Send(object response)
         {
             if (response is Exception ex)
             {
@@ -59,7 +59,7 @@ namespace Commands.Console
         /// <param name="response">The message that should be sent in response to the console.</param>
         public virtual void Send(object response)
         {
-            SendAsync(response).Wait();
+            Send(response).Wait();
         }
 
         /// <summary>

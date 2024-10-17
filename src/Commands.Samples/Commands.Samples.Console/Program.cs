@@ -38,5 +38,5 @@ while (true)
     var consumer = new CustomConsumer("Harold");
 
     // Executes the input.
-    await framework.TryExecuteAsync(consumer, input);
+    await framework.Execute(consumer, input);
 }
