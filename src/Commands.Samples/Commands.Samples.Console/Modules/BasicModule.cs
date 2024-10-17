@@ -3,12 +3,12 @@ using System.Text;
 
 namespace Commands.Samples
 {
-    public class BasicModule : ModuleBase
+    public class BasicModule : ModuleBase<CustomConsumer>
     {
         [Name("reply")]
         public string Reply([Remainder] string message)
         {
-            return "Hi, " + message + "!";
+            return "Hi, " + Consumer.Name + ". " + message + "!";
         }
 
         [Name("type-info", "typeinfo", "type")]

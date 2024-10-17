@@ -95,5 +95,11 @@ namespace Commands.Reflection
 
             return _ctor.Invoke(services);
         }
+
+        /// <inheritdoc />
+        public Type? GetReturnType()
+        {
+            return default;
+        }
     }
 }

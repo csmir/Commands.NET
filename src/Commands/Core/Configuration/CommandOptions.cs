@@ -20,7 +20,7 @@ namespace Commands
         /// </summary>
         /// <remarks>
         ///     If set to <see cref="AsyncMode.Await"/>, the manager will wait for a command to finish before allowing another to be executed.
-        ///     If set to <see cref="AsyncMode.Async"/>, the manager will seperate the command execution from the entry stack, and slip it to another thread. 
+        ///     If set to <see cref="AsyncMode.Async"/>, the manager will seperate the command execution from the entry stack, and slip it to another if necessary. 
         ///     Only change this value if you have read the documentation of <see cref="Commands.AsyncMode"/> and understand the definitions.
         ///     <br/>
         ///     <br/>
@@ -35,6 +35,14 @@ namespace Commands
         ///     Default: <see langword="default"/>
         /// </remarks> 
         public CancellationToken CancellationToken { get; set; } = default;
+
+        /// <summary>
+        ///     Gets or sets an ID that can be used to trace a command execution task through the pipeline. This ID should be unique per execution.
+        /// </summary>
+        /// <remarks>
+        ///     Default: <see cref="Guid.NewGuid"/>
+        /// </remarks>
+        public Guid TraceId { get; set; } = Guid.NewGuid();
 
         /// <summary>
         ///     Gets or sets whether the defined <see cref="PostconditionAttribute"/>'s for this execution should be ran.

@@ -7,12 +7,20 @@ namespace Commands.Reflection
     /// </summary>
     public sealed class InstanceInvoker : IInvoker
     {
+        private readonly MethodInfo _method;
+
         /// <inheritdoc />
-        public MethodBase Target { get; }
+        public MethodBase Target
+        {
+            get
+            {
+                return _method;
+            }
+        }
 
         internal InstanceInvoker(MethodInfo target)
         {
-            Target = target;
+            _method = target;
         }
 
         /// <inheritdoc />
@@ -26,6 +34,12 @@ namespace Commands.Reflection
             module!.Manager = manager;
 
             return Target.Invoke(module, args);
+        }
+
+        /// <inheritdoc />
+        public Type? GetReturnType()
+        {
+            return _method.ReturnType;
         }
     }
 }

@@ -19,8 +19,12 @@ builder.AddResultResolver((consumer, result, services) =>
 // Adds a converter to convert an input, in this case, a string, into a custom type.`
 builder.AddTypeConverter(new ReflectionTypeConverter(caseIgnore: true));
 
-// Adds a command to the builder, which does not need any data to execute.
-builder.AddCommand("hello-world", () => "Hello World!");
+// Add commands to the builder directly:
+builder.AddCommand("delegate", () => "Hello World!");
+builder.AddCommand("delegate-context", (CommandContext<CustomConsumer> ctx) => $"Hello, {ctx.Consumer.Name}!");
+builder.AddCommand("delegate-params", (string name) => $"Hello, {name}!");
+
+// This API is useful for lightweight applications that do not need to do any complex operations, but still wanting to keep command execution simple and without boilerplate.
 
 // Builds the preparation models into a framework to operate over.
 var framework = builder.Build();

@@ -146,14 +146,14 @@ namespace Commands.Reflection
         {
             // run through all type methods.
 
-            var methods = type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
+            var members = type.GetMembers(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
 
-            foreach (var method in methods)
+            foreach (var member in members)
             {
                 var aliases = Array.Empty<string>();
 
                 var skip = false;
-                foreach (var attribute in method.GetCustomAttributes(true))
+                foreach (var attribute in member.GetCustomAttributes(true))
                 {
                     if (attribute is NameAttribute names)
                     {
@@ -172,21 +172,31 @@ namespace Commands.Reflection
 
                 if (!skip && (withDefaults || aliases.Length > 0))
                 {
-                    if (method.IsStatic)
+                    var method = member switch
                     {
-                        var param = method.GetParameters();
+                        PropertyInfo property => property.GetMethod,
+                        MethodInfo rawMethod => rawMethod,
+                        _ => null
+                    };
 
-                        var hasContext = false;
-                        if (param.Length > 0 && param[0].ParameterType.GetGenericTypeDefinition() == c_type)
+                    if (method != null)
+                    {
+                        if (method.IsStatic)
                         {
-                            hasContext = true;
-                        }
+                            var param = method.GetParameters();
 
-                        yield return new CommandInfo(module, new StaticInvoker(method, hasContext), aliases, hasContext, options);
-                    }
-                    else
-                    {
-                        yield return new CommandInfo(module, new InstanceInvoker(method), aliases, false, options);
+                            var hasContext = false;
+                            if (param.Length > 0 && param[0].ParameterType.GetGenericTypeDefinition() == c_type)
+                            {
+                                hasContext = true;
+                            }
+
+                            yield return new CommandInfo(module, new StaticInvoker(method, hasContext), aliases, hasContext, options);
+                        }
+                        else
+                        {
+                            yield return new CommandInfo(module, new InstanceInvoker(method), aliases, false, options);
+                        }
                     }
                 }
             }

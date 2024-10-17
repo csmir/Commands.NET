@@ -9,15 +9,22 @@ namespace Commands.Reflection
     {
         private readonly object? _instance;
         private readonly bool _withContext;
+        private readonly MethodInfo _method;
 
         /// <inheritdoc />
-        public MethodBase Target { get; }
+        public MethodBase Target
+        {
+            get
+            {
+                return _method;
+            }
+        }
 
         internal DelegateInvoker(MethodInfo target, object? instance, bool withContext)
         {
             _withContext = withContext;
             _instance = instance;
-            Target = target;
+            _method = target;
         }
 
         /// <inheritdoc />
@@ -32,6 +39,12 @@ namespace Commands.Reflection
             }
 
             return Target.Invoke(_instance, args);
+        }
+
+        /// <inheritdoc />
+        public Type? GetReturnType()
+        {
+            return _method.ReturnType;
         }
     }
 }

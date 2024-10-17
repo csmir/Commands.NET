@@ -3,8 +3,8 @@ using Commands.Helpers;
 using Commands.Reflection;
 using Commands.Resolvers;
 using Commands.TypeConverters;
-using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 [assembly: CLSCompliant(true)]
 
@@ -23,10 +23,9 @@ namespace Commands
     ///     <see cref="CommandManager.CreateBuilder"/> generates a base definition of this builder to use.
     /// </remarks>
     [DebuggerDisplay("Commands = {Commands},nq")]
-    public class CommandManager : IDisposable
+    public class CommandManager
     {
         private readonly CommandFinalizer _finalizer;
-        private readonly ConcurrentDictionary<Guid, Task> _taskTrace;
 
         /// <summary>
         ///     Gets the collection containing all commands, named modules and subcommands as implemented by the assemblies that were registered in the <see cref="ICommandBuilder"/> provided when creating the manager.
@@ -40,7 +39,6 @@ namespace Commands
         public CommandManager(ICommandBuilder builder)
         {
             _finalizer = new CommandFinalizer(builder.ResultResolvers);
-            _taskTrace = [];
 
             var commands = ReflectionUtilities.GetTopLevelComponents(builder)
                 .Concat(builder.Commands)
@@ -55,9 +53,9 @@ namespace Commands
         /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the flattened range of <see cref="CommandInfo"/>'s registered in this manager.</returns>
         public virtual IEnumerable<CommandInfo> GetCommands()
         {
-            static IEnumerable<CommandInfo> Step(ModuleInfo module)
+            static IEnumerable<CommandInfo> Flatten(IEnumerable<ISearchable> components)
             {
-                foreach (var item in module.Components)
+                foreach (var item in components)
                 {
                     if (item is CommandInfo command)
                     {
@@ -65,7 +63,7 @@ namespace Commands
                     }
                     else if (item is ModuleInfo subModule)
                     {
-                        foreach (var subItem in Step(subModule))
+                        foreach (var subItem in Flatten(subModule.Components))
                         {
                             yield return subItem;
                         }
@@ -73,20 +71,7 @@ namespace Commands
                 }
             }
 
-            foreach (var command in Commands)
-            {
-                if (command is CommandInfo c)
-                {
-                    yield return c;
-                }
-                else if (command is ModuleInfo m)
-                {
-                    foreach (var subItem in Step(m))
-                    {
-                        yield return subItem;
-                    }
-                }
-            }
+            return Flatten(Commands);
         }
 
         /// <summary>
@@ -95,70 +80,45 @@ namespace Commands
         /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the range of <see cref="ModuleInfo"/>'s registered in this manager.</returns>
         public virtual IEnumerable<ModuleInfo> GetModules()
         {
-            static IEnumerable<ModuleInfo> Step(ModuleInfo module)
+            static IEnumerable<ModuleInfo> Flatten(IEnumerable<ISearchable> components)
             {
-                foreach (var item in module.Components)
+                foreach (var item in components)
                 {
                     if (item is ModuleInfo subModule)
                     {
-                        foreach (var subItem in Step(subModule))
+                        foreach (var subItem in Flatten(subModule.Components))
                         {
                             yield return subItem;
                         }
-
 
                         yield return subModule;
                     }
                 }
             }
 
-            foreach (var command in Commands)
-            {
-                if (command is ModuleInfo m)
-                {
-                    foreach (var subItem in Step(m))
-                    {
-                        yield return subItem;
-                    }
-
-                    yield return m;
-                }
-            }
+            return Flatten(Commands);
         }
 
         /// <summary>
-        ///     Makes an attempt at executing a command from provided <paramref name="args"/>.
+        ///     Makes an attempt at executing a command from the provided <paramref name="arguments"/>.
         /// </summary>
         /// <remarks>
         ///     The arguments intended for searching for a target need to be <see cref="string"/>, as <see cref="ModuleInfo"/> and <see cref="CommandInfo"/> store their aliases this way also.
         /// </remarks>
         /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="arguments">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
         public virtual Task TryExecuteAsync<T>(
-            T consumer, object[] args, CommandOptions? options = default)
+            [DisallowNull] T consumer, object[] arguments, CommandOptions? options = default)
             where T : ConsumerBase
         {
-            var traceId = Guid.NewGuid();
-
-            ArgumentNullException.ThrowIfNull(args, nameof(args));
-            ArgumentNullException.ThrowIfNull(consumer, nameof(consumer));
-
             options ??= new CommandOptions();
 
-            var execution = ExecuteAsync(consumer, args, options);
+            var execution = ExecuteAsync(consumer, arguments, options);
 
             if (options.AsyncMode is AsyncMode.Await)
                 return execution;
-
-            _taskTrace.TryAdd(traceId, execution);
-
-            execution.ContinueWith(x =>
-            {
-                if (_taskTrace.ContainsKey(traceId))
-                    _taskTrace.TryRemove(traceId, out _);
-            });
 
             return Task.CompletedTask;
         }
@@ -189,8 +149,6 @@ namespace Commands
             T consumer, object[] args, CommandOptions options)
             where T : ConsumerBase
         {
-            options.CancellationToken.ThrowIfCancellationRequested();
-
             ICommandResult? result = null;
 
             var searches = Search(args);
@@ -295,11 +253,11 @@ namespace Commands
                     {
                         await awaitablet;
 
-                        var vtType = awaitablet.GetType();
-
-                        if (vtType.IsGenericType)
+                        var type = command.Invoker.GetReturnType()!;
+                        
+                        if (type.IsGenericType)
                         {
-                            var result = vtType.GetProperty("Result")?.GetValue(awaitablet);
+                            var result = type.GetProperty("Result")?.GetValue(awaitablet);
 
                             if (result != null)
                             {
@@ -313,11 +271,11 @@ namespace Commands
                     {
                         await awaitablevt;
 
-                        var vtType = awaitablevt.GetType();
+                        var type = command.Invoker.GetReturnType()!;
 
-                        if (vtType.IsGenericType)
+                        if (type.IsGenericType)
                         {
-                            var result = vtType.GetProperty("Result")?.GetValue(awaitablevt);
+                            var result = type.GetProperty("Result")?.GetValue(awaitablevt);
 
                             if (result != null)
                             {
@@ -414,17 +372,6 @@ namespace Commands
             }
 
             return ConditionResult.FromSuccess();
-        }
-
-        /// <summary>
-        ///     Disposes this manager.
-        /// </summary>
-        /// <remarks>
-        ///     This dispose method will wait for all running command tasks to complete before disposing of the manager.
-        /// </remarks>
-        public void Dispose()
-        {
-            Task.WaitAll([.. _taskTrace.Values]);
         }
 
         /// <summary>

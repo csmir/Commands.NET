@@ -8,7 +8,7 @@ namespace Commands.Reflection
     public interface IInvoker
     {
         /// <summary>
-        ///     The target to invoke.
+        ///     Gets the target to invoke.
         /// </summary>
         public MethodBase Target { get; }
 
@@ -23,5 +23,11 @@ namespace Commands.Reflection
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation.</returns>
         public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandManager manager, CommandOptions options)
             where T : ConsumerBase;
+
+        /// <summary>
+        ///     Gets the return type of the target, if it is a method. If it is a constructor, it will return null.
+        /// </summary>
+        /// <returns>A type representing the returned value of the invoked target.</returns>
+        public Type? GetReturnType();
     }
 }

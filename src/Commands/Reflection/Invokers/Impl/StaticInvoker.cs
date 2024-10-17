@@ -8,13 +8,21 @@ namespace Commands.Reflection
     public sealed class StaticInvoker : IInvoker
     {
         private readonly bool _withContext;
+        private readonly MethodInfo _method;
+
         /// <inheritdoc />
-        public MethodBase Target { get; }
+        public MethodBase Target
+        {
+            get
+            {
+                return _method;
+            }
+        }
 
         internal StaticInvoker(MethodInfo target, bool withContext)
         {
             _withContext = withContext;
-            Target = target;
+            _method = target;
         }
 
         /// <inheritdoc />
@@ -29,6 +37,12 @@ namespace Commands.Reflection
             }
 
             return Target.Invoke(null, args);
+        }
+
+        /// <inheritdoc />
+        public Type? GetReturnType()
+        {
+            return _method.ReturnType;
         }
     }
 }

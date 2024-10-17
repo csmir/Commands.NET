@@ -11,6 +11,8 @@
 	  
 		<!-- Do not warn CA1822 for deliberate instance-access design. -->
 		<NoWarn>CA1822</NoWarn>
+		<!-- Do not warn IDE0130 for deliberate namespace structure. -->
+		<NoWarn>IDE0130</NoWarn>
 
 		<AssemblyVersion>1.0</AssemblyVersion>
 		<PackageVersion>1-alpha7</PackageVersion>

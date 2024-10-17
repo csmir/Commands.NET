@@ -28,5 +28,15 @@ namespace Commands
         ///     Gets the command manager responsible for executing the current pipeline.
         /// </summary>
         public CommandManager Manager { get; } = manager;
+
+        /// <summary>
+        ///     Sends a response to the consumer of the command.
+        /// </summary>
+        /// <param name="response">The response to send to the consumer.</param>
+        /// <returns>An asynchronous <see cref="Task"/> that can be awaited to wait for the response to send, otherwise dismissed.</returns>
+        public Task SendAsync(object response)
+        {
+            return Consumer.SendAsync(response);
+        }
     }
 }

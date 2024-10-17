@@ -13,5 +13,12 @@
         {
             return "Hello from a class command!";
         }
+
+        // If you do not want a method to be registered as a command, you can use the Skip attribute.
+        [Skip]
+        public void NotACommand()
+        {
+
+        }
     }
 }
