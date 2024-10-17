@@ -261,7 +261,7 @@ namespace Commands
 
                             if (result != null)
                             {
-                                await consumer.SendAsync(result.ToString() ?? string.Empty);
+                                await consumer.SendAsync(result);
                             }
                         }
 
@@ -279,7 +279,7 @@ namespace Commands
 
                             if (result != null)
                             {
-                                await consumer.SendAsync(result.ToString() ?? string.Empty);
+                                await consumer.SendAsync(result);
                             }
                         }
 
@@ -289,7 +289,7 @@ namespace Commands
                     {
                         if (obj != null)
                         {
-                            await consumer.SendAsync(obj.ToString() ?? string.Empty);
+                            await consumer.SendAsync(obj);
                         }
 
                         return InvokeResult.FromSuccess(command);

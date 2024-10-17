@@ -34,19 +34,67 @@ namespace Commands.Tests
         [Benchmark]
         public async Task RunCommand()
         {
-            await _manager!.TryExecuteAsync(new ConsumerBase(), ["base-test"]);
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["scenario"]);
         }
 
         [Benchmark]
         public async Task RunParametered()
         {
-            await _manager!.TryExecuteAsync(new ConsumerBase(), ["param-test", "1"]);
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["scenario-parameterized", "1"]);
         }
 
         [Benchmark]
         public async Task RunNested()
         {
-            await _manager!.TryExecuteAsync(new ConsumerBase(), ["nested", "test"]);
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["scenario-nested", "scenario-injected"]);
+        }
+
+        [Benchmark]
+        public async Task RunException()
+        {
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["scenario-exception"]);
+        }
+
+        [Benchmark]
+        public async Task RunTaskException()
+        {
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["scenario-task-exception"]);
+        }
+
+        [Benchmark]
+        public async Task RunExceptionThrow()
+        {
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["scenario-exception-throw"]);
+        }
+
+        [Benchmark]
+        public async Task RunTaskExceptionThrow()
+        {
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["scenario-task-exception-throw"]);
+        }
+
+        [Benchmark]
+        public async Task RunOperationMutation()
+        {
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["scenario-operation-mutation"]);
+        }
+
+        [Benchmark]
+        public async Task RunOperationTaskMutation()
+        {
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["scenario-task-operation-mutation"]);
+        }
+
+        [Benchmark]
+        public async Task RunOperationFormattable()
+        {
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["scenario-operation-formattable"]);
+        }
+
+        [Benchmark]
+        public async Task RunOperationTaskFormattable()
+        {
+            await _manager!.TryExecuteAsync(new ConsumerBase(), ["scenario-task-operation-formattable"]);
         }
     }
 }

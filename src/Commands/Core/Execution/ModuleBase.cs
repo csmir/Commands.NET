@@ -66,33 +66,13 @@ namespace Commands
 #pragma warning restore CS8618
 
         /// <summary>
-        ///     Represents an overridable operation that is responsible for resolving unknown invocation results.
+        ///     Sends a response to the consumer.
         /// </summary>
-        /// <param name="value">The invocation result of which no base handler exists.</param>
-        /// <returns>The awaitable result of this asynchronous operation.</returns>
-        public virtual async ValueTask UnknownReturnAsync(object value)
+        /// <param name="response">The response to send to the consumer.</param>
+        /// <returns>An asynchronous <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
+        public Task SendAsync(object response)
         {
-            await Task.CompletedTask;
-        }
-
-        internal async Task<InvokeResult> ResolveReturnAsync(object? value)
-        {
-            switch (value)
-            {
-                case Task task:
-                    await task;
-                    break;
-                case ValueTask vTask:
-                    await vTask;
-                    break;
-                case null:
-                    break;
-                default:
-                    await UnknownReturnAsync(value);
-                    break;
-            }
-
-            return InvokeResult.FromSuccess(Command);
+            return Consumer.SendAsync(response);
         }
     }
 }
