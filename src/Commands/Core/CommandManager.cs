@@ -3,6 +3,7 @@ using Commands.Helpers;
 using Commands.Reflection;
 using Commands.Resolvers;
 using Commands.TypeConverters;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 [assembly: CLSCompliant(true)]
@@ -25,7 +26,7 @@ namespace Commands
     public class CommandManager : IDisposable
     {
         private readonly CommandFinalizer _finalizer;
-        private readonly Dictionary<Guid, Task> _taskTrace;
+        private readonly ConcurrentDictionary<Guid, Task> _taskTrace;
 
         /// <summary>
         ///     Gets the collection containing all commands, named modules and subcommands as implemented by the assemblies that were registered in the <see cref="ICommandBuilder"/> provided when creating the manager.
@@ -151,12 +152,12 @@ namespace Commands
             if (options.AsyncMode is AsyncMode.Await)
                 return execution;
 
-            _taskTrace.Add(traceId, execution);
+            _taskTrace.TryAdd(traceId, execution);
 
             execution.ContinueWith(x =>
             {
                 if (_taskTrace.ContainsKey(traceId))
-                    _taskTrace.Remove(traceId);
+                    _taskTrace.TryRemove(traceId, out _);
             });
 
             return Task.CompletedTask;
