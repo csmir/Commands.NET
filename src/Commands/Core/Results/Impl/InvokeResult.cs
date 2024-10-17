@@ -1,10 +1,12 @@
 ﻿using Commands.Reflection;
+using System.Diagnostics;
 
 namespace Commands
 {
     /// <summary>
     ///     The result of an invocation operation within the command execution pipeline.
     /// </summary>
+    [DebuggerDisplay("{ToString()}")]
     public readonly struct InvokeResult : ICommandResult
     {
         /// <summary>
@@ -54,7 +56,7 @@ namespace Commands
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"Command = {Command} \nSuccess = {(Exception == null ? "True" : $"False \nException = {Exception}")}";
+            return $"Command = {Command} \nSuccess = {(Exception == null ? "True" : $"False \nException = {Exception.Message}")}";
         }
     }
 }

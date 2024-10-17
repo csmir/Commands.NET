@@ -1,8 +1,11 @@
-﻿namespace Commands
+﻿using System.Diagnostics;
+
+namespace Commands
 {
     /// <summary>
     ///     The result of a check operation within the command execution pipeline.
     /// </summary>
+    [DebuggerDisplay("{ToString()}")]
     public readonly struct ConditionResult : ICommandResult
     {
         /// <inheritdoc />
@@ -44,7 +47,7 @@
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"Success = {(Exception == null ? "True" : $"False \nException = {Exception}")}";
+            return $"Success = {(Exception == null ? "True" : $"False \nException = {Exception.Message}")}";
         }
     }
 }

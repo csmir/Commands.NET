@@ -1,10 +1,12 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 
 namespace Commands.Reflection
 {
     /// <summary>
     ///     Reveals information about a service parameter.
     /// </summary>
+    [DebuggerDisplay("{ToString()}")]
     public sealed class ServiceInfo : IParameter
     {
         /// <inheritdoc />

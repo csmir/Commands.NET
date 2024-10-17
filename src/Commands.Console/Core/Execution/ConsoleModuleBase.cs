@@ -1,13 +1,7 @@
-﻿namespace Commands.Console.Core.Execution
+﻿using Spectre.Console;
+
+namespace Commands.Console
 {
-    /// <summary>
-    ///     Represents a module that can contain commands to execute, implementing <see cref="ModuleBase"/> with expanded functionality for console applications.
-    /// </summary>
-    public class ConsoleModuleBase : ModuleBase
-    {
-
-    }
-
     /// <summary>
     ///     Represents a module that can contain commands to execute, implementing <see cref="ModuleBase{TConsumer}"/> with expanded functionality for console applications.
     /// </summary>
@@ -15,6 +9,75 @@
     public class ConsoleModuleBase<TConsumer> : ModuleBase<TConsumer> 
         where TConsumer : ConsoleConsumerBase
     {
+        /// <summary>
+        ///     Sends a message to the console.
+        /// </summary>
+        /// <param name="response">The message that should be sent in response to the console.</param>
+        /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
+        public Task SendAsync(string response)
+        {
+            return Consumer.SendAsync(response);
+        }
 
+        /// <summary>
+        ///     Sends a message to the console.
+        /// </summary>
+        /// <param name="response">The message that should be sent in response to the console.</param>
+        public void Send(string response)
+        {
+            Consumer.Send(response);
+        }
+
+        /// <summary>
+        ///     Sends a question to the console and returns the response.
+        /// </summary>
+        /// <remarks>
+        ///     This method waits for the response of a console read. This should not be used when <see cref="AsyncMode.Async"/> is used, as it will take over the console input until a response is provided.
+        /// </remarks>
+        /// <param name="question">The question that should be asked to the console.</param>
+        /// <returns>The response to the question.</returns>
+        public string Ask(string question)
+        {
+            return Consumer.Ask(question);
+        }
+
+        /// <summary>
+        ///     Asks the console to confirm a question with yes or no.
+        /// </summary>
+        /// <remarks>
+        ///     This method waits for the response of a console read. This should not be used when <see cref="AsyncMode.Async"/> is used, as it will take over the console input until a response is provided.
+        /// </remarks>
+        /// <param name="question">The question that should be asked to the console.</param>
+        /// <returns><see langword="true"/> if the question was responded with with 'Y' or 'Yes'. <see langword="false"/> if the response is 'N', 'No' or if the sequence was escaped otherwise.</returns>
+        public bool Confirm(string question)
+        {
+            return Consumer.Confirm(question);
+        }
+
+        /// <summary>
+        ///     Asks the console to respond to a prompt.
+        /// </summary>
+        /// <remarks>
+        ///     This method waits for the response of a console read. This should not be used when <see cref="AsyncMode.Async"/> is used, as it will take over the console input until a response is provided.
+        /// </remarks>
+        /// <param name="prompt">The prompt that should be responded to by the console.</param>
+        /// <returns>The result of the text prompt.</returns>
+        public string Prompt(TextPrompt<string> prompt)
+        {
+            return Consumer.Prompt(prompt);
+        }
+
+        /// <summary>
+        ///     Asks the console to choose an item in a selection.
+        /// </summary>
+        /// <remarks>
+        ///     This method waits for the response of a console read. This should not be used when <see cref="AsyncMode.Async"/> is used, as it will take over the console input until a response is provided.
+        /// </remarks>
+        /// <param name="prompt"></param>
+        /// <returns>The result of the selection.</returns>
+        public string Select(SelectionPrompt<string> prompt)
+        {
+            return Consumer.Select(prompt);
+        }
     }
 }

@@ -1,10 +1,12 @@
 ﻿using Commands.Helpers;
 using Commands.TypeConverters;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Commands.Reflection
 {
     /// <inheritdoc />
+    [DebuggerDisplay("{ToString()}")]
     public sealed class ArgumentInfo : IArgument
     {
         /// <inheritdoc />

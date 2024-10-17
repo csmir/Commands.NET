@@ -1,11 +1,13 @@
 ﻿using Commands.Reflection;
 using Commands.TypeConverters;
+using System.Diagnostics;
 
 namespace Commands
 {
     /// <summary>
     ///     The result of a convert operation within the command execution pipeline.
     /// </summary>
+    [DebuggerDisplay("{ToString()}")]
     public readonly struct ConvertResult : ICommandResult
     {
         /// <inheritdoc />
@@ -66,7 +68,7 @@ namespace Commands
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"Success = {(Exception == null ? "True" : $"False \nException = {Exception}")}";
+            return $"Success = {(Exception == null ? "True" : $"False \nException = {Exception.Message}")}";
         }
     }
 }

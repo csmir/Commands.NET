@@ -1,11 +1,13 @@
 ﻿using Commands.Exceptions;
 using Commands.Reflection;
+using System.Diagnostics;
 
 namespace Commands
 {
     /// <summary>
     ///     The result of a search operation within the command execution pipeline.
     /// </summary>
+    [DebuggerDisplay("{ToString()}")]
     public readonly struct SearchResult : ICommandResult
     {
         /// <summary>
@@ -86,7 +88,7 @@ namespace Commands
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"{(Component != null ? $"Component = {Component} \n" : "")}Success = {(Exception == null ? "True" : $"False \nException = {Exception}")}";
+            return $"{(Component != null ? $"Component = {Component} \n" : "")}Success = {(Exception == null ? "True" : $"False \nException = {Exception.Message}")}";
         }
     }
 }

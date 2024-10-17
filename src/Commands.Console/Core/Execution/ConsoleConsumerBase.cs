@@ -1,11 +1,6 @@
 ﻿using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Commands.Console.Core.Execution
+namespace Commands.Console
 {
     /// <summary>
     ///     Represents a consumer that represents the current console window that the application is running in.

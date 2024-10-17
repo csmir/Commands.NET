@@ -1,11 +1,13 @@
 ﻿using Commands.Conditions;
 using Commands.Helpers;
+using System.Diagnostics;
 
 namespace Commands.Reflection
 {
     /// <summary>
     ///     Reveals information about a command module, hosting zero-or-more commands.
     /// </summary>
+    [DebuggerDisplay("{ToString()}")]
     public sealed class ModuleInfo : ISearchable
     {
         /// <summary>

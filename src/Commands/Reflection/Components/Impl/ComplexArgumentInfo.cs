@@ -1,5 +1,6 @@
 ﻿using Commands.Helpers;
 using Commands.TypeConverters;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Commands.Reflection
@@ -7,6 +8,7 @@ namespace Commands.Reflection
     /// <summary>
     ///     Reveals information about a type with a defined complex constructor.
     /// </summary>
+    [DebuggerDisplay("{ToString()}")]
     public class ComplexArgumentInfo : IArgument, IArgumentBucket
     {
         /// <summary>

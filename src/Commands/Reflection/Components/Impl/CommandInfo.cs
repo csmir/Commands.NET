@@ -1,11 +1,13 @@
 ﻿using Commands.Conditions;
 using Commands.Helpers;
+using System.Diagnostics;
 
 namespace Commands.Reflection
 {
     /// <summary>
     ///     Reveals information about a command.
     /// </summary>
+    [DebuggerDisplay("{ToString()}")]
     public sealed class CommandInfo : ISearchable, IArgumentBucket
     {
         /// <inheritdoc />
