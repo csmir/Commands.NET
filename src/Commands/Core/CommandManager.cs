@@ -22,9 +22,10 @@ namespace Commands
     ///     <see cref="CommandManager.CreateBuilder"/> generates a base definition of this builder to use.
     /// </remarks>
     [DebuggerDisplay("Commands = {Commands},nq")]
-    public class CommandManager
+    public class CommandManager : IDisposable
     {
         private readonly CommandFinalizer _finalizer;
+        private readonly Dictionary<Guid, Task> _taskTrace;
 
         /// <summary>
         ///     Gets the collection containing all commands, named modules and subcommands as implemented by the assemblies that were registered in the <see cref="ICommandBuilder"/> provided when creating the manager.
@@ -38,52 +39,13 @@ namespace Commands
         public CommandManager(ICommandBuilder builder)
         {
             _finalizer = new CommandFinalizer(builder.ResultResolvers);
+            _taskTrace = [];
 
             var commands = ReflectionUtilities.GetTopLevelComponents(builder)
                 .Concat(builder.Commands)
                 .OrderByDescending(command => command.Score);
 
             Commands = [.. commands];
-        }
-
-        /// <summary>
-        ///     Makes an attempt at executing a command from provided <paramref name="args"/>.
-        /// </summary>
-        /// <remarks>
-        ///     The arguments intended for searching for a target need to be <see cref="string"/>, as <see cref="ModuleInfo"/> and <see cref="CommandInfo"/> store their aliases this way also.
-        /// </remarks>
-        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
-        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Discard"/>.</returns>
-        public virtual async Task TryExecuteAsync<T>(
-            T consumer, object[] args, CommandOptions? options = default)
-            where T : ConsumerBase
-        {
-            ArgumentNullException.ThrowIfNull(args, nameof(args));
-            ArgumentNullException.ThrowIfNull(consumer, nameof(consumer));
-
-            options ??= new CommandOptions();
-
-            var execution = ExecuteAsync(consumer, args, options);
-
-            if (options.AsyncMode is AsyncMode.Await)
-                await execution;
-        }
-
-        /// <summary>
-        ///     Runs a thread safe search operation over all commands for any matches of <paramref name="args"/>.
-        /// </summary>
-        /// <param name="args">A set of arguments intended to discover commands as a query.</param>
-        /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the results of the search query.</returns>
-        public virtual IEnumerable<SearchResult> Search(object[] args)
-        {
-            if (args == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(args);
-            }
-
-            return Commands.SearchMany(args, 0, false);
         }
 
         /// <summary>
@@ -161,6 +123,58 @@ namespace Commands
                     yield return m;
                 }
             }
+        }
+
+        /// <summary>
+        ///     Makes an attempt at executing a command from provided <paramref name="args"/>.
+        /// </summary>
+        /// <remarks>
+        ///     The arguments intended for searching for a target need to be <see cref="string"/>, as <see cref="ModuleInfo"/> and <see cref="CommandInfo"/> store their aliases this way also.
+        /// </remarks>
+        /// <param name="consumer">A command context that persist for the duration of the execution pipeline, serving as a metadata and logging container.</param>
+        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
+        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
+        public virtual Task TryExecuteAsync<T>(
+            T consumer, object[] args, CommandOptions? options = default)
+            where T : ConsumerBase
+        {
+            var traceId = Guid.NewGuid();
+
+            ArgumentNullException.ThrowIfNull(args, nameof(args));
+            ArgumentNullException.ThrowIfNull(consumer, nameof(consumer));
+
+            options ??= new CommandOptions();
+
+            var execution = ExecuteAsync(consumer, args, options);
+
+            if (options.AsyncMode is AsyncMode.Await)
+                return execution;
+
+            _taskTrace.Add(traceId, execution);
+
+            execution.ContinueWith(x =>
+            {
+                if (_taskTrace.ContainsKey(traceId))
+                    _taskTrace.Remove(traceId);
+            });
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        ///     Runs a thread safe search operation over all commands for any matches of <paramref name="args"/>.
+        /// </summary>
+        /// <param name="args">A set of arguments intended to discover commands as a query.</param>
+        /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the results of the search query.</returns>
+        public virtual IEnumerable<SearchResult> Search(object[] args)
+        {
+            if (args == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(args);
+            }
+
+            return Commands.SearchMany(args, 0, false);
         }
 
         /// <summary>
@@ -399,6 +413,17 @@ namespace Commands
             }
 
             return ConditionResult.FromSuccess();
+        }
+
+        /// <summary>
+        ///     Disposes this manager.
+        /// </summary>
+        /// <remarks>
+        ///     This dispose method will wait for all running command tasks to complete before disposing of the manager.
+        /// </remarks>
+        public void Dispose()
+        {
+            Task.WaitAll([.. _taskTrace.Values]);
         }
 
         /// <summary>

@@ -20,7 +20,7 @@ namespace Commands
         /// </summary>
         /// <remarks>
         ///     If set to <see cref="AsyncMode.Await"/>, the manager will wait for a command to finish before allowing another to be executed.
-        ///     If set to <see cref="AsyncMode.Discard"/>, the manager will seperate the command execution from the entry stack, and slip it to another thread. 
+        ///     If set to <see cref="AsyncMode.Async"/>, the manager will seperate the command execution from the entry stack, and slip it to another thread. 
         ///     Only change this value if you have read the documentation of <see cref="Commands.AsyncMode"/> and understand the definitions.
         ///     <br/>
         ///     <br/>

@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>12.0</LangVersion>
+
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+		<!-- Do not warn CA1822 for deliberate instance-access design. -->
+		<NoWarn>CA1822</NoWarn>
+
+		<AssemblyVersion>1.0</AssemblyVersion>
+		<PackageVersion>1-alpha7</PackageVersion>
+		<FileVersion>1.0.0.0</FileVersion>
+
+		<PackageId>Commands.NET.Console</PackageId>
+
+		<Authors>Commands.NET contributors.</Authors>
+		<Title>Commands.NET.Console</Title>
+		<Description>An extension for Commands.NET that specifically aims to support the console and implements Spectre.Console for beautification.</Description>
+		<PackageTags>commands, cli, console, text, chat</PackageTags>
+		<NeutralLanguage>en-US</NeutralLanguage>
+
+		<PackageProjectUrl>https://github.com/csmir/Commands.NET</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/csmir/Commands.NET</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageIcon>cnet_nogap_bexp.png</PackageIcon>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\..\img\cnet_nogap_bexp.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Spectre.Console" Version="0.49.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Commands\Commands.csproj" />
+	</ItemGroup>
+	
+</Project>

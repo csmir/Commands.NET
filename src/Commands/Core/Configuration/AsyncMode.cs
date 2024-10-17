@@ -14,7 +14,7 @@ namespace Commands
     ///             This ensures that the execution will fully finish executing, whether it failed or not, before allowing another to be executed.
     ///         </item>
     ///         <item>
-    ///             <see cref="Discard"/> is a setting to be treated with care. 
+    ///             <see cref="Async"/> is a setting to be treated with care. 
     ///             Instead of waiting for the full execution before returning control, the execution will return immediately after the entrypoint is called, slipping thread for the rest of execution. 
     ///             When more than one input source is expected to be handled, this is generally the advised method of execution. 
     ///         </item>
@@ -54,6 +54,6 @@ namespace Commands
         ///     <br/>
         ///     For more information, consider reading this article: <see href="https://learn.microsoft.com/en-us/dotnet/standard/threading/managed-threading-best-practices"/>
         /// </remarks>
-        Discard = 1,
+        Async = 1,
     }
 }
