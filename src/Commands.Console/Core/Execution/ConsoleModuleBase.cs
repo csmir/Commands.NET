@@ -10,25 +10,6 @@ namespace Commands.Console
         where TConsumer : ConsoleConsumerBase
     {
         /// <summary>
-        ///     Sends a message to the console.
-        /// </summary>
-        /// <param name="response">The message that should be sent in response to the console.</param>
-        /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
-        public virtual Task SendAsync(object response)
-        {
-            return Consumer.Send(response);
-        }
-
-        /// <summary>
-        ///     Sends a message to the console.
-        /// </summary>
-        /// <param name="response">The message that should be sent in response to the console.</param>
-        public virtual void Send(object response)
-        {
-            Consumer.Send(response);
-        }
-
-        /// <summary>
         ///     Sends a question to the console and returns the response.
         /// </summary>
         /// <remarks>
