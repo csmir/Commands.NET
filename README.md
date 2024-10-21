@@ -24,10 +24,10 @@ For raw input, automated conversion to fit command signature is supported by `Ty
 
 ```cs
 ...
-[Command("test")]
-public void Test(int param1, DateTime param2)
+[Command("hello")]
+public string Command(string world)
 {
-    Console.WriteLine("{0}, {1}", param1, param2);
+    return "Hello, " + world;
 }
 ...
 ```
@@ -45,10 +45,10 @@ When a command is attempted to be executed, it will walk through every precondit
 ```cs
 ...
 [CustomPrecondition]
-[Command("test")]
-public async Task Test()
+[Command("hello")]
+public Task<string> Command(string world)
 {
-    
+    return "Hello, " + world + ". I can only execute when CustomPrecondition says so!";
 }
 ...
 ```
@@ -105,7 +105,7 @@ You can provide an `IServiceProvider` at execution to inject modules with depend
 
 ```cs
 ...
-manager.TryExecuteAsync(..., ..., options: new CommandOptions() { Services = ... });
+manager.Execute(..., ..., options: new CommandOptions() { Services = ... });
 ```
 
 ## Additional Packages
