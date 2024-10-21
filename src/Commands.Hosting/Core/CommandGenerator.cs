@@ -10,6 +10,7 @@ namespace Commands
     /// <param name="manager">The manager used to run the command query.</param>
     /// <param name="resolvers">A collection of registered resolvers intended to be activated.</param>
     /// <param name="logger">A logger that logs the execution process.</param>
+    /// <param name="lifetime">The lifetime of the application.</param>
     public sealed class CommandGenerator(
         CommandManager manager, IEnumerable<SourceResolverBase> resolvers, ILogger<CommandGenerator> logger, IHostApplicationLifetime lifetime)
         : IHostedService
@@ -28,17 +29,17 @@ namespace Commands
         {
             lifetime.ApplicationStarted.Register(() =>
             {
-                foreach (var item in _resolvers)
+                foreach (var resolver in _resolvers)
                 {
-                    item.Available = true;
+                    resolver.Available = true;
                 }
             });
 
             lifetime.ApplicationStopping.Register(() =>
             {
-                foreach (var item in _resolvers)
+                foreach (var resolver in _resolvers)
                 {
-                    item.Available = false;
+                    resolver.Available = false;
                 }
             });
 
@@ -51,6 +52,48 @@ namespace Commands
         public async Task StopAsync(CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
+        }
+
+        /// <summary>
+        ///     Makes an attempt to pause command input entering the application flow, and returns a value indicating whether the operation was successful.
+        /// </summary>
+        /// <returns><see langword="true"/> if all source resolvers were succesfully paused. <see langword="false"/> if one or more failed to pause.</returns>
+        public bool TryPause()
+        {
+            try
+            {
+                foreach (var resolvers in _resolvers)
+                {
+                    resolvers.Available = false;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        ///     Makes an attempt to unpause command input entering the application flow, and returns a value indicating whether the operation was successful.
+        /// </summary>
+        /// <returns><see langword="true"/> if all source resolvers succesfully unpaused. <see langword="false"/> if one or more failed to unpause.</returns>
+        public bool TryUnpause()
+        {
+            try
+            {
+                foreach (var resolvers in _resolvers)
+                {
+                    resolvers.Available = true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private Task RunAsync()
@@ -80,6 +123,11 @@ namespace Commands
                         if (!source.Success)
                         {
                             _logger.LogWarning("Source resolver failed to succeed acquirement iteration.");
+
+                            if (source.Exception != null)
+                            {
+                                throw source.Exception;
+                            }
 
                             continue;
                         }
