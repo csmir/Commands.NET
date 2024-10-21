@@ -110,9 +110,8 @@ manager.Execute(..., ..., options: new CommandOptions() { Services = ... });
 
 ## Additional Packages
 
-Commands.NET is not without its own dependencies, but it tries its best to keep all dependencies within a trusted atmosphere, 
-using packages only when they outweigh self-written implementations. 
-So far, it only depends on packages published by official channels of the .NET ecosystem.
+Commands.NET functions completely without additional packages, but it certainly improves in functionality when it is extended upon by other packages.
+It tries to do as much as it can by itself, but it supports packages when their functionality outweigh self-written implementations. 
 
 #### Dependency Injection
 
@@ -136,6 +135,16 @@ For applications to function with `Commands.NET.Hosting`, it is necessary to ins
 ```
 
 > The hosting extensions package publicized by Microsoft implements the packages necessary for the core component of Commands.NET, and does not expect to have its dependencies implemented alongside it.
+
+#### Console
+
+For Console Applications specifically, the existing layer of functionality in Commands.NET can be expanded upon by implementing a prettifier for the console, [Spectre.Console](https://github.com/spectreconsole/spectre.console). 
+
+`Commands.NET.Console` ships with the previously mentioned package, but it does not necessarily expect a particular version. Therefore, it might still be worthwhile to install your own version if you so need to:
+
+```xml
+    <PackageReference Include="Spectre.Console" Version="" />
+```
 
 *For each of these packages, the minimum version is determined by Commands.NET itself, usually being the latest or equal to the target framework upon which it was released. It is suggested to choose the latest version at time of installation.*
 
