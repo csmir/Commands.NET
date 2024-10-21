@@ -48,7 +48,7 @@ When a command is attempted to be executed, it will walk through every precondit
 [Command("hello")]
 public Task<string> Command(string world)
 {
-    return "Hello, " + world + ". I can only execute when CustomPrecondition says so!";
+    return Task.FromResult("Hello, " + world + ". I can only execute when CustomPrecondition says so!");
 }
 ...
 ```
