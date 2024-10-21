@@ -54,15 +54,6 @@ namespace Commands.Console
         }
 
         /// <summary>
-        ///     Sends a message to the console.
-        /// </summary>
-        /// <param name="response">The message that should be sent in response to the console.</param>
-        public virtual void Send(object response)
-        {
-            Send(response).Wait();
-        }
-
-        /// <summary>
         ///     Sends an exception to the console.
         /// </summary>
         /// <param name="exception">The exception that should be beautified in the console.</param>
