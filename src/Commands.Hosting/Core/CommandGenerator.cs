@@ -11,7 +11,7 @@ namespace Commands
     /// <param name="resolvers">A collection of registered resolvers intended to be activated.</param>
     /// <param name="logger">A logger that logs the execution process.</param>
     public sealed class CommandGenerator(
-        CommandManager manager, IEnumerable<SourceResolverBase> resolvers, ILogger<CommandGenerator> logger)
+        CommandManager manager, IEnumerable<SourceResolverBase> resolvers, ILogger<CommandGenerator> logger, IHostApplicationLifetime lifetime)
         : IHostedService
     {
         private readonly ILogger<CommandGenerator> _logger = logger;
@@ -26,6 +26,22 @@ namespace Commands
         /// <inheritdoc />
         public async Task StartAsync(CancellationToken cancellationToken)
         {
+            lifetime.ApplicationStarted.Register(() =>
+            {
+                foreach (var item in _resolvers)
+                {
+                    item.Available = true;
+                }
+            });
+
+            lifetime.ApplicationStopping.Register(() =>
+            {
+                foreach (var item in _resolvers)
+                {
+                    item.Available = false;
+                }
+            });
+
             await Task.CompletedTask;
 
             _ = RunAsync();
@@ -59,7 +75,7 @@ namespace Commands
                 {
                     while (!cToken.IsCancellationRequested)
                     {
-                        var source = await resolver.EvaluateAsync(cToken);
+                        var source = await resolver.Evaluate(cToken);
 
                         if (!source.Success)
                         {

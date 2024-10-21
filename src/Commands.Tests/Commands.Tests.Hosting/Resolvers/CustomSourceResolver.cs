@@ -6,11 +6,21 @@ namespace Commands.Tests
 {
     internal class CustomSourceResolver : SourceResolverBase
     {
-        public override ValueTask<SourceResult> EvaluateAsync(CancellationToken cancellationToken)
+        public override ValueTask<SourceResult> Evaluate(CancellationToken cancellationToken)
         {
-            var src = Console.ReadLine();
+            if (Ready())
+            {
+                Console.CursorVisible = true;
+                Console.Write("> ");
 
-            return ValueTask.FromResult(Success(new ConsumerBase(), StringParser.Parse(src)));
+                var src = Console.ReadLine();
+
+                Console.CursorVisible = false;
+
+                return ValueTask.FromResult(Success(new ConsumerBase(), StringParser.Parse(src)));
+            }
+
+            return ValueTask.FromResult(Error(new InvalidOperationException("The application failed to start.")));
         }
     }
 }

@@ -17,37 +17,40 @@ services.AddSingleton(manager);
 
 var provider = services.BuildServiceProvider();
 
-await manager.Execute(new ConsumerBase(), ["async", "true"], new()
-{
-    AsyncMode = AsyncMode.Async,
-    Services = provider.CreateAsyncScope().ServiceProvider
-});
+//await manager.Execute(new ConsumerBase(), ["async", "true"], new()
+//{
+//    AsyncMode = AsyncMode.Async,
+//    Services = provider.CreateAsyncScope().ServiceProvider
+//});
 
-Console.WriteLine("Passed");
+//Console.WriteLine("Passed");
 
-await manager.Execute(new ConsumerBase(), ["async", "true"], new()
-{
-    AsyncMode = AsyncMode.Async,
-    Services = provider.CreateAsyncScope().ServiceProvider
-});
+//await manager.Execute(new ConsumerBase(), ["async", "true"], new()
+//{
+//    AsyncMode = AsyncMode.Async,
+//    Services = provider.CreateAsyncScope().ServiceProvider
+//});
 
-Console.WriteLine("Passed");
+//Console.WriteLine("Passed");
 
-await manager.Execute(new ConsumerBase(), ["async", "true"], new()
-{
-    AsyncMode = AsyncMode.Async,
-    Services = provider.CreateAsyncScope().ServiceProvider
-});
+//await manager.Execute(new ConsumerBase(), ["async", "true"], new()
+//{
+//    AsyncMode = AsyncMode.Async,
+//    Services = provider.CreateAsyncScope().ServiceProvider
+//});
 
-Console.WriteLine("Passed");
+//Console.WriteLine("Passed");
 
 while (true)
 {
+    Console.CursorVisible = true;
+    Console.Write("> ");
+
     var input = StringParser.Parse(Console.ReadLine());
 
     await manager.Execute(new ConsumerBase(), input, new()
     {
-        AsyncMode = AsyncMode.Async,
+        AsyncMode = AsyncMode.Await,
         Services = provider.CreateAsyncScope().ServiceProvider
     });
 }

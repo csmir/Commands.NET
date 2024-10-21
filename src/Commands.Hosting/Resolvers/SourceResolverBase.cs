@@ -10,11 +10,37 @@ namespace Commands.Resolvers
     /// </summary>
     public abstract class SourceResolverBase
     {
+        internal bool Available { get; set; }
+
+        /// <summary>
+        ///     Waits until all hosted services tied to the startup of the application have started.
+        /// </summary>
+        /// <param name="retryLimit">Escapes this operation after the specified amount of retries.</param>
+        /// <param name="timeout">A delay after which this method will try to start listening.</param>
+        /// <returns><see langword="true"/> if the application is ready for command inputs. <see langword="false"/> if the application failed to continue before this method escapes.</returns>
+        public bool Ready(int retryLimit = 50, int timeout = 50)
+        {
+            var retryCounter = 0;
+            while (!Available)
+            {
+                if (retryCounter > retryLimit)
+                {
+                    return false;
+                }
+
+                Task.Delay(timeout).Wait();
+
+                retryCounter++;
+            }
+
+            return true;
+        }
+
         /// <summary>
         ///     Evaluates pre-execution data, generating consumer data, query data and configuring execution options.
         /// </summary>
         /// <returns>An awaitable <see cref="ValueTask"/> containing the consumer, query and options for the command to be executed.</returns>
-        public abstract ValueTask<SourceResult> EvaluateAsync(CancellationToken cancellationToken);
+        public abstract ValueTask<SourceResult> Evaluate(CancellationToken cancellationToken);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> representing a failed evaluation.
