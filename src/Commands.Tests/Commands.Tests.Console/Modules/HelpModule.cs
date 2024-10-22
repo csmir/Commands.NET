@@ -17,7 +17,7 @@ namespace Commands.Tests
                 }
                 else
                 {
-                    Console.WriteLine(command.ToString() + " Score: " + command.Score);
+                    Send(command.ToString() + " Score: " + command.Score);
                 }
             }
         }
@@ -32,7 +32,7 @@ namespace Commands.Tests
                 }
                 else if (component is CommandInfo commandInfo)
                 {
-                    Console.WriteLine(commandInfo.ToString() + " Score: " + commandInfo.Score);
+                    Send(commandInfo.ToString() + " Score: " + commandInfo.Score);
                 }
             }
         }

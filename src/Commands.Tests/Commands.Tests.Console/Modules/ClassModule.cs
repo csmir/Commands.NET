@@ -5,7 +5,7 @@
     {
         public void Run()
         {
-            Console.WriteLine("Succesfully ran " + Command.ToString());
+            Send("Succesfully ran " + Command.ToString());
         }
     }
 }

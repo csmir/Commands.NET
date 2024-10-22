@@ -6,23 +6,23 @@
         [Name("command")]
         public void ByBool(bool b)
         {
-            Console.WriteLine("ByBool " + b);
+            Send("ByBool " + b);
         }
 
         [Name("command")]
         public void ByInt(int i)
         {
-            Console.WriteLine("ByInt " + i);
+            Send("ByInt " + i);
         }
 
         public void Default()
         {
-            Console.WriteLine("This is a default overload");
+            Send("This is a default overload");
         }
 
         public void Default([Remainder] string? args = null)
         {
-            Console.WriteLine($"This is a default overload with args: {args}");
+            Send($"This is a default overload with args: {args}");
         }
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Commands.Console.Conditions;
 
 namespace Commands.Tests
 {
@@ -20,6 +16,14 @@ namespace Commands.Tests
         [ANDCondition(true)]
         [ANDCondition(false)]
         public string ConditionAND()
+        {
+            return "Success";
+        }
+
+        [Name("works-on-my-machine")]
+        [SupportedPlatform("windows")]
+        [SupportedPlatform("linux")]
+        public string WorksOnMyMachine()
         {
             return "Success";
         }
