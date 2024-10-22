@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Commands.Conditions
 {
     /// <summary>
-    ///     An attribute that defines that a check should succeed before a command can be executed, implemeenting <see cref="PostconditionAttribute{T}"/> with the <see cref="ANDEvaluator"/>. 
+    ///     An attribute that defines that a check should succeed after a command can be executed, implementing <see cref="PostconditionAttribute{T}"/> with an <see cref="ANDEvaluator"/>. 
     ///     For use of other evaluators, use <see cref="PostconditionAttribute{T}"/>.
     /// </summary>
     /// <remarks>
@@ -19,7 +19,7 @@ namespace Commands.Conditions
     }
 
     /// <summary>
-    ///     An attribute that defines that a check should succeed before a command can be executed.
+    ///     An attribute that defines that a check should succeed after a command can be executed.
     /// </summary>
     /// <remarks>
     ///     The <see cref="Evaluate(ConsumerBase, CommandInfo, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 

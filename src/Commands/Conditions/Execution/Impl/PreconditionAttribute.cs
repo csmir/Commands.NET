@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Commands.Conditions
 {
     /// <summary>
-    ///     An attribute that defines that a check should succeed before a command can be executed, implemeenting <see cref="PreconditionAttribute{T}"/> with the <see cref="ANDEvaluator"/>. 
+    ///     An attribute that defines that a check should succeed before a command can be executed, implementing <see cref="PreconditionAttribute{T}"/> with an <see cref="ANDEvaluator"/>. 
     ///     For use of other evaluators, use <see cref="PreconditionAttribute{T}"/>.
     /// </summary>
     /// <remarks>
