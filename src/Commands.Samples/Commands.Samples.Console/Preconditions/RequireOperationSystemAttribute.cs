@@ -5,7 +5,7 @@ using Commands.Reflection;
 
 namespace Commands.Samples
 {
-    public class RequireOperatingSystemAttribute(PlatformID platform) : PreconditionAttribute
+    public class RequireOperatingSystemAttribute(PlatformID platform) : PreconditionAttribute<ANDEvaluator>
     {
         public PlatformID Platform { get; } = platform;
 

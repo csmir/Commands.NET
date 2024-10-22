@@ -39,10 +39,10 @@ namespace Commands.Reflection
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
-        public PreconditionAttribute[] Preconditions { get; }
+        public ConditionEvaluator[] PreEvaluations { get; }
 
         /// <inheritdoc />
-        public PostconditionAttribute[] PostConditions { get; }
+        public ConditionEvaluator[] PostEvaluations { get; }
 
         /// <inheritdoc />
         public float Priority { get; }
@@ -64,18 +64,13 @@ namespace Commands.Reflection
         {
             var attributes = type.GetAttributes(true);
 
-            var preconditions = attributes.CastWhere<PreconditionAttribute>()
-                .Distinct();
-
-            var postconditions = attributes.CastWhere<PostconditionAttribute>()
-                .Distinct();
-
             Module = root;
             Type = type;
 
             Attributes = attributes.ToArray();
-            Preconditions = preconditions.ToArray();
-            PostConditions = postconditions.ToArray();
+
+            PreEvaluations = ConditionEvaluator.CreateEvaluators(attributes.CastWhere<IPreExecutionCondition>()).ToArray();
+            PostEvaluations = ConditionEvaluator.CreateEvaluators(attributes.CastWhere<IPostExecutionCondition>()).ToArray();
 
             Priority = attributes.SelectFirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
 

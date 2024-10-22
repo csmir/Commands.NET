@@ -44,14 +44,14 @@ namespace Commands.Reflection
         public ModuleInfo? Module { get; }
 
         /// <summary>
-        ///     Gets an array of <see cref="PreconditionAttribute"/>'s defined atop this component.
+        ///     Gets all evaluations that this component should do prior to executing the command.
         /// </summary>
-        public PreconditionAttribute[] Preconditions { get; }
+        public ConditionEvaluator[] PreEvaluations { get; }
 
         /// <summary>
-        ///     Gets an array of <see cref="PostconditionAttribute"/>'s defined atop this component.
+        ///     Gets all evaluations that this component should do after executing the command.
         /// </summary>
-        public PostconditionAttribute[] PostConditions { get; }
+        public ConditionEvaluator[] PostEvaluations { get; }
 
         /// <summary>
         ///     Gets the invocation target of this component.

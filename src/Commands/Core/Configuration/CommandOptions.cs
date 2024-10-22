@@ -45,7 +45,7 @@ namespace Commands
         public Guid TraceId { get; set; } = Guid.NewGuid();
 
         /// <summary>
-        ///     Gets or sets whether the defined <see cref="PostconditionAttribute"/>'s for this execution should be ran.
+        ///     Gets or sets whether the defined <see cref="PostconditionAttribute{T}"/>'s for this execution should be ran.
         /// </summary>
         /// <remarks>
         ///     Default: <see langword="false"/>
@@ -53,7 +53,7 @@ namespace Commands
         public bool SkipPostconditions { get; set; } = false;
 
         /// <summary>
-        ///     Gets or sets whether the defined <see cref="PreconditionAttribute"/>'s for this execution should be ran.
+        ///     Gets or sets whether the defined <see cref="PreconditionAttribute{T}"/>'s for this execution should be ran.
         /// </summary>
         /// <remarks>
         ///     Default: <see langword="false"/>

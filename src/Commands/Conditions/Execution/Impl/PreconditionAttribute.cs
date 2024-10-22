@@ -1,34 +1,56 @@
 ﻿using Commands.Exceptions;
 using Commands.Helpers;
 using Commands.Reflection;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.Conditions
 {
     /// <summary>
+    ///     An attribute that defines that a check should succeed before a command can be executed, implemeenting <see cref="PreconditionAttribute{T}"/> with the <see cref="ANDEvaluator"/>. 
+    ///     For use of other evaluators, use <see cref="PreconditionAttribute{T}"/>.
+    /// </summary>
+    /// <remarks>
+    ///     Custom implementations of <see cref="PreconditionAttribute"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
+    /// </remarks>
+    public abstract class PreconditionAttribute : PreconditionAttribute<ANDEvaluator>
+    {
+
+    }
+
+    /// <summary>
     ///     An attribute that defines that a check should succeed before a command can be executed.
     /// </summary>
     /// <remarks>
     ///     The <see cref="Evaluate(ConsumerBase, CommandInfo, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
-    ///     Custom implementations of <see cref="PreconditionAttribute"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
+    ///     Custom implementations of <see cref="PreconditionAttribute{T}"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     ///     If multiple commands are found during matching, multiple sequences of preconditions will be ran to find a match that succeeds.
     /// </remarks>
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-    public abstract class PreconditionAttribute : Attribute
+    /// <typeparam name="T">The type of evaluator that will be used to determine the result of the evaluation.</typeparam>
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
+    public abstract class PreconditionAttribute<T>() : Attribute, IPreExecutionCondition
+        where T : ConditionEvaluator, new()
     {
-        /// <summary>
-        ///     Evaluates the known data about a command at the point of pre-execution, in order to determine if it can be executed or not.
-        /// </summary>
+        /// <inheritdoc />
         /// <remarks>
         ///     Make use of <see cref="Error(Exception)"/> or <see cref="Error(string)"/> and <see cref="Success"/> to safely create the intended result.
         /// </remarks>
-        /// <param name="context">Context of the current execution.</param>
-        /// <param name="services">The provider used to register modules and inject services.</param>
-        /// <param name="command">Information about the command currently targetted.</param>
-        /// <param name="cancellationToken">The token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
         public abstract ValueTask<ConditionResult> Evaluate(
-            ConsumerBase context, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
+            ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
+
+        /// <inheritdoc />
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public ConditionEvaluator GetEvaluator()
+        {
+            return new T();
+        }
+
+        /// <inheritdoc />
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public string GetGroupId()
+        {
+            return $"{GetType().Name}:{typeof(T).Name}";
+        }
 
         /// <summary>
         ///     Creates a new <see cref="ConditionResult"/> representing a failed evaluation.

@@ -1,33 +1,55 @@
 ﻿using Commands.Exceptions;
 using Commands.Helpers;
 using Commands.Reflection;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.Conditions
 {
     /// <summary>
+    ///     An attribute that defines that a check should succeed before a command can be executed, implemeenting <see cref="PostconditionAttribute{T}"/> with the <see cref="ANDEvaluator"/>. 
+    ///     For use of other evaluators, use <see cref="PostconditionAttribute{T}"/>.
+    /// </summary>
+    /// <remarks>
+    ///     Custom implementations of <see cref="PostconditionAttribute"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
+    /// </remarks>
+    public abstract class PostconditionAttribute : PostconditionAttribute<ANDEvaluator>
+    {
+
+    }
+
+    /// <summary>
     ///     An attribute that defines that a check should succeed before a command can be executed.
     /// </summary>
     /// <remarks>
     ///     The <see cref="Evaluate(ConsumerBase, CommandInfo, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
-    ///     Custom implementations of <see cref="PostconditionAttribute"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
+    ///     Custom implementations of <see cref="PostconditionAttribute{T}"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     /// </remarks>
+    /// <typeparam name="T">The type of evaluator that will be used to determine the result of the evaluation.</typeparam>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-    public abstract class PostconditionAttribute : Attribute
+    public abstract class PostconditionAttribute<T> : Attribute, IPostExecutionCondition
+        where T : ConditionEvaluator, new()
     {
-        /// <summary>
-        ///     Evaluates the known data about a command at the point of post-execution, in order to determine if command execution was succesful or not.
-        /// </summary>
+        /// <inheritdoc />
         /// <remarks>
         ///     Make use of <see cref="Error(Exception)"/> or <see cref="Error(string)"/> and <see cref="Success"/> to safely create the intended result.
         /// </remarks>
-        /// <param name="context">Context of the current execution.</param>
-        /// <param name="command">The result of the execution.</param>
-        /// <param name="services">The provider used to register modules and inject services.</param>
-        /// <param name="cancellationToken">The token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
         public abstract ValueTask<ConditionResult> Evaluate(
-            ConsumerBase context, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
+            ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
+
+        /// <inheritdoc />
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public virtual ConditionEvaluator GetEvaluator()
+        {
+            return new T();
+        }
+
+        /// <inheritdoc />
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public virtual string GetGroupId()
+        {
+            return $"{GetType().Name}:{typeof(T).Name}";
+        }
 
         /// <summary>
         ///     Creates a new <see cref="ConditionResult"/> representing a failed evaluation.

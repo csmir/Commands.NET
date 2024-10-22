@@ -353,7 +353,7 @@ namespace Commands
 
             if (!options.SkipPreconditions)
             {
-                foreach (var precon in command.Preconditions)
+                foreach (var precon in command.PreEvaluations)
                 {
                     var checkResult = await precon.Evaluate(consumer, command, options.Services, options.CancellationToken);
 
@@ -382,7 +382,7 @@ namespace Commands
 
             if (!options.SkipPostconditions)
             {
-                foreach (var postcon in command.PostConditions)
+                foreach (var postcon in command.PostEvaluations)
                 {
                     var checkResult = await postcon.Evaluate(consumer, command, options.Services, options.CancellationToken);
 
