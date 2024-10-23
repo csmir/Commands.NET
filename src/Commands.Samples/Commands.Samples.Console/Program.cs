@@ -35,7 +35,7 @@ while (true)
     var input = StringParser.Parse(Console.ReadLine()!);
 
     // Creates a consumer to execute the input. This consumer is the same as a Context in other frameworks.
-    var consumer = new CustomConsumer("Harold");
+    var consumer = new CustomConsumer(name: "Harold");
 
     // Executes the input.
     await framework.Execute(consumer, input);

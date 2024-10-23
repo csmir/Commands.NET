@@ -8,9 +8,6 @@
         /// <summary>
         ///     Gets the name of the component.
         /// </summary>
-        /// <remarks>
-        ///     Will be <see langword="null"/> when a command does not implement <see cref="CommandAttribute"/> but is member of a module that implements <see cref="GroupAttribute"/>.
-        /// </remarks>
         public string? Name { get; }
 
         /// <summary>

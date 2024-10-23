@@ -3,6 +3,46 @@
     [Name("command")]
     public class Module : ModuleBase<ConsumerBase>
     {
+        [Name("nested")]
+        public class NestedModule : ModuleBase<ConsumerBase>
+        {
+            [Name("complex")]
+            public void Complex([Complex] ComplexType complex)
+            {
+                Send($"({complex.X}, {complex.Y}, {complex.Z}) {complex.Complexer}: {complex.Complexer.X}, {complex.Complexer.Y}, {complex.Complexer.Z}");
+            }
+
+            [Name("complexnullable")]
+            public void Complex([Complex] ComplexerType? complex)
+            {
+                Send($"({complex?.X}, {complex?.Y}, {complex?.Z})");
+            }
+
+            [Name("multiple")]
+            public void Test(bool truee, bool falsee)
+            {
+                Send($"Success: {truee}, {falsee}");
+            }
+
+            [Name("multiple")]
+            public void Test(int i1, int i2)
+            {
+                Send($"Success: {i1}, {i2}");
+            }
+
+            [Name("optional")]
+            public void Test(int i = 0, string str = "")
+            {
+                Send($"Success: {i}, {str}");
+            }
+
+            [Name("nullable")]
+            public void Nullable(long? l)
+            {
+                Send($"Success: {l}");
+            }
+        }
+
         [Name("priority")]
         [Priority(1)]
         public void Priority1(bool optional)
@@ -65,44 +105,5 @@
             Send($"({complex?.X}, {complex?.Y}, {complex?.Z})");
         }
 
-        [Name("nested")]
-        public class NestedModule : ModuleBase<ConsumerBase>
-        {
-            [Name("multiple")]
-            public void Test(bool truee, bool falsee)
-            {
-                Send($"Success: {truee}, {falsee}");
-            }
-
-            [Name("multiple")]
-            public void Test(int i1, int i2)
-            {
-                Send($"Success: {i1}, {i2}");
-            }
-
-            [Name("optional")]
-            public void Test(int i = 0, string str = "")
-            {
-                Send($"Success: {i}, {str}");
-            }
-
-            [Name("nullable")]
-            public void Nullable(long? l)
-            {
-                Send($"Success: {l}");
-            }
-
-            [Name("complex")]
-            public void Complex([Complex] ComplexType complex)
-            {
-                Send($"({complex.X}, {complex.Y}, {complex.Z}) {complex.Complexer}: {complex.Complexer.X}, {complex.Complexer.Y}, {complex.Complexer.Z}");
-            }
-
-            [Name("complexnullable")]
-            public void Complex([Complex] ComplexerType? complex)
-            {
-                Send($"({complex?.X}, {complex?.Y}, {complex?.Z})");
-            }
-        }
     }
 }

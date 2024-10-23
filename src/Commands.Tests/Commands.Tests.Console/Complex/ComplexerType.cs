@@ -1,7 +1,7 @@
 ﻿namespace Commands.Tests
 {
-    public class ComplexerType(int? x = 0, int? y = 0, int? z = 0)
+    public class ComplexerType(int? xx = 0, int? yy = 0, int? zz = 0)
     {
-        public int? X = x, Y = y, Z = z;
+        public int? X = xx, Y = yy, Z = zz;
     }
 }

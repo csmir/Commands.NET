@@ -48,11 +48,26 @@ while (true)
 
     var input = StringParser.Parse(Console.ReadLine());
 
+    //var input = new Dictionary<string, object?>()
+    //{
+    //    ["command"] = null,
+    //    ["nested"] = null,
+    //    ["complex"] = null,
+    //    ["2"] = null,
+    //    ["3"] = null,
+    //    ["xx"] = "1",
+    //    ["x"] = "2",
+    //};
+
+    using var scope = provider.CreateAsyncScope();
+
     await manager.Execute(new ConsumerBase(), input, new()
     {
         AsyncMode = AsyncMode.Await,
-        Services = provider.CreateAsyncScope().ServiceProvider
+        Services = scope.ServiceProvider
     });
+
+    await scope.DisposeAsync();
 }
 
 //manager.Dispose();

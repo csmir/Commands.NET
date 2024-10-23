@@ -1,17 +1,17 @@
-﻿using Commands.Reflection;
+﻿using Commands.Parsing;
+using Commands.Reflection;
 
 namespace Commands.Helpers
 {
     internal static class ExecutionHelpers
     {
         const string STR_NULL = "null";
-        const string STR_WHITESPACE = " ";
 
         private static readonly Type o_type = typeof(object);
         private static readonly Type s_type = typeof(string);
 
         public static IEnumerable<SearchResult> SearchMany(this IEnumerable<ISearchable> components,
-            object[] args, int searchHeight, bool isGrouped)
+            CommandArgumentSet args, int searchHeight, bool isGrouped)
         {
             List<SearchResult> discovered = [];
 
@@ -29,8 +29,12 @@ namespace Commands.Helpers
                     continue;
                 }
 
-                // if no aliases match the current arg, we skip at this point.
-                if (!component.Aliases.Any(x => x == (string)args[searchHeight]))
+                if (!args.TryNext(searchHeight, out var value))
+                {
+                    continue;
+                }
+
+                if (!component.Aliases.Any(x => x == value))
                 {
                     continue;
                 }
@@ -54,7 +58,7 @@ namespace Commands.Helpers
         }
 
         public static async ValueTask<ConvertResult[]> ConvertManyAsync(this IArgument[] arguments,
-            ConsumerBase consumer, object[] args, int index, CommandOptions options)
+            ConsumerBase consumer, CommandArgumentSet args, CommandOptions options)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -68,7 +72,7 @@ namespace Commands.Helpers
                 // parse remainder.
                 if (argument.IsRemainder)
                 {
-                    var remainder = string.Join(STR_WHITESPACE, args.Skip(index));
+                    var remainder = args.Remainder();
                     if (argument.Type == s_type)
                     {
                         results[i] = ConvertResult.FromSuccess(remainder);
@@ -82,21 +86,10 @@ namespace Commands.Helpers
                     break;
                 }
 
-                // parse missing optional argument.
-                if (argument.IsOptional && args.Length <= index)
-                {
-                    results[i] = ConvertResult.FromSuccess(Type.Missing);
-
-                    // continue looking for more optionals.
-                    continue;
-                }
-
                 // parse complex argument.
                 if (argument is ComplexArgumentInfo complexArgument)
                 {
-                    var result = await complexArgument.Arguments.ConvertManyAsync(consumer, args, index, options);
-
-                    index += result.Length;
+                    var result = await complexArgument.Arguments.ConvertManyAsync(consumer, args, options);
 
                     if (result.All(x => x.Success))
                     {
@@ -109,32 +102,53 @@ namespace Commands.Helpers
                         {
                             results[i] = ConvertResult.FromError(ex);
                         }
+
+                        continue;
+                    }
+                    
+                    if (complexArgument.IsOptional)
+                    {
+                        results[i] = ConvertResult.FromSuccess(Type.Missing);
                     }
 
                     // continue looking for more args
                     continue;
                 }
 
-                // default, non-exclusive agrument
-                results[i] = await argument.ConvertAsync(consumer, args[index], options);
+                if (args.TryNext(argument.Name!, out var value))
+                {
+                    results[i] = await argument.ConvertAsync(consumer, value, options);
 
-                index++;
+                    continue;
+                }
+
+                if (argument.IsOptional)
+                {
+                    results[i] = ConvertResult.FromSuccess(Type.Missing);
+
+                    continue;
+                }
+
+                results[i] = ConvertResult.FromError(new ArgumentNullException(argument.Name));
             }
 
             return results;
         }
 
-        public static async ValueTask<ConvertResult> ConvertAsync(this IArgument argument, ConsumerBase consumer, object value, CommandOptions options)
+        public static async ValueTask<ConvertResult> ConvertAsync(this IArgument argument, ConsumerBase consumer, object? value, CommandOptions options)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
             // if value is nullable and value is null.
-            if (argument.IsNullable && value is STR_NULL)
+            if (argument.IsNullable && value is null or STR_NULL)
                 return ConvertResult.FromSuccess();
 
             // if value is string or object.
             if (argument.Type == s_type || argument.Type == o_type)
                 return ConvertResult.FromSuccess(value);
+
+            if (value is null)
+                return ConvertResult.FromError(new ArgumentNullException(argument.Name));
 
             // run parser.
             return await argument.Converter!.Evaluate(consumer, argument, value.ToString(), options.Services, options.CancellationToken);

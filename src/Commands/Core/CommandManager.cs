@@ -1,5 +1,6 @@
 ﻿using Commands.Exceptions;
 using Commands.Helpers;
+using Commands.Parsing;
 using Commands.Reflection;
 using Commands.Resolvers;
 using Commands.TypeConverters;
@@ -104,7 +105,7 @@ namespace Commands
         /// </summary>
         /// <param name="args">A set of arguments intended to discover commands as a query.</param>
         /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the results of the search query.</returns>
-        public virtual IEnumerable<SearchResult> Search(object[] args)
+        public virtual IEnumerable<SearchResult> Search(CommandArgumentSet args)
         {
             if (args == null)
             {
@@ -130,7 +131,28 @@ namespace Commands
         {
             options ??= new CommandOptions();
 
-            var task = Enter(consumer, args, options);
+            var task = Enter(consumer, new CommandArgumentSet(args), options);
+
+            if (options.AsyncMode is AsyncMode.Async)
+                return Task.CompletedTask;
+
+            return task;
+        }
+
+        /// <summary>
+        ///     Makes an attempt at executing a command from the provided <paramref name="args"/>.
+        /// </summary>
+        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
+        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
+        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
+        public virtual Task Execute<T>(
+            [DisallowNull] T consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = default)
+            where T : ConsumerBase
+        {
+            options ??= new CommandOptions();
+
+            var task = Enter(consumer, new CommandArgumentSet(args, options.MatchComparer), options);
 
             if (options.AsyncMode is AsyncMode.Async)
                 return Task.CompletedTask;
@@ -146,7 +168,7 @@ namespace Commands
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution.</returns>
         protected virtual async Task Enter<T>(
-            T consumer, object[] args, CommandOptions options)
+            T consumer, CommandArgumentSet args, CommandOptions options)
             where T : ConsumerBase
         {
             ICommandResult? result = null;
@@ -185,7 +207,7 @@ namespace Commands
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation process.</returns>
         protected virtual async ValueTask<ICommandResult> Run<T>(
-            T consumer, CommandInfo command, int argHeight, object[] args, CommandOptions options)
+            T consumer, CommandInfo command, int argHeight, CommandArgumentSet args, CommandOptions options)
             where T : ConsumerBase
         {
             options.CancellationToken.ThrowIfCancellationRequested();
@@ -306,31 +328,31 @@ namespace Commands
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the conversion process.</returns>
         protected async ValueTask<ConvertResult[]> Convert<T>(
-            T consumer, CommandInfo command, int argHeight, object[] args, CommandOptions options)
+            T consumer, CommandInfo command, int argHeight, CommandArgumentSet args, CommandOptions options)
             where T : ConsumerBase
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            var length = args.Length - argHeight;
+            args.SetSize(argHeight);
 
             if (command.HasArguments)
             {
-                if (command.MaxLength == length)
+                if (command.MaxLength == args.Length)
                 {
-                    return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
+                    return await command.Arguments.ConvertManyAsync(consumer, args, options);
                 }
 
-                if (command.MaxLength <= length && command.HasRemainder)
+                if (command.MaxLength <= args.Length && command.HasRemainder)
                 {
-                    return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
+                    return await command.Arguments.ConvertManyAsync(consumer, args, options);
                 }
 
-                if (command.MaxLength > length && command.MinLength <= length)
+                if (command.MaxLength > args.Length && command.MinLength <= args.Length)
                 {
-                    return await command.Arguments.ConvertManyAsync(consumer, args[^length..], 0, options);
+                    return await command.Arguments.ConvertManyAsync(consumer, args, options);
                 }
             }
-            else if (length == 0)
+            else if (args.Length == 0)
             {
                 return [];
             }

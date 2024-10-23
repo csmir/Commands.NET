@@ -60,6 +60,14 @@ namespace Commands
         /// </remarks>
         public bool SkipPreconditions { get; set; } = false;
 
+        /// <summary>
+        ///     Gets or sets the comparer used to match command names and named arguments.
+        /// </summary>
+        /// <remarks>
+        ///     Default: <see cref="StringComparer.OrdinalIgnoreCase"/>
+        /// </remarks>
+        public StringComparer MatchComparer { get; set; } = StringComparer.OrdinalIgnoreCase;
+
         /// <inheritdoc />
         public sealed class EmptyServiceProvider : IServiceProvider
         {
