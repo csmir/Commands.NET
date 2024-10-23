@@ -3,7 +3,7 @@ using Commands.Reflection;
 
 namespace Commands.Tests
 {
-    internal class ORConditionAttribute(bool pass) : PreconditionAttribute<OREvaluator>
+    public class ORConditionAttribute(bool pass) : PreconditionAttribute<OREvaluator>
     {
         public override ValueTask<ConditionResult> Evaluate(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
         {
