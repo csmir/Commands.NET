@@ -16,7 +16,7 @@
 		<NoWarn>IDE0130</NoWarn>
 
 		<AssemblyVersion>1.0</AssemblyVersion>
-		<PackageVersion>1-alpha8</PackageVersion>
+		<PackageVersion>1-alpha9</PackageVersion>
 		<FileVersion>1.0.0.0</FileVersion>
 
 		<PackageId>Commands.NET</PackageId>

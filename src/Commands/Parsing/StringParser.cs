@@ -7,12 +7,13 @@ namespace Commands.Parsing
     ///     A thread-safe argument parser, implementing <see cref="string"/> as the raw value.
     /// </summary>
     /// <remarks>
-    ///     As edge cases are discovered in the parser logic, the parser guidelines may change, and command input might improve, or degrade based on different usecases.
+    ///     <b>This class does not adhere to semantic versioning. </b>
+    ///     As edge cases are discovered in the parser logic, the parser guidelines may change, and command input might improve or degrade based on different usecases.
     /// </remarks>
     public static class StringParser
     {
         const char u0022 = '"';
-        const char u0020 = ' ';
+        const char u0014 = '-';
 
         /// <summary>
         ///     Parses a <see cref="string"/> into an array of command arguments.
@@ -102,7 +103,7 @@ namespace Commands.Parsing
                 }
 
                 // check for whitespace.
-                if (toParse[i] is u0020)
+                if (char.IsWhiteSpace(toParse[i]))
                 {
                     // add all before whitespace, skip whitespace itself.
                     Reset();
