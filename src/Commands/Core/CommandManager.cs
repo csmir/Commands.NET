@@ -118,6 +118,25 @@ namespace Commands
         /// <summary>
         ///     Makes an attempt at executing a command from the provided <paramref name="args"/>.
         /// </summary>
+        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
+        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
+        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
+        public virtual Task Execute<T>(
+            [DisallowNull] T consumer, string args, CommandOptions? options = default)
+            where T : ConsumerBase
+        {
+            if (string.IsNullOrWhiteSpace(args))
+            {
+                ThrowHelpers.ThrowInvalidArgument(args);
+            }
+
+            return Execute(consumer, StringParser.ParseKeyValueCollection(args), options);
+        }
+
+        /// <summary>
+        ///     Makes an attempt at executing a command from the provided <paramref name="args"/>.
+        /// </summary>
         /// <remarks>
         ///     The arguments intended for searching for a target need to be <see cref="string"/>, as <see cref="ModuleInfo"/> and <see cref="CommandInfo"/> store their aliases this way also.
         /// </remarks>
@@ -126,7 +145,7 @@ namespace Commands
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
         public virtual Task Execute<T>(
-            [DisallowNull] T consumer, object[] args, CommandOptions? options = default)
+            [DisallowNull] T consumer, IEnumerable<object> args, CommandOptions? options = default)
             where T : ConsumerBase
         {
             options ??= new CommandOptions();

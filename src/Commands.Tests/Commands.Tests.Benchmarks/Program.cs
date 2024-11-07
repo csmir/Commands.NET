@@ -28,7 +28,7 @@ namespace Commands.Tests
         //[Benchmark]
         public void ParseText()
         {
-            StringParser.Parse("command");
+            StringParser.ParseKeyCollection("command");
         }
 
         [Benchmark]

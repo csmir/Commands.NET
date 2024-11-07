@@ -13,11 +13,11 @@ namespace Commands.Tests
                 Console.CursorVisible = true;
                 Console.Write("> ");
 
-                var src = Console.ReadLine();
+                var src = Console.ReadLine()!;
 
                 Console.CursorVisible = false;
 
-                return ValueTask.FromResult(Success(new ConsumerBase(), StringParser.Parse(src)));
+                return ValueTask.FromResult(Success(new ConsumerBase(), StringParser.ParseKeyCollection(src)));
             }
 
             return ValueTask.FromResult(Error(new InvalidOperationException("The application failed to start.")));

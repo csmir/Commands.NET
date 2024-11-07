@@ -3,7 +3,7 @@ using Commands.Console;
 using Commands.Parsing;
 using Spectre.Console;
 
-var app = CommandManager.CreateBuilder()
+var manager = CommandManager.CreateBuilder()
     .AddCommand("command", () =>
     {
         return "This is my first command!";
@@ -31,9 +31,5 @@ var app = CommandManager.CreateBuilder()
 
 while (true)
 {
-    var input = StringParser.Parse(Console.ReadLine());
-
-    var consumer = new ConsoleConsumerBase();
-
-    await app.Execute(consumer, input);
+    await manager.Execute(new ConsoleConsumerBase(), Console.ReadLine()!);
 }

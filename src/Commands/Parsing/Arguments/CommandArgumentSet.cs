@@ -4,7 +4,7 @@ namespace Commands.Parsing
 {
     /// <summary>
     ///     Contains a set of arguments for an argument. This class is not intended for widespread use. 
-    ///     By using either <see cref="CommandManager.Execute{T}(T, IEnumerable{KeyValuePair{string, object?}}, CommandOptions?)"/> or <see cref="CommandManager.Execute{T}(T, object[], CommandOptions?)"/> you can use named or unnamed command entry.
+    ///     By using either <see cref="CommandManager.Execute{T}(T, IEnumerable{KeyValuePair{string, object?}}, CommandOptions?)"/> or <see cref="CommandManager.Execute{T}(T, IEnumerable{object?}, CommandOptions?)"/> you can use named or unnamed command entry.
     /// </summary>
     /// <remarks>
     ///     Searching for commands supports only unnamed arguments. Named arguments are used for command parameter population.

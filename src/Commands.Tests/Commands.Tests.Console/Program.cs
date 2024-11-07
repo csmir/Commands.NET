@@ -46,22 +46,9 @@ while (true)
     Console.CursorVisible = true;
     Console.Write("> ");
 
-    var input = StringParser.Parse(Console.ReadLine());
-
-    //var input = new Dictionary<string, object?>()
-    //{
-    //    ["command"] = null,
-    //    ["nested"] = null,
-    //    ["complex"] = null,
-    //    ["2"] = null,
-    //    ["3"] = null,
-    //    ["xx"] = "1",
-    //    ["x"] = "2",
-    //};
-
     using var scope = provider.CreateAsyncScope();
 
-    await manager.Execute(new ConsumerBase(), input, new()
+    await manager.Execute(new ConsumerBase(), Console.ReadLine()!, new()
     {
         AsyncMode = AsyncMode.Await,
         Services = scope.ServiceProvider
