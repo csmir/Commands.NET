@@ -1,6 +1,5 @@
 ﻿using Commands;
 using Commands.Console;
-using Commands.Parsing;
 using Spectre.Console;
 
 var manager = CommandManager.CreateBuilder()

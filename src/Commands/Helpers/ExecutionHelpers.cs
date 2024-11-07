@@ -105,7 +105,7 @@ namespace Commands.Helpers
 
                         continue;
                     }
-                    
+
                     if (complexArgument.IsOptional)
                     {
                         results[i] = ConvertResult.FromSuccess(Type.Missing);

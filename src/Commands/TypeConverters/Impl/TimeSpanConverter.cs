@@ -12,25 +12,25 @@ namespace Commands.TypeConverters
         {
             _callback = new Dictionary<string, Func<string, TimeSpan>>
             {
-                ["second"]  = Seconds,
+                ["second"] = Seconds,
                 ["seconds"] = Seconds,
-                ["sec"]     = Seconds,
-                ["s"]       = Seconds,
-                ["minute"]  = Minutes,
+                ["sec"] = Seconds,
+                ["s"] = Seconds,
+                ["minute"] = Minutes,
                 ["minutes"] = Minutes,
-                ["min"]     = Minutes,
-                ["m"]       = Minutes,
-                ["hour"]    = Hours,
-                ["hours"]   = Hours,
-                ["h"]       = Hours,
-                ["day"]     = Days,
-                ["days"]    = Days,
-                ["d"]       = Days,
-                ["week"]    = Weeks,
-                ["weeks"]   = Weeks,
-                ["w"]       = Weeks,
-                ["month"]   = Months,
-                ["months"]  = Months
+                ["min"] = Minutes,
+                ["m"] = Minutes,
+                ["hour"] = Hours,
+                ["hours"] = Hours,
+                ["h"] = Hours,
+                ["day"] = Days,
+                ["days"] = Days,
+                ["d"] = Days,
+                ["week"] = Weeks,
+                ["weeks"] = Weeks,
+                ["w"] = Weeks,
+                ["month"] = Months,
+                ["months"] = Months
             };
         }
 
