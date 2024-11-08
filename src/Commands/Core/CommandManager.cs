@@ -6,6 +6,7 @@ using Commands.Resolvers;
 using Commands.TypeConverters;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Emit;
 
 [assembly: CLSCompliant(true)]
 
@@ -21,7 +22,7 @@ namespace Commands
     ///     <br/>
     ///     <br/>
     ///     To start using the manager, configure it using the <see cref="CommandBuilder{T}"/> and calling <see cref="CommandBuilder{T}.Build(object[])"/>. 
-    ///     <see cref="CommandManager.CreateBuilder"/> generates a base definition of this builder to use.
+    ///     <see cref="CommandManager.CreateDefaultBuilder"/> generates a base definition of this builder to use.
     /// </remarks>
     [DebuggerDisplay("Commands = {Commands},nq")]
     public class CommandManager
@@ -451,7 +452,7 @@ namespace Commands
         ///     </list>
         /// </remarks>
         /// <returns>A new <see cref="ICommandBuilder"/> that implements <see cref="CommandManager"/></returns>
-        public static CommandBuilder<CommandManager> CreateBuilder()
+        public static CommandBuilder<CommandManager> CreateDefaultBuilder()
         {
             return new CommandBuilder<CommandManager>();
         }

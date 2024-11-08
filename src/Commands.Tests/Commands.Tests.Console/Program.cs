@@ -1,7 +1,7 @@
 ﻿using Commands;
 using Microsoft.Extensions.DependencyInjection;
 
-var manager = CommandManager.CreateBuilder()
+var manager = CommandManager.CreateDefaultBuilder()
     .AddResultResolver((c, r, s) =>
     {
         if (!r.Success)

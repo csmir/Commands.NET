@@ -26,7 +26,7 @@ namespace Commands.Helpers
         /// <param name="configureDelegate">A delegate to configure the <see cref="HostCommandBuilder{T}"/> responsible for customizing the <see cref="CommandManager"/> setup.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
         public static IServiceCollection ConfigureCommands(this IServiceCollection collection,
-            Action<CommandBuilder<CommandManager>> configureDelegate)
+            Action<HostCommandBuilder<CommandManager>> configureDelegate)
         {
             collection.ConfigureCommands<CommandManager>(configureDelegate);
 
@@ -40,7 +40,7 @@ namespace Commands.Helpers
         /// <param name="configureDelegate">A delegate to configure the <see cref="ICommandBuilder"/> responsible for customizing the <see cref="CommandManager"/> setup.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
         public static IServiceCollection ConfigureCommands<T>(this IServiceCollection collection,
-            Action<CommandBuilder<T>> configureDelegate)
+            Action<HostCommandBuilder<T>> configureDelegate)
             where T : CommandManager
         {
             if (configureDelegate == null)
@@ -48,7 +48,7 @@ namespace Commands.Helpers
                 ThrowHelpers.ThrowInvalidArgument(configureDelegate);
             }
 
-            var options = new CommandBuilder<T>();
+            var options = new HostCommandBuilder<T>(collection);
 
             configureDelegate(options);
 

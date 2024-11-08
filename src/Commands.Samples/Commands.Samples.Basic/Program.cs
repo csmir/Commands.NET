@@ -1,34 +1,13 @@
 ﻿using Commands;
 using Commands.Console;
-using Spectre.Console;
 
-var manager = CommandManager.CreateBuilder()
-    .AddCommand("command", () =>
+new CLIBuilder<CommandManager, ConsoleConsumerBase>(args)
+    .AddCommand(() =>
     {
-        return "This is my first command!";
+        return "Provide CLI arguments to execute other commands!";
     })
-    .AddCommand("help", (CommandContext<ConsoleConsumerBase> ctx) =>
+    .AddCommand("hello-world", () =>
     {
-        var commands = ctx.Manager.GetCommands();
-
-        foreach (var command in commands)
-        {
-            var description = command.GetAttribute<DescriptionAttribute>()?.Description ?? "No description available.";
-
-            ctx.Send($"[yellow]{command.ToString().EscapeMarkup()}[/]");
-            ctx.Send($"[blue]{description}[/]");
-        }
+        return "Hello, world!";
     })
-    .AddResultResolver((consumer, result, services) =>
-    {
-        if (!result.Success)
-        {
-            consumer.Send(result.Exception!);
-        }
-    })
-    .Build();
-
-while (true)
-{
-    await manager.Execute(new ConsoleConsumerBase(), Console.ReadLine()!);
-}
+    .BuildAndRun();

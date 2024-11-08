@@ -68,6 +68,38 @@ namespace Commands.Parsing
                 ThrowHelpers.ThrowInvalidArgument(toParse);
             }
 
+            return ParseKeyValueCollection(toParse.Split());
+        }
+
+        /// <summary>
+        ///     Parses a <see cref="string"/> into a collection of command arguments. This collection is a key-value pair, where the key is the argument name and the value is the argument value. 
+        ///     When arguments have no value, the name is the value instead.
+        /// </summary>
+        /// <remarks>
+        ///     This implementation sets the following guidelines:
+        ///     <list type="number">
+        ///         <item>
+        ///             <b>Flags</b> are used as argument names. When a flag is prefixed with one hyphen (-), it will be considered a standalone argument. 
+        ///             When a flag is prefixed with two hyphens (--), it will be considered an argument name for the next argument, unless if the following argument is another flag.
+        ///         </item>
+        ///         <item>
+        ///             <b>Whitespace</b> announcements will wrap the previous argument and start a new one, unless if the previous argument is an argument name. In this case, it will include the name and then start a new argument.
+        ///         </item>
+        ///         <item>
+        ///             <b>Quotations</b> at the start of an argument will begin argument concatenation. This concatenation will collect all following arguments until an end-quote is found. 
+        ///             This end-quote is only considered to be an end-quote, if it is actually the lowest level quote in all following arguments.    
+        ///         </item>
+        ///         <item>
+        ///             <b>Unnamed</b> arguments will be added to the collection as a key, with the value being null.
+        ///         </item>
+        ///     </list>
+        /// </remarks>
+        /// <param name="toParse">The whitespace-separated string to parse.</param>
+        /// <returns>
+        ///     A collection of key-value pairs as command arguments.
+        /// </returns>
+        public static IEnumerable<KeyValuePair<string, object?>> ParseKeyValueCollection(params string[] toParse)
+        { 
             // Reserved for joining arguments.
             var openState = 0;
             var concatenating = false;
@@ -76,7 +108,7 @@ namespace Commands.Parsing
             // Reserved for named arguments.
             string? name = null;
 
-            foreach (var argument in toParse.Split())
+            foreach (var argument in toParse)
             {
                 if (concatenating)
                 {

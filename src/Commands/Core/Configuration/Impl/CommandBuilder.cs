@@ -2,13 +2,14 @@
 using Commands.Reflection;
 using Commands.Resolvers;
 using Commands.TypeConverters;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Commands
 {
     /// <summary>
-    ///     A set of options determining the build process for modules and commands.
+    ///     A container for options determining the build process for modules and commands.
     /// </summary>
     public class CommandBuilder<T> : ICommandBuilder
         where T : CommandManager
@@ -16,8 +17,15 @@ namespace Commands
         const string DEFAULT_REGEX = @"^[a-z0-9_-]*$";
 
         private static readonly Type c_type = typeof(CommandContext<>);
+        private static readonly Type t_type = typeof(CommandBuilder<>);
 
-        private readonly List<Action<CommandBuilder<T>>> _commandAdders = [];
+        private readonly List<Action<ICommandBuilder>> _cmdAddChain = [];
+
+        /// <inheritdoc />
+        public List<ResultResolverBase> ResultResolvers { get; set; } = [];
+
+        /// <inheritdoc />
+        public List<CommandInfo> Commands { get; set; } = [];
 
         /// <inheritdoc />
         /// <remarks>
@@ -32,181 +40,19 @@ namespace Commands
         public Dictionary<Type, TypeConverterBase> TypeConverters { get; set; } = TypeConverterBase.BuildDefaults();
 
         /// <inheritdoc />
-        public List<ResultResolverBase> ResultResolvers { get; set; } = [];
-
-        /// <inheritdoc />
-        public List<CommandInfo> Commands { get; set; } = [];
-
-        /// <inheritdoc />
         /// <remarks>
         ///     Default: <c>@"^[a-z0-9_-]*$"</c>
         /// </remarks>
         public Regex NamingRegex { get; set; } = new(DEFAULT_REGEX, RegexOptions.Compiled);
 
         /// <summary>
-        ///     Configures an action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
+        ///     Adds a new <see cref="Delegate"/> based command to the list of <see cref="CommandBuilder{T}.Commands"/>.
         /// </summary>
-        /// <remarks>
-        ///     The <see cref="ICommandResult"/> revealed by this action contains data about command success. 
-        ///     Check <see cref="ICommandResult.Success"/> to determine whether or not the command ran successfully.
-        /// </remarks>
-        /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
-        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public virtual CommandBuilder<T> AddResultResolver(Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
-        {
-            if (resultAction == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(resultAction);
-            }
-
-            ResultResolvers.Add(new DelegateResolver(resultAction));
-
-            return this;
-        }
-
-        /// <summary>
-        ///     Configures an asynchronous action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
-        /// </summary>
-        /// <remarks>
-        ///     The <see cref="ICommandResult"/> revealed by this action contains data about command success. 
-        ///     Check <see cref="ICommandResult.Success"/> to determine whether or not the command ran successfully.
-        /// </remarks>
-        /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
-        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public virtual CommandBuilder<T> AddResultResolver(Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
-        {
-            if (resultAction == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(resultAction);
-            }
-
-            ResultResolvers.Add(new AsyncDelegateResolver(resultAction));
-
-            return this;
-        }
-
-        /// <summary>
-        ///     Adds an implementation of <see cref="ResultResolverBase"/> to <see cref="ResultResolvers"/>.
-        /// </summary>
-        /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolverBase"/> to add.</typeparam>
-        /// <param name="resolver">The implementation of <see cref="ResultResolverBase"/> to add.</param>
-        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public virtual CommandBuilder<T> AddResultResolver<TResolver>(TResolver resolver)
-            where TResolver : ResultResolverBase
-        {
-            if (resolver == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(resolver);
-            }
-
-            ResultResolvers.Add(resolver);
-
-            return this;
-        }
-
-        /// <summary>
-        ///     Configures an action that will convert a raw argument into the target type, signified by <typeparamref name="TConvertable"/>.
-        /// </summary>
-        /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
-        /// <param name="convertAction">The action that is responsible for the conversion process.</param>
-        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public virtual CommandBuilder<T> AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, string?, IServiceProvider, ConvertResult> convertAction)
-        {
-            if (convertAction == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(convertAction);
-            }
-
-            var converter = new DelegateConverter<TConvertable>(convertAction);
-
-            TypeConverters[converter.Type] = converter;
-
-            return this;
-        }
-
-        /// <summary>
-        ///     Configures an asynchronous action that will convert a raw argument into the target type, signified by <typeparamref name="TConvertable"/>.
-        /// </summary>
-        /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
-        /// <param name="convertAction">The action that is responsible for the conversion process.</param>
-        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public virtual CommandBuilder<T> AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
-        {
-            if (convertAction == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(convertAction);
-            }
-
-            var converter = new AsyncDelegateConverter<TConvertable>(convertAction);
-
-            TypeConverters[converter.Type] = converter;
-
-            return this;
-        }
-
-        /// <summary>
-        ///     Adds an implementation of <see cref="TypeConverterBase"/> to <see cref="TypeConverters"/>.
-        /// </summary>
-        /// <typeparam name="TConverter">The implementation type of <see cref="TypeConverterBase"/> to add.</typeparam>
-        /// <param name="converter">The implementation of <see cref="TypeConverterBase"/> to add.</param>
-        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public virtual CommandBuilder<T> AddTypeConverter<TConverter>(TConverter converter)
-            where TConverter : TypeConverterBase
-        {
-            if (converter == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(converter);
-            }
-
-            TypeConverters[converter.Type] = converter;
-
-            return this;
-        }
-
-        /// <summary>
-        ///     Configures the <see cref="Assemblies"/> with an additional assembly.
-        /// </summary>
-        /// <param name="assembly">An assembly that should be added to <see cref="CommandBuilder{T}.Assemblies"/>.</param>
-        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public virtual CommandBuilder<T> AddAssembly(Assembly assembly)
-        {
-            if (assembly == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(assembly);
-            }
-
-            Assemblies.Add(assembly);
-
-            return this;
-        }
-
-        /// <summary>
-        ///     Configures the <see cref="Assemblies"/> with an additional set of assemblies.
-        /// </summary>
-        /// <param name="assemblies">A collection of assemblies that should be added to <see cref="CommandBuilder{T}.Assemblies"/>.</param>
-        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public virtual CommandBuilder<T> AddAssemblies(params Assembly[] assemblies)
-        {
-            if (assemblies == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(assemblies);
-            }
-
-            Assemblies.AddRange(assemblies);
-            return this;
-        }
-
-        /// <summary>
-        ///     Adds a new <see cref="Delegate"/> based command to the list of <see cref="Commands"/>.
-        /// </summary>
-        /// <remarks>
-        ///     Delegate commands <b>require</b> the first parameter to be <see cref="CommandContext{T}"/>, which holds scope and execution information of the created command during its execution.
-        /// </remarks>
         /// <param name="name">The command name.</param>
-        /// <param name="commandAction">The action of the command.</param>
+        /// <param name="commandAction">The action of the command. Delegate commands are adviced to set the first parameter to be <see cref="CommandContext{T}"/>, which holds scope and execution information of the created command during its execution.</param>
         /// <param name="aliases">The aliases of the command.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public virtual CommandBuilder<T> AddCommand(string name, Delegate commandAction, params string[] aliases)
+        public CommandBuilder<T> AddCommand([DisallowNull] string name, [DisallowNull] Delegate commandAction, params string[] aliases)
         {
             if (commandAction == null)
             {
@@ -223,7 +69,7 @@ namespace Commands
                 .Distinct()
                 .ToArray();
 
-            var action = new Action<CommandBuilder<T>>((CommandBuilder<T> options) =>
+            var action = new Action<ICommandBuilder>((ICommandBuilder options) =>
             {
                 foreach (var alias in aliases)
                 {
@@ -244,7 +90,7 @@ namespace Commands
                 options.Commands.Add(new CommandInfo(new DelegateInvoker(commandAction.Method, commandAction.Target, hasContext), aliases, hasContext, options));
             });
 
-            _commandAdders.Add(action);
+            _cmdAddChain.Add(action);
 
             return this;
         }
@@ -283,7 +129,7 @@ namespace Commands
                 var last = param.LastOrDefault();
 
                 // skip if last param is not CommandBuilder<T>.
-                if (last != null && !last.ParameterType.IsAssignableFrom(typeof(CommandBuilder<>)))
+                if (last != null && !last.ParameterType.IsAssignableFrom(t_type))
                 {
                     continue;
                 }
@@ -297,14 +143,197 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Finalizes the configuration. This should be called no more than once, as the last step before passing this builder into a manager.
+        ///     Finalizes the configuration. This should not be called more than once, as the last step before passing this builder into a manager.
         /// </summary>
         protected void FinalizeConfiguration()
         {
-            foreach (var action in _commandAdders)
+            foreach (var action in _cmdAddChain)
             {
                 action(this);
             }
+        }
+    }
+
+    /// <summary>
+    ///     A container for options determining the build process for modules and commands.
+    /// </summary>
+    public static class CommandBuilder
+    {
+        /// <summary>
+        ///     Configures an action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
+        /// </summary>
+        /// <remarks>
+        ///     The <see cref="ICommandResult"/> revealed by this action contains data about command success. 
+        ///     Check <see cref="ICommandResult.Success"/> to determine whether or not the command ran successfully.
+        /// </remarks>
+        /// <typeparam name="TBuilder">The <see cref="CommandBuilder{T}"/> type to modify.</typeparam>
+        /// <param name="builder">The <see cref="CommandBuilder{T}"/> implementation to modify.</param>
+        /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
+        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
+        public static TBuilder AddResultResolver<TBuilder>(this TBuilder builder, [DisallowNull] Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
+            where TBuilder : ICommandBuilder, new()
+        {
+            if (resultAction == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(resultAction);
+            }
+
+            builder.ResultResolvers.Add(new DelegateResolver(resultAction));
+
+            return builder;
+        }
+
+        /// <summary>
+        ///     Configures an asynchronous action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
+        /// </summary>
+        /// <remarks>
+        ///     The <see cref="ICommandResult"/> revealed by this action contains data about command success. 
+        ///     Check <see cref="ICommandResult.Success"/> to determine whether or not the command ran successfully.
+        /// </remarks>
+        /// <typeparam name="TBuilder">The <see cref="CommandBuilder{T}"/> type to modify.</typeparam>
+        /// <param name="builder">The <see cref="CommandBuilder{T}"/> implementation to modify.</param>
+        /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
+        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
+        public static TBuilder AddResultResolver<TBuilder>(this TBuilder builder, [DisallowNull] Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
+            where TBuilder : ICommandBuilder, new()
+        {
+            if (resultAction == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(resultAction);
+            }
+
+            builder.ResultResolvers.Add(new AsyncDelegateResolver(resultAction));
+
+            return builder;
+        }
+
+        /// <summary>
+        ///     Adds an implementation of <see cref="ResultResolverBase"/> to <see cref="CommandBuilder{T}.ResultResolvers"/>.
+        /// </summary>
+        /// <typeparam name="TBuilder">The <see cref="CommandBuilder{T}"/> type to modify.</typeparam>
+        /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolverBase"/> to add.</typeparam>
+        /// <param name="builder">The <see cref="CommandBuilder{T}"/> implementation to modify.</param>
+        /// <param name="resolver">The implementation of <see cref="ResultResolverBase"/> to add.</param>
+        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
+        public static TBuilder AddResultResolver<TBuilder, TResolver>(this TBuilder builder, [DisallowNull] TResolver resolver)
+            where TBuilder : ICommandBuilder, new()
+            where TResolver : ResultResolverBase
+        {
+            if (resolver == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(resolver);
+            }
+
+            builder.ResultResolvers.Add(resolver);
+
+            return builder;
+        }
+
+        /// <summary>
+        ///     Configures an action that will convert a raw argument into the target type, signified by <typeparamref name="TConvertable"/>.
+        /// </summary>
+        /// <typeparam name="TBuilder">The <see cref="CommandBuilder{T}"/> type to modify.</typeparam>
+        /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
+        /// <param name="builder">The <see cref="CommandBuilder{T}"/> implementation to modify.</param>
+        /// <param name="convertAction">The action that is responsible for the conversion process.</param>
+        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
+        public static TBuilder AddTypeConverter<TBuilder, TConvertable>(this TBuilder builder, [DisallowNull] Func<ConsumerBase, IArgument, string?, IServiceProvider, ConvertResult> convertAction)
+            where TBuilder : ICommandBuilder, new()
+        {
+            if (convertAction == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(convertAction);
+            }
+
+            var converter = new DelegateConverter<TConvertable>(convertAction);
+
+            builder.TypeConverters[converter.Type] = converter;
+
+            return builder;
+        }
+
+        /// <summary>
+        ///     Configures an asynchronous action that will convert a raw argument into the target type, signified by <typeparamref name="TConvertable"/>.
+        /// </summary>
+        /// <typeparam name="TBuilder">The <see cref="CommandBuilder{T}"/> type to modify.</typeparam>
+        /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
+        /// <param name="builder">The <see cref="CommandBuilder{T}"/> implementation to modify.</param>
+        /// <param name="convertAction">The action that is responsible for the conversion process.</param>
+        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
+        public static TBuilder AddTypeConverter<TBuilder, TConvertable>(this TBuilder builder, [DisallowNull] Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
+            where TBuilder : ICommandBuilder, new()
+        {
+            if (convertAction == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(convertAction);
+            }
+
+            var converter = new AsyncDelegateConverter<TConvertable>(convertAction);
+
+            builder.TypeConverters[converter.Type] = converter;
+
+            return builder;
+        }
+
+        /// <summary>
+        ///     Adds an implementation of <see cref="TypeConverterBase"/> to <see cref="CommandBuilder{T}.TypeConverters"/>.
+        /// </summary>
+        /// <typeparam name="TBuilder">The <see cref="CommandBuilder{T}"/> type to modify.</typeparam>
+        /// <typeparam name="TConverter">The implementation type of <see cref="TypeConverterBase"/> to add.</typeparam>
+        /// <param name="builder">The <see cref="CommandBuilder{T}"/> implementation to modify.</param>
+        /// <param name="converter">The implementation of <see cref="TypeConverterBase"/> to add.</param>
+        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
+        public static TBuilder AddTypeConverter<TBuilder, TConverter>(this TBuilder builder, [DisallowNull] TConverter converter)
+            where TBuilder : ICommandBuilder, new()
+            where TConverter : TypeConverterBase
+        {
+            if (converter == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(converter);
+            }
+
+            builder.TypeConverters[converter.Type] = converter;
+
+            return builder;
+        }
+
+        /// <summary>
+        ///     Configures the <see cref="CommandBuilder{T}.Assemblies"/> with an additional assembly.
+        /// </summary>
+        /// <typeparam name="TBuilder">The <see cref="CommandBuilder{T}"/> type to modify.</typeparam>
+        /// <param name="builder">The <see cref="CommandBuilder{T}"/> implementation to modify.</param>
+        /// <param name="assembly">An assembly that should be added to <see cref="CommandBuilder{T}.Assemblies"/>.</param>
+        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
+        public static TBuilder AddAssembly<TBuilder>(this TBuilder builder, [DisallowNull] Assembly assembly)
+            where TBuilder : ICommandBuilder, new()
+        {
+            if (assembly == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(assembly);
+            }
+
+            builder.Assemblies.Add(assembly);
+
+            return builder;
+        }
+
+        /// <summary>
+        ///     Configures the <see cref="CommandBuilder{T}.Assemblies"/> with an additional set of assemblies.
+        /// </summary>
+        /// <typeparam name="TBuilder">The <see cref="CommandBuilder{T}"/> type to modify.</typeparam>
+        /// <param name="builder">The <see cref="CommandBuilder{T}"/> implementation to modify.</param>
+        /// <param name="assemblies">A collection of assemblies that should be added to <see cref="CommandBuilder{T}.Assemblies"/>.</param>
+        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
+        public static TBuilder AddAssemblies<TBuilder>(this TBuilder builder, params Assembly[] assemblies)
+            where TBuilder : ICommandBuilder, new()
+        {
+            if (assemblies == null)
+            {
+                ThrowHelpers.ThrowInvalidArgument(assemblies);
+            }
+
+            builder.Assemblies.AddRange(assemblies);
+            return builder;
         }
     }
 }

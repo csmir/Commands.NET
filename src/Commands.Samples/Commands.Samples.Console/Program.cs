@@ -4,7 +4,7 @@
 using Commands;
 using Commands.Samples;
 
-var builder = CommandManager.CreateBuilder();
+var builder = CommandManager.CreateDefaultBuilder();
 
 // Adds a resolver to send errors into the console or do something else with them.
 builder.AddResultResolver((consumer, result, services) =>
