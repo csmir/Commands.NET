@@ -169,6 +169,17 @@ namespace Commands.Parsing
                     }
                 }
             }
+
+            // If concatenation is still filled on escaping the sequence, add as last argument.
+            if (concatenation.Any())
+            {
+                if (name is null)
+                    yield return new(string.Join(u0020, concatenation), null);
+                else
+                {
+                    yield return new(name, string.Join(u0020, concatenation));
+                }
+            }
         }
 
         /// <summary>
