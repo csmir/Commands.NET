@@ -23,7 +23,7 @@
 
 		<Authors>Commands.NET contributors.</Authors>
 		<Title>Commands.NET.Console</Title>
-		<Description>An extension for Commands.NET that specifically aims to support the console and implements Spectre.Console for beautification.</Description>
+		<Description>An extension for Commands.NET that specifically aims to support the console and CLI, implementing Spectre.Console for beautification.</Description>
 		<PackageTags>commands, cli, console, text, chat</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>
 

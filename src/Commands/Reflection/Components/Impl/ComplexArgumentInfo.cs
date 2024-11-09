@@ -53,7 +53,7 @@ namespace Commands.Reflection
         public TypeConverterBase? Converter { get; } = null;
 
         internal ComplexArgumentInfo(
-            ParameterInfo parameterInfo, string? name, ICommandBuilder options)
+            ParameterInfo parameterInfo, string? name, CommandBuilder options)
         {
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);

@@ -11,7 +11,7 @@ namespace Commands.Helpers
         private static readonly Type s_type = typeof(string);
 
         public static IEnumerable<SearchResult> SearchMany(this IEnumerable<ISearchable> components,
-            CommandArgumentSet args, int searchHeight, bool isGrouped)
+            ArgumentEnumerator args, int searchHeight, bool isGrouped)
         {
             List<SearchResult> discovered = [];
 
@@ -58,7 +58,7 @@ namespace Commands.Helpers
         }
 
         public static async ValueTask<ConvertResult[]> ConvertMany(this IArgument[] arguments,
-            ConsumerBase consumer, CommandArgumentSet args, CommandOptions options)
+            ConsumerBase consumer, ArgumentEnumerator args, CommandOptions options)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -72,7 +72,7 @@ namespace Commands.Helpers
                 // parse remainder.
                 if (argument.IsRemainder)
                 {
-                    var remainder = args.Remainder();
+                    var remainder = args.TakeAll();
                     if (argument.Type == s_type)
                     {
                         results[i] = ConvertResult.FromSuccess(remainder);

@@ -30,7 +30,7 @@ namespace Commands
         private readonly CommandFinalizer _finalizer;
 
         /// <summary>
-        ///     Gets the collection containing all commands, named modules and subcommands as implemented by the assemblies that were registered in the <see cref="ICommandBuilder"/> provided when creating the manager.
+        ///     Gets the collection containing all commands, named modules and subcommands as implemented by the assemblies that were registered in the <see cref="CommandBuilder"/> provided when creating the manager.
         /// </summary>
         public HashSet<ISearchable> Commands { get; }
 
@@ -38,7 +38,7 @@ namespace Commands
         ///     Creates a new <see cref="CommandManager"/> based on the provided arguments.
         /// </summary>
         /// <param name="builder">The options through which to construct the collection of <see cref="Commands"/>.</param>
-        public CommandManager(ICommandBuilder builder)
+        public CommandManager(CommandBuilder builder)
         {
             _finalizer = new CommandFinalizer(builder.ResultResolvers);
 
@@ -106,7 +106,7 @@ namespace Commands
         /// </summary>
         /// <param name="args">A set of arguments intended to discover commands as a query.</param>
         /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the results of the search query.</returns>
-        public virtual IEnumerable<SearchResult> Search(CommandArgumentSet args)
+        public virtual IEnumerable<SearchResult> Search(ArgumentEnumerator args)
         {
             if (args == null)
             {
@@ -151,7 +151,7 @@ namespace Commands
         {
             options ??= new CommandOptions();
 
-            var task = Enter(consumer, new CommandArgumentSet(args), options);
+            var task = Enter(consumer, new ArgumentEnumerator(args), options);
 
             if (options.AsyncMode is AsyncMode.Async)
                 return Task.CompletedTask;
@@ -172,7 +172,7 @@ namespace Commands
         {
             options ??= new CommandOptions();
 
-            var task = Enter(consumer, new CommandArgumentSet(args, options.MatchComparer), options);
+            var task = Enter(consumer, new ArgumentEnumerator(args, options.MatchComparer), options);
 
             if (options.AsyncMode is AsyncMode.Async)
                 return Task.CompletedTask;
@@ -188,7 +188,7 @@ namespace Commands
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution.</returns>
         protected virtual async Task Enter<T>(
-            T consumer, CommandArgumentSet args, CommandOptions options)
+            T consumer, ArgumentEnumerator args, CommandOptions options)
             where T : ConsumerBase
         {
             ICommandResult? result = null;
@@ -227,7 +227,7 @@ namespace Commands
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation process.</returns>
         protected virtual async ValueTask<ICommandResult> Run<T>(
-            T consumer, CommandInfo command, int argHeight, CommandArgumentSet args, CommandOptions options)
+            T consumer, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
             where T : ConsumerBase
         {
             options.CancellationToken.ThrowIfCancellationRequested();
@@ -348,7 +348,7 @@ namespace Commands
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the conversion process.</returns>
         protected async ValueTask<ConvertResult[]> Convert<T>(
-            T consumer, CommandInfo command, int argHeight, CommandArgumentSet args, CommandOptions options)
+            T consumer, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
             where T : ConsumerBase
         {
             options.CancellationToken.ThrowIfCancellationRequested();
@@ -451,7 +451,7 @@ namespace Commands
         ///         <item>Custom naming patterns that validate naming across the whole process.</item>
         ///     </list>
         /// </remarks>
-        /// <returns>A new <see cref="ICommandBuilder"/> that implements <see cref="CommandManager"/></returns>
+        /// <returns>A new <see cref="CommandBuilder"/> that implements <see cref="CommandManager"/></returns>
         public static CommandBuilder<CommandManager> CreateDefaultBuilder()
         {
             return new CommandBuilder<CommandManager>();

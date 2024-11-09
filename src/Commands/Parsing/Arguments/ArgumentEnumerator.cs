@@ -3,13 +3,13 @@
 namespace Commands.Parsing
 {
     /// <summary>
-    ///     Contains a set of arguments for an argument. This class is not intended for widespread use. 
+    ///     Contains a set of arguments for the command pipeline. This class is not intended to be implemented by end-users. 
     ///     By using either <see cref="CommandManager.Execute{T}(T, IEnumerable{KeyValuePair{string, object?}}, CommandOptions?)"/> or <see cref="CommandManager.Execute{T}(T, IEnumerable{object?}, CommandOptions?)"/> you can use named or unnamed command entry.
     /// </summary>
     /// <remarks>
     ///     Searching for commands supports only unnamed arguments. Named arguments are used for command parameter population.
     /// </remarks>
-    public sealed class CommandArgumentSet
+    public sealed class ArgumentEnumerator
     {
         const char STR_WHITESPACE = ' ';
 
@@ -28,7 +28,12 @@ namespace Commands.Parsing
                 => _size;
         }
 
-        internal CommandArgumentSet(IEnumerable<KeyValuePair<string, object?>> args, StringComparer comparer)
+        /// <summary>
+        ///     Creates a new instance of the <see cref="ArgumentEnumerator"/> class with a set of named arguments.
+        /// </summary>
+        /// <param name="args">The range of named arguments to enumerate in this set.</param>
+        /// <param name="comparer">The comparer to evaluate keys in the inner named dictionary.</param>
+        public ArgumentEnumerator(IEnumerable<KeyValuePair<string, object?>> args, StringComparer comparer)
         {
             _namedArgs = new(comparer);
 
@@ -49,7 +54,11 @@ namespace Commands.Parsing
             _size = _unnamedArgs.Length + _namedArgs.Count;
         }
 
-        internal CommandArgumentSet(IEnumerable<object> args)
+        /// <summary>
+        ///     Creates a new instance of the <see cref="ArgumentEnumerator"/> class with a set of unnamed arguments.
+        /// </summary>
+        /// <param name="args">The range of unnamed arguments to enumerate in this set.</param>
+        public ArgumentEnumerator(IEnumerable<object> args)
         {
             _namedArgs = [];
 
@@ -126,7 +135,7 @@ namespace Commands.Parsing
         ///     Joins the remaining unnamed arguments in the set into a single string.
         /// </summary>
         /// <returns>A string joined by all remaining arguments in the list.</returns>
-        public string Remainder()
+        public string TakeAll()
         {
             return string.Join(STR_WHITESPACE, _unnamedArgs[_indexUnnamed..]);
         }

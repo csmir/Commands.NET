@@ -14,7 +14,7 @@ namespace Commands.Helpers
         ///     Configures the <see cref="IHostBuilder"/> to support use of a <see cref="CommandManager"/>.
         /// </summary>
         /// <param name="builder"></param>
-        /// <param name="configureDelegate">A delegate to configure the <see cref="ICommandBuilder"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
+        /// <param name="configureDelegate">A delegate to configure the <see cref="CommandBuilder"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
         /// <returns>The same <see cref="IHostBuilder"/> for call chaining.</returns>
         public static IHostBuilder ConfigureCommands(this IHostBuilder builder,
             [DisallowNull] Action<HostBuilderContext, HostCommandBuilder<CommandManager>> configureDelegate)
@@ -27,7 +27,7 @@ namespace Commands.Helpers
         /// </summary>
         /// <typeparam name="TManager">The implementation of a <see cref="CommandManager"/> to configure for use.</typeparam>
         /// <param name="builder"></param>
-        /// <param name="configureDelegate">A delegate to configure the <see cref="ICommandBuilder"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
+        /// <param name="configureDelegate">A delegate to configure the <see cref="CommandBuilder"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
         /// <returns>The same <see cref="IHostBuilder"/> for call chaining.</returns>
         public static IHostBuilder ConfigureCommands<TManager>(this IHostBuilder builder,
             [DisallowNull] Action<HostBuilderContext, HostCommandBuilder<TManager>> configureDelegate)

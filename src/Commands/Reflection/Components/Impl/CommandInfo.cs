@@ -64,18 +64,18 @@ namespace Commands.Reflection
             }
         }
 
-        internal CommandInfo(StaticInvoker invoker, string[] aliases, bool hasContext, ICommandBuilder options)
+        internal CommandInfo(StaticInvoker invoker, string[] aliases, bool hasContext, CommandBuilder options)
             : this(null, invoker, aliases, hasContext, options)
         {
         }
 
-        internal CommandInfo(DelegateInvoker invoker, string[] aliases, bool hasContext, ICommandBuilder options)
+        internal CommandInfo(DelegateInvoker invoker, string[] aliases, bool hasContext, CommandBuilder options)
             : this(null, invoker, aliases, hasContext, options)
         {
         }
 
         internal CommandInfo(
-            ModuleInfo? module, IInvoker invoker, string[] aliases, bool hasContext, ICommandBuilder options)
+            ModuleInfo? module, IInvoker invoker, string[] aliases, bool hasContext, CommandBuilder options)
         {
             IsSearchable = true;
 

@@ -35,7 +35,7 @@ namespace Commands.TypeConverters
     /// </summary>
     /// <remarks>
     ///     Registering custom <see cref="TypeConverterBase"/>'s is not an automated process. 
-    ///     To register them for the <see cref="CommandManager"/> to use, add them to your <see cref="IServiceProvider"/> using <see cref="ICommandBuilder.TypeConverters"/>
+    ///     To register them for the <see cref="CommandManager"/> to use, add them to your <see cref="IServiceProvider"/> using <see cref="CommandBuilder.TypeConverters"/>
     /// </remarks>
     public abstract class TypeConverterBase
     {

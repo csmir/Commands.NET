@@ -1,122 +1,85 @@
-﻿using Commands.Helpers;
+﻿using Commands.Console.Core.Configuration;
+using Commands.Parsing;
+using System.Runtime.CompilerServices;
 
 namespace Commands.Console
 {
     /// <summary>
-    ///     Represents a command builder meant for a single command execution through the command line interface.
+    ///     Represents a set of extensions for the <see cref="CommandBuilder{T}"/> class.
     /// </summary>
-    /// <param name="args">The set of arguments provided to the program.</param>
-    public class CLIBuilder<T, TConsumer>(params string[] args) : CommandBuilder<T>()
-        where TConsumer : ConsoleConsumerBase, new()
-        where T : CommandManager
+    public static class CLIBuilder
     {
         /// <summary>
-        ///     Gets or sets the arguments that should be passed to the initiated command.
-        /// </summary>
-        public string[] CommandArguments { get; set; } = args;
-
-        /// <summary>
-        ///     Gets or sets the consumer that should be used to interact with the console.
-        /// </summary>
-        public TConsumer Consumer { get; set; } = new TConsumer();
-
-        /// <summary>
-        ///     Gets or sets the options that should be used to configure the command execution.
-        /// </summary>
-        public CommandOptions Options { get; set; } = new CommandOptions();
-
-        /// <summary>
-        ///     Adds a new <see cref="Delegate"/> based command to the list of <see cref="CommandBuilder{T}.Commands"/>.
-        /// </summary>
-        /// <param name="name">The command name.</param>
-        /// <param name="commandAction">The action of the command. Delegate commands are adviced to set the first parameter to be <see cref="CommandContext{T}"/>, which holds scope and execution information of the created command during its execution.</param>
-        /// <param name="aliases">The aliases of the command.</param>
-        /// <returns>The same <see cref="CLIBuilder{T, TConsumer}"/> for call-chaining.</returns>
-        public new CLIBuilder<T, TConsumer> AddCommand(string name, Delegate commandAction, params string[] aliases)
-        {
-            base.AddCommand(name, commandAction, aliases);
-
-            return this;
-        }
-
-        /// <summary>
-        ///     Adds a new <see cref="Delegate"/> based command to the list of <see cref="CommandBuilder{T}.Commands"/>. 
+        ///     Adds a new <see cref="Delegate"/> based command to the list of <see cref="CommandBuilder.Commands"/>. 
         /// </summary>
         /// <remarks>
         ///     This overload sets a default command name of <c>env_core</c>. This command is meant to be used as a default command for the environment.
         /// </remarks>
+        /// <param name="builder">The command builder to add the command to.</param>
         /// <param name="commandAction">The action of the command. Delegate commands are adviced to set the first parameter to be <see cref="CommandContext{T}"/>, which holds scope and execution information of the created command during its execution. </param>
-        /// <returns>The same <see cref="CLIBuilder{T, TConsumer}"/> for call-chaining.</returns>
-        public CLIBuilder<T, TConsumer> AddCommand(Delegate commandAction)
+        /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
+        public static CommandBuilder<T> AddCommand<T>(this CommandBuilder<T> builder, Delegate commandAction)
+            where T : CommandManager
         {
-            base.AddCommand("env_core", commandAction, []);
+            builder.AddCommand("env_core", commandAction, []);
 
-            return this;
+            return builder;
         }
 
         /// <summary>
-        ///     Configures the <see cref="CommandOptions"/> that should be used to configure the command execution.
+        ///     Builds the underlying <see cref="CommandManager"/> and runs it with the provided <see cref="CLIOptions"/>.
         /// </summary>
-        /// <param name="options">The options that should be used when executing a CLI command.</param>
-        /// <returns>The same <see cref="CLIBuilder{T, TConsumer}"/> for call-chaining.</returns>
-        public CLIBuilder<T, TConsumer> WithOptions(CommandOptions options)
+        /// <typeparam name="T">The <see cref="CommandManager"/> that should be built, and a single command executed within it.</typeparam>
+        /// <param name="builder">The command builder to build into a manager.</param>
+        /// <param name="options">The options that set up a single command execution.</param>
+        /// <param name="ctorArgs">The constructor arguments that are required to construct a new instance of the command manager, if any.</param>
+        /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
+        public static Task Run<T>(this CommandBuilder<T> builder, CLIOptions options, params object[] ctorArgs)
+            where T : CommandManager
         {
-            if (options is null)
+            var manager = builder.Build(ctorArgs);
+
+            if (options.CommandArguments == null || options.CommandArguments.Length == 0)
             {
-                ThrowHelpers.ThrowInvalidArgument(options);
+                options.CommandArguments = ["env_core"];
             }
 
-            Options = options;
+            var args = StringParser.ParseKeyValueCollection(options.CommandArguments);
 
-            return this;
+            options.Consumer ??= new ConsoleConsumerBase();
+
+            return manager.Execute(options.Consumer, args, options.CommandOptions);
         }
 
         /// <summary>
-        ///     Builds the underlying <see cref="CommandManager"/>, and runs a command from the args provided by <see cref="CommandArguments"/> and <see cref="Options"/>.
+        ///     Builds the underlying <see cref="CommandManager"/> and runs it with the provided <see cref="CLIOptions"/>.
         /// </summary>
-        public void BuildAndRun()
+        /// <typeparam name="T">The <see cref="CommandManager"/> that should be built, and a single command executed within it.</typeparam>
+        /// <param name="builder">The command builder to build into a manager.</param>
+        /// <param name="options">The options that set up a single command execution.</param>
+        /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
+        public static Task Run<T>(this CommandBuilder<T> builder, CLIOptions options)
+            where T : CommandManager
         {
-            BuildAndRunAsync([]).Wait();
+            return builder.Run(options, []);
         }
 
         /// <summary>
-        ///     Builds the underlying <see cref="CommandManager"/>, and runs a command from the args provided by <see cref="CommandArguments"/> and <see cref="Options"/>.
+        ///     Builds the underlying <see cref="CommandManager"/> and runs it with the provided <see cref="CLIOptions"/>.
         /// </summary>
-        /// <param name="ctorArgs">The arguments that should be passed to the constructor of the <typeparamref name="T"/> command manager.</param>
-        public void BuildAndRun(params string[] ctorArgs)
+        /// <typeparam name="T">The <see cref="CommandManager"/> that should be built, and a single command executed within it.</typeparam>
+        /// <param name="builder">The command builder to build into a manager.</param>
+        /// <param name="args">The CLI arguments that should be used to execute a command.</param>
+        /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
+        public static Task Run<T>(this CommandBuilder<T> builder, string[] args)
+            where T : CommandManager
         {
-            BuildAndRunAsync(ctorArgs).Wait();
-        }
-
-        /// <summary>
-        ///     Builds the underlying <see cref="CommandManager"/>, and runs a command from the args provided by <see cref="CommandArguments"/> and <see cref="Options"/>.
-        /// </summary>
-        /// <returns>An asynchronous <see cref="Task"/> that represents the state of the executing CLI command.</returns>
-        public Task BuildAndRunAsync()
-        {
-            return BuildAndRunAsync([]);
-        }
-
-        /// <summary>
-        ///     Builds the underlying <see cref="CommandManager"/>, and runs a command from the args provided by <see cref="CommandArguments"/> and <see cref="Options"/>.
-        /// </summary>
-        /// <param name="ctorArgs">The arguments that should be passed to the constructor of the <typeparamref name="T"/> command manager.</param>
-        /// <returns>An asynchronous <see cref="Task"/> that represents the state of the executing CLI command.</returns>
-        public Task BuildAndRunAsync(params string[] ctorArgs)
-        {
-            var manager = Build(ctorArgs);
-
-            if (Consumer is null)
+            var options = new CLIOptions
             {
-                ThrowHelpers.ThrowInvalidArgument(Consumer);
-            }
+                CommandArguments = args
+            };
 
-            if (CommandArguments is null || CommandArguments.Length == 0)
-            {
-                CommandArguments = ["env_core"];
-            }
-
-            return manager.Execute(Consumer, CommandArguments, Options);
+            return builder.Run(options);
         }
     }
 }

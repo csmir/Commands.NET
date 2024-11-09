@@ -37,7 +37,7 @@ namespace Commands.Helpers
         ///     Configures the <see cref="IServiceCollection"/> for use of a <see cref="CommandManager"/> with the provided builder configuration.
         /// </summary>
         /// <param name="collection"></param>
-        /// <param name="configureDelegate">A delegate to configure the <see cref="ICommandBuilder"/> responsible for customizing the <see cref="CommandManager"/> setup.</param>
+        /// <param name="configureDelegate">A delegate to configure the <see cref="CommandBuilder"/> responsible for customizing the <see cref="CommandManager"/> setup.</param>
         /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
         public static IServiceCollection ConfigureCommands<T>(this IServiceCollection collection,
             Action<HostCommandBuilder<T>> configureDelegate)

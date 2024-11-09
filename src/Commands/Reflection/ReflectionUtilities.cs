@@ -18,7 +18,7 @@ namespace Commands.Reflection
         /// </summary>
         /// <param name="options">The options that define the command registration process.</param>
         /// <returns>A top-level enumerable of all discovered components which can be searched.</returns>
-        public static IEnumerable<ISearchable> GetTopLevelComponents(ICommandBuilder options)
+        public static IEnumerable<ISearchable> GetTopLevelComponents(CommandBuilder options)
         {
             var modules = GetTopLevelModules(options);
 
@@ -46,7 +46,7 @@ namespace Commands.Reflection
         /// </summary>
         /// <param name="options">The options that define the command registration process.</param>
         /// <returns>A top-level enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetTopLevelModules(ICommandBuilder options)
+        public static IEnumerable<ModuleInfo> GetTopLevelModules(CommandBuilder options)
         {
             var arr = new IEnumerable<ModuleInfo>[options.Assemblies.Count];
 
@@ -65,7 +65,7 @@ namespace Commands.Reflection
         /// <param name="assembly">The assembly who'se types should be iterated to discover new modules.</param>
         /// <param name="options">The options that define the command registration process.</param>
         /// <returns>An enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetModules(Assembly assembly, ICommandBuilder options)
+        public static IEnumerable<ModuleInfo> GetModules(Assembly assembly, CommandBuilder options)
         {
             return GetModules(assembly.GetTypes(), null, false, options);
         }
@@ -77,7 +77,7 @@ namespace Commands.Reflection
         /// <param name="module">The root module of this iteration, if any.</param>
         /// <param name="options">The options that define the command registration process.</param>
         /// <returns>An enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetModules(Type type, ModuleInfo? module, ICommandBuilder options)
+        public static IEnumerable<ModuleInfo> GetModules(Type type, ModuleInfo? module, CommandBuilder options)
         {
             return GetModules(type.GetNestedTypes(), module, true, options);
         }
@@ -90,7 +90,7 @@ namespace Commands.Reflection
         /// <param name="withNested">Determines if the iteration should include nested types.</param>
         /// <param name="options">The options that define the command registration process.</param>
         /// <returns>An enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetModules(IEnumerable<Type> types, ModuleInfo? module, bool withNested, ICommandBuilder options)
+        public static IEnumerable<ModuleInfo> GetModules(IEnumerable<Type> types, ModuleInfo? module, bool withNested, CommandBuilder options)
         {
             foreach (var type in types)
             {
@@ -142,7 +142,7 @@ namespace Commands.Reflection
         /// <param name="withDefaults">Determines if the root module has any defaults to take into consideration.</param>
         /// <param name="options">The options that define the command registration process.</param>
         /// <returns>An enumerable of all discovered commands.</returns>
-        public static IEnumerable<ISearchable> GetCommands(Type type, ModuleInfo? module, bool withDefaults, ICommandBuilder options)
+        public static IEnumerable<ISearchable> GetCommands(Type type, ModuleInfo? module, bool withDefaults, CommandBuilder options)
         {
             // run through all type methods.
 
@@ -208,7 +208,7 @@ namespace Commands.Reflection
         /// <param name="module">The module who'se members should be iterated.</param>
         /// <param name="options">The options that define the command registration process.</param>
         /// <returns>An array of all discovered components.</returns>
-        public static ISearchable[] GetComponents(ModuleInfo module, ICommandBuilder options)
+        public static ISearchable[] GetComponents(ModuleInfo module, CommandBuilder options)
         {
             var commands = GetCommands(module.Type, module, module.Aliases.Length > 0, options);
 
@@ -218,7 +218,7 @@ namespace Commands.Reflection
                 .ToArray();
         }
 
-        internal static IArgument[] GetArguments(this MethodBase method, bool withContext, ICommandBuilder options)
+        internal static IArgument[] GetArguments(this MethodBase method, bool withContext, CommandBuilder options)
         {
             var parameters = method.GetParameters();
 
@@ -260,7 +260,7 @@ namespace Commands.Reflection
             return arr;
         }
 
-        internal static IParameter[] GetParameters(this MethodBase method, ICommandBuilder _)
+        internal static IParameter[] GetParameters(this MethodBase method, CommandBuilder _)
         {
             var parameters = method.GetParameters();
 

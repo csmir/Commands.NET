@@ -60,7 +60,7 @@ namespace Commands.Reflection
         }
 
         internal ModuleInfo(
-            Type type, ModuleInfo? root, string[] aliases, ICommandBuilder options)
+            Type type, ModuleInfo? root, string[] aliases, CommandBuilder options)
         {
             var attributes = type.GetAttributes(true);
 
