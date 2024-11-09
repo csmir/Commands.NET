@@ -57,7 +57,7 @@ namespace Commands.Helpers
             return discovered;
         }
 
-        public static async ValueTask<ConvertResult[]> ConvertManyAsync(this IArgument[] arguments,
+        public static async ValueTask<ConvertResult[]> ConvertMany(this IArgument[] arguments,
             ConsumerBase consumer, CommandArgumentSet args, CommandOptions options)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
@@ -79,7 +79,7 @@ namespace Commands.Helpers
                     }
                     else
                     {
-                        results[i] = await argument.ConvertAsync(consumer, remainder, options);
+                        results[i] = await argument.Convert(consumer, remainder, options);
                     }
 
                     // end loop as remainder is last param.
@@ -89,7 +89,7 @@ namespace Commands.Helpers
                 // parse complex argument.
                 if (argument is ComplexArgumentInfo complexArgument)
                 {
-                    var result = await complexArgument.Arguments.ConvertManyAsync(consumer, args, options);
+                    var result = await complexArgument.Arguments.ConvertMany(consumer, args, options);
 
                     if (result.All(x => x.Success))
                     {
@@ -117,7 +117,7 @@ namespace Commands.Helpers
 
                 if (args.TryNext(argument.Name!, out var value))
                 {
-                    results[i] = await argument.ConvertAsync(consumer, value, options);
+                    results[i] = await argument.Convert(consumer, value, options);
 
                     continue;
                 }
@@ -135,7 +135,7 @@ namespace Commands.Helpers
             return results;
         }
 
-        public static async ValueTask<ConvertResult> ConvertAsync(this IArgument argument, ConsumerBase consumer, object? value, CommandOptions options)
+        public static async ValueTask<ConvertResult> Convert(this IArgument argument, ConsumerBase consumer, object? value, CommandOptions options)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 

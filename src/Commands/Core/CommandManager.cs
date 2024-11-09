@@ -359,17 +359,17 @@ namespace Commands
             {
                 if (command.MaxLength == args.Length)
                 {
-                    return await command.Arguments.ConvertManyAsync(consumer, args, options);
+                    return await command.Arguments.ConvertMany(consumer, args, options);
                 }
 
                 if (command.MaxLength <= args.Length && command.HasRemainder)
                 {
-                    return await command.Arguments.ConvertManyAsync(consumer, args, options);
+                    return await command.Arguments.ConvertMany(consumer, args, options);
                 }
 
                 if (command.MaxLength > args.Length && command.MinLength <= args.Length)
                 {
-                    return await command.Arguments.ConvertManyAsync(consumer, args, options);
+                    return await command.Arguments.ConvertMany(consumer, args, options);
                 }
             }
             else if (args.Length == 0)

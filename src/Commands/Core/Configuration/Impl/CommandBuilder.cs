@@ -171,7 +171,7 @@ namespace Commands
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
         public static TBuilder AddResultResolver<TBuilder>(this TBuilder builder, [DisallowNull] Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
-            where TBuilder : ICommandBuilder, new()
+            where TBuilder : ICommandBuilder
         {
             if (resultAction == null)
             {
@@ -195,7 +195,7 @@ namespace Commands
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
         public static TBuilder AddResultResolver<TBuilder>(this TBuilder builder, [DisallowNull] Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
-            where TBuilder : ICommandBuilder, new()
+            where TBuilder : ICommandBuilder
         {
             if (resultAction == null)
             {
@@ -216,7 +216,7 @@ namespace Commands
         /// <param name="resolver">The implementation of <see cref="ResultResolverBase"/> to add.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
         public static TBuilder AddResultResolver<TBuilder, TResolver>(this TBuilder builder, [DisallowNull] TResolver resolver)
-            where TBuilder : ICommandBuilder, new()
+            where TBuilder : ICommandBuilder
             where TResolver : ResultResolverBase
         {
             if (resolver == null)
@@ -238,7 +238,7 @@ namespace Commands
         /// <param name="convertAction">The action that is responsible for the conversion process.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
         public static TBuilder AddTypeConverter<TBuilder, TConvertable>(this TBuilder builder, [DisallowNull] Func<ConsumerBase, IArgument, string?, IServiceProvider, ConvertResult> convertAction)
-            where TBuilder : ICommandBuilder, new()
+            where TBuilder : ICommandBuilder
         {
             if (convertAction == null)
             {
@@ -261,7 +261,7 @@ namespace Commands
         /// <param name="convertAction">The action that is responsible for the conversion process.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
         public static TBuilder AddTypeConverter<TBuilder, TConvertable>(this TBuilder builder, [DisallowNull] Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
-            where TBuilder : ICommandBuilder, new()
+            where TBuilder : ICommandBuilder
         {
             if (convertAction == null)
             {
@@ -284,7 +284,7 @@ namespace Commands
         /// <param name="converter">The implementation of <see cref="TypeConverterBase"/> to add.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
         public static TBuilder AddTypeConverter<TBuilder, TConverter>(this TBuilder builder, [DisallowNull] TConverter converter)
-            where TBuilder : ICommandBuilder, new()
+            where TBuilder : ICommandBuilder
             where TConverter : TypeConverterBase
         {
             if (converter == null)
@@ -305,7 +305,7 @@ namespace Commands
         /// <param name="assembly">An assembly that should be added to <see cref="CommandBuilder{T}.Assemblies"/>.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
         public static TBuilder AddAssembly<TBuilder>(this TBuilder builder, [DisallowNull] Assembly assembly)
-            where TBuilder : ICommandBuilder, new()
+            where TBuilder : ICommandBuilder
         {
             if (assembly == null)
             {
@@ -325,7 +325,7 @@ namespace Commands
         /// <param name="assemblies">A collection of assemblies that should be added to <see cref="CommandBuilder{T}.Assemblies"/>.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
         public static TBuilder AddAssemblies<TBuilder>(this TBuilder builder, params Assembly[] assemblies)
-            where TBuilder : ICommandBuilder, new()
+            where TBuilder : ICommandBuilder
         {
             if (assemblies == null)
             {
