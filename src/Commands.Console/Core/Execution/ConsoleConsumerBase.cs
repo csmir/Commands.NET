@@ -1,6 +1,6 @@
 ﻿using Spectre.Console;
 
-namespace Commands.Console
+namespace Commands
 {
     /// <summary>
     ///     Represents a consumer that represents the current console window that the application is running in.

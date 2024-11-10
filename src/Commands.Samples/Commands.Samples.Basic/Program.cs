@@ -1,4 +1,4 @@
-﻿using Commands.Console;
+﻿using Commands;
 
 await CLIManager.CreateDefaultBuilder()
     .AddCommand(() => "Provide CLI arguments to execute other commands!")

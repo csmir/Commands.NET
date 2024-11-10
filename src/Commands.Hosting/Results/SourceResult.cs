@@ -1,4 +1,6 @@
-﻿namespace Commands.Results
+﻿using Commands.Parsing;
+
+namespace Commands.Results
 {
     /// <summary>
     ///     The result of the source acquirement within the command execution pipeline.
@@ -21,9 +23,9 @@
 
         internal ConsumerBase? Consumer { get; }
 
-        internal object[]? Args { get; }
+        internal ArgumentEnumerator? Args { get; }
 
-        private SourceResult(ConsumerBase? consumer, object[]? args, CommandOptions? options, Exception? exception)
+        private SourceResult(ConsumerBase? consumer, ArgumentEnumerator? args, CommandOptions? options, Exception? exception)
         {
             Options = options;
             Consumer = consumer;
@@ -38,9 +40,9 @@
         /// <param name="args">A parsed command query.</param>
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
-        public static SourceResult FromSuccess(ConsumerBase consumer, object[] args, CommandOptions options)
+        public static SourceResult FromSuccess(ConsumerBase consumer, IEnumerable<object> args, CommandOptions? options = null)
         {
-            return new(consumer, args, options, null);
+            return new(consumer, new ArgumentEnumerator(args), options, null);
         }
 
         /// <summary>
@@ -48,10 +50,12 @@
         /// </summary>
         /// <param name="consumer">The consumer of the command.</param>
         /// <param name="args">A parsed command query.</param>
+        /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
-        public static SourceResult FromSuccess(ConsumerBase consumer, object[] args)
+        public static SourceResult FromSuccess(ConsumerBase consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
         {
-            return new(consumer, args, null, null);
+            options ??= new CommandOptions();
+            return new(consumer, new ArgumentEnumerator(args, options.MatchComparer), options, null);
         }
 
         /// <summary>

@@ -31,7 +31,7 @@ namespace Commands
             {
                 foreach (var resolver in _resolvers)
                 {
-                    resolver.Available = true;
+                    resolver.ResourceAvailable = true;
                 }
             });
 
@@ -39,7 +39,7 @@ namespace Commands
             {
                 foreach (var resolver in _resolvers)
                 {
-                    resolver.Available = false;
+                    resolver.ResourceAvailable = false;
                 }
             });
 
@@ -64,7 +64,7 @@ namespace Commands
             {
                 foreach (var resolvers in _resolvers)
                 {
-                    resolvers.Available = false;
+                    resolvers.ResourceAvailable = false;
                 }
             }
             catch
@@ -85,7 +85,7 @@ namespace Commands
             {
                 foreach (var resolvers in _resolvers)
                 {
-                    resolvers.Available = true;
+                    resolvers.ResourceAvailable = true;
                 }
             }
             catch

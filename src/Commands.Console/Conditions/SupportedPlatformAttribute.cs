@@ -1,7 +1,6 @@
-﻿using Commands.Conditions;
-using Commands.Reflection;
+﻿using Commands.Reflection;
 
-namespace Commands.Console.Conditions
+namespace Commands.Conditions
 {
     /// <summary>
     ///     Represents a precondition that checks if the current platform is supported.

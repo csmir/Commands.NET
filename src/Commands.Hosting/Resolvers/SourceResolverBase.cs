@@ -9,7 +9,7 @@ namespace Commands.Resolvers
     /// </summary>
     public abstract class SourceResolverBase
     {
-        internal bool Available { get; set; }
+        internal bool ResourceAvailable { get; set; }
 
         /// <summary>
         ///     Waits until all hosted services tied to the startup of the application have started.
@@ -20,7 +20,7 @@ namespace Commands.Resolvers
         public bool Ready(int retryLimit = 50, int timeout = 50)
         {
             var retryCounter = 0;
-            while (!Available)
+            while (!ResourceAvailable)
             {
                 if (retryCounter > retryLimit)
                 {

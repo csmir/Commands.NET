@@ -1,9 +1,8 @@
-﻿using Commands.Console.Core.Configuration;
-using Commands.Parsing;
+﻿using Commands.Parsing;
 using Commands.Resolvers;
 using Commands.TypeConverters;
 
-namespace Commands.Console
+namespace Commands
 {
     /// <summary>
     ///     Represents the manager for executing CLI commands.

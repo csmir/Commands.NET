@@ -1,6 +1,6 @@
 ﻿using Spectre.Console;
 
-namespace Commands.Console
+namespace Commands
 {
     /// <summary>
     ///     Represents a module that can contain commands to execute, implementing <see cref="ModuleBase{TConsumer}"/> with expanded functionality for console applications.

@@ -1,7 +1,6 @@
-﻿using Commands.Console.Core.Configuration;
-using Commands.Parsing;
+﻿using Commands.Parsing;
 
-namespace Commands.Console
+namespace Commands
 {
     /// <summary>
     ///     Represents a set of extensions for the <see cref="CommandBuilder{T}"/> class.

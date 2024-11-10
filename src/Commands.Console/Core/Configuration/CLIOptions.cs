@@ -1,4 +1,4 @@
-﻿namespace Commands.Console.Core.Configuration
+﻿namespace Commands
 {
     /// <summary>
     ///     Represents the options for executing a CLI command.

@@ -1,6 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-using Commands.Helpers;
 using Commands.Parsing;
 using Microsoft.Extensions.DependencyInjection;
 

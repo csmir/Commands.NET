@@ -15,12 +15,11 @@ namespace Commands
     ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
     /// </summary>
     /// <remarks>
-    ///     This type is not sealed, and can be implemented to override the virtual execution steps. A hosted implementation exists in the <b>Commands.NET.Hosting</b> package,
+    ///     This type can be implemented to override the virtual execution steps. A hosted implementation exists in the <b>Commands.NET.Hosting</b> package,
     ///     which introduces native IoC based command operations alongside the preexisting DI support.
     ///     <br/>
     ///     <br/>
-    ///     To start using the manager, configure it using the <see cref="CommandBuilder{T}"/> and calling <see cref="CommandBuilder{T}.Build(object[])"/>. 
-    ///     <see cref="CommandManager.CreateDefaultBuilder"/> generates a base definition of this builder to use.
+    ///     To start using this manager, call <see cref="CreateDefaultBuilder"/> and configure it using the minimal API's implemented by the <see cref="CommandBuilder{T}"/>.
     /// </remarks>
     [DebuggerDisplay("Commands = {Commands},nq")]
     public class CommandManager
@@ -50,7 +49,7 @@ namespace Commands
         /// <summary>
         ///     Flattens the top level commands in <see cref="Commands"/> into a single enumerable collection.
         /// </summary>
-        /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the flattened range of <see cref="CommandInfo"/>'s registered in this manager.</returns>
+        /// <returns>A lazily evaluated, flattened <see cref="IEnumerable{T}"/> that holds all <see cref="CommandInfo"/>'s registered in this manager.</returns>
         public virtual IEnumerable<CommandInfo> GetCommands()
         {
             static IEnumerable<CommandInfo> Flatten(IEnumerable<ISearchable> components)
@@ -77,7 +76,7 @@ namespace Commands
         /// <summary>
         ///     Groups the command modules in <see cref="Commands"/> info a single enumerable collection. 
         /// </summary>
-        /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the range of <see cref="ModuleInfo"/>'s registered in this manager.</returns>
+        /// <returns>A lazily evaluated, flattened <see cref="IEnumerable{T}"/> that holds all <see cref="ModuleInfo"/>'s registered in this manager.</returns>
         public virtual IEnumerable<ModuleInfo> GetModules()
         {
             static IEnumerable<ModuleInfo> Flatten(IEnumerable<ISearchable> components)
@@ -115,14 +114,14 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Makes an attempt at executing a command from the provided <paramref name="args"/>.
+        ///     Attempts to execute a command based on the provided <paramref name="args"/>.
         /// </summary>
         /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
-        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="args">An unparsed input that is expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
         public virtual Task Execute<T>(
-            T consumer, string args, CommandOptions? options = default)
+            T consumer, string args, CommandOptions? options = null)
             where T : ConsumerBase
         {
             if (string.IsNullOrWhiteSpace(args))
@@ -134,43 +133,50 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Makes an attempt at executing a command from the provided <paramref name="args"/>.
+        ///     Attempts to execute a command based on the provided <paramref name="args"/>.
         /// </summary>
         /// <remarks>
-        ///     The arguments intended for searching for a target need to be <see cref="string"/>, as <see cref="ModuleInfo"/> and <see cref="CommandInfo"/> store their aliases this way also.
+        ///     The arguments intended for searching for a target need to be <see cref="string"/>, as <see cref="ModuleInfo"/> and <see cref="CommandInfo"/> store their aliases as <see cref="string"/> values.
         /// </remarks>
         /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
-        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
         public virtual Task Execute<T>(
-            T consumer, IEnumerable<object> args, CommandOptions? options = default)
+            T consumer, IEnumerable<object> args, CommandOptions? options = null)
             where T : ConsumerBase
         {
-            options ??= new CommandOptions();
-
-            var task = Enter(consumer, new ArgumentEnumerator(args), options);
-
-            if (options.AsyncMode is AsyncMode.Async)
-                return Task.CompletedTask;
-
-            return task;
+            return Execute(consumer, new ArgumentEnumerator(args), options ?? new CommandOptions());
         }
 
         /// <summary>
-        ///     Makes an attempt at executing a command from the provided <paramref name="args"/>.
+        ///     Attempts to execute a command based on the provided <paramref name="args"/>.
         /// </summary>
         /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
-        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
         public virtual Task Execute<T>(
-            T consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = default)
+            T consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
             where T : ConsumerBase
         {
             options ??= new CommandOptions();
 
-            var task = Enter(consumer, new ArgumentEnumerator(args, options.MatchComparer), options);
+            return Execute(consumer, new ArgumentEnumerator(args, options.MatchComparer), options);
+        }
+
+        /// <summary>
+        ///     Attempts to execute a command based on the provided <paramref name="args"/>.
+        /// </summary>
+        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
+        /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
+        /// <param name="options">A collection of options that determines pipeline logic.</param>
+        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
+        public virtual Task Execute<T>(
+            T consumer, ArgumentEnumerator args, CommandOptions options)
+            where T : ConsumerBase
+        {
+            var task = Enter(consumer, args, options);
 
             if (options.AsyncMode is AsyncMode.Async)
                 return Task.CompletedTask;
@@ -437,7 +443,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Creates a builder that is responsible for setting up all required arguments to discover and populate <see cref="Commands"/>.
+        ///     Creates a builder that is responsible for setting up all required arguments to discover and populate the <see cref="Commands"/> of the <see cref="CommandManager"/>.
         /// </summary>
         /// <remarks>
         ///     This builder is able to configure the following:
@@ -449,10 +455,30 @@ namespace Commands
         ///         <item>Custom naming patterns that validate naming across the whole process.</item>
         ///     </list>
         /// </remarks>
-        /// <returns>A new <see cref="CommandBuilder"/> that implements <see cref="CommandManager"/></returns>
+        /// <returns>A new <see cref="CommandBuilder"/> that implements the currently accessed <see cref="CommandManager"/>.</returns>
         public static CommandBuilder<CommandManager> CreateDefaultBuilder()
         {
             return new CommandBuilder<CommandManager>();
+        }
+
+        /// <summary>
+        ///     Creates a builder that is responsible for setting up all required arguments to discover and populate the commands of <typeparamref name="T"/>.
+        /// </summary>
+        /// <remarks>
+        ///     This builder is able to configure the following:
+        ///     <list type="number">
+        ///         <item>Defining assemblies through which will be searched to discover modules and commands.</item>
+        ///         <item>Defining custom commands that do not appear in the assemblies.</item>
+        ///         <item>Registering implementations of <see cref="TypeConverterBase"/> which define custom argument conversion.</item>
+        ///         <item>Registering implementations of <see cref="ResultResolverBase"/> which define custom result handling.</item>
+        ///         <item>Custom naming patterns that validate signature naming across the whole process.</item>
+        ///     </list>
+        /// </remarks>
+        /// <returns>A new <see cref="CommandBuilder"/> that implements the currently accessed <see cref="CommandManager"/>.</returns>
+        public static CommandBuilder<T> CreateBuilder<T>()
+            where T : CommandManager
+        {
+            return new CommandBuilder<T>();
         }
     }
 }

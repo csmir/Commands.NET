@@ -1,6 +1,4 @@
-﻿using Commands.Console.Conditions;
-
-namespace Commands.Tests
+﻿namespace Commands.Tests
 {
     public class ConditionModule : ModuleBase
     {

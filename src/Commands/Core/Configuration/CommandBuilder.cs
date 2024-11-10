@@ -50,7 +50,7 @@ namespace Commands
     }
 
     /// <summary>
-    ///     A generic container for options determining the build process for modules and commands, implementing a build pattern.
+    ///     A generic container for options determining the build process for modules and commands, implementing a build pattern to construct into <typeparamref name="T"/>.
     /// </summary>
     public class CommandBuilder<T> : CommandBuilder
         where T : CommandManager
