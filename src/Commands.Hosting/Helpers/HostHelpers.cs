@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.Helpers
 {
@@ -17,7 +16,7 @@ namespace Commands.Helpers
         /// <param name="configureDelegate">A delegate to configure the <see cref="CommandBuilder"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
         /// <returns>The same <see cref="IHostBuilder"/> for call chaining.</returns>
         public static IHostBuilder ConfigureCommands(this IHostBuilder builder,
-            [DisallowNull] Action<HostBuilderContext, HostCommandBuilder<CommandManager>> configureDelegate)
+            Action<HostBuilderContext, HostCommandBuilder<CommandManager>> configureDelegate)
         {
             return builder.ConfigureCommands<CommandManager>(configureDelegate);
         }
@@ -30,7 +29,7 @@ namespace Commands.Helpers
         /// <param name="configureDelegate">A delegate to configure the <see cref="CommandBuilder"/> with the current <see cref="IHostBuilder"/>'s building context.</param>
         /// <returns>The same <see cref="IHostBuilder"/> for call chaining.</returns>
         public static IHostBuilder ConfigureCommands<TManager>(this IHostBuilder builder,
-            [DisallowNull] Action<HostBuilderContext, HostCommandBuilder<TManager>> configureDelegate)
+            Action<HostBuilderContext, HostCommandBuilder<TManager>> configureDelegate)
             where TManager : CommandManager
         {
             if (configureDelegate == null)

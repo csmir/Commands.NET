@@ -2,7 +2,6 @@
 using Commands.Helpers;
 using Commands.Reflection;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.Conditions
 {
@@ -57,7 +56,7 @@ namespace Commands.Conditions
         /// </summary>
         /// <param name="exception">The exception that caused the evaluation to fail.</param>
         /// <returns>A <see cref="ConditionResult"/> representing the failed evaluation.</returns>
-        protected ConditionResult Error([DisallowNull] Exception exception)
+        protected ConditionResult Error(Exception exception)
         {
             if (exception == null)
                 ThrowHelpers.ThrowInvalidArgument(exception);
@@ -75,7 +74,7 @@ namespace Commands.Conditions
         /// </summary>
         /// <param name="error">The error that caused the evaluation to fail.</param>
         /// <returns>A <see cref="ConditionResult"/> representing the failed evaluation.</returns>
-        protected ConditionResult Error([DisallowNull] string error)
+        protected ConditionResult Error(string error)
         {
             if (string.IsNullOrEmpty(error))
                 ThrowHelpers.ThrowInvalidArgument(error);

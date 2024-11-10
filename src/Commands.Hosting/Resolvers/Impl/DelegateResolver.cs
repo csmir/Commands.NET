@@ -1,10 +1,9 @@
 ﻿using Commands.Results;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.Resolvers
 {
     internal sealed class DelegateResolver(
-        [DisallowNull] Func<SourceResult> func) : SourceResolverBase
+        Func<SourceResult> func) : SourceResolverBase
     {
         private readonly Func<SourceResult> _func = func;
 

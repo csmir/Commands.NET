@@ -1,5 +1,4 @@
 ﻿using Commands.Helpers;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Commands
 {
@@ -18,7 +17,7 @@ namespace Commands
         ///     Creates a new <see cref="DescriptionAttribute"/> with provided description.
         /// </summary>
         /// <param name="description">The description for the target.</param>
-        public DescriptionAttribute([DisallowNull] string description)
+        public DescriptionAttribute(string description)
         {
             if (string.IsNullOrWhiteSpace(description))
             {

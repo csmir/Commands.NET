@@ -99,7 +99,7 @@ namespace Commands.Parsing
         ///     A collection of key-value pairs as command arguments.
         /// </returns>
         public static IEnumerable<KeyValuePair<string, object?>> ParseKeyValueCollection(params string[] toParse)
-        { 
+        {
             // Reserved for joining arguments.
             var openState = 0;
             var concatenating = false;

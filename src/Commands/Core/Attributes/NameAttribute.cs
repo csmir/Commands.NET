@@ -1,5 +1,4 @@
 ﻿using Commands.Helpers;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Commands
@@ -31,7 +30,7 @@ namespace Commands
         ///     Creates a new <see cref="NameAttribute"/> with defined name.
         /// </summary>
         /// <param name="name">The target name.</param>
-        public NameAttribute([DisallowNull] string name)
+        public NameAttribute(string name)
             : this(name, [])
         {
 
@@ -42,7 +41,7 @@ namespace Commands
         /// </summary>
         /// <param name="name">The name of the target.</param>
         /// <param name="aliases">The target's aliases. Aliases are not considered for parameter names.</param>
-        public NameAttribute([DisallowNull] string name, params string[] aliases)
+        public NameAttribute(string name, params string[] aliases)
         {
             if (string.IsNullOrWhiteSpace(name))
             {

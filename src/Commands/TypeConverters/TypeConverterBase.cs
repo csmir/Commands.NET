@@ -1,7 +1,6 @@
 ﻿using Commands.Exceptions;
 using Commands.Helpers;
 using Commands.Reflection;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.TypeConverters
 {
@@ -64,7 +63,7 @@ namespace Commands.TypeConverters
         /// </summary>
         /// <param name="exception">The exception that caused the evaluation to fail.</param>
         /// <returns>A <see cref="ConvertResult"/> representing the failed evaluation.</returns>
-        protected ConvertResult Error([DisallowNull] Exception exception)
+        protected ConvertResult Error(Exception exception)
         {
             if (exception == null)
             {
@@ -83,7 +82,7 @@ namespace Commands.TypeConverters
         /// </summary>
         /// <param name="error">The error that caused the evaluation to fail.</param>
         /// <returns>A <see cref="ConvertResult"/> representing the failed evaluation.</returns>
-        protected ConvertResult Error([DisallowNull] string error)
+        protected ConvertResult Error(string error)
         {
             if (string.IsNullOrEmpty(error))
             {

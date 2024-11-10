@@ -1,6 +1,5 @@
 ﻿using Commands.Console.Core.Configuration;
 using Commands.Parsing;
-using System.Runtime.CompilerServices;
 
 namespace Commands.Console
 {

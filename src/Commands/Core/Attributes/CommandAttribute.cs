@@ -1,5 +1,4 @@
 ﻿using Commands.Helpers;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Commands
@@ -25,7 +24,7 @@ namespace Commands
         ///     Creates a new <see cref="CommandAttribute"/> with provided name.
         /// </summary>
         /// <param name="name">The command name.</param>
-        public CommandAttribute([DisallowNull] string name)
+        public CommandAttribute(string name)
             : this(name, [])
         {
 
@@ -36,7 +35,7 @@ namespace Commands
         /// </summary>
         /// <param name="name">The command name.</param>
         /// <param name="aliases">The command's aliases.</param>
-        public CommandAttribute([DisallowNull] string name, params string[] aliases)
+        public CommandAttribute(string name, params string[] aliases)
         {
             if (string.IsNullOrWhiteSpace(name))
             {

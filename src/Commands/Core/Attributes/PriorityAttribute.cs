@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Commands
+﻿namespace Commands
 {
     /// <summary>
     ///     An attribute that can prioritize one result over another when multiple matches were found.
@@ -18,7 +16,7 @@ namespace Commands
     /// </remarks>
     /// <param name="priority">The priority of this command, which can be between 0 and 255.</param>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
-    public sealed class PriorityAttribute([DisallowNull] float priority) : Attribute
+    public sealed class PriorityAttribute(float priority) : Attribute
     {
         /// <summary>
         ///     Gets the priority of a command, where higher values take priority over lower ones.

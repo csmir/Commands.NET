@@ -2,7 +2,6 @@
 using Commands.Reflection;
 using Commands.Resolvers;
 using Commands.TypeConverters;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -68,7 +67,7 @@ namespace Commands
         /// <param name="commandAction">The action of the command. Delegate commands are adviced to set the first parameter to be <see cref="CommandContext{T}"/>, which holds scope and execution information of the created command during its execution.</param>
         /// <param name="aliases">The aliases of the command.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public CommandBuilder<T> AddCommand([DisallowNull] string name, [DisallowNull] Delegate commandAction, params string[] aliases)
+        public CommandBuilder<T> AddCommand(string name, Delegate commandAction, params string[] aliases)
         {
             if (commandAction == null)
             {
@@ -120,7 +119,7 @@ namespace Commands
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public CommandBuilder<T> AddResultResolver([DisallowNull] Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
+        public CommandBuilder<T> AddResultResolver(Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
         {
             if (resultAction == null)
             {
@@ -141,7 +140,7 @@ namespace Commands
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public CommandBuilder<T> AddResultResolver([DisallowNull] Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
+        public CommandBuilder<T> AddResultResolver(Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
         {
             if (resultAction == null)
             {
@@ -159,7 +158,7 @@ namespace Commands
         /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolverBase"/> to add.</typeparam>
         /// <param name="resolver">The implementation of <see cref="ResultResolverBase"/> to add.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public CommandBuilder<T> AddResultResolver<TResolver>([DisallowNull] TResolver resolver)
+        public CommandBuilder<T> AddResultResolver<TResolver>(TResolver resolver)
             where TResolver : ResultResolverBase
         {
             if (resolver == null)
@@ -178,7 +177,7 @@ namespace Commands
         /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the conversion process.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public CommandBuilder<T> AddTypeConverter<TConvertable>([DisallowNull] Func<ConsumerBase, IArgument, string?, IServiceProvider, ConvertResult> convertAction)
+        public CommandBuilder<T> AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, string?, IServiceProvider, ConvertResult> convertAction)
         {
             if (convertAction == null)
             {
@@ -198,7 +197,7 @@ namespace Commands
         /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the conversion process.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public CommandBuilder<T> AddTypeConverter<TConvertable>([DisallowNull] Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
+        public CommandBuilder<T> AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
         {
             if (convertAction == null)
             {
@@ -218,7 +217,7 @@ namespace Commands
         /// <typeparam name="TConverter">The implementation type of <see cref="TypeConverterBase"/> to add.</typeparam>
         /// <param name="converter">The implementation of <see cref="TypeConverterBase"/> to add.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public CommandBuilder<T> AddTypeConverter<TConverter>([DisallowNull] TConverter converter)
+        public CommandBuilder<T> AddTypeConverter<TConverter>(TConverter converter)
             where TConverter : TypeConverterBase
         {
             if (converter == null)
@@ -237,7 +236,7 @@ namespace Commands
         /// <typeparam name="TBuilder">The <see cref="CommandBuilder{T}"/> type to modify.</typeparam>
         /// <param name="assembly">An assembly that should be added to <see cref="CommandBuilder.Assemblies"/>.</param>
         /// <returns>The same <see cref="CommandBuilder{T}"/> for call-chaining.</returns>
-        public CommandBuilder<T> AddAssembly<TBuilder>([DisallowNull] Assembly assembly)
+        public CommandBuilder<T> AddAssembly<TBuilder>(Assembly assembly)
         {
             if (assembly == null)
             {

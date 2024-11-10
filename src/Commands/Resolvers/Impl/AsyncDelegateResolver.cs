@@ -1,9 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Commands.Resolvers
+﻿namespace Commands.Resolvers
 {
     internal sealed class AsyncDelegateResolver(
-        [DisallowNull] Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> action)
+        Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> action)
         : ResultResolverBase
     {
         private readonly Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> _action = action;

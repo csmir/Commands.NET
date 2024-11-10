@@ -1,10 +1,9 @@
 ﻿using Commands.Reflection;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.TypeConverters
 {
     internal sealed class AsyncDelegateConverter<T>(
-        [DisallowNull] Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> func)
+        Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> func)
         : TypeConverterBase<T>
     {
         private readonly Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> _func = func;

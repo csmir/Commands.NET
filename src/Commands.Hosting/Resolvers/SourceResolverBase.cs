@@ -1,7 +1,6 @@
 ﻿using Commands.Exceptions;
 using Commands.Helpers;
 using Commands.Results;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.Resolvers
 {
@@ -47,7 +46,7 @@ namespace Commands.Resolvers
         /// </summary>
         /// <param name="exception">The exception that caused the evaluation to fail.</param>
         /// <returns>A <see cref="SourceResult"/> representing the failed evaluation.</returns>
-        protected SourceResult Error([DisallowNull] Exception exception)
+        protected SourceResult Error(Exception exception)
         {
             if (exception == null)
             {
@@ -66,7 +65,7 @@ namespace Commands.Resolvers
         /// </summary>
         /// <param name="error">The error that caused the evaluation to fail.</param>
         /// <returns>A <see cref="SourceResult"/> representing the failed evaluation.</returns>
-        protected SourceResult Error([DisallowNull] string error)
+        protected SourceResult Error(string error)
         {
             if (string.IsNullOrEmpty(error))
             {

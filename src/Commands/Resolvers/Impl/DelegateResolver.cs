@@ -1,9 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Commands.Resolvers
+﻿namespace Commands.Resolvers
 {
     internal sealed class DelegateResolver(
-        [DisallowNull] Action<ConsumerBase, ICommandResult, IServiceProvider> action)
+        Action<ConsumerBase, ICommandResult, IServiceProvider> action)
         : ResultResolverBase
     {
         private readonly Action<ConsumerBase, ICommandResult, IServiceProvider> _action = action;

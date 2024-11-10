@@ -1,5 +1,4 @@
 ﻿using Commands.Helpers;
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
 namespace Commands
@@ -25,7 +24,7 @@ namespace Commands
         ///     Creates a new <see cref="GroupAttribute"/> with defined name.
         /// </summary>
         /// <param name="name">The group name.</param>
-        public GroupAttribute([DisallowNull] string name)
+        public GroupAttribute(string name)
             : this(name, [])
         {
 
@@ -36,7 +35,7 @@ namespace Commands
         /// </summary>
         /// <param name="name">The group name.</param>
         /// <param name="aliases">The group's aliases.</param>
-        public GroupAttribute([DisallowNull] string name, params string[] aliases)
+        public GroupAttribute(string name, params string[] aliases)
         {
             if (string.IsNullOrWhiteSpace(name))
             {

@@ -18,7 +18,7 @@ namespace Commands.Helpers
         /// <exception cref="InvalidOperationException"></exception>
         [DoesNotReturn]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public static void ThrowInvalidOperation([DisallowNull] string failureMessage)
+        public static void ThrowInvalidOperation(string failureMessage)
         {
             throw new InvalidOperationException(failureMessage);
         }
