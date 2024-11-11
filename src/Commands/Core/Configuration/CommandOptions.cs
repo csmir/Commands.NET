@@ -68,7 +68,10 @@ namespace Commands
         /// </remarks>
         public StringComparer MatchComparer { get; set; } = StringComparer.OrdinalIgnoreCase;
 
-        /// <inheritdoc />
+        /// <inheritdoc cref="IServiceProvider" />
+        /// <remarks>
+        ///     This class implements the <see cref="IServiceProvider"/> interface and returns <see langword="null"/> for all service requests.
+        /// </remarks>
         public sealed class EmptyServiceProvider : IServiceProvider
         {
             private static readonly Lazy<EmptyServiceProvider> _i = new();

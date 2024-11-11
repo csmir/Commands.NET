@@ -22,7 +22,10 @@ namespace Commands
             }
         }
 
-        internal object? Value { get; }
+        /// <summary>
+        ///    The value of the conversion operation.
+        /// </summary>
+        public object? Value { get; }
 
         private ConvertResult(Exception? exception, object? value)
         {

@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Commands.Tests.Hosting", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Commands.Console", "src\Commands.Console\Commands.Console.csproj", "{27DDF84E-E741-40BD-A61D-CE2CB7149FF6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Samples.Basic", "src\Commands.Samples\Commands.Samples.Basic\Commands.Samples.Basic.csproj", "{AFA097BA-5F8D-4A92-8BF0-AD5B78FB1B8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Commands.Samples.CLI", "src\Commands.Samples\Commands.Samples.Basic\Commands.Samples.CLI.csproj", "{AFA097BA-5F8D-4A92-8BF0-AD5B78FB1B8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

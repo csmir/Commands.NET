@@ -22,7 +22,3 @@ Create custom conversion for changing raw input into types.
 ### 🔍 [[Dealing with Post-Execution|Results]]
 
 All about handling command results and treating custom return types.
-
-### 🔗 [[Exploring Customization|Customization]]
-
-Customize your modules and contexts to scale up your applications, or simply to reduce code repetition.

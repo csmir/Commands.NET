@@ -3,10 +3,11 @@ Let's work on an example to learn how they work.
 
 - [Creating your TypeConverter](#creating-your-typeconverter)
 - [Using your TypeConverter](#using-your-typeconverter)
+- [Lightweight implementation](#lightweight-implementation)
 
 ## Creating your TypeConverter
 
-All TypeConverter inherit `TypeConverterNase<T>` or `TypeConverterBase`. To start creating your TypeConverter, you have to inherit one of the two on a class.
+All TypeConverter inherit `TypeConverterBase<T>` or `TypeConverterBase`. To start creating your TypeConverter, you have to inherit one of the two on a class.
 
 > For the simplicity of this documentation, only the generic type is introduced here.
 
@@ -19,8 +20,9 @@ namespace Commands.Samples
 {
     public class ReflectionTypeConverter : TypeConverterBase<Type>
     {
-        public override async ValueTask<ConvertResult> EvaluateAsync(ConsumerBase consumer, IArgument argument, string? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, string? value, IServiceProvider services, CancellationToken cancellationToken)
         {
+
         }
     }
 }
@@ -30,7 +32,7 @@ With this class defined and the method that will operate the evaluation being im
 
 ```cs
     ...
-        public override async ValueTask<ConvertResult> EvaluateAsync(ConsumerBase consumer, IArgument argument, string? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, string? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             try
             {
@@ -93,8 +95,48 @@ If you start the program now, it will throw an error on startup. `System.Type` h
 
 ```cs
     ...
-        configuration.AddTypeReader(new ReflectionTypeConverter(caseIgnore: true));
+        builder.AddTypeConverter(new ReflectionTypeConverter(caseIgnore: true));
     ...
 ```
 
 Restarting the program now, you can try out your new command and see the results for yourself.
+
+
+## Lightweight implementation
+
+In addition to the broad API, there is also lightweight support for type conversion. 
+This API is implemented by `CommandBuilder` and will serve most elementary usecases of the functionality.
+
+To make use of this API, we have to take a look at how the `CommandManager` is configured in the `Program.cs` file of your application. 
+The `CommandBuilder` is used to configure the `CommandManager` and is used to add `TypeConverter`'s to the pipeline.
+
+```cs
+using Commands;
+
+var builder = CommandManager.CreateDefaultBuilder();
+
+...
+
+builder.AddTypeConverter<Version>();
+```
+
+When observing this method, there are multiple overloads to use. 
+The one we will use for the `Version` conversion, is going to be the one implementing a `Func` that returns a conversion result:
+
+```cs
+builder.AddTypeConverter<Version>((consumer, argument, value, services) => { });
+```
+
+Finally, the `Func` will be implemented to convert the string input into a `Version` object:
+
+```cs
+builder.AddTypeConverter<Version>((consumer, argument, value, services) =>
+{
+    if (Version.TryParse(value, out var version))
+    {
+        return ConvertResult.FromSuccess(version);
+    }
+
+    return ConvertResult.FromError(new FormatException("Invalid version format."));
+});
+```

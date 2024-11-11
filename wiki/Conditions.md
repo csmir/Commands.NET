@@ -1,9 +1,10 @@
 Conditions are checks that ensure that the command in scope is allowed to be executed and report success. 
 
-Let's work on an example precondition to understand how they work. 
+Let's work on an example precondition to understand how they work. Postconditions are similar to preconditions, but are executed after the command has been executed.
 
 - [Creating your Precondition](#creating-your-precondition)
 - [Using your Precondition](#using-your-precondition)
+- [Logical operations](#logical-operations)
 
 ## Creating your Precondition
 
@@ -18,7 +19,7 @@ namespace Commands.Samples
 {
     public class RequireOperatingSystemAttribute : PreconditionAttribute
     {
-        public override ValueTask<CheckResult> EvaluateAsync(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<CheckResult> Evaluate(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
         {
 
         }
@@ -41,7 +42,7 @@ namespace Commands.Samples
     {
         public PlatformID Platform { get; } = platform;
 
-        public override ValueTask<CheckResult> EvaluateAsync(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<CheckResult> Evaluate(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
         {
 
         }
@@ -53,7 +54,7 @@ After this has been defined, the `Platform` property can be used to evaluate the
 
 ```cs
 ...
-        public override ValueTask<CheckResult> EvaluateAsync(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<CheckResult> Evaluate(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Environment.OSVersion.Platform == Platform)
                 return ValueTask.FromResult(Success());
@@ -103,3 +104,11 @@ public void Copy([Remainder] string toCopy)
 ```
 
 The precondition is now defined on this command, and will be called when this command is triggered. If the platform you run it on is indeed not Windows, it will fail.
+
+## Logical operations
+
+Pre and postconditions can be combined with logical operations. This can be done by adding multiple preconditions to a command, and defining the logical operation in the condition you defined. There are two standard types:
+
+- `OREvaluator`: This will return success if any of the preconditions succeed.
+
+- `ANDEvaluator`: This will return success if all of the preconditions succeed.

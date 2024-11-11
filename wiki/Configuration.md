@@ -1,4 +1,8 @@
-The configuration of command registration and execution can be overwhelming if you are unfamiliar with the various options exposed. This chapter introduces the various options and elaborates the functionality covered within.
+The configuration of command registration and execution can be overwhelming if you are unfamiliar with the various options exposed. 
+This document introduces the various options and elaborates the functionality covered within.
+
+- [Configuring the Manager](#configuring-the-manager)
+- [Configuring the Pipeline](#configuring-the-pipeline)
 
 ## Configuring the Manager
 
@@ -21,7 +25,7 @@ The `CommandBuilder<T>` exposes methods to write delegate-based conversion patte
 
 ### ResultResolvers
 
-Results can be handled in an elaborate many ways, as documented [[here|Results]]. 
+Results can be handled in a few ways, as documented [[here|Results]]. 
 
 Implementing custom handlers can be done by implementing `ResultResolverBase` or by creating a delegate-based alternative as exposed in `CommandBuilder<T>`.
 
@@ -44,7 +48,7 @@ If a command does not match the constraint, an exception will be thrown to infor
 
 ## Configuring the Pipeline
 
-`CommandOptions` is the type expected by `CommandManager.TryExecuteAsync` to configure how the pipeline is handled.
+`CommandOptions` is the type expected by `CommandManager.Execute` to configure how the pipeline is handled.
 
 ### Services
 

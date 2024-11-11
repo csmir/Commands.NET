@@ -5,6 +5,12 @@ namespace Commands.Samples
 {
     public class BasicModule : ModuleBase<CustomConsumer>
     {
+        [Name("helloworld")]
+        public string HelloWorld()
+        {
+            return "Hello, world!";
+        }
+
         [Name("reply")]
         public string Reply([Remainder] string message)
         {

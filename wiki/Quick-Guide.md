@@ -77,7 +77,7 @@ To begin, we will write 2 commands:
 #### Command 1: Hello World
 
 Within the class declaration of the file, we will write a new method. 
-The method can return `Task` , `ValueTask` or `void`, but for the sake of this guide, we will use `void`.
+The method can return `Task` , `string` or `void`, but for the sake of this guide, we will use `string`.
 
 ```cs
 using Commands;
@@ -86,7 +86,7 @@ namespace Commands.Samples
 {
     public class ExampleModule : ModuleBase
     {
-        public void HelloWorld()
+        public string HelloWorld()
         {
         }
     }
@@ -103,7 +103,7 @@ namespace Commands.Samples
     public class ExampleModule : ModuleBase
     {
         [Name("helloworld")]
-        public void HelloWorld()
+        public string HelloWorld()
         {
         }
     }
@@ -122,7 +122,7 @@ namespace Commands.Samples
         [Name("helloworld")]
         public void HelloWorld()
         {
-            Console.WriteLine("Hello world!");
+            return "Hello, world!";
         }
     }
 }
@@ -142,15 +142,15 @@ namespace Commands.Samples
     public class ExampleModule : ModuleBase
     {
         [Name("helloworld")]
-        public void HelloWorld()
+        public string HelloWorld()
         {
-            Respond("Hello world!");
+            return "Hello, world!";
         }
 
         [Name("reply")]
-        public void Reply([Remainder] string message)
+        public string Reply([Remainder] string message)
         {
-            Respond(message);
+            return "Hi, " + Consumer.Name + ". " + message + "!";
         }
     }
 }
@@ -171,13 +171,12 @@ For this, we will go back to our `Program.cs` file:
 
 ```cs
 using Commands;
-using Commands.Parsing;
 using Commands.Samples;
 
-var builder = CommandManager.CreateBuilder();
+var builder = CommandManager.CreateDefaultBuilder();
 ```
 
-The `CreateBuilder()` method creates a `CommandBuilder<T>` for us to use. 
+The `CreateDefaultBuilder()` method creates a `CommandBuilder<T>` for us to use. 
 With this builder, we are free to configure some of the essential options to receive and bring in information about registration and execution of commands.
 
 If the command failed in any way, an `ICommandResult` brought forward by the execution will cover where it went wrong and contain the exception that occurred. 
@@ -189,7 +188,7 @@ builder.AddResultResolver((consumer, result, services) =>
 {
     if (!result.Success)
     {
-        Console.WriteLine(result);
+        consumer.Send(result);
     }
 });
 ...
@@ -216,13 +215,13 @@ You can replace the way to get your input with anything you like, ranging from r
 
 ```cs
 ...
-var parser = new StringParser();
-
 while (true)
 {
-    var input = parser.Parse(Console.ReadLine());
+    var input = Console.ReadLine()!;
 
-    var consumer = new CommandBase();
+    var consumer = new ConsumerBase();
+
+    ...
 }
 ...
 ```
@@ -234,12 +233,12 @@ It is exposed during the entire pipeline, holding data about itself and being ab
 ### Executing the Command
 
 With the context defined, it is time to run the command. 
-By calling `TryExecuteAsync` in the `while` loop, Commands.NET will read your command input and try to find the most appropriate command to run. 
+By calling `Execute` in the `while` loop, Commands.NET will read your command input and try to find the most appropriate command to run. 
 If the input you write in your console matches the signature of your `helloworld` or `reply` command, it will succeed and execute the method that implements it.
 
 ```cs
     ...
-    framework.TryExecute(context, input);
+    manager.Execute(consumer, input);
     ...
 ```
 
@@ -263,18 +262,18 @@ using Commands;
 
 namespace Commands.Samples
 {
-    public class Module : ModuleBase
+    public class ExampleModule : ModuleBase
     {
-        [Command("helloworld")]
-        public void HelloWorld()
+        [Name("helloworld")]
+        public string HelloWorld()
         {
-            Respond("Hello world!");
+            return "Hello, world!";
         }
 
-        [Command("reply")]
-        public void Reply([Remainder] string message)
+        [Name("reply")]
+        public string Reply([Remainder] string message)
         {
-            Respond(message);
+            return "Hi, " + Consumer.Name + ". " + message + "!";
         }
     }
 }
@@ -288,25 +287,25 @@ using Commands;
 using Commands.Parsing;
 using Commands.Samples;
 
-var builder = CommandManager.CreateBuilder();
+var builder = CommandManager.CreateDefaultBuilder();
 
 builder.AddResultResolver((consumer, result, services) =>
 {
     if (!result.Success)
     {
-        Console.WriteLine(result);
+        consumer.Send(result);
     }
 });
 
-var framework = builder.Build();
+var manager = builder.Build();
 
 while (true)
 {
-    var input = StringParser.Parse(Console.ReadLine()!);
+    var input = Console.ReadLine()!;
 
     var consumer = new ConsumerBase();
 
-    await framework.TryExecuteAsync(consumer, input);
+    await manager.Execute(consumer, input);
 }
 ```
 
