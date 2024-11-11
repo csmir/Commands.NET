@@ -1,4 +1,6 @@
-﻿namespace Commands.Tests
+﻿using Commands.Conditions;
+
+namespace Commands.Tests
 {
     public class ConditionModule : ModuleBase
     {
