@@ -1,8 +1,11 @@
 ﻿namespace Commands
 {
     /// <summary>
-    ///     Represents the data about the consumer of the command.
+    ///     Represents a metadata object that serves as a binding between the executing user of the command, and the logic that is the source of a response.
     /// </summary>
+    /// <remarks>
+    ///     This class is intended to be overridden to provide custom behavior for sending responses to consumers, or expanding the metadata that is sent with the entry of the pipeline.
+    /// </remarks>
     public class ConsumerBase
     {
         /// <summary>
