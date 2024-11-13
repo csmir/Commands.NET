@@ -1,6 +1,6 @@
 ﻿using Commands.Reflection;
 
-namespace Commands.TypeConverters
+namespace Commands.Converters
 {
     internal sealed class ValueTypeConverter<T> : TypeConverterBase<T>
     {

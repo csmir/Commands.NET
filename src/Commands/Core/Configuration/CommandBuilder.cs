@@ -1,7 +1,7 @@
 ﻿using Commands.Helpers;
 using Commands.Reflection;
 using Commands.Resolvers;
-using Commands.TypeConverters;
+using Commands.Converters;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -58,7 +58,7 @@ namespace Commands
         private static readonly Type c_type = typeof(CommandContext<>);
         private static readonly Type t_type = typeof(CommandBuilder<>);
 
-        private readonly List<Action<CommandBuilder>> _cmdAddChain = [];
+        private readonly List<Action<CommandBuilder>> _cmdWriteChain = [];
 
         /// <summary>
         ///     Adds a new <see cref="Delegate"/> based command to the list of <see cref="CommandBuilder.Commands"/>.
@@ -105,7 +105,7 @@ namespace Commands
                 options.Commands.Add(new CommandInfo(new DelegateInvoker(commandAction.Method, commandAction.Target, hasContext), aliases, hasContext, options));
             });
 
-            _cmdAddChain.Add(action);
+            _cmdWriteChain.Add(action);
 
             return this;
         }
@@ -316,7 +316,7 @@ namespace Commands
         /// </summary>
         protected void FinalizeConfiguration()
         {
-            foreach (var action in _cmdAddChain)
+            foreach (var action in _cmdWriteChain)
             {
                 action(this);
             }

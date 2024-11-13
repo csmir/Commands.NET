@@ -1,9 +1,8 @@
-﻿using Commands.Exceptions;
-using Commands.Helpers;
+﻿using Commands.Helpers;
 using Commands.Parsing;
 using Commands.Reflection;
 using Commands.Resolvers;
-using Commands.TypeConverters;
+using Commands.Converters;
 using System.Diagnostics;
 
 [assembly: CLSCompliant(true)]
@@ -24,10 +23,10 @@ namespace Commands
     [DebuggerDisplay("Commands = {Commands},nq")]
     public class CommandManager
     {
-        private readonly CommandFinalizer _finalizer;
+        private readonly SequencedActionDisposer _disposer;
 
         /// <summary>
-        ///     Gets the collection containing all commands, named modules and subcommands as implemented by the assemblies that were registered in the <see cref="CommandBuilder"/> provided when creating the manager.
+        ///     Gets the collection containing all commands, named modules and subcommands as implem ented by the assemblies that were registered in the <see cref="CommandBuilder"/> provided when creating the manager.
         /// </summary>
         public HashSet<ISearchable> Commands { get; }
 
@@ -37,7 +36,7 @@ namespace Commands
         /// <param name="builder">The options through which to construct the collection of <see cref="Commands"/>.</param>
         public CommandManager(CommandBuilder builder)
         {
-            _finalizer = new CommandFinalizer(builder.ResultResolvers);
+            _disposer = new SequencedActionDisposer(builder.ResultResolvers);
 
             var commands = ReflectionUtilities.GetTopLevelComponents(builder)
                 .Concat(builder.Commands)
@@ -191,7 +190,7 @@ namespace Commands
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution.</returns>
-        protected virtual async Task Enter<T>(
+        protected async Task Enter<T>(
             T consumer, ArgumentEnumerator args, CommandOptions options)
             where T : ConsumerBase
         {
@@ -218,7 +217,7 @@ namespace Commands
 
             result ??= SearchResult.FromError();
 
-            await _finalizer.Finalize(consumer, result, options);
+            await _disposer.Dispose(consumer, result, options);
         }
 
         /// <summary>
@@ -230,7 +229,7 @@ namespace Commands
         /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation process.</returns>
-        protected virtual async ValueTask<ICommandResult> Run<T>(
+        protected async ValueTask<ICommandResult> Run<T>(
             T consumer, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
             where T : ConsumerBase
         {
@@ -284,7 +283,7 @@ namespace Commands
         /// <param name="value">The returned result of this operation.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the handling process.</returns>
-        protected virtual async ValueTask<InvokeResult> HandleReturnType<T>(
+        protected async ValueTask<InvokeResult> HandleReturnType<T>(
             T consumer, CommandInfo command, object? value, CommandOptions options)
             where T : ConsumerBase
         {
@@ -479,6 +478,20 @@ namespace Commands
             where T : CommandManager
         {
             return new CommandBuilder<T>();
+        }
+
+        internal sealed class SequencedActionDisposer(IEnumerable<ResultResolverBase> eventHandlers)
+        {
+            private readonly ResultResolverBase[] _resolvers = eventHandlers.ToArray();
+
+            internal async ValueTask Dispose(
+                ConsumerBase consumer, ICommandResult result, CommandOptions options)
+            {
+                foreach (var resolver in _resolvers)
+                {
+                    await resolver.Evaluate(consumer, result, options.Services, options.CancellationToken);
+                }
+            }
         }
     }
 }

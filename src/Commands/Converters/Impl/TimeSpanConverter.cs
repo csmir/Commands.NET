@@ -1,7 +1,7 @@
 ﻿using Commands.Reflection;
 using System.Text.RegularExpressions;
 
-namespace Commands.TypeConverters
+namespace Commands.Converters
 {
     internal sealed partial class TimeSpanConverter : TypeConverterBase<TimeSpan>
     {

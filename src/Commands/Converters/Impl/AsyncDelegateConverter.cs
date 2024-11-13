@@ -1,6 +1,6 @@
 ﻿using Commands.Reflection;
 
-namespace Commands.TypeConverters
+namespace Commands.Converters
 {
     internal sealed class AsyncDelegateConverter<T>(
         Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> func)

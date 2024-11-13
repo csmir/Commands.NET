@@ -1,7 +1,7 @@
 ﻿// Documentation of this file can be found at https://github.com/csmir/Commands.NET/wiki/Type-Conversion.
 
 using Commands.Reflection;
-using Commands.TypeConverters;
+using Commands.Converters;
 
 namespace Commands.Samples
 {

@@ -1,6 +1,6 @@
 ﻿using Commands.Parsing;
 using Commands.Resolvers;
-using Commands.TypeConverters;
+using Commands.Converters;
 
 namespace Commands
 {

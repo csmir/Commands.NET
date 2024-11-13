@@ -241,7 +241,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Adds the <see cref="CommandFinalizer"/> to the <see cref="HostCommandBuilder{T}.Services"/> for emitting a looping pattern to the injected <see cref="SourceResolverBase"/>'s"/>.
+        ///     Adds the <see cref="SequenceFinalContainer"/> to the <see cref="HostCommandBuilder{T}.Services"/> for emitting a looping pattern to the injected <see cref="SourceResolverBase"/>'s"/>.
         /// </summary>
         /// <returns>The same <see cref="HostCommandBuilder{T}"/> for call-chaining.</returns>
         protected HostCommandBuilder<T> AddStarter()

@@ -48,5 +48,13 @@ namespace Commands.Reflection
 
             ExposedType = parameterInfo.ParameterType;
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            var str = Type.Name;
+
+            return str;
+        }
     }
 }

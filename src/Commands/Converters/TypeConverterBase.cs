@@ -1,8 +1,7 @@
-﻿using Commands.Exceptions;
-using Commands.Helpers;
+﻿using Commands.Helpers;
 using Commands.Reflection;
 
-namespace Commands.TypeConverters
+namespace Commands.Converters
 {
     /// <inheritdoc />
     /// <typeparam name="T">The type this <see cref="TypeConverterBase{T}"/> should convert into.</typeparam>
