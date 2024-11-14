@@ -1,5 +1,5 @@
-﻿using Commands.Reflection;
-using Commands.Converters;
+﻿using Commands.Converters;
+using Commands.Reflection;
 using System.Diagnostics;
 
 namespace Commands

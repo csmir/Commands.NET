@@ -1,10 +1,9 @@
-﻿using Commands.Helpers;
+﻿using Commands.Converters;
+using Commands.Helpers;
 using Commands.Parsing;
 using Commands.Reflection;
 using Commands.Resolvers;
-using Commands.Converters;
 using System.Diagnostics;
-using System.Collections;
 
 [assembly: CLSCompliant(true)]
 
@@ -49,6 +48,7 @@ namespace Commands
                 .OrderByDescending(command => command.Score);
 
             Commands = [.. commands];
+
             Configuration = configuration;
         }
 

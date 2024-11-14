@@ -7,13 +7,13 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using System.ComponentModel;
 using System.Reflection;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Commands
 {
     /// <summary>
     ///     A utility class that provides extension methods for configuring services with a hosted execution sequence <see cref="CommandManager"/>.
     /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public static class ServiceUtilities
     {
         /// <summary>
