@@ -4,6 +4,7 @@ using Commands.Reflection;
 using Commands.Resolvers;
 using Commands.Converters;
 using System.Diagnostics;
+using System.Collections;
 
 [assembly: CLSCompliant(true)]
 
@@ -23,7 +24,7 @@ namespace Commands
     [DebuggerDisplay("Commands = {Commands},nq")]
     public class CommandManager
     {
-        private readonly SequencedActionDisposer _disposer;
+        private readonly SequenceDisposer _disposer;
 
         /// <summary>
         ///     Gets the collection containing all commands, named modules and subcommands as implem ented by the assemblies that were registered in the <see cref="CommandBuilder"/> provided when creating the manager.
@@ -36,7 +37,7 @@ namespace Commands
         /// <param name="builder">The options through which to construct the collection of <see cref="Commands"/>.</param>
         public CommandManager(CommandBuilder builder)
         {
-            _disposer = new SequencedActionDisposer(builder.ResultResolvers);
+            _disposer = new SequenceDisposer(builder.ResultResolvers);
 
             var commands = ReflectionUtilities.GetTopLevelComponents(builder)
                 .Concat(builder.Commands)
@@ -329,6 +330,15 @@ namespace Commands
 
                         return InvokeResult.FromSuccess(command);
                     }
+                case IEnumerable @enum:
+                    {
+                        foreach (var item in @enum)
+                        {
+                            await consumer.Send(item);
+                        }
+
+                        return InvokeResult.FromSuccess(command);
+                    }
                 case object obj:
                     {
                         if (obj != null)
@@ -442,7 +452,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Creates a builder that is responsible for setting up all required arguments to discover and populate the <see cref="Commands"/> of the <see cref="CommandManager"/>.
+        ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="CommandManager"/>.
         /// </summary>
         /// <remarks>
         ///     This builder is able to configure the following:
@@ -461,7 +471,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Creates a builder that is responsible for setting up all required arguments to discover and populate the commands of <typeparamref name="T"/>.
+        ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from <typeparamref name="T"/>.
         /// </summary>
         /// <remarks>
         ///     This builder is able to configure the following:
@@ -480,7 +490,7 @@ namespace Commands
             return new CommandBuilder<T>();
         }
 
-        internal sealed class SequencedActionDisposer(IEnumerable<ResultResolverBase> eventHandlers)
+        internal sealed class SequenceDisposer(IEnumerable<ResultResolverBase> eventHandlers)
         {
             private readonly ResultResolverBase[] _resolvers = eventHandlers.ToArray();
 

@@ -5,17 +5,17 @@ using Microsoft.Extensions.Logging;
 namespace Commands
 {
     /// <summary>
-    ///     A generator for command execution scopes, listening to data within the provided <paramref name="resolvers"/> to run a new command.
+    ///     A generator for command execution scopes, listening to data within the provided <see cref="SourceResolverBase"/>[] <paramref name="resolvers"/> to run a new command. This class cannot be inherited.
     /// </summary>
     /// <param name="manager">The manager used to run the command query.</param>
     /// <param name="resolvers">A collection of registered resolvers intended to be activated.</param>
     /// <param name="logger">A logger that logs the execution process.</param>
     /// <param name="lifetime">The lifetime of the application.</param>
-    public sealed class CommandGenerator(
-        CommandManager manager, IEnumerable<SourceResolverBase> resolvers, ILogger<CommandGenerator> logger, IHostApplicationLifetime lifetime)
+    public sealed class SequenceInitiator(
+        CommandManager manager, IEnumerable<SourceResolverBase> resolvers, ILogger<SequenceInitiator> logger, IHostApplicationLifetime lifetime)
         : IHostedService
     {
-        private readonly ILogger<CommandGenerator> _logger = logger;
+        private readonly ILogger<SequenceInitiator> _logger = logger;
         private readonly CommandManager _manager = manager;
         private readonly IEnumerable<SourceResolverBase> _resolvers = resolvers;
 
@@ -31,7 +31,7 @@ namespace Commands
             {
                 foreach (var resolver in _resolvers)
                 {
-                    resolver.ResourceAvailable = true;
+                    resolver.ReadAvailable = true;
                 }
             });
 
@@ -39,7 +39,7 @@ namespace Commands
             {
                 foreach (var resolver in _resolvers)
                 {
-                    resolver.ResourceAvailable = false;
+                    resolver.ReadAvailable = false;
                 }
             });
 
@@ -64,7 +64,7 @@ namespace Commands
             {
                 foreach (var resolvers in _resolvers)
                 {
-                    resolvers.ResourceAvailable = false;
+                    resolvers.ReadAvailable = false;
                 }
             }
             catch
@@ -85,7 +85,7 @@ namespace Commands
             {
                 foreach (var resolvers in _resolvers)
                 {
-                    resolvers.ResourceAvailable = true;
+                    resolvers.ReadAvailable = true;
                 }
             }
             catch

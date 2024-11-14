@@ -183,7 +183,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Adds a <see cref="SourceResolverBase"/> to the <see cref="HostCommandBuilder{T}.Services"/> of this builder that will later be injected into the configured <see cref="CommandGenerator"/> for source creation.
+        ///     Adds a <see cref="SourceResolverBase"/> to the <see cref="HostCommandBuilder{T}.Services"/> of this builder that will later be injected into the configured <see cref="SequenceInitiator"/> for source creation.
         /// </summary>
         /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolverBase"/> to add to the <see cref="HostCommandBuilder{T}.Services"/>.</typeparam>
         /// <returns>The same <see cref="HostCommandBuilder{T}"/> for call-chaining.</returns>
@@ -198,7 +198,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Adds a <see cref="SourceResolverBase"/> to the <see cref="HostCommandBuilder{T}.Services"/> of this builder that will later be injected into the configured <see cref="CommandGenerator"/> for source craetion.
+        ///     Adds a <see cref="SourceResolverBase"/> to the <see cref="HostCommandBuilder{T}.Services"/> of this builder that will later be injected into the configured <see cref="SequenceInitiator"/> for source craetion.
         /// </summary>
         /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolverBase"/> to add to the <see cref="HostCommandBuilder{T}.Services"/>.</typeparam>
         /// <returns>The same <see cref="HostCommandBuilder{T}"/> for call-chaining.</returns>
@@ -241,12 +241,12 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Adds the <see cref="SequenceFinalContainer"/> to the <see cref="HostCommandBuilder{T}.Services"/> for emitting a looping pattern to the injected <see cref="SourceResolverBase"/>'s"/>.
+        ///     Adds the <see cref="SequenceInitiator"/> to the <see cref="HostCommandBuilder{T}.Services"/> for emitting a looping pattern to the injected <see cref="SourceResolverBase"/>'s"/>.
         /// </summary>
         /// <returns>The same <see cref="HostCommandBuilder{T}"/> for call-chaining.</returns>
         protected HostCommandBuilder<T> AddStarter()
         {
-            Services.AddHostedService<CommandGenerator>();
+            Services.AddHostedService<SequenceInitiator>();
 
             return this;
         }

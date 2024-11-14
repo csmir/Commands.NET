@@ -24,7 +24,7 @@ For raw input, automated conversion to fit command signature is supported by `Ty
 
 ```cs
 ...
-[Command("hello")]
+[Name("hello")]
 public string Command(string world)
 {
     return "Hello, " + world;
@@ -45,7 +45,7 @@ When a command is attempted to be executed, it will walk through every precondit
 ```cs
 ...
 [CustomPrecondition]
-[Command("hello")]
+[Name("hello")]
 public Task<string> Command(string world)
 {
     return Task.FromResult("Hello, " + world + ". I can only execute when CustomPrecondition says so!");
@@ -62,7 +62,7 @@ The API focusses on customizability and configuration above all else, and this i
 Registration assemblies, result handling, delegate command definitions and more can be defined in the `CommandBuilder<T>`:
 
 ```cs
-var builder = CommandManager.CreateBuilder();
+var builder = CommandManager.CreateDefaultBuilder();
 
 ...
 
@@ -85,8 +85,6 @@ This customization is extended into:
 - `PostconditionAttribute` 
 
 These types can all be inherited and custom ones created for environmental specifics, custom type conversion and more.
-
-> See feature [documentation](https://github.com/csmir/Commands.NET/wiki/Customization) for more.
 
 #### Reflection
 
@@ -162,6 +160,8 @@ This guide introduces you to the basics of defining modules, commands, and how t
 Samples are available to learn how to implement Commands.NET in your own programs.
 
 - [Commands.Samples.Console](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Console)
-  - Shows how to implement Commands.NET on a basic console application.
-- [Commands.Samples.Hosting](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Console)
-  - Shows how to implement Commands.NET on a hosted console application.
+  - Implement Commands.NET on a basic console application.
+- [Commands.Samples.Hosting](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Hosting)
+  - Implement Commands.NET in a hosted application.
+- [Commands.Samples.CLI](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.CLI)
+  - Implement Commands.NET in a CLI app.

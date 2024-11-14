@@ -1,4 +1,5 @@
-﻿using Commands.Parsing;
+﻿using Commands.Exceptions;
+using Commands.Parsing;
 
 namespace Commands.Results
 {
@@ -37,6 +38,22 @@ namespace Commands.Results
         ///     Creates a new <see cref="SourceResult"/> resembling a successful sourcing operation.
         /// </summary>
         /// <param name="consumer">The consumer of the command.</param>
+        /// <param name="args">An unparsed command query, which will be parsed using <see cref="StringParser.ParseKeyValueCollection(string)"/>.</param>
+        /// <param name="options">A set of options that determine logic in the command execution.</param>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static SourceResult FromSuccess(ConsumerBase consumer, string args, CommandOptions? options = null)
+        {
+            var parseResult = StringParser.ParseKeyValueCollection(args);
+
+            options ??= new CommandOptions();
+
+            return new(consumer, new ArgumentEnumerator(parseResult, options.MatchComparer), options, null);
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="SourceResult"/> resembling a successful sourcing operation.
+        /// </summary>
+        /// <param name="consumer">The consumer of the command.</param>
         /// <param name="args">A parsed command query.</param>
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
@@ -61,11 +78,20 @@ namespace Commands.Results
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> resembling a failed sourcing operation.
         /// </summary>
+        /// <returns>A new result containing information about the operation.</returns>
+        public static SourceResult FromError()
+        {
+            return new(null, null, null, SourceException.SourceAcquirementFailed());
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="SourceResult"/> resembling a failed sourcing operation.
+        /// </summary>
         /// <param name="exception">An exception describing the failed process.</param>
         /// <returns>A new result containing information about the operation.</returns>
         public static SourceResult FromError(Exception exception)
         {
-            return new(null, null, null, exception);
+            return new(null, null, null, SourceException.SourceAcquirementFailed(exception));
         }
 
         /// <inheritdoc />
