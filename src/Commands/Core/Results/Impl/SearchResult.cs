@@ -89,5 +89,22 @@ namespace Commands
         {
             return $"{(Component != null ? $"Component = {Component} \n" : "")}Success = {(Exception == null ? "True" : $"False \nException = {Exception.Message}")}";
         }
+
+        /// <summary>
+        ///     Gets a string representation of this result.
+        /// </summary>
+        /// <param name="inline">Sets whether the string representation should be inlined or not.</param>
+        /// <returns></returns>
+        public string ToString(bool inline)
+        {
+            if (inline)
+            {
+                return $"{(Component != null ? $"Component = {Component} " : "")}Success = {(Exception == null ? "True" : $"False")}";
+            }
+            else
+            {
+                return ToString();
+            }
+        }
     }
 }

@@ -10,7 +10,7 @@ namespace Commands.Resolvers
         {
             var logger = services.GetRequiredService<ILogger<DefaultResultResolver>>();
 
-            logger.Log(LogLevel.Warning, result.ToString());
+            logger.Log(LogLevel.Warning, result.ToString(true));
 
             return base.ArgumentMismatch(consumer, result, services, cancellationToken);
         }
@@ -19,7 +19,7 @@ namespace Commands.Resolvers
         {
             var logger = services.GetRequiredService<ILogger<DefaultResultResolver>>();
 
-            logger.Log(LogLevel.Warning, result.ToString());
+            logger.Log(LogLevel.Warning, result.ToString(true));
 
             return base.CommandNotFound(consumer, result, services, cancellationToken);
         }
@@ -28,7 +28,7 @@ namespace Commands.Resolvers
         {
             var logger = services.GetRequiredService<ILogger<DefaultResultResolver>>();
 
-            logger.Log(LogLevel.Error, result.ToString());
+            logger.Log(LogLevel.Error, result.ToString(true));
 
             return base.ConditionUnmet(consumer, result, services, cancellationToken);
         }
@@ -37,7 +37,7 @@ namespace Commands.Resolvers
         {
             var logger = services.GetRequiredService<ILogger<DefaultResultResolver>>();
 
-            logger.Log(LogLevel.Warning, result.ToString());
+            logger.Log(LogLevel.Warning, result.ToString(true));
 
             return base.ConversionFailed(consumer, result, services, cancellationToken);
         }
@@ -46,7 +46,7 @@ namespace Commands.Resolvers
         {
             var logger = services.GetRequiredService<ILogger<DefaultResultResolver>>();
 
-            logger.Log(LogLevel.Error, result.ToString());
+            logger.Log(LogLevel.Error, result.ToString(true));
 
             return base.InvocationFailed(consumer, result, services, cancellationToken);
         }
@@ -55,7 +55,7 @@ namespace Commands.Resolvers
         {
             var logger = services.GetRequiredService<ILogger<DefaultResultResolver>>();
 
-            logger.Log(LogLevel.Warning, result.ToString());
+            logger.Log(LogLevel.Warning, result.ToString(true));
 
             return base.SearchIncomplete(consumer, result, services, cancellationToken);
         }

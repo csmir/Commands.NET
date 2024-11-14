@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 
 namespace Commands
 {
@@ -48,6 +49,23 @@ namespace Commands
         public override string ToString()
         {
             return $"Success = {(Exception == null ? "True" : $"False \nException = {Exception.Message}")}";
+        }
+
+        /// <summary>
+        ///     Gets a string representation of this result.
+        /// </summary>
+        /// <param name="inline">Sets whether the string representation should be inlined or not.</param>
+        /// <returns></returns>
+        public string ToString(bool inline)
+        {
+            if (inline)
+            {
+                return $"Success = {(Exception == null ? "True" : $"False")}";
+            }
+            else
+            {
+                return ToString();
+            }
         }
     }
 }
