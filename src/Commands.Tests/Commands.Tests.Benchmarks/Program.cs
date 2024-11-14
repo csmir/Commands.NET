@@ -13,7 +13,10 @@ namespace Commands.Tests
         public Program()
         {
             var services = new ServiceCollection()
-                .ConfigureCommands()
+                .AddSingleton(new ConfigurationBuilder()
+                {
+
+                }.Build())
                 .BuildServiceProvider();
 
             _manager = services.GetRequiredService<CommandManager>();

@@ -1,20 +1,11 @@
 ﻿using Commands;
-using Commands.Results;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 await Host.CreateDefaultBuilder(args)
-    .ConfigureCommands((context, configuration) =>
+    .UseCommands()
+    .ConfigureLogging(configure =>
     {
-        configuration.AddSourceResolver(() =>
-        {
-            var input = Console.ReadLine();
-
-            if (input == null)
-            {
-                return SourceResult.FromError();
-            }
-
-            return SourceResult.FromSuccess(new ConsumerBase(), input);
-        });
+        configure.AddSimpleConsole();
     })
     .RunConsoleAsync();

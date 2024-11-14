@@ -81,7 +81,7 @@ namespace Commands.Resolvers
         /// <param name="consumer">The consumer of the scope created for the execution of this source.</param>
         /// <param name="args">The arguments to be used to run a command.</param>
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
-        protected SourceResult Success<T>(T consumer, params object[] args)
+        protected SourceResult Success<T>(T consumer, IEnumerable<object> args)
             where T : ConsumerBase
         {
             return SourceResult.FromSuccess(consumer, args);
@@ -94,10 +94,35 @@ namespace Commands.Resolvers
         /// <param name="args">The arguments to be used to run a command.</param>
         /// <param name="options">The options used to configure command execution.</param>
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
-        protected SourceResult Success<T>(T consumer, object[] args, CommandOptions options)
+        protected SourceResult Success<T>(T consumer, IEnumerable<object> args, CommandOptions options)
             where T : ConsumerBase
         {
             return SourceResult.FromSuccess(consumer, args, options);
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="SourceResult"/> representing a successful evaluation.
+        /// </summary>
+        /// <param name="consumer">The consumer of the scope created for the execution of this source.</param>
+        /// <param name="args">The arguments to be used to run a command.</param>
+        /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
+        protected SourceResult Success<T>(T consumer, IEnumerable<KeyValuePair<string, object?>> args)
+            where T : ConsumerBase
+        {
+            return SourceResult.FromSuccess(consumer, args);
+        }
+
+        /// <summary>
+        ///     Creates a new <see cref="SourceResult"/> representing a successful evaluation.
+        /// </summary>
+        /// <param name="consumer">The consumer of the scope created for the execution of this source.</param>
+        /// <param name="args">The arguments to be used to run a command.</param>
+        /// <param name="options">The options used to configure command execution.</param>
+        /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
+        protected SourceResult Success<T>(T consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions options)
+            where T : ConsumerBase
+        {
+            return SourceResult.FromSuccess(consumer, args);
         }
     }
 }

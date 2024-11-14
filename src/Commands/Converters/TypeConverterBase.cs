@@ -32,7 +32,7 @@ namespace Commands.Converters
     ///     An abstract type that can be implemented to create custom type conversion from a command query argument.
     /// </summary>
     /// <remarks>
-    ///     To register converters for the <see cref="CommandManager"/> to use, add them to the <see cref="CommandBuilder.TypeConverters"/> collection.
+    ///     To register converters for the <see cref="CommandManager"/> to use, add them to the <see cref="ConfigurationBuilder.TypeConverters"/> collection.
     /// </remarks>
     public abstract class TypeConverterBase
     {

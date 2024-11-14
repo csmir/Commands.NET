@@ -1,5 +1,5 @@
-﻿using Commands.Helpers;
-using Commands.Converters;
+﻿using Commands.Converters;
+using Commands.Helpers;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -53,7 +53,7 @@ namespace Commands.Reflection
         public TypeConverterBase? Converter { get; } = null;
 
         internal ComplexArgumentInfo(
-            ParameterInfo parameterInfo, string? name, CommandBuilder options)
+            ParameterInfo parameterInfo, string? name, CommandConfiguration options)
         {
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);

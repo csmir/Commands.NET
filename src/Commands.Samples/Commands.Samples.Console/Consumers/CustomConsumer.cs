@@ -1,12 +1,7 @@
 ﻿namespace Commands.Samples
 {
-    public class CustomConsumer : ConsumerBase
+    public class CustomConsumer(string name) : ConsumerBase
     {
-        public string Name { get; }
-
-        public CustomConsumer(string name)
-        {
-            Name = name;
-        }
+        public string Name { get; } = name;
     }
 }

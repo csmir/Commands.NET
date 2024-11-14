@@ -19,38 +19,44 @@ namespace Commands
     ///     which introduces native IoC based command operations alongside the preexisting DI support.
     ///     <br/>
     ///     <br/>
-    ///     To start using this manager, call <see cref="CreateDefaultBuilder"/> and configure it using the minimal API's implemented by the <see cref="CommandBuilder{T}"/>.
+    ///     To start using this manager, call <see cref="CreateDefaultBuilder"/> and configure it using the minimal API's implemented by the <see cref="ConfigurationBuilder"/>.
     /// </remarks>
     [DebuggerDisplay("Commands = {Commands},nq")]
-    public class CommandManager
+    public sealed class CommandManager
     {
         private readonly SequenceDisposer _disposer;
 
         /// <summary>
-        ///     Gets the collection containing all commands, named modules and subcommands as implem ented by the assemblies that were registered in the <see cref="CommandBuilder"/> provided when creating the manager.
+        ///     Gets the collection containing all commands, named modules and subcommands as implem ented by the assemblies that were registered in the <see cref="ConfigurationBuilder"/> provided when creating the manager.
         /// </summary>
         public HashSet<ISearchable> Commands { get; }
 
         /// <summary>
+        ///     Gets the configuration that was used to construct the <see cref="CommandManager"/>, and which can be used in adding extended functionality to the manager.
+        /// </summary>
+        public CommandConfiguration Configuration { get; }
+
+        /// <summary>
         ///     Creates a new <see cref="CommandManager"/> based on the provided arguments.
         /// </summary>
-        /// <param name="builder">The options through which to construct the collection of <see cref="Commands"/>.</param>
-        public CommandManager(CommandBuilder builder)
+        /// <param name="configuration">The options through which to construct the collection of <see cref="Commands"/>.</param>
+        public CommandManager(CommandConfiguration configuration)
         {
-            _disposer = new SequenceDisposer(builder.ResultResolvers);
+            _disposer = new SequenceDisposer(configuration.ResultResolvers);
 
-            var commands = ReflectionUtilities.GetTopLevelComponents(builder)
-                .Concat(builder.Commands)
+            var commands = ReflectionUtilities.GetTopLevelComponents(configuration)
+                .Concat(configuration.Commands.Select(x => x.Build(configuration)))
                 .OrderByDescending(command => command.Score);
 
             Commands = [.. commands];
+            Configuration = configuration;
         }
 
         /// <summary>
         ///     Flattens the top level commands in <see cref="Commands"/> into a single enumerable collection.
         /// </summary>
         /// <returns>A lazily evaluated, flattened <see cref="IEnumerable{T}"/> that holds all <see cref="CommandInfo"/>'s registered in this manager.</returns>
-        public virtual IEnumerable<CommandInfo> GetCommands()
+        public IEnumerable<CommandInfo> GetCommands()
         {
             static IEnumerable<CommandInfo> Flatten(IEnumerable<ISearchable> components)
             {
@@ -77,7 +83,7 @@ namespace Commands
         ///     Groups the command modules in <see cref="Commands"/> info a single enumerable collection. 
         /// </summary>
         /// <returns>A lazily evaluated, flattened <see cref="IEnumerable{T}"/> that holds all <see cref="ModuleInfo"/>'s registered in this manager.</returns>
-        public virtual IEnumerable<ModuleInfo> GetModules()
+        public IEnumerable<ModuleInfo> GetModules()
         {
             static IEnumerable<ModuleInfo> Flatten(IEnumerable<ISearchable> components)
             {
@@ -103,7 +109,7 @@ namespace Commands
         /// </summary>
         /// <param name="args">A set of arguments intended to discover commands as a query.</param>
         /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the results of the search query.</returns>
-        public virtual IEnumerable<SearchResult> Search(ArgumentEnumerator args)
+        public IEnumerable<SearchResult> Search(ArgumentEnumerator args)
         {
             if (args == null)
             {
@@ -120,7 +126,7 @@ namespace Commands
         /// <param name="args">An unparsed input that is expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
-        public virtual Task Execute<T>(
+        public Task Execute<T>(
             T consumer, string args, CommandOptions? options = null)
             where T : ConsumerBase
         {
@@ -142,7 +148,7 @@ namespace Commands
         /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
-        public virtual Task Execute<T>(
+        public Task Execute<T>(
             T consumer, IEnumerable<object> args, CommandOptions? options = null)
             where T : ConsumerBase
         {
@@ -156,7 +162,7 @@ namespace Commands
         /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
-        public virtual Task Execute<T>(
+        public Task Execute<T>(
             T consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
             where T : ConsumerBase
         {
@@ -172,7 +178,7 @@ namespace Commands
         /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
-        public virtual Task Execute<T>(
+        public Task Execute<T>(
             T consumer, ArgumentEnumerator args, CommandOptions options)
             where T : ConsumerBase
         {
@@ -184,14 +190,7 @@ namespace Commands
             return task;
         }
 
-        /// <summary>
-        ///     Steps through the pipeline in order to execute a command based on the provided <paramref name="args"/>.
-        /// </summary>
-        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
-        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution.</returns>
-        protected async Task Enter<T>(
+        private async Task Enter<T>(
             T consumer, ArgumentEnumerator args, CommandOptions options)
             where T : ConsumerBase
         {
@@ -221,22 +220,13 @@ namespace Commands
             await _disposer.Dispose(consumer, result, options);
         }
 
-        /// <summary>
-        ///     Invokes the provided <paramref name="command"/> and returns the result.
-        /// </summary>
-        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
-        /// <param name="command">The result of the match intended to be ran.</param>
-        /// <param name="argHeight">The height at which the command name ends and argument input starts.</param>
-        /// <param name="args">A set of arguments that are expected to discover, populate and invoke a target command.</param>
-        /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation process.</returns>
-        protected async ValueTask<ICommandResult> Run<T>(
+        private async ValueTask<ICommandResult> Run<T>(
             T consumer, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
             where T : ConsumerBase
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            var conversion = await Convert(consumer, command, argHeight, args, options);
+            var conversion = await command.Convert(consumer, argHeight, args, options);
 
             var arguments = new object[conversion.Length];
 
@@ -250,7 +240,7 @@ namespace Commands
 
             try
             {
-                var preCheckResult = await CheckPreconditions(consumer, command, options);
+                var preCheckResult = await command.EvaluatePreconditions(consumer, options);
 
                 if (!preCheckResult.Success)
                 {
@@ -259,9 +249,9 @@ namespace Commands
 
                 var value = command.Invoker.Invoke(consumer, command, arguments, this, options);
 
-                var result = await HandleReturnType(consumer, command, value, options);
+                var result = await command.HandleReturnType(consumer, value);
 
-                var postCheckResult = await CheckPostconditions(consumer, command, options);
+                var postCheckResult = await command.EvaluatePostconditions(consumer, options);
 
                 if (!postCheckResult.Success)
                 {
@@ -277,181 +267,6 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Handles the returned result from a command invocation by, if necessary, sending the result to the consumer.
-        /// </summary>
-        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
-        /// <param name="command">The result of the match intended to be ran.</param>
-        /// <param name="value">The returned result of this operation.</param>
-        /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the handling process.</returns>
-        protected async ValueTask<InvokeResult> HandleReturnType<T>(
-            T consumer, CommandInfo command, object? value, CommandOptions options)
-            where T : ConsumerBase
-        {
-            switch (value)
-            {
-                case null: // (void)
-                    {
-                        return InvokeResult.FromSuccess(command);
-                    }
-                case Task awaitablet:
-                    {
-                        await awaitablet;
-
-                        var type = command.Invoker.GetReturnType()!;
-
-                        if (type.IsGenericType)
-                        {
-                            var result = type.GetProperty("Result")?.GetValue(awaitablet);
-
-                            if (result != null)
-                            {
-                                await consumer.Send(result);
-                            }
-                        }
-
-                        return InvokeResult.FromSuccess(command);
-                    }
-                case ValueTask awaitablevt:
-                    {
-                        await awaitablevt;
-
-                        var type = command.Invoker.GetReturnType()!;
-
-                        if (type.IsGenericType)
-                        {
-                            var result = type.GetProperty("Result")?.GetValue(awaitablevt);
-
-                            if (result != null)
-                            {
-                                await consumer.Send(result);
-                            }
-                        }
-
-                        return InvokeResult.FromSuccess(command);
-                    }
-                case IEnumerable @enum:
-                    {
-                        foreach (var item in @enum)
-                        {
-                            await consumer.Send(item);
-                        }
-
-                        return InvokeResult.FromSuccess(command);
-                    }
-                case object obj:
-                    {
-                        if (obj != null)
-                        {
-                            await consumer.Send(obj);
-                        }
-
-                        return InvokeResult.FromSuccess(command);
-                    }
-            }
-        }
-
-        /// <summary>
-        ///     Converts the provided <paramref name="args"/> into a set of arguments that can be used to invoke a command.
-        /// </summary>
-        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
-        /// <param name="command">The result of the match intended to be ran.</param>
-        /// <param name="argHeight">The argument level from search operation.</param>
-        /// <param name="args">The arguments intended to populate the command.</param>
-        /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the conversion process.</returns>
-        protected async ValueTask<ConvertResult[]> Convert<T>(
-            T consumer, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
-            where T : ConsumerBase
-        {
-            options.CancellationToken.ThrowIfCancellationRequested();
-
-            args.SetSize(argHeight);
-
-            if (command.HasArguments)
-            {
-                if (command.MaxLength == args.Length)
-                {
-                    return await command.Arguments.ConvertMany(consumer, args, options);
-                }
-
-                if (command.MaxLength <= args.Length && command.HasRemainder)
-                {
-                    return await command.Arguments.ConvertMany(consumer, args, options);
-                }
-
-                if (command.MaxLength > args.Length && command.MinLength <= args.Length)
-                {
-                    return await command.Arguments.ConvertMany(consumer, args, options);
-                }
-            }
-            else if (args.Length == 0)
-            {
-                return [];
-            }
-
-            return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
-        }
-
-        /// <summary>
-        ///     Checks the preconditions of a command before invoking it.
-        /// </summary>
-        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
-        /// <param name="command">The result of the match intended to be ran.</param>
-        /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the evaluation process.</returns>
-        protected async ValueTask<ConditionResult> CheckPreconditions<T>(
-            T consumer, CommandInfo command, CommandOptions options)
-            where T : ConsumerBase
-        {
-            options.CancellationToken.ThrowIfCancellationRequested();
-
-            if (!options.SkipPreconditions)
-            {
-                foreach (var precon in command.PreEvaluations)
-                {
-                    var checkResult = await precon.Evaluate(consumer, command, options.Services, options.CancellationToken);
-
-                    if (!checkResult.Success)
-                    {
-                        return checkResult;
-                    }
-                }
-            }
-
-            return ConditionResult.FromSuccess();
-        }
-
-        /// <summary>
-        ///     Checks the postconditions of a command before invoking it.
-        /// </summary>
-        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
-        /// <param name="command">The result of the match intended to be ran.</param>
-        /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the evaluation process.</returns>
-        protected async ValueTask<ConditionResult> CheckPostconditions<T>(
-            T consumer, CommandInfo command, CommandOptions options)
-            where T : ConsumerBase
-        {
-            options.CancellationToken.ThrowIfCancellationRequested();
-
-            if (!options.SkipPostconditions)
-            {
-                foreach (var postcon in command.PostEvaluations)
-                {
-                    var checkResult = await postcon.Evaluate(consumer, command, options.Services, options.CancellationToken);
-
-                    if (!checkResult.Success)
-                    {
-                        return checkResult;
-                    }
-                }
-            }
-
-            return ConditionResult.FromSuccess();
-        }
-
-        /// <summary>
         ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="CommandManager"/>.
         /// </summary>
         /// <remarks>
@@ -464,30 +279,10 @@ namespace Commands
         ///         <item>Custom naming patterns that validate naming across the whole process.</item>
         ///     </list>
         /// </remarks>
-        /// <returns>A new <see cref="CommandBuilder"/> that implements the currently accessed <see cref="CommandManager"/>.</returns>
-        public static CommandBuilder<CommandManager> CreateDefaultBuilder()
+        /// <returns>A new <see cref="ConfigurationBuilder"/> that implements the currently accessed <see cref="CommandManager"/>.</returns>
+        public static ConfigurationBuilder CreateDefaultBuilder()
         {
-            return new CommandBuilder<CommandManager>();
-        }
-
-        /// <summary>
-        ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from <typeparamref name="T"/>.
-        /// </summary>
-        /// <remarks>
-        ///     This builder is able to configure the following:
-        ///     <list type="number">
-        ///         <item>Defining assemblies through which will be searched to discover modules and commands.</item>
-        ///         <item>Defining custom commands that do not appear in the assemblies.</item>
-        ///         <item>Registering implementations of <see cref="TypeConverterBase"/> which define custom argument conversion.</item>
-        ///         <item>Registering implementations of <see cref="ResultResolverBase"/> which define custom result handling.</item>
-        ///         <item>Custom naming patterns that validate signature naming across the whole process.</item>
-        ///     </list>
-        /// </remarks>
-        /// <returns>A new <see cref="CommandBuilder"/> that implements the currently accessed <see cref="CommandManager"/>.</returns>
-        public static CommandBuilder<T> CreateBuilder<T>()
-            where T : CommandManager
-        {
-            return new CommandBuilder<T>();
+            return new ConfigurationBuilder();
         }
 
         internal sealed class SequenceDisposer(IEnumerable<ResultResolverBase> eventHandlers)

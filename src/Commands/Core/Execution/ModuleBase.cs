@@ -44,7 +44,7 @@ namespace Commands
     ///     Modules do not have state, they are instantiated and populated before a command runs and immediately disposed when it finishes.
     /// </summary>
     /// <remarks>
-    ///      All derived types must be known in <see cref="CommandBuilder.Assemblies"/> to be discoverable and automatically registered during the creation of a <see cref="CommandManager"/>.
+    ///      All derived types must be known in <see cref="ConfigurationBuilder.Assemblies"/> to be discoverable and automatically registered during the creation of a <see cref="CommandManager"/>.
     /// </remarks>
     public abstract class ModuleBase
     {
