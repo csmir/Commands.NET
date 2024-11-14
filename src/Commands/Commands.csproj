@@ -51,8 +51,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Core\Configuration\Impl\" />
-  </ItemGroup>
-
 </Project>
