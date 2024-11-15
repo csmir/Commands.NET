@@ -1,6 +1,8 @@
 ﻿using Commands.Helpers;
 using System.ComponentModel;
+using System.Data;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Commands.Reflection
 {
@@ -216,6 +218,27 @@ namespace Commands.Reflection
 
             return commands.Concat(modules)
                 .ToArray();
+        }
+
+
+        /// <summary>
+        ///     Gets the first attribute of the specified type set on this command, if it exists.
+        /// </summary>
+        /// <typeparam name="T">The attribute type to filter by.</typeparam>
+        /// <param name="component">The component that should be searched for the attribute.</param>
+        /// <param name="defaultValue">The default value that will be returned if an attribute was not found. <see langword="default"/> if not set.</param>
+        /// <returns>An attribute of the type <typeparamref name="T"/> if it exists, otherwise <paramref name="defaultValue"/>.</returns>
+        public static T? GetAttribute<T>(this ISearchable component, T? defaultValue = default)
+            where T : Attribute
+        {
+            var attribute = component.Attributes.FirstOrDefault(x => x is T);
+
+            if (attribute is null)
+            {
+                return defaultValue;
+            }
+
+            return (T)attribute;
         }
 
         internal static IArgument[] GetArguments(this MethodBase method, bool withContext, CommandConfiguration options)

@@ -1,4 +1,6 @@
-﻿namespace Commands.Samples
+﻿using Commands.Reflection;
+
+namespace Commands.Samples
 {
     public class HelpModule : ModuleBase
     {
