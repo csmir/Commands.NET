@@ -185,15 +185,6 @@ namespace Commands
 
                         return InvokeResult.FromSuccess(command);
                     }
-                case IEnumerable @enum:
-                    {
-                        foreach (var item in @enum)
-                        {
-                            await consumer.Send(item);
-                        }
-
-                        return InvokeResult.FromSuccess(command);
-                    }
                 case object obj:
                     {
                         if (obj != null)

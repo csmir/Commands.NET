@@ -85,11 +85,19 @@ namespace Commands.Reflection
 
             var (minLength, maxLength) = parameters.GetLength();
 
-            if (parameters.Any(x => x.Attributes.Contains<RemainderAttribute>(false)))
+            if (parameters.Any(x => x.IsRemainder))
             {
-                if (parameters.Length > 1 && parameters[^1].IsRemainder)
+                for (var i = 0; i < parameters.Length; i++)
                 {
-                    ThrowHelpers.ThrowInvalidOperation($"{nameof(RemainderAttribute)} can only exist on the last parameter of a command signature.");
+                    var parameter = parameters[i];
+
+                    if (parameter.IsRemainder)
+                    {
+                        if (i != parameters.Length - 1)
+                        {
+                            ThrowHelpers.ThrowInvalidOperation($"{nameof(RemainderAttribute)} can only exist on the last parameter of a command signature.");
+                        }
+                    }
                 }
             }
 
