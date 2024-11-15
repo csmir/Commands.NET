@@ -228,7 +228,7 @@ namespace Commands.Reflection
         /// <param name="component">The component that should be searched for the attribute.</param>
         /// <param name="defaultValue">The default value that will be returned if an attribute was not found. <see langword="default"/> if not set.</param>
         /// <returns>An attribute of the type <typeparamref name="T"/> if it exists, otherwise <paramref name="defaultValue"/>.</returns>
-        public static T? GetAttribute<T>(this ISearchable component, T? defaultValue = default)
+        public static T? GetAttribute<T>(this IScoreable component, T? defaultValue = default)
             where T : Attribute
         {
             var attribute = component.Attributes.FirstOrDefault(x => x is T);

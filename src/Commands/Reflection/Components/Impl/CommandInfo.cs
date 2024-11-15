@@ -17,6 +17,9 @@ namespace Commands.Reflection
         public string? Name { get; }
 
         /// <inheritdoc />
+        public string FullName { get; }
+
+        /// <inheritdoc />
         public string[] Aliases { get; }
 
         /// <inheritdoc />
@@ -127,6 +130,8 @@ namespace Commands.Reflection
                 IsDefault = true;
                 Name = null;
             }
+
+            FullName = $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
 
             MinLength = minLength;
             MaxLength = maxLength;

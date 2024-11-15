@@ -14,6 +14,7 @@ namespace Commands.Samples
                 var description = command.GetAttribute<DescriptionAttribute>()?.Description ?? "No description available.";
 
                 await Consumer.Send(command.ToString());
+                await Consumer.Send(command.FullName ?? "Unnamed command.");
                 await Consumer.Send(description);
             }
         }

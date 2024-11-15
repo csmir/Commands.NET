@@ -8,6 +8,11 @@ namespace Commands.Reflection
     public interface ISearchable : IScoreable
     {
         /// <summary>
+        ///     Gets the full name of the component, including the names of its parent components.
+        /// </summary>
+        public string FullName { get; }
+
+        /// <summary>
         ///     Gets an array of aliases for this component.
         /// </summary>
         public string[] Aliases { get; }

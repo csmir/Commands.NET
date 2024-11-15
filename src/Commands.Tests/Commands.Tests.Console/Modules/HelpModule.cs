@@ -1,39 +1,14 @@
-﻿using Commands.Reflection;
-
-namespace Commands.Tests
+﻿namespace Commands.Tests
 {
-    public sealed class HelpModule(CommandManager manager) : ModuleBase
+    public sealed class HelpModule : ModuleBase
     {
-        private readonly CommandManager _manager = manager;
-
         [Name("help")]
         public void Help()
         {
-            foreach (var command in _manager.Commands)
+            var commands = Manager.GetCommands();
+            foreach (var command in commands)
             {
-                if (command is ModuleInfo module)
-                {
-                    PrintRecursive(module);
-                }
-                else
-                {
-                    Send(command.ToString() + " Score: " + command.Score);
-                }
-            }
-        }
-
-        private void PrintRecursive(ModuleInfo module, int stepHeight = 0)
-        {
-            foreach (var component in module.Components)
-            {
-                if (component is ModuleInfo moduleInfo)
-                {
-                    PrintRecursive(moduleInfo, stepHeight + 1);
-                }
-                else if (component is CommandInfo commandInfo)
-                {
-                    Send(commandInfo.ToString() + " Score: " + commandInfo.Score);
-                }
+                Send(command.FullName);
             }
         }
     }
