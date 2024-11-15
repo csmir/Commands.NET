@@ -13,6 +13,11 @@ namespace Commands.Reflection
         public bool IsRemainder { get; }
 
         /// <summary>
+        ///     Gets if this argument collects the query remainder as separate, yet joined arguments.
+        /// </summary>
+        public bool IsCollector { get; }
+
+        /// <summary>
         ///     Gets the converter for this argument.
         /// </summary>
         /// <remarks>

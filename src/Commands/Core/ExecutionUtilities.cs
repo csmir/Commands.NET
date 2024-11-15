@@ -13,9 +13,6 @@ namespace Commands
     {
         const string STR_NULL = "null";
 
-        private static readonly Type o_type = typeof(object);
-        private static readonly Type s_type = typeof(string);
-
         /// <summary>
         ///     Searches for one or more components in a collection of <see cref="ISearchable"/> components.
         /// </summary>
@@ -245,17 +242,20 @@ namespace Commands
                 // parse remainder.
                 if (argument.IsRemainder)
                 {
-                    var remainder = args.TakeAll();
-                    if (argument.Type == s_type)
+                    if (argument.IsCollector)
                     {
-                        results[i] = ConvertResult.FromSuccess(remainder);
+                        var remainder = args.TakeRemaining();
+
+                        results[i] = await argument.Convert(consumer, remainder, true, options);
                     }
                     else
                     {
-                        results[i] = await argument.Convert(consumer, remainder, options);
-                    }
+                        var remainder = args.JoinRemaining();
 
-                    // end loop as remainder is last param.
+                        results[i] = await argument.Convert(consumer, remainder, false, options);
+                    }
+                    
+                    // End of the line, as remainder is always the last argument.
                     break;
                 }
 
@@ -290,7 +290,7 @@ namespace Commands
 
                 if (args.TryNext(argument.Name!, out var value))
                 {
-                    results[i] = await argument.Convert(consumer, value, options);
+                    results[i] = await argument.Convert(consumer, value, false, options);
 
                     continue;
                 }
@@ -308,7 +308,7 @@ namespace Commands
             return results;
         }
 
-        internal static async ValueTask<ConvertResult> Convert(this IArgument argument, ConsumerBase consumer, object? value, CommandOptions options)
+        internal static async ValueTask<ConvertResult> Convert(this IArgument argument, ConsumerBase consumer, object? value, bool isArray, CommandOptions options)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -316,15 +316,18 @@ namespace Commands
             if (argument.IsNullable && value is null or STR_NULL)
                 return ConvertResult.FromSuccess();
 
-            // if value is string or object.
-            if (argument.Type == s_type || argument.Type == o_type)
-                return ConvertResult.FromSuccess(value);
-
             if (value is null)
                 return ConvertResult.FromError(new ArgumentNullException(argument.Name));
 
+            // if value is string or object.
+            if (argument.Type.IsString())
+                return ConvertResult.FromSuccess(value?.ToString());
+
+            if (argument.Type.IsObject())
+                return ConvertResult.FromSuccess(value);
+
             // run parser.
-            return await argument.Converter!.Evaluate(consumer, argument, value.ToString(), options.Services, options.CancellationToken);
+            return await argument.Converter!.Evaluate(consumer, argument, value, options.Services, options.CancellationToken);
         }
     }
 }

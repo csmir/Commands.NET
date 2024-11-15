@@ -16,30 +16,6 @@ services.AddSingleton(manager);
 
 var provider = services.BuildServiceProvider();
 
-//await manager.Execute(new ConsumerBase(), ["async", "true"], new()
-//{
-//    AsyncMode = AsyncMode.Async,
-//    Services = provider.CreateAsyncScope().ServiceProvider
-//});
-
-//Console.WriteLine("Passed");
-
-//await manager.Execute(new ConsumerBase(), ["async", "true"], new()
-//{
-//    AsyncMode = AsyncMode.Async,
-//    Services = provider.CreateAsyncScope().ServiceProvider
-//});
-
-//Console.WriteLine("Passed");
-
-//await manager.Execute(new ConsumerBase(), ["async", "true"], new()
-//{
-//    AsyncMode = AsyncMode.Async,
-//    Services = provider.CreateAsyncScope().ServiceProvider
-//});
-
-//Console.WriteLine("Passed");
-
 while (true)
 {
     Console.CursorVisible = true;
@@ -55,5 +31,3 @@ while (true)
 
     await scope.DisposeAsync();
 }
-
-//manager.Dispose();

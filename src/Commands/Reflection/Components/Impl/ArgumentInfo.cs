@@ -1,5 +1,6 @@
 ﻿using Commands.Converters;
 using Commands.Helpers;
+using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -26,6 +27,9 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public bool IsRemainder { get; }
+
+        /// <inheritdoc />
+        public bool IsCollector { get; }
 
         /// <inheritdoc />
         public Attribute[] Attributes { get; }
@@ -59,7 +63,7 @@ namespace Commands.Reflection
                 IsOptional = false;
             }
 
-            if (attributes.Contains<RemainderAttribute>(false))
+            if (attributes.Contains<RemainderAttribute>(false) || attributes.Contains<ParamArrayAttribute>(false))
             {
                 IsRemainder = true;
             }
@@ -68,15 +72,10 @@ namespace Commands.Reflection
                 IsRemainder = false;
             }
 
-            if (Type.IsEnum)
-            {
-                Converter = EnumTypeReader.GetOrCreate(Type);
-            }
+            var converter = ReflectionUtilities.GetTypeConverter(Type, options);
 
-            else if (Type != typeof(string) && Type != typeof(object))
-            {
-                Converter = options.TypeConverters[Type];
-            }
+            Converter = converter.Converter;
+            IsCollector = IsCollector || converter.Collector;
 
             Attributes = attributes.ToArray();
             ExposedType = parameterInfo.ParameterType;

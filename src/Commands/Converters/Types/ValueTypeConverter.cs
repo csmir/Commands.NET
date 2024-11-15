@@ -9,11 +9,11 @@ namespace Commands.Converters
         private readonly static Lazy<IReadOnlyDictionary<Type, Delegate>> _container = new(ValueGenerator);
 
         public override ValueTask<ConvertResult> Evaluate(
-            ConsumerBase consumer, IArgument parameter, string? value, IServiceProvider services, CancellationToken cancellationToken)
+            ConsumerBase consumer, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             var parser = (_container.Value[Type] as Parser<T>)!; // never null in cast use.
 
-            if (parser(value, out var result))
+            if (parser(value?.ToString(), out var result))
                 return ValueTask.FromResult(Success(result));
 
             return ValueTask.FromResult(Error($"The provided value does not match the expected type. Expected {typeof(T).Name}, got {value}. At: '{parameter.Name}'"));

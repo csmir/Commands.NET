@@ -11,7 +11,7 @@ namespace Commands.Parsing
     /// </remarks>
     public sealed class ArgumentEnumerator
     {
-        const char STR_WHITESPACE = ' ';
+        const char u0020 = ' ';
 
         private int _size;
         private int _indexUnnamed = 0;
@@ -134,10 +134,19 @@ namespace Commands.Parsing
         /// <summary>
         ///     Joins the remaining unnamed arguments in the set into a single string.
         /// </summary>
-        /// <returns>A string joined by all remaining arguments in the list.</returns>
-        public string TakeAll()
+        /// <returns>A joined string containing all remaining arguments in this enumerator.</returns>
+        public string JoinRemaining()
         {
-            return string.Join(STR_WHITESPACE, _unnamedArgs[_indexUnnamed..]);
+            return string.Join(u0020, _unnamedArgs[_indexUnnamed..]);
+        }
+
+        /// <summary>
+        ///     Takes the remaining unnamed arguments in the set into an array which is used by Collector arguments.
+        /// </summary>
+        /// <returns>An array of objects that represent the remaining arguments of this enumerator.</returns>
+        public object[] TakeRemaining()
+        {
+            return _unnamedArgs[_indexUnnamed..];
         }
     }
 }

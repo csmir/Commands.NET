@@ -15,7 +15,7 @@ builder.AddResultResolver((consumer, result, services) =>
 
 builder.AddTypeConverter<Version>((consumer, argument, value, services) =>
 {
-    if (Version.TryParse(value, out var version))
+    if (Version.TryParse(value?.ToString(), out var version))
     {
         return ConvertResult.FromSuccess(version);
     }

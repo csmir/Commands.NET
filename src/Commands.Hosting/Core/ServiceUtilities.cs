@@ -203,7 +203,7 @@ namespace Commands
         /// <param name="convertDelegate">The delegate that is invoked when the conversion of a command argument of the given type is requested.</param>
         /// <param name="scopeToExecution">Determines if the service should be scoped to the command execution. If <see langword="false"/>, the service will be added as a singleton.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
-        public static IHostBuilder AddTypeConverter<TConvertible>(this IHostBuilder builder, Func<ConsumerBase, IArgument, string?, IServiceProvider, ConvertResult> convertDelegate, bool scopeToExecution = false)
+        public static IHostBuilder AddTypeConverter<TConvertible>(this IHostBuilder builder, Func<ConsumerBase, IArgument, object?, IServiceProvider, ConvertResult> convertDelegate, bool scopeToExecution = false)
         {
             EnsureConfigured(builder);
 
@@ -234,7 +234,7 @@ namespace Commands
         /// <param name="convertDelegate">The delegate that is invoked when the conversion of a command argument of the given type is requested.</param>
         /// <param name="scopeToExecution">Determines if the service should be scoped to the command execution. If <see langword="false"/>, the service will be added as a singleton.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
-        public static IHostBuilder AddTypeConverter<TConvertible>(this IHostBuilder builder, Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> convertDelegate, bool scopeToExecution = false)
+        public static IHostBuilder AddTypeConverter<TConvertible>(this IHostBuilder builder, Func<ConsumerBase, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertDelegate, bool scopeToExecution = false)
         {
             EnsureConfigured(builder);
 

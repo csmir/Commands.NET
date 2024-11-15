@@ -9,12 +9,12 @@ namespace Commands.Samples
     {
         private readonly bool _caseIgnore = caseIgnore;
 
-        public override ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, string? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             try
             {
                 var typeSrc = Type.GetType(
-                    typeName: value ?? "",
+                    typeName: value?.ToString() ?? "",
                     throwOnError: true,
                     ignoreCase: _caseIgnore);
 

@@ -54,7 +54,7 @@ namespace Commands.Converters
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
         public abstract ValueTask<ConvertResult> Evaluate(
-            ConsumerBase consumer, IArgument argument, string? value, IServiceProvider services, CancellationToken cancellationToken);
+            ConsumerBase consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Creates a new <see cref="ConvertResult"/> representing a failed evaluation.
@@ -104,7 +104,7 @@ namespace Commands.Converters
         {
             var arr = ValueTypeConverter.CreateBaseConverters();
 
-            new TimeSpanConverter().AddTo(ref arr);
+            new TimeSpanTypeConverter().AddTo(ref arr);
 
             return arr.ToDictionary(x => x.Type, x => x);
         }

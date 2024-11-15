@@ -10,13 +10,13 @@ namespace Commands.Converters
     /// <param name="func">The delegate that is invoked when the conversion is requested.</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class AsyncDelegateConverter<T>(
-        Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> func)
+        Func<ConsumerBase, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> func)
         : TypeConverterBase<T>
     {
-        private readonly Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> _func = func;
+        private readonly Func<ConsumerBase, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> _func = func;
 
         /// <inheritdoc />
-        public override ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, string? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             return _func(consumer, argument, value, services);
         }

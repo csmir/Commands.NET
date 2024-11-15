@@ -11,7 +11,7 @@
         const string CONVERTER_FAILED = "TypeConverter failed to parse provided value as '{0}'. View inner exception for more details.";
         const string ARGUMENT_MISMATCH = "Argument mismatch between best target and input.";
 
-        internal static ConvertException ConvertFailed(Type type, Exception innerException)
+        internal static ConvertException ConvertFailed(Type type, Exception? innerException = null)
         {
             return new(string.Format(CONVERTER_FAILED, type), innerException);
         }

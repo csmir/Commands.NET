@@ -1,4 +1,6 @@
-﻿using Commands.Helpers;
+﻿using Commands.Converters;
+using Commands.Helpers;
+using System;
 using System.ComponentModel;
 using System.Data;
 using System.Reflection;
@@ -14,6 +16,12 @@ namespace Commands.Reflection
     {
         private static readonly Type m_type = typeof(ModuleBase);
         private static readonly Type c_type = typeof(CommandContext<>);
+
+        private static readonly Type o_type = typeof(object);
+        private static readonly Type s_type = typeof(string);
+
+        private static readonly Type l_type = typeof(List<>);
+        private static readonly Type h_type = typeof(HashSet<>);
 
         /// <summary>
         ///     Iterates through all assemblies registered in <paramref name="options"/> and creates a top-level enumerable with all discovered members that can be directly searched for.
@@ -220,6 +228,79 @@ namespace Commands.Reflection
                 .ToArray();
         }
 
+        /// <summary>
+        ///     Returns the type converter for the specified <paramref name="type"/> if it needs to be parsed. Otherwise, returns <see langword="null"/>.
+        /// </summary>
+        /// <param name="type">The type to get or create a converter for.</param>
+        /// <param name="options">The options which serves as a base from which new converters are </param>
+        /// <returns>An instance of <see cref="TypeConverterBase"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object, which does not need to be converted.</returns>
+        public static (TypeConverterBase? Converter, bool Collector) GetTypeConverter(Type type, CommandConfiguration options)
+        {
+            if (!type.IsConvertible())
+            {
+                return (null, false);
+            }
+
+            if (options.TypeConverters.TryGetValue(type, out var converter))
+            {
+                return (converter, false);
+            }
+
+            if (type.IsEnum)
+            {
+                return (EnumTypeReader.GetOrCreate(type), false);
+            }
+
+            if (type.IsArray)
+            {
+                var elementType = type.GetElementType();
+
+                if (!options.TypeConverters.TryGetValue(elementType!, out converter))
+                {
+                    if (elementType!.IsString())
+                        converter = StringTypeConverter.Instance;
+                    else if (elementType!.IsObject())
+                        converter = ObjectTypeConverter.Instance;
+                    else
+                        ThrowHelpers.ThrowInvalidOperation("The inner type of this generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type.");
+                }
+
+                return (ArrayTypeConverter.GetOrCreate(converter), true);
+            }
+
+            try
+            {
+                var elementType = type.GetGenericArguments()[0];
+
+                var enumType = type.GetEnumerableType(elementType);
+
+                if (!options.TypeConverters.TryGetValue(elementType, out converter))
+                {
+                    if (elementType.IsString())
+                        converter = StringTypeConverter.Instance;
+                    else if (elementType.IsObject())
+                        converter = ObjectTypeConverter.Instance;
+                    else
+                        ThrowHelpers.ThrowInvalidOperation("The inner type of this generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type.");
+                }
+
+                if (enumType == EnumerableType.List)
+                {
+                    return (SetTypeConverter.GetOrCreate(converter), true);
+                }
+
+                if (enumType == EnumerableType.Set)
+                {
+                    return (ListTypeConverter.GetOrCreate(converter), true);
+                }
+            }
+            catch
+            {
+                ThrowHelpers.ThrowInvalidOperation($"Type {type.FullName} is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type. ");
+            }
+
+            return (null, false);
+        }
 
         /// <summary>
         ///     Gets the first attribute of the specified type set on this command, if it exists.
@@ -239,6 +320,44 @@ namespace Commands.Reflection
             }
 
             return (T)attribute;
+        }
+
+        internal static bool IsString(this Type type)
+        {
+            return type.FullName == s_type.FullName;
+        }
+
+        internal static bool IsObject(this Type type)
+        {
+            return type.FullName == o_type.FullName;
+        }
+
+        internal static bool IsConvertible(this Type type)
+        {
+            return type != o_type && type != s_type;
+        }
+
+        internal static EnumerableType GetEnumerableType(this Type type, Type? elementType = null)
+        {
+            if (type.IsArray)
+            {
+                return EnumerableType.Array;
+            }
+
+            if (elementType != null)
+            {
+                if (l_type.MakeGenericType(elementType).IsAssignableTo(type))
+                {
+                    return EnumerableType.List;
+                }
+
+                if (h_type.MakeGenericType(elementType).IsAssignableTo(type))
+                {
+                    return EnumerableType.Set;
+                }
+            }
+
+            return EnumerableType.None;
         }
 
         internal static IArgument[] GetArguments(this MethodBase method, bool withContext, CommandConfiguration options)

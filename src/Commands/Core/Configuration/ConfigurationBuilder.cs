@@ -167,7 +167,7 @@ namespace Commands
         /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the conversion process.</param>
         /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, string?, IServiceProvider, ConvertResult> convertAction)
+        public ConfigurationBuilder AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
         {
             if (convertAction == null)
             {
@@ -187,7 +187,7 @@ namespace Commands
         /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the conversion process.</param>
         /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, string?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
+        public ConfigurationBuilder AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
         {
             if (convertAction == null)
             {

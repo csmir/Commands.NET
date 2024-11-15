@@ -3,12 +3,12 @@ using System.Text.RegularExpressions;
 
 namespace Commands.Converters
 {
-    internal sealed partial class TimeSpanConverter : TypeConverterBase<TimeSpan>
+    internal sealed partial class TimeSpanTypeConverter : TypeConverterBase<TimeSpan>
     {
         private readonly IReadOnlyDictionary<string, Func<string, TimeSpan>> _callback;
         private readonly Regex _regex = new(@"(\d*)\s*([a-zA-Z]*)\s*(?:and|,)?\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public TimeSpanConverter()
+        public TimeSpanTypeConverter()
         {
             _callback = new Dictionary<string, Func<string, TimeSpan>>
             {
@@ -35,12 +35,13 @@ namespace Commands.Converters
         }
 
         public override ValueTask<ConvertResult> Evaluate(
-            ConsumerBase consumer, IArgument parameter, string? value, IServiceProvider services, CancellationToken cancellationToken)
+            ConsumerBase consumer, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
-            if (!TimeSpan.TryParse(value, out TimeSpan span))
+            var val = value?.ToString();
+            if (!TimeSpan.TryParse(val, out TimeSpan span))
             {
-                value = value?.ToLower()?.Trim() ?? "";
-                MatchCollection matches = _regex.Matches(value);
+                val = val?.ToLower()?.Trim() ?? "";
+                MatchCollection matches = _regex.Matches(val);
                 if (matches.Count != 0)
                 {
                     foreach (Match match in matches)
@@ -48,7 +49,7 @@ namespace Commands.Converters
                             span += result(match.Groups[1].Value);
                 }
                 else
-                    return ValueTask.FromResult(Error($"The provided value is no timespan. Got: '{value}'. At: '{parameter.Name}'"));
+                    return ValueTask.FromResult(Error($"The provided value is no timespan. Got: '{val}'. At: '{parameter.Name}'"));
             }
 
             return ValueTask.FromResult(Success(span));
