@@ -61,6 +61,16 @@ namespace Commands
         }
 
         /// <summary>
+        ///     Creates a new line in the console.
+        /// </summary>
+        /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
+        public Task Send()
+        {
+            Console.WriteLine();
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
         ///     Sends an exception to the console.
         /// </summary>
         /// <param name="exception">The exception that should be beautified in the console.</param>

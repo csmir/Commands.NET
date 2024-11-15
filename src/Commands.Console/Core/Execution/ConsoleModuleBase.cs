@@ -61,5 +61,14 @@ namespace Commands
         {
             return Consumer.Select(prompt);
         }
+
+        /// <summary>
+        ///     Creates a new line in the console.
+        /// </summary>
+        /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
+        public virtual Task Send()
+        {
+            return Consumer.Send();
+        }
     }
 }
