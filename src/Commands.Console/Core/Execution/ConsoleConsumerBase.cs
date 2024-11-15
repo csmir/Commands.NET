@@ -1,4 +1,5 @@
 ﻿using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace Commands
 {
@@ -36,6 +37,11 @@ namespace Commands
         /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
         public override Task Send(object response)
         {
+            if (response is IRenderable renderable)
+            {
+                Console.Write(renderable);
+            }
+
             if (response is Exception ex)
             {
                 Console.WriteException(ex);
@@ -45,6 +51,7 @@ namespace Commands
             {
                 Console.MarkupLineInterpolated(formattedString);
             }
+
             else if (response is string str)
             {
                 Console.MarkupLine(str);
