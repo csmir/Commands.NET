@@ -103,7 +103,7 @@ namespace Commands
         /// </remarks>
         /// <param name="prompt">The prompt that should be responded to by the console.</param>
         /// <returns>The result of the text prompt.</returns>
-        public virtual string Prompt(TextPrompt<string> prompt)
+        public virtual T Prompt<T>(TextPrompt<T> prompt)
         {
             return Console.Prompt(prompt);
         }
@@ -116,7 +116,8 @@ namespace Commands
         /// </remarks>
         /// <param name="prompt"></param>
         /// <returns>The result of the selection.</returns>
-        public virtual string Select(SelectionPrompt<string> prompt)
+        public virtual T Select<T>(SelectionPrompt<T> prompt)
+            where T : notnull
         {
             return Console.Prompt(prompt);
         }
