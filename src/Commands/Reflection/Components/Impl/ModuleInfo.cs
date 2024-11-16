@@ -1,5 +1,4 @@
 ﻿using Commands.Conditions;
-using Commands.Helpers;
 using System.Diagnostics;
 
 namespace Commands.Reflection
@@ -65,17 +64,17 @@ namespace Commands.Reflection
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, CommandConfiguration options)
         {
-            var attributes = type.GetAttributes(true);
+            var attributes = type.GetAttributes(true).Concat(root?.Attributes ?? []).Distinct();
 
             Module = root;
             Type = type;
 
             Attributes = attributes.ToArray();
 
-            PreEvaluations = ConditionEvaluator.CreateEvaluators(attributes.CastWhere<IPreExecutionCondition>()).ToArray();
-            PostEvaluations = ConditionEvaluator.CreateEvaluators(attributes.CastWhere<IPostExecutionCondition>()).ToArray();
+            PreEvaluations = ConditionEvaluator.CreateEvaluators(attributes.OfType<IPreExecutionCondition>()).ToArray();
+            PostEvaluations = ConditionEvaluator.CreateEvaluators(attributes.OfType<IPostExecutionCondition>()).ToArray();
 
-            Priority = attributes.SelectFirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
+            Priority = attributes.GetAttribute<PriorityAttribute>()?.Priority ?? 0;
 
             Aliases = aliases;
 

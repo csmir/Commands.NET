@@ -1,6 +1,4 @@
 ﻿using Commands.Converters;
-using Commands.Helpers;
-using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -59,17 +57,17 @@ namespace Commands.Reflection
             else
                 IsOptional = false;
 
-            if (attributes.Contains<RemainderAttribute>(false) || attributes.Contains<ParamArrayAttribute>(false))
+            if (attributes.ContainsAttribute<RemainderAttribute>(false) || attributes.ContainsAttribute<ParamArrayAttribute>(false))
                 IsRemainder = true;
             else
                 IsRemainder = false;
 
             var converter = ReflectionUtilities.GetTypeConverter(Type, options);
 
-            Converter    = converter;
+            Converter = converter;
             IsCollection = converter is ICollectionConverter;
-            ExposedType  = parameterInfo.ParameterType;
-            Attributes   = attributes.ToArray();
+            ExposedType = parameterInfo.ParameterType;
+            Attributes = attributes.ToArray();
 
             if (!string.IsNullOrEmpty(name))
                 Name = name;

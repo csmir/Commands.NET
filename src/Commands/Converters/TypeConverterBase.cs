@@ -102,11 +102,11 @@ namespace Commands.Converters
 
         internal static Dictionary<Type, TypeConverterBase> BuildDefaults()
         {
-            var arr = ValueTypeConverter.CreateBaseConverters();
+            var list = ValueTypeConverter.CreateBaseConverters();
 
-            new TimeSpanTypeConverter().AddTo(ref arr);
+            list.Add(new TimeSpanTypeConverter());
 
-            return arr.ToDictionary(x => x.Type, x => x);
+            return list.ToDictionary(x => x.Type, x => x);
         }
     }
 }

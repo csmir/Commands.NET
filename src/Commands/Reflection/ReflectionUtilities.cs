@@ -1,10 +1,7 @@
 ﻿using Commands.Converters;
 using Commands.Helpers;
-using System;
 using System.ComponentModel;
-using System.Data;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Commands.Reflection
 {
@@ -312,14 +309,7 @@ namespace Commands.Reflection
         public static T? GetAttribute<T>(this IScoreable component, T? defaultValue = default)
             where T : Attribute
         {
-            var attribute = component.Attributes.FirstOrDefault(x => x is T);
-
-            if (attribute is null)
-            {
-                return defaultValue;
-            }
-
-            return (T)attribute;
+            return component.Attributes.GetAttribute(defaultValue);
         }
 
         internal static bool IsString(this Type type)
@@ -417,9 +407,35 @@ namespace Commands.Reflection
         }
 
         internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
+            => provider.GetCustomAttributes(inherit).OfType<Attribute>();
+
+        internal static T? GetAttribute<T>(this IEnumerable<Attribute> attributes, T? defaultValue = null)
+            where T : Attribute
+            => attributes.OfType<T>().FirstOrDefault(defaultValue);
+
+        internal static bool ContainsAttribute<T>(this IEnumerable<Attribute> attributes, bool allowMultipleMatches)
         {
-            return provider.GetCustomAttributes(inherit)
-                .CastWhere<Attribute>();
+            var found = false;
+            foreach (var entry in attributes)
+            {
+                if (entry is T)
+                {
+                    if (!allowMultipleMatches)
+                    {
+                        if (!found)
+                            found = true;
+                        else
+                            return false;
+                    }
+                    else
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            return found;
         }
 
         internal static Tuple<int, int> GetLength(this IArgument[] parameters)

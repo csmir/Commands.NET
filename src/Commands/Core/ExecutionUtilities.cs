@@ -1,6 +1,5 @@
 ﻿using Commands.Parsing;
 using Commands.Reflection;
-using System.Collections;
 using System.ComponentModel;
 
 namespace Commands
@@ -254,7 +253,7 @@ namespace Commands
 
                         results[i] = await argument.Convert(consumer, remainder, false, options);
                     }
-                    
+
                     // End of the line, as remainder is always the last argument.
                     break;
                 }

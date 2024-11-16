@@ -66,10 +66,10 @@ namespace Commands.Converters
 
     internal static class ValueTypeConverter
     {
-        public static TypeConverterBase[] CreateBaseConverters()
+        public static List<TypeConverterBase> CreateBaseConverters()
         {
-            var callback = new TypeConverterBase[]
-            {
+            return
+            [
                 // char
                 new ValueTypeConverter<char>(),
 
@@ -105,9 +105,7 @@ namespace Commands.Converters
 
                 // guid
                 new ValueTypeConverter<Guid>(),
-            };
-
-            return callback;
+            ];
         }
     }
 }

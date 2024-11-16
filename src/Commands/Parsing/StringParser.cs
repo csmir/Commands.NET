@@ -254,7 +254,10 @@ namespace Commands.Parsing
                 // if anything exists, otherwise skip.
                 if (sb.Length > 0)
                 {
-                    sb.ToString().AddTo(ref arr);
+                    var oLen = arr.Length;
+                    Array.Resize(ref arr, oLen + 1);
+
+                    arr[oLen] = sb.ToString();
 
                     // clear for next range.
                     sb.Clear();

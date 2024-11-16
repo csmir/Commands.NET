@@ -82,7 +82,7 @@ namespace Commands.Reflection
         {
             IsSearchable = true;
 
-            var attributes = invoker.Target.GetAttributes(true);
+            var attributes = invoker.Target.GetAttributes(true).Concat(module?.Attributes ?? []).Distinct();
 
             var parameters = invoker.Target.GetArguments(hasContext, options);
 
@@ -104,15 +104,15 @@ namespace Commands.Reflection
                 }
             }
 
-            Priority = attributes.SelectFirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
+            Priority = attributes.GetAttribute<PriorityAttribute>()?.Priority ?? 0;
 
             Invoker = invoker;
             Module = module;
 
             Attributes = attributes.ToArray();
 
-            PreEvaluations = ConditionEvaluator.CreateEvaluators(attributes.CastWhere<IPreExecutionCondition>()).ToArray();
-            PostEvaluations = ConditionEvaluator.CreateEvaluators(attributes.CastWhere<IPostExecutionCondition>()).ToArray();
+            PreEvaluations = ConditionEvaluator.CreateEvaluators(attributes.OfType<IPreExecutionCondition>()).ToArray();
+            PostEvaluations = ConditionEvaluator.CreateEvaluators(attributes.OfType<IPostExecutionCondition>()).ToArray();
 
             Arguments = parameters;
             HasArguments = parameters.Length > 0;
