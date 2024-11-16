@@ -22,7 +22,7 @@ When returning `void`, the library will not send a response to the consumer.
 [Name("void")]
 public void GetVoid()
 {
-	
+    
 }
 ```
 
@@ -33,7 +33,7 @@ When returning `string`, `T` or `object` the library will send the message to th
 [Name("string")]
 public string GetString()
 {
-	return "string";
+    return "string";
 }
 ```
 
@@ -42,7 +42,7 @@ public string GetString()
 [Name("object")]
 public object GetObject()
 {
-	return new();
+    return new();
 }
 ```
 
@@ -53,7 +53,7 @@ When returning `Task` or `ValueTask`, the library will await the task. If the ta
 [Name("task")]
 public Task GetTask()
 {
-	return Task.CompletedTask;
+    return Task.CompletedTask;
 }
 ```
 

@@ -20,7 +20,7 @@ Commands are defined by creating a method with the `NameAttribute` attribute. Th
 [Name("command")]
 public void Command()
 {
-	
+    
 }
 ```
 
@@ -35,14 +35,14 @@ Commands can be overloaded by defining multiple methods with the same name. The 
 [Name("command")]
 public void Command(int arg1)
 {
-	
+    
 }
 
 // 'command 1 2' is valid
 [Name("command")]
 public void Command(int arg1, int arg2)
 {
-	
+    
 }
 ```
 
@@ -57,17 +57,17 @@ Commands can be defined in a class by using the `Name` attribute on the class it
 [Name("command")]
 public class CommandClass : ModuleBase
 {
-	// 'command arg1' is valid
-	public void Command(string arg1)
-	{
-		
-	}
-	
-	// 'command arg1 2' is valid
-	public void Command(string arg1, int arg2)
-	{
-		
-	}
+    // 'command arg1' is valid
+    public void Command(string arg1)
+    {
+        
+    }
+    
+    // 'command arg1 2' is valid
+    public void Command(string arg1, int arg2)
+    {
+        
+    }
 }
 ```
 
@@ -81,12 +81,12 @@ Commands can be nested by defining a class with the `Name` attribute, and then d
 [Name("command")]
 public class CommandClass : ModuleBase
 {
-	// 'command subcommand' is valid
-	[Name("subcommand")]
-	public void SubCommand()
-	{
-		
-	}
+    // 'command subcommand' is valid
+    [Name("subcommand")]
+    public void SubCommand()
+    {
+        
+    }
 }
 ```
 
@@ -96,16 +96,16 @@ Additionally, nested classes can also be specified to create further nesting.
 [Name("command")]
 public class CommandClass : ModuleBase
 {
-	[Name("subcommand")]
-	public class SubCommandClass : ModuleBase
-	{
-		// 'command subcommand subsubcommand' is valid
-		[Name("subsubcommand")]
-		public void SubSubCommand()
-		{
-			
-		}
-	}
+    [Name("subcommand")]
+    public class SubCommandClass : ModuleBase
+    {
+        // 'command subcommand subsubcommand' is valid
+        [Name("subsubcommand")]
+        public void SubSubCommand()
+        {
+            
+        }
+    }
 }
 ```
 
@@ -117,11 +117,11 @@ When it is not necessary to use the instance of a class to execute a command, th
 [Name("command")]
 public class CommandClass : ModuleBase
 {
-	// 'command' is valid
-	public static void Command()
-	{
-		
-	}
+    // 'command' is valid
+    public static void Command()
+    {
+        
+    }
 }
 ```
 
@@ -132,11 +132,11 @@ For this, the signature must implement `CommandContext<T>` as the first paramete
 [Name("command")]
 public class CommandClass : ModuleBase
 {
-	// 'command' is valid
-	public static void Command(CommandContext<ConsumerBase> context)
-	{
-		
-	}
+    // 'command' is valid
+    public static void Command(CommandContext<ConsumerBase> context)
+    {
+        
+    }
 }
 ```
 
@@ -150,8 +150,8 @@ Properties can be used as commands when they have a public `get` accessor. The `
 [Name("command")]
 public class CommandClass : ModuleBase
 {
-	// 'command' is valid
-	[Name("property")]
-	public string Property => "value";
+    // 'command' is valid
+    [Name("property")]
+    public string Property => "value";
 }
 ```

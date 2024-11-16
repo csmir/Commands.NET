@@ -19,7 +19,7 @@ By default, non-optional parameters are considered a required argument, without 
 [Name("command")]
 public void Command(string arg1, int arg2, bool arg3)
 {
-	
+    
 }
 ```
 
@@ -35,7 +35,7 @@ Nullable parameters are supported, and are considered non-optional arguments tha
 [Name("command")]
 public void Command(string arg1, int? arg2, bool arg3)
 {
-	
+    
 }
 ```
 
@@ -48,7 +48,7 @@ Optional parameters are supported, and are considered optional arguments that ca
 [Name("command")]
 public void Command(string arg1, int arg2 = 2, bool arg3 = true)
 {
-	
+    
 }
 ```
 
@@ -59,16 +59,16 @@ Complex parameters are unique in that they are redirected to the signature of a 
 ```cs
 public class ComplexType
 {
-	public string Arg1 { get; set; }
-	public int Arg2 { get; set; }
-	public bool Arg3 { get; set; }
-	
-	public ComplexType(string arg1, int arg2, bool arg3)
-	{
-		Arg1 = arg1;
-		Arg2 = arg2;
-		Arg3 = arg3;
-	}
+    public string Arg1 { get; set; }
+    public int Arg2 { get; set; }
+    public bool Arg3 { get; set; }
+    
+    public ComplexType(string arg1, int arg2, bool arg3)
+    {
+        Arg1 = arg1;
+        Arg2 = arg2;
+        Arg3 = arg3;
+    }
 }
 ```
 
@@ -79,7 +79,7 @@ These parameters are considered non-optional, and are specified with the `Comple
 [Name("command")]
 public void Command([Complex] ComplexType complex)
 {
-	
+    
 }
 ```
 
@@ -100,7 +100,7 @@ Remainder parameters behave differently depending on the type of the parameter:
 [Name("command")]
 public void Command(params int[] args)
 {
-	
+    
 }
 ```
 
@@ -113,6 +113,6 @@ Parameters can be named by using the `Name` attribute. This is useful for comman
 [Name("command")]
 public void Command([Name("arg1")] string Arg1, [Name("arg2")] int Arg2, [Name("arg3")] bool Arg3)
 {
-	
+    
 }
 ```
