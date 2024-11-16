@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 namespace Commands
 {
     /// <summary>
-    ///     An attribute that defines the name of a module (<see cref="ModuleBase"/>), a module's members, a command and a command parameter.
+    ///     An attribute that defines the name of a module (<see cref="ModuleBase"/>), a command and a command parameter.
     /// </summary>
     /// <remarks>
     ///     This attribute defines the name of a top-level component as well as all its members. 
