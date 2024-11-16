@@ -19,52 +19,58 @@ It implements a modular, easy to implement pipeline for registering and executin
 
 #### Type Conversion
 
-For raw input, automated conversion to fit command signature is supported by `TypeConverter`'s. 
-`ValueType`, `Enum` and nullable variant types are automatically parsed by the framework and populate commands as below:
+For raw input, automated conversion to fit command signature is supported by `TypeConverter`'s. All `ValueType` types, `Enum` types and various System types such as `TimeSpan` and `DateTime` are automatically parsed by the framework and populate commands as below:
+
+Additionally, all the forementioned types wrapped in implementations of `IEnumerable<T>`, `Array`, or `Nullable<T>` are also supported via the same conversion.
 
 ```cs
 ...
 [Name("hello")]
-public string Command(string world)
+public string World(int worldCount)
 {
-    return "Hello, " + world;
+    return "Hello, world " + worldCount;
 }
 ...
 ```
-- This will automatically parse `int` by using the default `int.TryParse` implementation, and will do the same for the `DateTime`.
 
-Outside of this, implementing and adding your own `TypeConverter`'s is also supported to handle command signatures with normally unsupported types.
+- This will automatically parse `int` by using the default `int.TryParse` implementation.
+
+Outside of this, implementing and adding your own `TypeConverterBase` is also supported to handle command signatures with other types.
 
 > See feature [documentation](https://github.com/csmir/Commands.NET/wiki/Type-Conversion) for more.
 
-#### Preconditions
+#### Conditions
 
 Implementing `PreconditionAttribute` creates a new evaluation to add in the set of attributes defined above command definitions. 
 When a command is attempted to be executed, it will walk through every precondition present and abort execution if any of them fail.
 
 ```cs
 ...
-[CustomPrecondition]
+[Condition]
 [Name("hello")]
 public Task<string> Command(string world)
 {
-    return Task.FromResult("Hello, " + world + ". I can only execute when CustomPrecondition says so!");
+    return Task.FromResult("Hello, " + world + ". I can only execute when Condition says so!");
 }
 ...
 ```
 
+In the same way as above, `PostconditionAttribute` can be implemented to add a condition that is evaluated after the command has been executed. 
+
 > See feature [documentation](https://github.com/csmir/Commands.NET/wiki/Preconditions) for more.
 
-#### Extensive Configuration
+#### Minimal API Configuration
 
-The API focusses on customizability and configuration above all else, and this is visible in the pre-execution setup.
-
-Registration assemblies, result handling, delegate command definitions and more can be defined in the `CommandBuilder<T>`:
+The API focusses on customizability and configuration above all else, and this is visible in the pre-execution setup. 
+It closely matches the design philosophy of .NET Minimal API's, and is designed to be as easy to use as possible.
 
 ```cs
 var builder = CommandManager.CreateDefaultBuilder();
 
-...
+builder.AddCommand();
+builder.AddAssembly();
+builder.AddTypeConverter();
+builder.AddResultResolver();
 
 var manager = builder.Build()
 ```
@@ -88,7 +94,7 @@ These types can all be inherited and custom ones created for environmental speci
 
 #### Reflection
 
-The framework saves cached command data in its own reflection types. 
+The framework saves command data in its own reflection types. 
 These types, such as `CommandInfo`, `ArgumentInfo` and `ModuleInfo` store informative data about a target, its root module and any submembers.
 
 The reflection data is accessible in various ways, most commonly in scope during type conversion & precondition evaluation.

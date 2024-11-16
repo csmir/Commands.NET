@@ -1,50 +1,82 @@
 The configuration of command registration and execution can be overwhelming if you are unfamiliar with the various options exposed. 
 This document introduces the various options and elaborates the functionality covered within.
 
-- [Configuring the Manager](#configuring-the-manager)
-- [Configuring the Pipeline](#configuring-the-pipeline)
+- [Minimal API's](#minimal-apis)
+- [Individual Settings](#configuring-the-manager)
+- [Pipeline configuration](#configuring-the-pipeline)
 
-## Configuring the Manager
+## Minimal API's
 
-`ICommandBuilder` serves as the base interface for handling configuration options for the `CommandManager` and how it registers commands/modules. 
-It exposes a large amount of options, each useful in different situations.
+the `CommandConfiguration` class is designed to adhere to the philosophy of .NET minimal API's. These API's intend to centralize simplicity yet retain full control over the configured values. 
+Commands.NET shares that philosophy, and seamlessly integrates with this system.
 
-### Assemblies 
+To start configuring, you can use the `CreateDefaultBuilder` method to create a default configuration.
 
-Known assemblies are a core component to how Commands.NET functions, iterating through each type defined per-assembly to register commands and writing them to the `HashSet<ISearchable>` exposed in `CommandManager`. 
-This is the collection used to find, match and execute commands.
+```cs
+var builder = CommandManager.CreateDefaultBuilder();
+```
 
-By default, `Assemblies` is populated by `Assembly.GetEntryAssembly`, which serves as the entry-point executable to run the framework with.
+This builder exposes the API's required to manipulate the configuration to your liking.
 
-### TypeConverters
+### Assemblies
 
-In many cases, there is need for custom `TypeConverterBase` implementations to convert types that Commands.NET does not already convert for you. 
-These all need to be registered here, in the same way as `Assemblies`.
+Assemblies added to the configuration determine where the framework will look for commands. 
 
-The `CommandBuilder<T>` exposes methods to write delegate-based conversion patterns, which will automatically be registered and used as a replacement or introduction to the current `TypeConverters`
+For example, if you add `Assembly.GetExecutingAssembly()`, the framework will look for commands in the assembly where the configuration is defined. 
+Any classes marked with `ModuleBase` or an implementation thereof, are considered in this search.
 
-### ResultResolvers
+```cs
+builder.AddAssembly(Assembly.GetExecutingAssembly());
+```
 
-Results can be handled in a few ways, as documented [[here|Results]]. 
+> By default, the entry assembly of the application is added to the configuration.
 
-Implementing custom handlers can be done by implementing `ResultResolverBase` or by creating a delegate-based alternative as exposed in `CommandBuilder<T>`.
+### Type Converters
+
+TypeConverters, being all implementations of `TypeConverterBase` (as documented [here](../Type-Conversion.md)), need to be registered in the configuration.
+
+```cs
+builder.AddTypeConverter<MyCustomTypeConverter>(new MyCustomTypeConverter());
+```
+
+The `AddTypeConverter` method also has an overload for implicit conversion creation. This depends on a delegate, which is used to convert the type.
+
+```cs
+builder.AddTypeConverter<MyTypeToConvert>((consumer, argument, value, services) => ConvertResult.FromSuccess(new MyTypeToConvert(value)));
+```
+
+> When a command implements `IEnumerable<T>` or any implementation in `System.Collections.Generic`, the framework will create an encompassing converter that underlyingly holds your custom converter, for the specific type.
+
+### Result Resolvers
+
+All results, handled or unhandled, are emitted from the manager through a `ResultResolverBase` implementation. When configuring how to handle your results, you also need to add the resolvers to the configuration.
+
+```cs
+builder.AddResultResolver<MyCustomResultResolver>(new MyCustomResultResolver());
+```
+
+The `AddResultResolver` method also has an overload for implicit result handling. This depends on a delegate, which is used to handle the result.
+
+```cs
+builder.AddResultResolver<MyResult>((consumer, result, services) => { });
+```
 
 ### Commands
 
-Commands.NET supports more than just module-based commands. 
-Delegate-based and static command signatures are also supported out of the box. 
+Command registration is commonly done by scanning assemblies, but the minimal API also supports defining your own, lightweight commands. 
+These commands are based on delegates, which are considered the same as the `MemberInfo` of a module-based command. 
 
-Static signatures written inside modules will be automatically resolved, but can also be written outside of modules and manually registered.
+```cs
+builder.AddCommand("say", (string value) => $"Sure, I'll say: {value}");
+```
 
-Delegates can be added just like delegate-based `ResultResolver` and `TypeConverter` implementations. Parameters can be self defined, just as they would be in regular commands.
+Commands that are registered in the minimal API can also consume command state like instance commands. To access the state, you have to set `CommandContext context` as the first parameter in the delegate.
 
-For both static and delegate commands, you can optionally prefix the command parameters with `CommandContext context`. 
-This parameter will not be populated by the command arguments, instead being created in-scope and populated with known command information.
+```cs
+builder.AddCommand("say", (CommandContext context, string value) => $"Sure, I'll say: {value}");
+```
 
-### NamingRegex
-
-Commands signatures are often to be written in a specific culture, and casing unique constraint. Configuring this regex determines what that constraint is. 
-If a command does not match the constraint, an exception will be thrown to inform the developer.
+> Just like with module based commands, the signature can contain anything, as long as it is convertible by the registered `TypeConverters`.
 
 ## Configuring the Pipeline
 
