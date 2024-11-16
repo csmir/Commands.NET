@@ -1,4 +1,6 @@
-﻿namespace Commands.Samples
+﻿using System.ComponentModel;
+
+namespace Commands.Samples
 {
     public class StaticCommands : ModuleBase
     {
