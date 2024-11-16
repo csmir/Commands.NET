@@ -3,17 +3,19 @@
     [Name("overload")]
     public class OverloadTests : ModuleBase
     {
-        public void Get()
+        public void Get(bool value = false)
         {
 
         }
 
-        public void Get(string id)
+        [Name("get")]
+        public static void Get(string id = "")
         {
 
         }
 
-        public void Get(string id, string name)
+        [Name("get-other")]
+        public static void Get(string id, string name)
         {
 
         }
