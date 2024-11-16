@@ -68,7 +68,7 @@ namespace Commands.Parsing
                 ThrowHelpers.ThrowInvalidArgument(toParse);
             }
 
-            return ParseKeyValueCollection(toParse.Split());
+            return ParseKeyValueCollection(toParse.TrimEnd().Split());
         }
 
         /// <summary>

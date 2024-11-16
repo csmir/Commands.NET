@@ -242,7 +242,7 @@ namespace Commands
                 // parse remainder.
                 if (argument.IsRemainder)
                 {
-                    if (argument.IsCollector)
+                    if (argument.IsCollection)
                     {
                         var remainder = args.TakeRemaining();
 

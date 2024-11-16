@@ -2,33 +2,32 @@
 
 namespace Commands.Converters
 {
-    internal sealed class ArrayTypeConverter<T>(TypeConverterBase underlyingConverter) : TypeConverterBase<T>
+    internal sealed class ListTypeConverter<T>(TypeConverterBase underlyingConverter) : TypeConverterBase<T>, ICollectionConverter
     {
+        public CollectionType CollectionType { get; } = CollectionType.List;
+
         public override async ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (value is not object[] array)
                 return Error($"The provided value is not an array. Expected: '{Type.Name}', got: '{value}'. At: '{argument.Name}'");
 
-            // Create an instance of the array type.
-            var instance = new T[array.Length];
+            var list = new List<T>();
 
-            for (var i = 0; i < array.Length; i++)
+            foreach (var item in array)
             {
-                var item = array.GetValue(i);
-
                 var result = await underlyingConverter.Evaluate(consumer, argument, item, services, cancellationToken);
 
                 if (!result.Success)
-                    return Error($"Failed to convert an array element. Expected: '{underlyingConverter.Type.Name}', got: '{item}'. At: '{argument.Name}', Index: '{i}'");
+                    return Error($"Failed to convert an array element. Expected: '{underlyingConverter.Type.Name}', got: '{item}'. At: '{argument.Name}'");
 
-                instance[i] = (T)result.Value!;
+                list.Add((T)result.Value!);
             }
 
-            return Success(instance);
+            return Success(list);
         }
     }
 
-    internal static class ArrayTypeConverter
+    internal static class ListTypeConverter
     {
         private static readonly Dictionary<Type, TypeConverterBase> _converters = [];
 
@@ -37,7 +36,7 @@ namespace Commands.Converters
             if (_converters.TryGetValue(underlyingConverter.Type, out var converter))
                 return converter;
 
-            converter = (TypeConverterBase)Activator.CreateInstance(typeof(ArrayTypeConverter<>).MakeGenericType(underlyingConverter.Type), underlyingConverter)!;
+            converter = (TypeConverterBase)Activator.CreateInstance(typeof(ListTypeConverter<>).MakeGenericType(underlyingConverter.Type), underlyingConverter)!;
 
             _converters.Add(underlyingConverter.Type, converter);
 

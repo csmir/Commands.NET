@@ -2,14 +2,16 @@
 
 namespace Commands.Converters
 {
-    internal sealed class ListTypeConverter<T>(TypeConverterBase underlyingConverter) : TypeConverterBase<T>
+    internal sealed class SetTypeConverter<T>(TypeConverterBase underlyingConverter) : TypeConverterBase<T>, ICollectionConverter
     {
+        public CollectionType CollectionType { get; } = CollectionType.Set;
+
         public override async ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (value is not object[] array)
                 return Error($"The provided value is not an array. Expected: '{Type.Name}', got: '{value}'. At: '{argument.Name}'");
 
-            var list = new List<T>();
+            var set = new HashSet<T>();
 
             foreach (var item in array)
             {
@@ -18,14 +20,14 @@ namespace Commands.Converters
                 if (!result.Success)
                     return Error($"Failed to convert an array element. Expected: '{underlyingConverter.Type.Name}', got: '{item}'. At: '{argument.Name}'");
 
-                list.Add((T)result.Value!);
+                set.Add((T)result.Value!);
             }
 
-            return Success(list);
+            return Success(set);
         }
     }
 
-    internal static class ListTypeConverter
+    internal static class SetTypeConverter
     {
         private static readonly Dictionary<Type, TypeConverterBase> _converters = [];
 
@@ -34,7 +36,7 @@ namespace Commands.Converters
             if (_converters.TryGetValue(underlyingConverter.Type, out var converter))
                 return converter;
 
-            converter = (TypeConverterBase)Activator.CreateInstance(typeof(ListTypeConverter<>).MakeGenericType(underlyingConverter.Type), underlyingConverter)!;
+            converter = (TypeConverterBase)Activator.CreateInstance(typeof(SetTypeConverter<>).MakeGenericType(underlyingConverter.Type), underlyingConverter)!;
 
             _converters.Add(underlyingConverter.Type, converter);
 

@@ -234,21 +234,21 @@ namespace Commands.Reflection
         /// <param name="type">The type to get or create a converter for.</param>
         /// <param name="options">The options which serves as a base from which new converters are </param>
         /// <returns>An instance of <see cref="TypeConverterBase"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object, which does not need to be converted.</returns>
-        public static (TypeConverterBase? Converter, bool Collector) GetTypeConverter(Type type, CommandConfiguration options)
+        public static TypeConverterBase? GetTypeConverter(Type type, CommandConfiguration options)
         {
             if (!type.IsConvertible())
             {
-                return (null, false);
+                return null;
             }
 
             if (options.TypeConverters.TryGetValue(type, out var converter))
             {
-                return (converter, false);
+                return converter;
             }
 
             if (type.IsEnum)
             {
-                return (EnumTypeReader.GetOrCreate(type), false);
+                return EnumTypeReader.GetOrCreate(type);
             }
 
             if (type.IsArray)
@@ -265,14 +265,14 @@ namespace Commands.Reflection
                         ThrowHelpers.ThrowInvalidOperation("The inner type of this generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type.");
                 }
 
-                return (ArrayTypeConverter.GetOrCreate(converter), true);
+                return ArrayTypeConverter.GetOrCreate(converter);
             }
 
             try
             {
                 var elementType = type.GetGenericArguments()[0];
 
-                var enumType = type.GetEnumerableType(elementType);
+                var enumType = type.GetCollectionType(elementType);
 
                 if (!options.TypeConverters.TryGetValue(elementType, out converter))
                 {
@@ -284,14 +284,14 @@ namespace Commands.Reflection
                         ThrowHelpers.ThrowInvalidOperation("The inner type of this generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type.");
                 }
 
-                if (enumType == EnumerableType.List)
+                if (enumType == CollectionType.List)
                 {
-                    return (SetTypeConverter.GetOrCreate(converter), true);
+                    return ListTypeConverter.GetOrCreate(converter);
                 }
 
-                if (enumType == EnumerableType.Set)
+                if (enumType == CollectionType.Set)
                 {
-                    return (ListTypeConverter.GetOrCreate(converter), true);
+                    return SetTypeConverter.GetOrCreate(converter);
                 }
             }
             catch
@@ -299,7 +299,7 @@ namespace Commands.Reflection
                 ThrowHelpers.ThrowInvalidOperation($"Type {type.FullName} is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type. ");
             }
 
-            return (null, false);
+            return null;
         }
 
         /// <summary>
@@ -337,27 +337,27 @@ namespace Commands.Reflection
             return type != o_type && type != s_type;
         }
 
-        internal static EnumerableType GetEnumerableType(this Type type, Type? elementType = null)
+        internal static CollectionType GetCollectionType(this Type type, Type? elementType = null)
         {
             if (type.IsArray)
             {
-                return EnumerableType.Array;
+                return CollectionType.Array;
             }
 
             if (elementType != null)
             {
                 if (l_type.MakeGenericType(elementType).IsAssignableTo(type))
                 {
-                    return EnumerableType.List;
+                    return CollectionType.List;
                 }
 
                 if (h_type.MakeGenericType(elementType).IsAssignableTo(type))
                 {
-                    return EnumerableType.Set;
+                    return CollectionType.Set;
                 }
             }
 
-            return EnumerableType.None;
+            return CollectionType.None;
         }
 
         internal static IArgument[] GetArguments(this MethodBase method, bool withContext, CommandConfiguration options)

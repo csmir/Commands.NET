@@ -13,9 +13,9 @@ namespace Commands.Reflection
         public bool IsRemainder { get; }
 
         /// <summary>
-        ///     Gets if this argument collects the query remainder as separate, yet joined arguments.
+        ///     Gets if this argument is a collection type or not.
         /// </summary>
-        public bool IsCollector { get; }
+        public bool IsCollection { get; }
 
         /// <summary>
         ///     Gets the converter for this argument.

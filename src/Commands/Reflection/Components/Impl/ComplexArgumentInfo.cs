@@ -35,7 +35,7 @@ namespace Commands.Reflection
         public bool IsRemainder { get; }
 
         /// <inheritdoc />
-        public bool IsCollector { get; }
+        public bool IsCollection { get; }
 
         /// <inheritdoc />
         public Attribute[] Attributes { get; }
@@ -88,7 +88,7 @@ namespace Commands.Reflection
             var (minLength, maxLength) = parameters.GetLength();
 
             IsRemainder = false;
-            IsCollector = false;
+            IsCollection = false;
 
             MinLength = minLength;
             MaxLength = maxLength;

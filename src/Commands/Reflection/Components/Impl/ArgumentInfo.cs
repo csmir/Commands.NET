@@ -29,7 +29,7 @@ namespace Commands.Reflection
         public bool IsRemainder { get; }
 
         /// <inheritdoc />
-        public bool IsCollector { get; }
+        public bool IsCollection { get; }
 
         /// <inheritdoc />
         public Attribute[] Attributes { get; }
@@ -55,39 +55,26 @@ namespace Commands.Reflection
             }
 
             if (parameterInfo.IsOptional)
-            {
                 IsOptional = true;
-            }
             else
-            {
                 IsOptional = false;
-            }
 
             if (attributes.Contains<RemainderAttribute>(false) || attributes.Contains<ParamArrayAttribute>(false))
-            {
                 IsRemainder = true;
-            }
             else
-            {
                 IsRemainder = false;
-            }
 
             var converter = ReflectionUtilities.GetTypeConverter(Type, options);
 
-            Converter = converter.Converter;
-            IsCollector = IsCollector || converter.Collector;
-
-            Attributes = attributes.ToArray();
-            ExposedType = parameterInfo.ParameterType;
+            Converter    = converter;
+            IsCollection = converter is ICollectionConverter;
+            ExposedType  = parameterInfo.ParameterType;
+            Attributes   = attributes.ToArray();
 
             if (!string.IsNullOrEmpty(name))
-            {
                 Name = name;
-            }
             else
-            {
                 Name = parameterInfo.Name ?? "";
-            }
         }
 
         /// <inheritdoc />
