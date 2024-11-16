@@ -219,7 +219,7 @@ namespace Commands
                     return await command.Arguments.ConvertMany(consumer, args, options);
                 }
             }
-            else if (args.Length <= 0)
+            else if (args.Length == 0)
             {
                 return [];
             }
