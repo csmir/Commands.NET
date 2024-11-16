@@ -14,7 +14,6 @@ namespace Commands.Parsing
         const char u0020 = ' ';
 
         private int _size;
-        private int _searchSize;
         private int _indexUnnamed = 0;
 
         private readonly object[] _unnamedArgs;
