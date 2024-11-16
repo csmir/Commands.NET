@@ -2,7 +2,6 @@ The configuration of command registration and execution can be overwhelming if y
 This document introduces the various options and elaborates the functionality covered within.
 
 - [Minimal API's](#minimal-apis)
-- [Individual Settings](#configuring-the-manager)
 - [Pipeline configuration](#configuring-the-pipeline)
 
 ## Minimal API's
