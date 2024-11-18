@@ -72,7 +72,7 @@ builder.AddAssembly();
 builder.AddTypeConverter();
 builder.AddResultResolver();
 
-var manager = builder.Build()
+var manager = builder.Build();
 ```
 
 > See feature [documentation](https://github.com/csmir/Commands.NET/wiki/Configuration) for more.
