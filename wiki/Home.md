@@ -22,3 +22,11 @@ Create custom conversion for changing raw input into types.
 ### 🔍 [[Dealing with Post-Execution|Results]]
 
 All about handling command results and treating custom return types.
+
+### 📚 [[Signatures|Signatures]]
+
+Learn about the different ways to define commands and how they can be used.
+
+### 📦 [[Return Types|Return-Types]]
+
+Understand the different return types that can be used in Commands.NET.

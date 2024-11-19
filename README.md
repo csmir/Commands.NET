@@ -6,14 +6,38 @@
 [![Download](https://img.shields.io/static/v1?style=flat&message=download%20on%20nuget&color=004880&logo=NuGet&logoColor=FFFFFF&label=)](https://nuget.org/packages/Commands.NET)
 [![Discord](https://img.shields.io/discord/1092510256384450652?style=flat)](https://discord.gg/T7hCvShAx5)
 
-Commands.NET is a robust no-nonsense command library that makes creating and processing queries easy for any* interactive platform.
-It implements a modular, easy to implement pipeline for registering and executing commands, as well as a wide range of customization options to make development on different platforms as easy as possible.
+Commands.NET is a robust no-nonsense command library that makes creating and processing contextual queries easy for any* interactive platform.
+It provides a modular, easy to implement pipeline for registering and executing commands, as well as a wide range of customization options to make development for various platforms as easy as possible.
 
 **This includes console-input, game-chat, social platforms like Discord, Slack, Messenger & much, much more.*
 
+- [Getting Started](#getting-started)
 - [Features](#features)
 - [Additional Packages](#additional-packages)
-- [Getting Started](#getting-started)
+
+> This library is CLS Compliant, allowing use in C#, F# and VB projects.
+
+## Getting Started
+
+There are various resources available in order to get started with Commands.NET. Below, you can find samples and directions to the quick guide.
+
+### Documentation
+
+[You can find the quick guide here](https://github.com/csmir/Commands.NET/wiki/Quick-Guide). 
+This guide introduces you to the basics of defining modules, commands, and how to run them.
+
+> Or for a more expanded view, browse the whole [Commands.NET Wiki](https://github.com/csmir/Commands.NET/wiki).
+
+### Samples
+
+Samples are available to learn how to implement Commands.NET in your own programs.
+
+- [Commands.Samples.Console](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Console)
+  - Implement Commands.NET on a basic console application.
+- [Commands.Samples.Hosting](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Hosting)
+  - Implement Commands.NET into .NET Generic Host infrastructure.
+- [Commands.Samples.CLI](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.CLI)
+  - Implement Commands.NET in a CLI app.
 
 ## Features
 
@@ -57,9 +81,9 @@ public Task<string> Command(string world)
 
 In the same way as above, `PostconditionAttribute` can be implemented to add a condition that is evaluated after the command has been executed. 
 
-> See feature [documentation](https://github.com/csmir/Commands.NET/wiki/Preconditions) for more.
+> See feature [documentation](https://github.com/csmir/Commands.NET/wiki/Conditions) for more.
 
-#### Minimal API Configuration
+#### Minimal API's
 
 The API focusses on customizability and configuration above all else, and this is visible in the pre-execution setup. 
 It closely matches the design philosophy of .NET Minimal API's, and is designed to be as easy to use as possible.
@@ -151,23 +175,3 @@ For Console Applications specifically, the existing layer of functionality in Co
 ```
 
 *For each of these packages, the minimum version is determined by Commands.NET itself, usually being the latest or equal to the target framework upon which it was released. It is suggested to choose the latest version at time of installation.*
-
-## Getting Started
-
-There are various resources available in order to get started with Commands.NET. Below, you can find samples and directions to the quick guide.
-
-#### Quick Guide
-
-You can find the quick guide [here](https://github.com/csmir/Commands.NET/wiki/Quick-Guide). 
-This guide introduces you to the basics of defining modules, commands, and how to run them.
-
-#### Samples
-
-Samples are available to learn how to implement Commands.NET in your own programs.
-
-- [Commands.Samples.Console](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Console)
-  - Implement Commands.NET on a basic console application.
-- [Commands.Samples.Hosting](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Hosting)
-  - Implement Commands.NET in a hosted application.
-- [Commands.Samples.CLI](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.CLI)
-  - Implement Commands.NET in a CLI app.
