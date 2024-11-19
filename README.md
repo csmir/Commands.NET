@@ -15,7 +15,7 @@ It provides a modular, easy to implement pipeline for registering and executing 
 - [Features](#features)
 - [Additional Packages](#additional-packages)
 
-> This library is CLS Compliant, allowing use in C#, F# and VB projects.
+> This library is CLS Compliant, enabling its use in C#, F# and VB projects.
 
 ## Getting Started
 
