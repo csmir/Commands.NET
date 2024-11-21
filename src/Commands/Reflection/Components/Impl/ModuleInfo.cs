@@ -12,7 +12,7 @@ namespace Commands.Reflection
         /// <summary>
         ///     Gets an array containing nested modules or commands inside this module.
         /// </summary>
-        public IReadOnlySet<ISearchable> Components { get; }
+        public HashSet<ISearchable> Components { get; }
 
         /// <summary>
         ///     Gets the type of this module.

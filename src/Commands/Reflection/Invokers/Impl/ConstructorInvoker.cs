@@ -1,5 +1,4 @@
-﻿using Commands.Helpers;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Commands.Reflection
 {
@@ -50,10 +49,7 @@ namespace Commands.Reflection
                 return ctor;
             }
 
-            ThrowHelpers.ThrowInvalidOperation($"{type} is marked as {nameof(ModuleBase)}, but no public constructors are accessible for this type to be created.");
-
-            // this will never be reached.
-            return null!;
+            throw new InvalidOperationException($"{type} is marked as {nameof(ModuleBase)}, but no public constructors are accessible for this type to be constructed.");
         }
 
         /// <inheritdoc />
@@ -87,7 +83,7 @@ namespace Commands.Reflection
                         continue;
                     }
 
-                    ThrowHelpers.ThrowInvalidOperation($"{Target.Name} defines {parameter.Type} but the {nameof(IServiceProvider)} does not know a service by that type.");
+                    throw new InvalidOperationException($"{Target.Name} defines {parameter.Type} but the {nameof(IServiceProvider)} does not know a service by that type.");
                 }
 
                 services[i] = service;

@@ -5,8 +5,10 @@ namespace Commands.Resolvers
 {
     internal sealed class DefaultSourceResolver : SourceResolverBase
     {
-        public override ValueTask<SourceResult> Evaluate(CancellationToken cancellationToken)
+        public override async ValueTask<SourceResult> Evaluate(CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
+
             if (Ready())
             {
                 Console.CursorVisible = true;
@@ -16,10 +18,10 @@ namespace Commands.Resolvers
 
                 Console.CursorVisible = false;
 
-                return ValueTask.FromResult(Success(new ConsumerBase(), StringParser.ParseKeyValueCollection(src)));
+                return Success(new ConsumerBase(), StringParser.ParseKeyValueCollection(src));
             }
 
-            return ValueTask.FromResult(Error(new InvalidOperationException("The application failed to start.")));
+            return Error(new InvalidOperationException("The application failed to start."));
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Commands.Exceptions;
-using Commands.Helpers;
 using Commands.Results;
 
 namespace Commands.Resolvers
@@ -49,9 +48,7 @@ namespace Commands.Resolvers
         protected SourceResult Error(Exception exception)
         {
             if (exception == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(exception);
-            }
+                throw new ArgumentNullException(nameof(exception));
 
             if (exception is SourceException convertEx)
             {
@@ -68,9 +65,7 @@ namespace Commands.Resolvers
         protected SourceResult Error(string error)
         {
             if (string.IsNullOrEmpty(error))
-            {
-                ThrowHelpers.ThrowInvalidArgument(error);
-            }
+                throw new ArgumentNullException(nameof(error));
 
             return SourceResult.FromError(new SourceException(error));
         }

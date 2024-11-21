@@ -21,7 +21,7 @@
         List = 2,
 
         /// <summary>
-        ///     The collection type is a <see cref="HashSet{T}"/>, <see cref="ISet{T}"/> or <see cref="IReadOnlySet{T}"/>.
+        ///     The collection type is a <see cref="HashSet{T}"/> or <see cref="ISet{T}"/>.
         /// </summary>
         /// <remarks>
         ///     <see cref="SortedSet{T}"/> is not supported from this type.

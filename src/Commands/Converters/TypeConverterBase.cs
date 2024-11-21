@@ -1,5 +1,4 @@
-﻿using Commands.Helpers;
-using Commands.Reflection;
+﻿using Commands.Reflection;
 
 namespace Commands.Converters
 {
@@ -20,9 +19,7 @@ namespace Commands.Converters
         public virtual ConvertResult Success(T value)
         {
             if (value == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(value);
-            }
+                throw new ArgumentNullException(nameof(value));
 
             return base.Success(value);
         }
@@ -64,14 +61,13 @@ namespace Commands.Converters
         protected ConvertResult Error(Exception exception)
         {
             if (exception == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(exception);
-            }
+                throw new ArgumentNullException(nameof(exception));
 
             if (exception is ConvertException convertEx)
             {
                 return ConvertResult.FromError(convertEx);
             }
+
             return ConvertResult.FromError(ConvertException.ConvertFailed(Type, exception));
         }
 
@@ -83,9 +79,7 @@ namespace Commands.Converters
         protected ConvertResult Error(string error)
         {
             if (string.IsNullOrEmpty(error))
-            {
-                ThrowHelpers.ThrowInvalidArgument(error);
-            }
+                throw new ArgumentNullException(nameof(error));
 
             return ConvertResult.FromError(new ConvertException(error));
         }

@@ -1,5 +1,4 @@
 ﻿using Commands.Converters;
-using Commands.Helpers;
 using Commands.Reflection;
 using Commands.Resolvers;
 using System.Reflection;
@@ -58,14 +57,10 @@ namespace Commands
         public ConfigurationBuilder AddCommand(string name, Delegate commandAction, params string[] aliases)
         {
             if (commandAction == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(commandAction);
-            }
+                throw new ArgumentNullException(nameof(commandAction));
 
             if (aliases == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(aliases);
-            }
+                throw new ArgumentNullException(nameof(aliases));
 
             aliases = new string[] { name }
                 .Concat(aliases)
@@ -112,9 +107,7 @@ namespace Commands
         public ConfigurationBuilder AddResultResolver(Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
         {
             if (resultAction == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(resultAction);
-            }
+                throw new ArgumentNullException(nameof(resultAction));
 
             ResultResolvers.Add(new DelegateResolver(resultAction));
 
@@ -133,9 +126,7 @@ namespace Commands
         public ConfigurationBuilder AddResultResolver(Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
         {
             if (resultAction == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(resultAction);
-            }
+                throw new ArgumentNullException(nameof(resultAction));
 
             ResultResolvers.Add(new AsyncDelegateResolver(resultAction));
 
@@ -152,9 +143,7 @@ namespace Commands
             where TResolver : ResultResolverBase
         {
             if (resolver == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(resolver);
-            }
+                throw new ArgumentNullException(nameof(resolver));
 
             ResultResolvers.Add(resolver);
 
@@ -170,9 +159,7 @@ namespace Commands
         public ConfigurationBuilder AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
         {
             if (convertAction == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(convertAction);
-            }
+                throw new ArgumentNullException(nameof(convertAction));
 
             var converter = new DelegateConverter<TConvertable>(convertAction);
 
@@ -190,9 +177,7 @@ namespace Commands
         public ConfigurationBuilder AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
         {
             if (convertAction == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(convertAction);
-            }
+                throw new ArgumentNullException(nameof(convertAction));
 
             var converter = new AsyncDelegateConverter<TConvertable>(convertAction);
 
@@ -211,9 +196,7 @@ namespace Commands
             where TConverter : TypeConverterBase
         {
             if (converter == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(converter);
-            }
+                throw new ArgumentNullException(nameof(converter));
 
             TypeConverters[converter.Type] = converter;
 
@@ -228,9 +211,7 @@ namespace Commands
         public ConfigurationBuilder AddAssembly(Assembly assembly)
         {
             if (assembly == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(assembly);
-            }
+                throw new ArgumentNullException(nameof(assembly));
 
             Assemblies.Add(assembly);
 
@@ -245,9 +226,7 @@ namespace Commands
         public ConfigurationBuilder AddAssemblies(params Assembly[] assemblies)
         {
             if (assemblies == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(assemblies);
-            }
+                throw new ArgumentNullException(nameof(assemblies));
 
             Assemblies.AddRange(assemblies);
             return this;

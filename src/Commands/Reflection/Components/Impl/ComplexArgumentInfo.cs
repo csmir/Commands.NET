@@ -1,5 +1,4 @@
 ﻿using Commands.Converters;
-using Commands.Helpers;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -81,9 +80,7 @@ namespace Commands.Reflection
             var parameters = constructor.GetArguments(false, options);
 
             if (parameters.Length == 0)
-            {
-                ThrowHelpers.ThrowInvalidOperation("Complex types are expected to have at least 1 constructor parameter.");
-            }
+                throw new InvalidOperationException($"Complex types are expected to have at least 1 constructor parameter. Type: {Type}");
 
             var (minLength, maxLength) = parameters.GetLength();
 

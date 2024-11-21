@@ -1,5 +1,4 @@
-﻿using Commands.Helpers;
-using Commands.Reflection;
+﻿using Commands.Reflection;
 
 namespace Commands
 {
@@ -30,9 +29,7 @@ namespace Commands
                         _consumer = t;
                     }
                     else
-                    {
-                        ThrowHelpers.ThrowInvalidOperation($"{Consumer.GetType()} cannot be cast to {typeof(T)}.");
-                    }
+                        throw new InvalidOperationException($"{Consumer.GetType()} cannot be cast to {typeof(T)}.");
                 }
                 return _consumer;
             }

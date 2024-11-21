@@ -8,13 +8,15 @@ namespace Commands.Converters
 
         public override Type Type { get; } = targetEnumType;
 
-        public override ValueTask<ConvertResult> Evaluate(
+        public override async ValueTask<ConvertResult> Evaluate(
             ConsumerBase consumer, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
-            if (Enum.TryParse(Type, value?.ToString(), true, out var result))
-                return ValueTask.FromResult(Success(result!));
+            await Task.CompletedTask;
 
-            return ValueTask.FromResult(Error($"The provided value is not a part the enum specified. Expected: '{Type.Name}', got: '{value}'. At: '{parameter.Name}'"));
+            if (Enum.TryParse(Type, value?.ToString(), true, out var result))
+                return Success(result!);
+
+            return Error($"The provided value is not a part the enum specified. Expected: '{Type.Name}', got: '{value}'. At: '{parameter.Name}'");
         }
 
         internal static EnumTypeReader GetOrCreate(Type type)

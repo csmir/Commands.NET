@@ -34,9 +34,11 @@ namespace Commands.Converters
             };
         }
 
-        public override ValueTask<ConvertResult> Evaluate(
+        public override async ValueTask<ConvertResult> Evaluate(
             ConsumerBase consumer, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
+
             var val = value?.ToString();
             if (!TimeSpan.TryParse(val, out TimeSpan span))
             {
@@ -49,10 +51,10 @@ namespace Commands.Converters
                             span += result(match.Groups[1].Value);
                 }
                 else
-                    return ValueTask.FromResult(Error($"The provided value is no timespan. Got: '{val}'. At: '{parameter.Name}'"));
+                    return Error($"The provided value is no timespan. Got: '{val}'. At: '{parameter.Name}'");
             }
 
-            return ValueTask.FromResult(Success(span));
+            return Success(span);
         }
 
         private static TimeSpan Seconds(string match)

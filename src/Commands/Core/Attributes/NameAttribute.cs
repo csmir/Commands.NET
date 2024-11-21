@@ -1,5 +1,4 @@
-﻿using Commands.Helpers;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Commands
 {
@@ -44,30 +43,22 @@ namespace Commands
         public NameAttribute(string name, params string[] aliases)
         {
             if (string.IsNullOrWhiteSpace(name))
-            {
-                ThrowHelpers.ThrowInvalidArgument(name);
-            }
+                throw new ArgumentNullException(nameof(name));
 
             var arr = new string[aliases.Length + 1];
             for (int i = 0; i < aliases.Length; i++)
             {
                 if (string.IsNullOrWhiteSpace(aliases[i]))
-                {
-                    ThrowHelpers.ThrowInvalidArgument(aliases);
-                }
+                    throw new ArgumentNullException(nameof(aliases));
 
                 if (arr.Contains(aliases[i]))
-                {
-                    ThrowHelpers.ThrowNotDistinct(aliases);
-                }
+                    throw new ArgumentException("Aliases must be distinct.", nameof(aliases));
 
                 arr[i + 1] = aliases[i];
             }
 
             if (arr.Contains(name))
-            {
-                ThrowHelpers.ThrowNotDistinct(aliases);
-            }
+                throw new ArgumentException("Aliases must be distinct and not contain Name.", nameof(aliases));
 
             arr[0] = name;
 
@@ -80,9 +71,7 @@ namespace Commands
             foreach (var alias in Aliases)
             {
                 if (!regex.IsMatch(alias))
-                {
-                    ThrowHelpers.ThrowNotMatched(alias);
-                }
+                    throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(CommandConfiguration.NamingRegex)} of the {nameof(CommandConfiguration)}.");
             }
         }
     }

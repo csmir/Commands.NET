@@ -6,14 +6,16 @@ namespace Commands.Converters
     {
         public static StringTypeConverter Instance { get; } = new();
 
-        public override ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
+
             if (value is string str)
             {
-                return ValueTask.FromResult(Success(str));
+                return Success(str);
             }
 
-            return ValueTask.FromResult(Success(value?.ToString()!));
+            return Success(value?.ToString()!);
         }
     }
 }

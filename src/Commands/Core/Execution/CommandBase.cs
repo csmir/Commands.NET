@@ -1,5 +1,4 @@
-﻿using Commands.Helpers;
-using Commands.Reflection;
+﻿using Commands.Reflection;
 
 namespace Commands
 {
@@ -37,14 +36,10 @@ namespace Commands
         public CommandBase(string name, string[] aliases, Delegate executeDelegate)
         {
             if (executeDelegate == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(executeDelegate);
-            }
+                throw new ArgumentNullException(nameof(executeDelegate));
 
             if (aliases == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(aliases);
-            }
+                throw new ArgumentNullException(nameof(aliases));
 
             aliases = new string[] { name }
                 .Concat(aliases)
@@ -73,9 +68,7 @@ namespace Commands
             foreach (var alias in Aliases)
             {
                 if (!configuration.NamingRegex.IsMatch(alias))
-                {
-                    ThrowHelpers.ThrowNotMatched(alias);
-                }
+                    throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(CommandConfiguration.NamingRegex)} of the {nameof(CommandConfiguration)}.");
             }
 
             var param = ExecuteDelegate.Method.GetParameters();

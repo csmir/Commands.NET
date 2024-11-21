@@ -53,7 +53,7 @@
                 }
             }
 
-            return ValueTask.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -66,7 +66,7 @@
         protected virtual ValueTask CommandNotFound(
             ConsumerBase consumer, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            return ValueTask.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -79,7 +79,7 @@
         protected virtual ValueTask SearchIncomplete(
             ConsumerBase consumer, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            return ValueTask.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -92,7 +92,7 @@
         protected virtual ValueTask ArgumentMismatch(
             ConsumerBase consumer, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            return ValueTask.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -105,7 +105,7 @@
         protected virtual ValueTask ConversionFailed(
             ConsumerBase consumer, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            return ValueTask.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -118,7 +118,7 @@
         protected virtual ValueTask ConditionUnmet(
             ConsumerBase consumer, ConditionResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            return ValueTask.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -131,7 +131,7 @@
         protected virtual ValueTask InvocationFailed(
             ConsumerBase consumer, InvokeResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            return ValueTask.CompletedTask;
+            return default;
         }
 
         /// <summary>
@@ -144,7 +144,7 @@
         protected virtual ValueTask UnhandledFailure(
             ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            return ValueTask.CompletedTask;
+            return default;
         }
     }
 }

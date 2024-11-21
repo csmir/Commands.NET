@@ -1,6 +1,4 @@
-﻿using Commands.Conditions;
-
-namespace Commands.Tests
+﻿namespace Commands.Tests
 {
     public class ConditionModule : ModuleBase
     {
@@ -16,14 +14,6 @@ namespace Commands.Tests
         [ANDCondition(true)]
         [ANDCondition(false)]
         public string ConditionAND()
-        {
-            return "Success";
-        }
-
-        [Name("works-on-my-machine")]
-        [SupportedPlatform("windows")]
-        [SupportedPlatform("linux")]
-        public string WorksOnMyMachine()
         {
             return "Success";
         }

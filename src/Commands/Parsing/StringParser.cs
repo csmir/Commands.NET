@@ -1,5 +1,4 @@
-﻿using Commands.Helpers;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Text;
 
 namespace Commands.Parsing
@@ -64,9 +63,7 @@ namespace Commands.Parsing
         public static IEnumerable<KeyValuePair<string, object?>> ParseKeyValueCollection(string toParse)
         {
             if (string.IsNullOrWhiteSpace(toParse))
-            {
-                ThrowHelpers.ThrowInvalidArgument(toParse);
-            }
+                throw new ArgumentNullException(nameof(toParse));
 
             return ParseKeyValueCollection(toParse.TrimEnd().Split());
         }
@@ -240,9 +237,7 @@ namespace Commands.Parsing
         {
             // return empty range on empty object.
             if (string.IsNullOrWhiteSpace(toParse))
-            {
-                ThrowHelpers.ThrowInvalidArgument(toParse);
-            }
+                throw new ArgumentNullException(nameof(toParse));
 
             var arr = Array.Empty<string>();
             var sb = new StringBuilder(0, toParse.Length);

@@ -19,7 +19,7 @@ namespace Commands.Resolvers
         {
             _action(consumer, result, services);
 
-            return ValueTask.CompletedTask;
+            return default;
         }
     }
 }

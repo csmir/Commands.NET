@@ -1,5 +1,4 @@
 ﻿using Commands.Converters;
-using Commands.Helpers;
 using System.ComponentModel;
 using System.Reflection;
 
@@ -259,7 +258,7 @@ namespace Commands.Reflection
                     else if (elementType!.IsObject())
                         converter = ObjectTypeConverter.Instance;
                     else
-                        ThrowHelpers.ThrowInvalidOperation("The inner type of this generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type.");
+                        throw new NotSupportedException($"The inner type of this generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type. Type: {elementType}");
                 }
 
                 return ArrayTypeConverter.GetOrCreate(converter);
@@ -278,7 +277,7 @@ namespace Commands.Reflection
                     else if (elementType.IsObject())
                         converter = ObjectTypeConverter.Instance;
                     else
-                        ThrowHelpers.ThrowInvalidOperation("The inner type of this generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type.");
+                        throw new NotSupportedException($"The inner type of this generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type. Type: {elementType}");
                 }
 
                 if (enumType == CollectionType.List)
@@ -293,7 +292,7 @@ namespace Commands.Reflection
             }
             catch
             {
-                ThrowHelpers.ThrowInvalidOperation($"Type {type.FullName} is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type. ");
+                throw new NotSupportedException($"The inner type of this generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type. Generic type: {type}");
             }
 
             return null;
@@ -304,12 +303,11 @@ namespace Commands.Reflection
         /// </summary>
         /// <typeparam name="T">The attribute type to filter by.</typeparam>
         /// <param name="component">The component that should be searched for the attribute.</param>
-        /// <param name="defaultValue">The default value that will be returned if an attribute was not found. <see langword="default"/> if not set.</param>
-        /// <returns>An attribute of the type <typeparamref name="T"/> if it exists, otherwise <paramref name="defaultValue"/>.</returns>
-        public static T? GetAttribute<T>(this IScoreable component, T? defaultValue = default)
+        /// <returns>An attribute of the type <typeparamref name="T"/> if it exists, otherwise <see langword="null"/>.</returns>
+        public static T? GetAttribute<T>(this IScoreable component)
             where T : Attribute
         {
-            return component.Attributes.GetAttribute(defaultValue);
+            return component.Attributes.GetAttribute<T>();
         }
 
         internal static bool IsString(this Type type)
@@ -336,12 +334,12 @@ namespace Commands.Reflection
 
             if (elementType != null)
             {
-                if (l_type.MakeGenericType(elementType).IsAssignableTo(type))
+                if (type.IsAssignableFrom(l_type.MakeGenericType(elementType)))
                 {
                     return CollectionType.List;
                 }
 
-                if (h_type.MakeGenericType(elementType).IsAssignableTo(type))
+                if (type.IsAssignableFrom(h_type.MakeGenericType(elementType)))
                 {
                     return CollectionType.Set;
                 }
@@ -409,9 +407,9 @@ namespace Commands.Reflection
         internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
             => provider.GetCustomAttributes(inherit).OfType<Attribute>();
 
-        internal static T? GetAttribute<T>(this IEnumerable<Attribute> attributes, T? defaultValue = null)
+        internal static T? GetAttribute<T>(this IEnumerable<Attribute> attributes)
             where T : Attribute
-            => attributes.OfType<T>().FirstOrDefault(defaultValue);
+            => attributes.OfType<T>().FirstOrDefault();
 
         internal static bool ContainsAttribute<T>(this IEnumerable<Attribute> attributes, bool allowMultipleMatches)
         {

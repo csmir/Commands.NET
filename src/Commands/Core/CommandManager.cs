@@ -1,5 +1,4 @@
 ﻿using Commands.Converters;
-using Commands.Helpers;
 using Commands.Parsing;
 using Commands.Reflection;
 using Commands.Resolvers;
@@ -112,9 +111,7 @@ namespace Commands
         public IEnumerable<SearchResult> Search(ArgumentEnumerator args)
         {
             if (args == null)
-            {
-                ThrowHelpers.ThrowInvalidArgument(args);
-            }
+                throw new ArgumentNullException(nameof(args));
 
             return Commands.SearchMany(args, 0, false);
         }
@@ -131,9 +128,7 @@ namespace Commands
             where T : ConsumerBase
         {
             if (string.IsNullOrWhiteSpace(args))
-            {
-                ThrowHelpers.ThrowInvalidArgument(args);
-            }
+                throw new ArgumentNullException(nameof(args));
 
             return Execute(consumer, StringParser.ParseKeyValueCollection(args), options);
         }

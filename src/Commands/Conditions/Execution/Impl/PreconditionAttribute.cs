@@ -1,5 +1,4 @@
-﻿using Commands.Helpers;
-using Commands.Reflection;
+﻿using Commands.Reflection;
 using System.ComponentModel;
 
 namespace Commands.Conditions
@@ -58,7 +57,7 @@ namespace Commands.Conditions
         protected ConditionResult Error(Exception exception)
         {
             if (exception == null)
-                ThrowHelpers.ThrowInvalidArgument(exception);
+                throw new ArgumentNullException(nameof(exception));
 
             if (exception is ConditionException checkEx)
             {
@@ -76,7 +75,7 @@ namespace Commands.Conditions
         protected ConditionResult Error(string error)
         {
             if (string.IsNullOrEmpty(error))
-                ThrowHelpers.ThrowInvalidArgument(error);
+                throw new ArgumentNullException(nameof(error));
 
             return ConditionResult.FromError(new ConditionException(error));
         }

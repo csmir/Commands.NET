@@ -7,9 +7,11 @@ namespace Commands.Converters
     {
         public static ObjectTypeConverter Instance { get; } = new();
 
-        public override ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask<ConvertResult> Evaluate(ConsumerBase consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
-            return ValueTask.FromResult(Success(value!));
+            await Task.CompletedTask;
+
+            return Success(value!);
         }
     }
 }

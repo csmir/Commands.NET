@@ -1,6 +1,4 @@
-﻿using Commands.Helpers;
-
-namespace Commands.Parsing
+﻿namespace Commands.Parsing
 {
     /// <summary>
     ///     Contains a set of arguments for the command pipeline. This class is not intended to be implemented by end-users. 
@@ -42,7 +40,7 @@ namespace Commands.Parsing
             foreach (var (key, value) in args)
             {
                 if (key == null)
-                    ThrowHelpers.ThrowInvalidArgument(key);
+                    throw new ArgumentNullException(nameof(key), "The key of an argument KeyValuePair cannot be null.");
 
                 if (value == null)
                     unnamedFill.Add(key);

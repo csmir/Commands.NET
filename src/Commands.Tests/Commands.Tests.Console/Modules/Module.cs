@@ -63,12 +63,6 @@
             Send($"Success: {values}");
         }
 
-        [Name("time")]
-        public void TimeOnly(TimeOnly time)
-        {
-            Send($"Success: {time}");
-        }
-
         [Name("multiple")]
         public void Test(bool truee, bool falsee)
         {

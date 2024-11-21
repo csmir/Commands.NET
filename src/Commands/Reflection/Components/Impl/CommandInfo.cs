@@ -1,5 +1,4 @@
 ﻿using Commands.Conditions;
-using Commands.Helpers;
 using System.Diagnostics;
 
 namespace Commands.Reflection
@@ -88,19 +87,29 @@ namespace Commands.Reflection
 
             var (minLength, maxLength) = parameters.GetLength();
 
+            Aliases = aliases;
+
+            if (aliases.Length > 0)
+            {
+                IsDefault = false;
+                Name = aliases[0];
+            }
+            else
+            {
+                IsDefault = true;
+                Name = null;
+            }
+
+            FullName = $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
+
             if (parameters.Any(x => x.IsRemainder))
             {
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     var parameter = parameters[i];
 
-                    if (parameter.IsRemainder)
-                    {
-                        if (i != parameters.Length - 1)
-                        {
-                            ThrowHelpers.ThrowInvalidOperation($"{nameof(RemainderAttribute)} can only exist on the last parameter of a command signature.");
-                        }
-                    }
+                    if (parameter.IsRemainder && i != parameters.Length - 1)
+                        throw new InvalidOperationException($"{nameof(RemainderAttribute)} can only exist on the last parameter of a command signature. Command: {FullName}");
                 }
             }
 
@@ -117,21 +126,6 @@ namespace Commands.Reflection
             Arguments = parameters;
             HasArguments = parameters.Length > 0;
             HasRemainder = parameters.Any(x => x.IsRemainder);
-
-            Aliases = aliases;
-
-            if (aliases.Length > 0)
-            {
-                IsDefault = false;
-                Name = aliases[0];
-            }
-            else
-            {
-                IsDefault = true;
-                Name = null;
-            }
-
-            FullName = $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
 
             MinLength = minLength;
             MaxLength = maxLength;

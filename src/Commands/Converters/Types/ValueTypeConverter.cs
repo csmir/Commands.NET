@@ -8,15 +8,17 @@ namespace Commands.Converters
 
         private readonly static Lazy<IReadOnlyDictionary<Type, Delegate>> _container = new(ValueGenerator);
 
-        public override ValueTask<ConvertResult> Evaluate(
+        public override async ValueTask<ConvertResult> Evaluate(
             ConsumerBase consumer, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
+
             var parser = (_container.Value[Type] as Parser<T>)!; // never null in cast use.
 
             if (parser(value?.ToString(), out var result))
-                return ValueTask.FromResult(Success(result));
+                return Success(result);
 
-            return ValueTask.FromResult(Error($"The provided value does not match the expected type. Expected {typeof(T).Name}, got {value}. At: '{parameter.Name}'"));
+            return Error($"The provided value does not match the expected type. Expected {typeof(T).Name}, got {value}. At: '{parameter.Name}'");
         }
 
         private static Dictionary<Type, Delegate> ValueGenerator()
@@ -53,8 +55,6 @@ namespace Commands.Converters
                 // time
                 [typeof(DateTime)] = (Parser<DateTime>)DateTime.TryParse,
                 [typeof(DateTimeOffset)] = (Parser<DateTimeOffset>)DateTimeOffset.TryParse,
-                [typeof(TimeOnly)] = (Parser<TimeOnly>)TimeOnly.TryParse,
-                [typeof(DateOnly)] = (Parser<DateOnly>)DateOnly.TryParse,
 
                 // guid
                 [typeof(Guid)] = (Parser<Guid>)Guid.TryParse
@@ -100,8 +100,6 @@ namespace Commands.Converters
                 // time
                 new ValueTypeConverter<DateTime>(),
                 new ValueTypeConverter<DateTimeOffset>(),
-                new ValueTypeConverter<TimeOnly>(),
-                new ValueTypeConverter<DateOnly>(),
 
                 // guid
                 new ValueTypeConverter<Guid>(),
