@@ -272,14 +272,14 @@ namespace Commands
             {
                 if (context.Properties.TryGetValue("Commands:Commands", out var propCmd))
                 {
-                    if (propCmd is List<CommandBase> commands)
+                    if (propCmd is List<CommandBuilder> commands)
                     {
                         commands.Add(new(name, [], executeDelegate));
                     }
                 }
                 else
                 {
-                    context.Properties.Add("Commands:Commands", new List<CommandBase> { new(name, [], executeDelegate) });
+                    context.Properties.Add("Commands:Commands", new List<CommandBuilder> { new(name, [], executeDelegate) });
                 }
             });
             return builder;
@@ -301,14 +301,14 @@ namespace Commands
             {
                 if (context.Properties.TryGetValue("Commands:Commands", out var propCmd))
                 {
-                    if (propCmd is List<CommandBase> commands)
+                    if (propCmd is List<CommandBuilder> commands)
                     {
                         commands.Add(new(name, aliases, executeDelegate));
                     }
                 }
                 else
                 {
-                    context.Properties.Add("Commands:Commands", new List<CommandBase> { new(name, aliases, executeDelegate) });
+                    context.Properties.Add("Commands:Commands", new List<CommandBuilder> { new(name, aliases, executeDelegate) });
                 }
             });
             return builder;
@@ -337,14 +337,14 @@ namespace Commands
             {
                 if (context.Properties.TryGetValue("Commands:Commands", out var propCmd))
                 {
-                    if (propCmd is List<CommandBase> range)
+                    if (propCmd is List<CommandBuilder> range)
                     {
                         range.Add(new(names[0], aliases, executeDelegate));
                     }
                 }
                 else
                 {
-                    context.Properties.Add("Commands:Commands", new List<CommandBase> { new(names[0], aliases, executeDelegate) });
+                    context.Properties.Add("Commands:Commands", new List<CommandBuilder> { new(names[0], aliases, executeDelegate) });
                 }
             });
 
@@ -448,7 +448,7 @@ namespace Commands
                         : [];
 
                     var commands = context.Properties.TryGetValue("Commands:Commands", out var propCmd)
-                        ? propCmd as List<CommandBase>
+                        ? propCmd as List<CommandBuilder>
                         : [];
 
                     foreach (var converter in converters)
@@ -458,7 +458,7 @@ namespace Commands
 
                     builder.ResultResolvers.AddRange(resolvers);
                     builder.Assemblies.AddRange(assemblies!);
-                    builder.Commands.AddRange(commands!);
+                    builder.Components.AddRange(commands!);
 
                     return builder.Build();
                 });

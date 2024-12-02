@@ -37,7 +37,7 @@ namespace Commands
         /// <summary>
         ///     Gets or sets a collection of <see cref="CommandInfo"/>'s that are manually created before the registration process runs.
         /// </summary>
-        public List<CommandBase> Commands { get; set; } = [];
+        public List<IComponentBuilder> Components { get; set; } = [];
 
         /// <summary>
         ///     Gets or sets the naming convention of commands and groups being registered into the <see cref="CommandManager"/>.
@@ -67,7 +67,7 @@ namespace Commands
                 .Distinct()
                 .ToArray();
 
-            Commands.Add(new CommandBase(aliases, commandAction));
+            Components.Add(new CommandBuilder(aliases, commandAction));
 
             return this;
         }
@@ -88,9 +88,9 @@ namespace Commands
         /// </summary>
         /// <param name="command">The command. Delegate commands are adviced to set the first parameter to be <see cref="CommandContext{T}"/>, which holds scope and execution information of the created command during its execution.</param>
         /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddCommand(CommandBase command)
+        public ConfigurationBuilder AddCommand(CommandBuilder command)
         {
-            Commands.Add(command);
+            Components.Add(command);
 
             return this;
         }

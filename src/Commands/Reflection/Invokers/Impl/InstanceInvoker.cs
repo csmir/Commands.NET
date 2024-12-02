@@ -27,11 +27,14 @@ namespace Commands.Reflection
         public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandManager manager, CommandOptions options)
             where T : ConsumerBase
         {
-            var module = command.Module!.Invoker.Invoke(consumer, command, args, manager, options) as ModuleBase;
+            var module = command.Module?.Invoker?.Invoke(consumer, command, args, manager, options) as ModuleBase;
 
-            module!.Consumer = consumer;
-            module!.Command = command;
-            module!.Manager = manager;
+            if (module != null)
+            {
+                module.Consumer = consumer;
+                module.Command = command;
+                module.Manager = manager;
+            }
 
             return Target.Invoke(module, args);
         }

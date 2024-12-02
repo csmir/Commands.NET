@@ -216,6 +216,11 @@ namespace Commands.Reflection
         /// <returns>An array of all discovered components.</returns>
         public static ISearchable[] GetComponents(ModuleInfo module, CommandConfiguration options)
         {
+            if (module.Type == null)
+            {
+                return [];
+            }
+
             var commands = GetCommands(module.Type, module, module.Aliases.Length > 0, options);
 
             var modules = GetModules(module.Type.GetNestedTypes(), module, true, options);

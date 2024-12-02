@@ -43,7 +43,7 @@ namespace Commands
             _disposer = new SequenceDisposer(configuration.ResultResolvers);
 
             var commands = ReflectionUtilities.GetTopLevelComponents(configuration)
-                .Concat(configuration.Commands.Select(x => x.Build(configuration)))
+                .Concat(configuration.Components.Select(x => x.Build(configuration)))
                 .OrderByDescending(command => command.Score);
 
             Commands = [.. commands];

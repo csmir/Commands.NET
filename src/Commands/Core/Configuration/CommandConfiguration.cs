@@ -28,7 +28,7 @@ namespace Commands
         /// <summary>
         ///     Gets a collection of commands based on delegates that are added to the manager at runtime.
         /// </summary>
-        public List<CommandBase> Commands { get; }
+        public List<IComponentBuilder> Components { get; }
 
         /// <summary>
         ///     Gets the naming convention used to identify command methods.
@@ -40,7 +40,7 @@ namespace Commands
             Assemblies = configuration.Assemblies;
             TypeConverters = configuration.TypeConverters;
             ResultResolvers = configuration.ResultResolvers;
-            Commands = configuration.Commands;
+            Components = configuration.Components;
             NamingRegex = configuration.NamingRegex;
         }
     }

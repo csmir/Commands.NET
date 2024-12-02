@@ -61,6 +61,6 @@ namespace Commands.Reflection
         /// <summary>
         ///     Gets the invocation target of this component.
         /// </summary>
-        public IInvoker Invoker { get; }
+        public IInvoker? Invoker { get; }
     }
 }
