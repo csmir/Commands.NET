@@ -22,14 +22,9 @@ namespace Commands
         public string[] Aliases { get; }
 
         /// <summary>
-        ///     Gets or sets a collection of commands that are added to the module. This collection is used to build the module into a <see cref="ModuleInfo"/> object.
+        ///     Gets or sets a collection of components that are added to the module. This collection is used to build the module into a <see cref="ModuleInfo"/> object.
         /// </summary>
-        public List<CommandBuilder> Commands { get; set; } = [];
-
-        /// <summary>
-        ///     Gets or sets a collection of sub-modules that are added to the module. This collection is used to build the module into a <see cref="ModuleInfo"/> object.
-        /// </summary>
-        public List<ModuleBuilder> SubModules { get; set; } = [];
+        public List<IComponentBuilder> Components { get; set; } = [];
 
         /// <summary>
         ///     Creates a new instance of <see cref="ModuleBuilder"/> with the specified name and aliases.
@@ -67,7 +62,7 @@ namespace Commands
         /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
         public ModuleBuilder AddCommand(CommandBuilder command)
         {
-            Commands.Add(command);
+            Components.Add(command);
 
             return this;
         }
@@ -111,13 +106,13 @@ namespace Commands
         }
 
         /// <summary>
-        ///     
+        ///     Adds a new (sub)module to the module. This is a subcommand group, serving as a named container for subcommands and submodules.
         /// </summary>
-        /// <param name="module"></param>
+        /// <param name="module">The module builder to add.</param>
         /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
         public ModuleBuilder AddModule(ModuleBuilder module)
         {
-            SubModules.Add(module);
+            Components.Add(module);
 
             return this;
         }
@@ -178,18 +173,20 @@ namespace Commands
 
             var moduleInfo = new ModuleInfo(root, Aliases);
 
-            foreach (var subModule in SubModules)
+            foreach (var component in Components)
             {
-                var subModuleInfo = subModule.Build(configuration, moduleInfo);
+                if (component is ModuleBuilder moduleBuilder)
+                {
+                    var subModuleInfo = moduleBuilder.Build(configuration, moduleInfo);
 
-                moduleInfo.Components.Add(subModuleInfo);
-            }
+                    moduleInfo.Components.Add(subModuleInfo);
+                }
+                else
+                {
+                    var commandInfo = component.Build(configuration);
 
-            foreach (var command in Commands)
-            {
-                var commandInfo = command.Build(configuration);
-
-                moduleInfo.Components.Add(commandInfo);
+                    moduleInfo.Components.Add(commandInfo);
+                }
             }
 
             moduleInfo.SortScores();

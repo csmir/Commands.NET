@@ -48,7 +48,19 @@ namespace Commands
         public Regex NamingRegex { get; set; } = new(DEFAULT_REGEX, RegexOptions.Compiled);
 
         /// <summary>
-        ///     Adds a new <see cref="Delegate"/> based command to the command collection.
+        ///     Adds a new <see cref="Delegate"/> based command to the component collection.
+        /// </summary>
+        /// <param name="command">The command. Delegate commands are adviced to set the first parameter to be <see cref="CommandContext{T}"/>, which holds scope and execution information of the created command during its execution.</param>
+        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
+        public ConfigurationBuilder AddCommand(CommandBuilder command)
+        {
+            Components.Add(command);
+
+            return this;
+        }
+
+        /// <summary>
+        ///     Adds a new <see cref="Delegate"/> based command to the component collection.
         /// </summary>
         /// <param name="name">The command name.</param>
         /// <param name="commandAction">The action of the command. Delegate commands are adviced to set the first parameter to be <see cref="CommandContext{T}"/>, which holds scope and execution information of the created command during its execution.</param>
@@ -67,13 +79,11 @@ namespace Commands
                 .Distinct()
                 .ToArray();
 
-            Components.Add(new CommandBuilder(aliases, commandAction));
-
-            return this;
+            return AddCommand(new CommandBuilder(aliases, commandAction));
         }
 
         /// <summary>
-        ///     Adds a new <see cref="Delegate"/> based command to the command collection.
+        ///     Adds a new <see cref="Delegate"/> based command to the component collection.
         /// </summary>
         /// <param name="name">The command name.</param>
         /// <param name="commandAction">The action of the command. Delegate commands are adviced to set the first parameter to be <see cref="CommandContext{T}"/>, which holds scope and execution information of the created command during its execution.</param>
@@ -84,15 +94,54 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Adds a new <see cref="Delegate"/> based command to the command collection.
+        ///     Adds a new (sub)module to the component collection. This is a subcommand group, serving as a named container for subcommands and submodules.
         /// </summary>
-        /// <param name="command">The command. Delegate commands are adviced to set the first parameter to be <see cref="CommandContext{T}"/>, which holds scope and execution information of the created command during its execution.</param>
+        /// <param name="module">The module builder to add.</param>
         /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddCommand(CommandBuilder command)
+        public ConfigurationBuilder AddModule(ModuleBuilder module)
         {
-            Components.Add(command);
+            Components.Add(module);
 
             return this;
+        }
+
+        /// <summary>
+        ///     Adds a new (sub)module to the component collection. This is a subcommand group, serving as a named container for subcommands and submodules.
+        /// </summary>
+        /// <param name="name">The name of the module. This is the primary alias.</param>
+        /// <param name="aliases">The aliases of the module.</param>
+        /// <param name="moduleConfiguration">An action which is ran over the to-be created submodule to configure it with additional components.</param>
+        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the aliases or name are null.</exception>
+        public ConfigurationBuilder AddModule(string name, Action<ModuleBuilder> moduleConfiguration, params string[] aliases)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+
+            if (aliases == null)
+                throw new ArgumentNullException(nameof(aliases));
+
+            aliases = new string[] { name }
+                .Concat(aliases)
+                .Distinct()
+                .ToArray();
+
+            var subModule = new ModuleBuilder(aliases);
+
+            moduleConfiguration(subModule);
+
+            return AddModule(subModule);
+        }
+
+        /// <summary>
+        ///     Adds a new (sub)module to the component collection. This is a subcommand group, serving as a named container for subcommands and submodules.
+        /// </summary>
+        /// <param name="name">The name of the module. This is the primary alias.</param>
+        /// <param name="moduleConfiguration">An action which is ran over the to-be created submodule to configure it with additional components.</param>
+        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
+        public ConfigurationBuilder AddModule(string name, Action<ModuleBuilder> moduleConfiguration)
+        {
+            return AddModule(name, moduleConfiguration, []);
         }
 
         /// <summary>
