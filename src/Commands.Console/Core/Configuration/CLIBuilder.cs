@@ -8,7 +8,7 @@ namespace Commands
     public static class CLIBuilder
     {
         /// <summary>
-        ///     Adds a new <see cref="Delegate"/> based command to the list of <see cref="ConfigurationBuilder.Commands"/>. 
+        ///     Adds a new <see cref="Delegate"/> based command to the list of <see cref="ConfigurationBuilder.Components"/>. 
         /// </summary>
         /// <remarks>
         ///     This overload sets a default command name of <c>env_core</c>. This command is meant to be used as a default command for the environment.

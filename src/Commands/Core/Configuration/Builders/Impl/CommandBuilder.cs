@@ -8,14 +8,14 @@ namespace Commands
     /// <remarks>
     ///     This class is used to configure a command before it is built into a <see cref="CommandInfo"/> object. By calling the <see cref="Build"/> method, the command is built into an object that can be executed by the <see cref="CommandManager"/>>.
     /// </remarks>
-    public sealed class CommandBase
+    public sealed class CommandBuilder : IComponentBuilder
     {
         private static readonly Type c_type = typeof(CommandContext<>);
 
         /// <summary>
         ///     Gets the name of the command. This is the primary alias of the command.
         /// </summary>
-        public string Name { get; }
+        public string? Name { get; }
 
         /// <summary>
         ///     Gets all aliases of the command, including its name. This is used to identify the command in the command execution pipeline.
@@ -28,12 +28,12 @@ namespace Commands
         public Delegate ExecuteDelegate { get; }
 
         /// <summary>
-        ///     Creates a new instance of <see cref="CommandBase"/> with the specified name, aliases, and delegate.
+        ///     Creates a new instance of <see cref="CommandBuilder"/> with the specified name, aliases, and delegate.
         /// </summary>
         /// <param name="name">The name of the command.</param>
         /// <param name="aliases">The aliases of the command, excluding the name.</param>
         /// <param name="executeDelegate">The delegate used to execute the command.</param>
-        public CommandBase(string name, string[] aliases, Delegate executeDelegate)
+        public CommandBuilder(string name, string[] aliases, Delegate executeDelegate)
         {
             if (executeDelegate == null)
                 throw new ArgumentNullException(nameof(executeDelegate));
@@ -51,19 +51,21 @@ namespace Commands
             ExecuteDelegate = executeDelegate;
         }
 
-        internal CommandBase(string[] aliases, Delegate executeDelegate)
+        internal CommandBuilder(string[] aliases, Delegate executeDelegate)
         {
             Name = aliases[0];
             Aliases = aliases;
             ExecuteDelegate = executeDelegate;
         }
 
-        /// <summary>
-        ///     Builds the command into a <see cref="CommandInfo"/> object that can be executed by the <see cref="CommandManager"/>.
-        /// </summary>
-        /// <param name="configuration">The configuration entity that determines the creation of a command.</param>
-        /// <returns></returns>
-        public CommandInfo Build(CommandConfiguration configuration)
+        internal CommandBuilder(Delegate executeDelegate)
+        {
+            Aliases = [];
+            ExecuteDelegate = executeDelegate;
+        }
+
+        /// <inheritdoc />
+        public ISearchable Build(CommandConfiguration configuration)
         {
             foreach (var alias in Aliases)
             {

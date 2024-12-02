@@ -17,10 +17,10 @@ namespace Commands.Reflection
         /// <summary>
         ///     Gets the type of this module.
         /// </summary>
-        public Type Type { get; }
+        public Type? Type { get; }
 
         /// <inheritdoc />
-        public IInvoker Invoker { get; }
+        public IInvoker? Invoker { get; }
 
         /// <inheritdoc />
         public string? Name { get; }
@@ -50,6 +50,9 @@ namespace Commands.Reflection
         public float Priority { get; }
 
         /// <inheritdoc />
+        /// <remarks>
+        ///     Always <see langword="null"/> for when a module serves delegate commands.
+        /// </remarks>
         public ModuleInfo? Module { get; }
 
         /// <inheritdoc />
@@ -64,10 +67,10 @@ namespace Commands.Reflection
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, CommandConfiguration options)
         {
-            var attributes = type.GetAttributes(true).Concat(root?.Attributes ?? []).Distinct();
-
             Module = root;
             Type = type;
+
+            var attributes = type.GetAttributes(true).Concat(root?.Attributes ?? []).Distinct();
 
             Attributes = attributes.ToArray();
 
@@ -100,6 +103,26 @@ namespace Commands.Reflection
                 .ToHashSet();
         }
 
+        internal ModuleInfo(
+            ModuleInfo? root, string[] aliases)
+        {
+            Module = root;
+
+            Components      = [];
+            Attributes      = [];
+            PreEvaluations  = [];
+            PostEvaluations = [];
+
+            Aliases = aliases;
+            Name = aliases[0];
+
+            IsSearchable = true;
+
+            FullName = $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
+
+            IsDefault = false;
+        }
+
         /// <inheritdoc />
         public float GetScore()
         {
@@ -113,7 +136,7 @@ namespace Commands.Reflection
                 score += component.GetScore();
             }
 
-            if (Name != Type.Name)
+            if (Name != Type?.Name)
                 score += 1.0f;
 
             score += Priority;
@@ -121,10 +144,27 @@ namespace Commands.Reflection
             return score;
         }
 
+        /// <summary>
+        ///     Sorts all items in the module based on their score, which should be called when new components are added at runtime after the module has already been initialized.
+        /// </summary>
+        public void SortScores()
+        {
+            var copy = Components.ToArray();
+
+            copy.OrderByDescending(x => x.Score);
+
+            Components.Clear();
+
+            foreach (var component in copy)
+            {
+                Components.Add(component);
+            }
+        }
+
         /// <inheritdoc />
         public override string ToString()
         {
-            return $"{(Module != null ? $"{Module}." : "")}{(Name != null ? $"{Type.Name}['{Name}']" : $"{Type.Name}")}";
+            return $"{(Module != null ? $"{Module}." : "")}{(Name != null ? $"{Type?.Name}['{Name}']" : $"{Type?.Name}")}";
         }
     }
 }

@@ -16,7 +16,7 @@
 		<NoWarn>IDE0130</NoWarn>
 
 		<AssemblyVersion>1.0</AssemblyVersion>
-		<PackageVersion>1-rc6</PackageVersion>
+		<PackageVersion>1.0.0</PackageVersion>
 		<FileVersion>1.0.0.0</FileVersion>
 
 		<PackageId>Commands.NET.Console</PackageId>
