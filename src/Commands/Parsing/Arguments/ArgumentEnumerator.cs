@@ -78,7 +78,6 @@
         {
             if (_namedArgs.TryGetValue(parameterName, out value))
             {
-                _namedArgs.Remove(parameterName);
                 return true;
             }
 
