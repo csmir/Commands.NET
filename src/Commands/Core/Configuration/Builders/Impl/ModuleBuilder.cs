@@ -106,6 +106,20 @@ namespace Commands
         }
 
         /// <summary>
+        ///     Adds a new <see cref="Delegate"/> based command to the module.
+        /// </summary>
+        /// <remarks>
+        ///     This command variant serves as a default overload for a module. 
+        ///     When the module name is provided but no subcommand name, this delegate is discovered for execution, and will execute if the parameters match.
+        /// </remarks>
+        /// <param name="commandAction">The action of the command. Delegate commands are adviced to set the first parameter to be <see cref="CommandContext{T}"/>, which holds scope and execution information of the created command during its execution.</param>
+        /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
+        public ModuleBuilder AddCommand(Delegate commandAction)
+        {
+            return AddCommand(new CommandBuilder(commandAction));
+        }
+
+        /// <summary>
         ///     Adds a new (sub)module to the module. This is a subcommand group, serving as a named container for subcommands and submodules.
         /// </summary>
         /// <param name="module">The module builder to add.</param>
@@ -197,7 +211,7 @@ namespace Commands
         /// <inheritdoc />
         public ISearchable Build(CommandConfiguration configuration)
         {
-            return Build(configuration);
+            return Build(configuration, null);
         }
     }
 }

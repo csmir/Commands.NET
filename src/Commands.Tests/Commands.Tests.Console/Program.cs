@@ -7,6 +7,15 @@ var manager = CommandManager.CreateDefaultBuilder()
         if (!r.Success)
             Console.WriteLine(r);
     })
+    .AddModule("level1", module =>
+    {
+        module.AddCommand("a", () => Console.WriteLine("Test"));
+        module.AddModule("level2", submodule =>
+        {
+            submodule.AddCommand("b", () => Console.WriteLine("Test"));
+            submodule.AddCommand(() => Console.WriteLine("Test"));
+        });
+    })
     .AddCommand("j", () => Console.WriteLine("Test"))
     .Build();
 
