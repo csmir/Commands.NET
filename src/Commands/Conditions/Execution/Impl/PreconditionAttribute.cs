@@ -10,6 +10,7 @@ namespace Commands.Conditions
     /// <remarks>
     ///     Custom implementations of <see cref="PreconditionAttribute"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     /// </remarks>
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
     public abstract class PreconditionAttribute : PreconditionAttribute<ANDEvaluator>
     {
 
