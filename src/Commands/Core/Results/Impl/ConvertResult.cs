@@ -90,5 +90,14 @@ namespace Commands
                 return ToString();
             }
         }
+
+        /// <summary>
+        ///     Implicitly converts a <see cref="ConvertResult"/> to a <see cref="ValueTask{TResult}"/>.
+        /// </summary>
+        /// <param name="result">The result to convert.</param>
+        public static implicit operator ValueTask<ConvertResult>(ConvertResult result)
+        {
+            return new(result);
+        }
     }
 }

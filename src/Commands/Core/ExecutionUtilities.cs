@@ -29,25 +29,17 @@ namespace Commands
             {
                 // we should add defaults even if there are more args to resolve.
                 if (component.IsDefault && isNested)
-                {
                     discovered.Add(SearchResult.FromSuccess(component, searchHeight));
-                }
 
                 // if the search is already done, we simply continue and only look for defaults.
                 if (args.Length == searchHeight)
-                {
                     continue;
-                }
 
                 if (!args.TryNext(searchHeight, out var value))
-                {
                     continue;
-                }
 
                 if (!component.Aliases.Any(x => x == value))
-                {
                     continue;
-                }
 
                 // if the search found a module, we do inner module checks.
                 if (component is ModuleInfo module)
@@ -88,9 +80,7 @@ namespace Commands
                     var checkResult = await precon.Evaluate(consumer, command, options.Services, options.CancellationToken);
 
                     if (!checkResult.Success)
-                    {
                         return checkResult;
-                    }
                 }
             }
 
@@ -118,9 +108,7 @@ namespace Commands
                     var checkResult = await postcon.Evaluate(consumer, command, options.Services, options.CancellationToken);
 
                     if (!checkResult.Success)
-                    {
                         return checkResult;
-                    }
                 }
             }
 
@@ -135,27 +123,17 @@ namespace Commands
 
             args.SetSize(argHeight);
 
-            if (command.HasArguments)
-            {
-                if (command.MaxLength == args.Length)
-                {
-                    return await command.Arguments.ConvertMany(consumer, args, options);
-                }
-
-                if (command.MaxLength <= args.Length && command.HasRemainder)
-                {
-                    return await command.Arguments.ConvertMany(consumer, args, options);
-                }
-
-                if (command.MaxLength > args.Length && command.MinLength <= args.Length)
-                {
-                    return await command.Arguments.ConvertMany(consumer, args, options);
-                }
-            }
-            else if (args.Length == 0)
-            {
+            if (!command.HasArguments && args.Length == 0)
                 return [];
-            }
+
+            if (command.MaxLength == args.Length)
+                return await command.Arguments.ConvertMany(consumer, args, options);
+
+            if (command.MaxLength <= args.Length && command.HasRemainder)
+                return await command.Arguments.ConvertMany(consumer, args, options);
+
+            if (command.MaxLength > args.Length && command.MinLength <= args.Length)
+                return await command.Arguments.ConvertMany(consumer, args, options);
 
             return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
         }
@@ -175,18 +153,7 @@ namespace Commands
                 // parse remainder.
                 if (argument.IsRemainder)
                 {
-                    if (argument.IsCollection)
-                    {
-                        var remainder = args.TakeRemaining();
-
-                        results[i] = await argument.Convert(consumer, remainder, true, options);
-                    }
-                    else
-                    {
-                        var remainder = args.JoinRemaining();
-
-                        results[i] = await argument.Convert(consumer, remainder, false, options);
-                    }
+                    results[i] = await argument.Convert(consumer, argument.IsCollection ? args.TakeRemaining() : args.JoinRemaining(), true, options);
 
                     // End of the line, as remainder is always the last argument.
                     break;
@@ -213,9 +180,7 @@ namespace Commands
                     }
 
                     if (complexArgument.IsOptional)
-                    {
                         results[i] = ConvertResult.FromSuccess(Type.Missing);
-                    }
 
                     // continue looking for more args
                     continue;
@@ -224,14 +189,12 @@ namespace Commands
                 if (args.TryNext(argument.Name!, out var value))
                 {
                     results[i] = await argument.Convert(consumer, value, false, options);
-
                     continue;
                 }
 
                 if (argument.IsOptional)
                 {
                     results[i] = ConvertResult.FromSuccess(Type.Missing);
-
                     continue;
                 }
 
@@ -241,7 +204,7 @@ namespace Commands
             return results;
         }
 
-        internal static async ValueTask<ConvertResult> Convert(this IArgument argument, ConsumerBase consumer, object? value, bool isArray, CommandOptions options)
+        internal static ValueTask<ConvertResult> Convert(this IArgument argument, ConsumerBase consumer, object? value, bool isArray, CommandOptions options)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -260,7 +223,7 @@ namespace Commands
                 return ConvertResult.FromSuccess(value);
 
             // run parser.
-            return await argument.Converter!.Evaluate(consumer, argument, value, options.Services, options.CancellationToken);
+            return argument.Converter!.Evaluate(consumer, argument, value, options.Services, options.CancellationToken);
         }
     }
 }

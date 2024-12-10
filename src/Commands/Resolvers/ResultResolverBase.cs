@@ -14,42 +14,6 @@ namespace Commands.Resolvers
         private readonly static Func<object, object>[] _taskResultPropertyCallers = new Func<object, object>[2];
 
         /// <summary>
-        ///     Evaluates the post-execution data, carrying result data, consumer data and the scoped <see cref="IServiceProvider"/> for the current execution.
-        /// </summary>
-        /// <param name="consumer">The consumer of the command.</param>
-        /// <param name="result">The result of the command execution.</param>
-        /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
-        /// <param name="cancellationToken">A token to cancel the operation.</param>
-        public virtual ValueTask Evaluate(
-            ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
-        {
-            if (result.Success)
-                return default;
-
-            switch (result)
-            {
-                case SearchResult search:
-                    if (search.Component != null)
-                        return SearchIncomplete(consumer, search, services, cancellationToken);
-                    return CommandNotFound(consumer, search, services, cancellationToken);
-
-                case MatchResult match:
-                    if (match.Arguments != null)
-                        return ConversionFailed(consumer, match, services, cancellationToken);
-                    return ArgumentMismatch(consumer, match, services, cancellationToken);
-
-                case ConditionResult condition:
-                    return ConditionUnmet(consumer, condition, services, cancellationToken);
-
-                case InvokeResult invoke:
-                    return InvocationFailed(consumer, invoke, services, cancellationToken);
-
-                default:
-                    return UnhandledFailure(consumer, result, services, cancellationToken);
-            }
-        }
-
-        /// <summary>
         ///     Handles the return type of the command, sending the result to the consumer if the return type is not a non-generic task type or void.
         /// </summary>
         /// <param name="consumer">The consumer of the command.</param>
@@ -104,6 +68,42 @@ namespace Commands.Resolvers
             }
 
             return;
+        }
+
+        /// <summary>
+        ///     Evaluates the post-execution data, carrying result data, consumer data and the scoped <see cref="IServiceProvider"/> for the current execution.
+        /// </summary>
+        /// <param name="consumer">The consumer of the command.</param>
+        /// <param name="result">The result of the command execution.</param>
+        /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
+        /// <param name="cancellationToken">A token to cancel the operation.</param>
+        public virtual ValueTask Evaluate(
+            ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
+        {
+            if (result.Success)
+                return default;
+
+            switch (result)
+            {
+                case SearchResult search:
+                    if (search.Component != null)
+                        return SearchIncomplete(consumer, search, services, cancellationToken);
+                    return CommandNotFound(consumer, search, services, cancellationToken);
+
+                case MatchResult match:
+                    if (match.Arguments != null)
+                        return ConversionFailed(consumer, match, services, cancellationToken);
+                    return ArgumentMismatch(consumer, match, services, cancellationToken);
+
+                case ConditionResult condition:
+                    return ConditionUnmet(consumer, condition, services, cancellationToken);
+
+                case InvokeResult invoke:
+                    return InvocationFailed(consumer, invoke, services, cancellationToken);
+
+                default:
+                    return UnhandledFailure(consumer, result, services, cancellationToken);
+            }
         }
 
         /// <summary>
