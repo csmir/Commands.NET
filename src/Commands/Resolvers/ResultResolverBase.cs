@@ -1,4 +1,5 @@
 ﻿using Commands.Reflection;
+using System.Reflection;
 
 namespace Commands.Resolvers
 {
@@ -10,6 +11,8 @@ namespace Commands.Resolvers
     /// </remarks>
     public abstract class ResultResolverBase
     {
+        private readonly static Func<object, object>[] _taskResultPropertyCallers = new Func<object, object>[2];
+
         /// <summary>
         ///     Evaluates the post-execution data, carrying result data, consumer data and the scoped <see cref="IServiceProvider"/> for the current execution.
         /// </summary>
@@ -69,7 +72,9 @@ namespace Commands.Resolvers
 
                     if (ttype.IsGenericType)
                     {
-                        var result = ttype.GetProperty("Result")?.GetValue(awaitablet);
+                        _taskResultPropertyCallers[0] ??= ttype.GetProperty("Result").GetValue;
+
+                        var result = _taskResultPropertyCallers[0](awaitablet);
 
                         if (result != null)
                             await consumer.Send(result);
@@ -83,7 +88,9 @@ namespace Commands.Resolvers
 
                     if (vttype.IsGenericType)
                     {
-                        var result = vttype.GetProperty("Result")?.GetValue(awaitablevt);
+                        _taskResultPropertyCallers[1] ??= vttype.GetProperty("Result").GetValue;
+
+                        var result = _taskResultPropertyCallers[1](awaitablevt);
 
                         if (result != null)
                             await consumer.Send(result);
