@@ -12,12 +12,7 @@ namespace Commands
     public sealed class ModuleBuilder : IComponentBuilder
     {
         /// <inheritdoc />
-        public string[] Aliases { get; }
-
-        /// <summary>
-        ///     Gets the name of the module. This is the primary alias of the module.
-        /// </summary>
-        public string Name { get; }
+        public string[] Aliases { get; set; } = [];
 
         /// <summary>
         ///     Gets or sets a collection of components that are added to the module. This collection is used to build the module into a <see cref="ModuleInfo"/> object.
@@ -43,25 +38,45 @@ namespace Commands
                 .Distinct()
                 .ToArray();
 
-            Name = name;
             Aliases = aliases;
         }
 
         /// <summary>
-        ///     Creates a new instance of <see cref="ModuleBuilder"/> with the specified name and aliases.
+        ///     Creates a new instance of <see cref="ModuleBuilder"/> with the specified name.
         /// </summary>
         /// <param name="name">The primary alias of the module.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided aliases or name are null.</exception>
         public ModuleBuilder(string name)
             : this(name, [])
         {
+
+        }
+
+        /// <summary>
+        ///     Creates a new instance of <see cref="ModuleBuilder"/>
+        /// </summary>
+        public ModuleBuilder()
+        {
+
+        }
+
+        /// <summary>
+        ///     Replaces the current collection of aliases with the specified aliases. Aliases are used to identify the module in the command execution pipeline.
+        /// </summary>
+        /// <param name="aliases">The aliases of the module.</param>
+        /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
+        public ModuleBuilder WithAliases(params string[] aliases)
+        {
+            Aliases = aliases;
+
+            return this;
         }
 
         /// <summary>
         ///     Adds a command to the <see cref="Components"/> collection.
         /// </summary>
         /// <param name="commandBuilder">The builder instance to add to the collection, which will be built into a <see cref="CommandInfo"/> instance that can be executed by the <see cref="CommandManager"/>.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
+        /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided builder is <see langword="null"/>.</exception>
         public ModuleBuilder AddCommand(CommandBuilder commandBuilder)
         {
@@ -76,11 +91,25 @@ namespace Commands
         /// <summary>
         ///     Adds a command to the <see cref="Components"/> collection.
         /// </summary>
+        /// <param name="configureCommand">An action that extends the fluent API of this type to configure the command.</param>
+        /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
+        public ModuleBuilder AddCommand(Action<CommandBuilder> configureCommand)
+        {
+            var commandBuilder = new CommandBuilder(true);
+
+            configureCommand(commandBuilder);
+
+            return AddCommand(commandBuilder);
+        }
+
+        /// <summary>
+        ///     Adds a command to the <see cref="Components"/> collection.
+        /// </summary>
         /// <remarks>
         ///     Delegate based commands are able to access the command's scope by implementing <see cref="CommandContext{T}"/> as the first argument in the lambda signature.
         /// </remarks>
         /// <param name="executionDelegate">The delegate to execute when the root module of this object is discovered in a search operation.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
+        /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
         public ModuleBuilder AddCommand(Delegate executionDelegate)
         {
             var commandBuilder = new CommandBuilder(executionDelegate);
@@ -96,7 +125,7 @@ namespace Commands
         /// </remarks>
         /// <param name="name">The name of the component.</param>
         /// <param name="executionDelegate">The delegate to execute when the provided name of this object is discovered in a search operation.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
+        /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
         public ModuleBuilder AddCommand(string name, Delegate executionDelegate)
         {
             var commandBuilder = new CommandBuilder(name, [], executionDelegate);
@@ -113,7 +142,7 @@ namespace Commands
         /// <param name="name">The name of the component.</param>
         /// <param name="executionDelegate">The delegate to execute when the provided name of this object is discovered in a search operation.</param>
         /// <param name="aliases">The aliases of the component, excluding the name.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
+        /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
         public ModuleBuilder AddCommand(string name, Delegate executionDelegate, params string[] aliases)
         {
             var commandBuilder = new CommandBuilder(name, aliases, executionDelegate);
@@ -125,7 +154,7 @@ namespace Commands
         ///     Adds a module to the <see cref="Components"/> collection.
         /// </summary>
         /// <param name="moduleBuilder">The builder instance to add to the collection, which will be built into a <see cref="ModuleInfo"/> instance that can contain commands to be executed by the <see cref="CommandManager"/>.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
+        /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided builder is <see langword="null"/>.</exception>
         public ModuleBuilder AddModule(ModuleBuilder moduleBuilder)
         {
@@ -140,28 +169,11 @@ namespace Commands
         /// <summary>
         ///     Adds a module to the <see cref="Components"/> collection.
         /// </summary>
-        /// <param name="name">The name of the component.</param>
         /// <param name="configureModule">An action that extends the fluent API of this type to configure the module.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ModuleBuilder AddModule(string name, Action<ModuleBuilder> configureModule)
+        /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
+        public ModuleBuilder AddModule(Action<ModuleBuilder> configureModule)
         {
-            var moduleBuilder = new ModuleBuilder(name, []);
-
-            configureModule(moduleBuilder);
-
-            return AddModule(moduleBuilder);
-        }
-
-        /// <summary>
-        ///     Adds a module to the <see cref="Components"/> collection.
-        /// </summary>
-        /// <param name="name">The name of the component.</param>
-        /// <param name="configureModule">An action that extends the fluent API of this type to configure the module.</param>        
-        /// <param name="aliases">The aliases of the component, excluding the name.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ModuleBuilder AddModule(string name, Action<ModuleBuilder> configureModule, params string[] aliases)
-        {
-            var moduleBuilder = new ModuleBuilder(name, aliases);
+            var moduleBuilder = new ModuleBuilder();
 
             configureModule(moduleBuilder);
 
@@ -177,6 +189,9 @@ namespace Commands
         /// <exception cref="InvalidOperationException">Thrown when any of the aliases of the module to be built do not match <see cref="CommandConfiguration.NamingRegex"/>.</exception>
         public ModuleInfo Build(CommandConfiguration configuration, ModuleInfo? root = null)
         {
+            if (Aliases.Length == 0)
+                throw new InvalidOperationException("The module must have at least one alias.");
+
             foreach (var alias in Aliases)
             {
                 if (!configuration.NamingRegex.IsMatch(alias))

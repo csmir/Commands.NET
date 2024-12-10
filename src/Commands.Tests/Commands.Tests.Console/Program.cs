@@ -7,11 +7,13 @@ var manager = CommandManager.CreateDefaultBuilder()
         if (!r.Success)
             Console.WriteLine(r);
     })
-    .AddModule("level1", module =>
+    .AddModule(module =>
     {
+        module.WithAliases("level1");
         module.AddCommand("a", () => Console.WriteLine("Test"));
-        module.AddModule("level2", submodule =>
+        module.AddModule(submodule =>
         {
+            submodule.WithAliases("level2");
             submodule.AddCommand("b", () => Console.WriteLine("Test"));
             submodule.AddCommand(() => Console.WriteLine("Test"));
         });

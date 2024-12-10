@@ -7,9 +7,9 @@ using System.Text.RegularExpressions;
 namespace Commands
 {
     /// <summary>
-    ///     A container for options determining the build process for modules and commands.
+    ///     A container for options determining the build process for modules and commands. This class cannot be inherited.
     /// </summary>
-    public class ConfigurationBuilder
+    public sealed class ConfigurationBuilder
     {
         const string DEFAULT_REGEX = @"^[a-z0-9_-]*$";
 
@@ -67,6 +67,23 @@ namespace Commands
         ///     Adds a command to the <see cref="Components"/> collection.
         /// </summary>
         /// <remarks>
+        ///     When using this method, the command will be created with the default constructor. In order for the command to be valid for execution, <see cref="ModuleBuilder.WithAliases(string[])"/> must be called within <paramref name="configureCommand"/>.
+        /// </remarks>
+        /// <param name="configureCommand">An action that extends the fluent API of this type to configure the command.</param>
+        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
+        public ConfigurationBuilder AddCommand(Action<CommandBuilder> configureCommand)
+        {
+            var commandBuilder = new CommandBuilder();
+
+            configureCommand(commandBuilder);
+
+            return AddCommand(commandBuilder);
+        }
+
+        /// <summary>
+        ///     Adds a command to the <see cref="Components"/> collection.
+        /// </summary>
+        /// <remarks>
         ///     Delegate based commands are able to access the command's scope by implementing <see cref="CommandContext{T}"/> as the first argument in the lambda signature.
         /// </remarks>
         /// <param name="name">The name of the component.</param>
@@ -115,28 +132,14 @@ namespace Commands
         /// <summary>
         ///     Adds a module to the <see cref="Components"/> collection.
         /// </summary>
-        /// <param name="name">The name of the component.</param>
+        /// <remarks>
+        ///     When using this method, the module will be created with the default constructor. In order for the module to be valid for execution, <see cref="ModuleBuilder.WithAliases(string[])"/> must be called within <paramref name="configureModule"/>.
+        /// </remarks>
         /// <param name="configureModule">An action that extends the fluent API of this type to configure the module.</param>
         /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddModule(string name, Action<ModuleBuilder> configureModule)
+        public ConfigurationBuilder AddModule(Action<ModuleBuilder> configureModule)
         {
-            var moduleBuilder = new ModuleBuilder(name, []);
-
-            configureModule(moduleBuilder);
-
-            return AddModule(moduleBuilder);
-        }
-
-        /// <summary>
-        ///     Adds a module to the <see cref="Components"/> collection.
-        /// </summary>
-        /// <param name="name">The name of the component.</param>
-        /// <param name="configureModule">An action that extends the fluent API of this type to configure the module.</param>        
-        /// <param name="aliases">The aliases of the component, excluding the name.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddModule(string name, Action<ModuleBuilder> configureModule, params string[] aliases)
-        {
-            var moduleBuilder = new ModuleBuilder(name, aliases);
+            var moduleBuilder = new ModuleBuilder();
 
             configureModule(moduleBuilder);
 
