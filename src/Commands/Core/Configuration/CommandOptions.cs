@@ -48,9 +48,9 @@ namespace Commands
         ///     Gets or sets whether the defined <see cref="PostconditionAttribute{T}"/>'s for this execution should be ran.
         /// </summary>
         /// <remarks>
-        ///     Default: <see langword="false"/>
+        ///     Default: <see langword="true"/>
         /// </remarks>
-        public bool SkipPostconditions { get; set; } = false;
+        public bool SkipPostconditions { get; set; } = true;
 
         /// <summary>
         ///     Gets or sets whether the defined <see cref="PreconditionAttribute{T}"/>'s for this execution should be ran.
