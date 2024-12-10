@@ -37,7 +37,7 @@ namespace Commands.Conditions
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public virtual ConditionEvaluator GetEvaluator()
+        public ConditionEvaluator GetEvaluator()
         {
             return new T();
         }

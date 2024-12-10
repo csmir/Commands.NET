@@ -45,7 +45,7 @@ namespace Commands.Conditions
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public string GetGroupId()
+        public virtual string GetGroupId()
         {
             return $"{GetType().Name}:{typeof(T).Name}";
         }
