@@ -61,17 +61,13 @@ namespace Commands
             {
                 foreach (var item in components)
                 {
-                    if (item is CommandInfo command)
-                    {
-                        yield return command;
-                    }
-                    else if (item is ModuleInfo subModule)
+                    if (item is ModuleInfo subModule)
                     {
                         foreach (var subItem in Flatten(subModule.Components))
-                        {
                             yield return subItem;
-                        }
                     }
+                    else 
+                        yield return (item as CommandInfo)!;
                 }
             }
 
@@ -91,9 +87,7 @@ namespace Commands
                     if (item is ModuleInfo subModule)
                     {
                         foreach (var subItem in Flatten(subModule.Components))
-                        {
                             yield return subItem;
-                        }
 
                         yield return subModule;
                     }
@@ -199,9 +193,7 @@ namespace Commands
                     result = await Run(consumer, command, search.SearchHeight, args, options);
 
                     if (!result.Success)
-                    {
                         continue;
-                    }
 
                     break;
                 }
@@ -238,9 +230,7 @@ namespace Commands
                 var preCheckResult = await command.EvaluatePreconditions(consumer, options);
 
                 if (!preCheckResult.Success)
-                {
                     return preCheckResult;
-                }
 
                 var value = command.Invoker.Invoke(consumer, command, arguments, this, options);
 
@@ -249,9 +239,7 @@ namespace Commands
                 var postCheckResult = await command.EvaluatePostconditions(consumer, options);
 
                 if (!postCheckResult.Success)
-                {
                     return postCheckResult;
-                }
 
                 return InvokeResult.FromSuccess(command);
             }
@@ -288,18 +276,14 @@ namespace Commands
                 ConsumerBase consumer, ICommandResult result, CommandOptions options)
             {
                 foreach (var resolver in _resolvers)
-                {
                     await resolver.Evaluate(consumer, result, options.Services, options.CancellationToken);
-                }
             }
 
             internal async ValueTask Respond(
                 ConsumerBase consumer, CommandInfo command, object? value, CommandOptions options)
             {
                 foreach (var resolver in _resolvers)
-                {
                     await resolver.Respond(consumer, command, value, options.Services, options.CancellationToken);
-                }
             }
         }
     }
