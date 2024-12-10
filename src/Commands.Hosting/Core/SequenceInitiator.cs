@@ -140,7 +140,7 @@ namespace Commands
 
                         var options = source.Options ?? new();
 
-                        options.AsyncMode = AsyncMode.Await;
+                        options.DoAsynchronousExecution = false;
                         options.Services = scope.ServiceProvider;
 
                         await _manager.Execute(source.Consumer!, source.Args!, options); // never null if source succeeded.

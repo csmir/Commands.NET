@@ -33,6 +33,7 @@ namespace Commands
         /// <param name="name">The name of the command.</param>
         /// <param name="aliases">The aliases of the command, excluding the name.</param>
         /// <param name="executeDelegate">The delegate used to execute the command.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="executeDelegate"/> is <see langword="null"/>, or when the aliases are <see langword="null"/>.</exception>
         public CommandBuilder(string name, string[] aliases, Delegate executeDelegate)
         {
             if (executeDelegate == null)
@@ -51,11 +52,16 @@ namespace Commands
             ExecuteDelegate = executeDelegate;
         }
 
-        internal CommandBuilder(string[] aliases, Delegate executeDelegate)
+        /// <summary>
+        ///     Creates a new instance of <see cref="CommandBuilder"/> with the specified name, aliases, and delegate.
+        /// </summary>
+        /// <param name="name">The name of the command.</param>
+        /// <param name="executeDelegate">The delegate used to execute the command.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="executeDelegate"/> is <see langword="null"/>, or when the aliases are <see langword="null"/>.</exception>
+        public CommandBuilder(string name, Delegate executeDelegate)
+            : this(name, [], executeDelegate)
         {
-            Name = aliases[0];
-            Aliases = aliases;
-            ExecuteDelegate = executeDelegate;
+
         }
 
         internal CommandBuilder(Delegate executeDelegate)

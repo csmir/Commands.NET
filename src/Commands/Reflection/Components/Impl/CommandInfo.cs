@@ -22,12 +22,6 @@ namespace Commands.Reflection
         public string[] Aliases { get; }
 
         /// <inheritdoc />
-        public bool IsSearchable { get; }
-
-        /// <inheritdoc />
-        public bool IsDefault { get; }
-
-        /// <inheritdoc />
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
@@ -59,12 +53,19 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public float Score
-        {
-            get
-            {
-                return GetScore();
-            }
-        }
+            => GetScore();
+
+        /// <inheritdoc />
+        public bool IsRuntimeComponent
+            => Module == null;
+
+        /// <inheritdoc />
+        public bool IsSearchable
+            => true;
+
+        /// <inheritdoc />
+        public bool IsDefault
+            => Aliases.Length == 0;
 
         internal CommandInfo(StaticInvoker invoker, string[] aliases, bool hasContext, CommandConfiguration options)
             : this(null, invoker, aliases, hasContext, options)
@@ -79,8 +80,6 @@ namespace Commands.Reflection
         internal CommandInfo(
             ModuleInfo? module, IInvoker invoker, string[] aliases, bool hasContext, CommandConfiguration options)
         {
-            IsSearchable = true;
-
             var attributes = invoker.Target.GetAttributes(true).Concat(module?.Attributes ?? []).Distinct();
 
             var parameters = invoker.Target.GetArguments(hasContext, options);
@@ -90,15 +89,9 @@ namespace Commands.Reflection
             Aliases = aliases;
 
             if (aliases.Length > 0)
-            {
-                IsDefault = false;
                 Name = aliases[0];
-            }
             else
-            {
-                IsDefault = true;
                 Name = null;
-            }
 
             FullName = $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
 
@@ -137,9 +130,7 @@ namespace Commands.Reflection
             var score = 1.0f;
 
             foreach (var argument in Arguments)
-            {
                 score += argument.GetScore();
-            }
 
             score += Priority;
 

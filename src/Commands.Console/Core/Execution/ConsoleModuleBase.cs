@@ -13,7 +13,7 @@ namespace Commands
         ///     Sends a question to the console and returns the response.
         /// </summary>
         /// <remarks>
-        ///     This method waits for the response of a console read. This should not be used when <see cref="AsyncMode.Async"/> is used, as it will take over the console input until a response is provided.
+        ///     This method waits for the response of a console read. This should not be used when <see cref="CommandOptions.DoAsynchronousExecution"/> is used, as it will take over the console input until a response is provided.
         /// </remarks>
         /// <param name="question">The question that should be asked to the console.</param>
         /// <returns>The response to the question.</returns>
@@ -26,7 +26,7 @@ namespace Commands
         ///     Asks the console to confirm a question with yes or no.
         /// </summary>
         /// <remarks>
-        ///     This method waits for the response of a console read. This should not be used when <see cref="AsyncMode.Async"/> is used, as it will take over the console input until a response is provided.
+        ///     This method waits for the response of a console read. This should not be used when <see cref="CommandOptions.DoAsynchronousExecution"/> is used, as it will take over the console input until a response is provided.
         /// </remarks>
         /// <param name="question">The question that should be asked to the console.</param>
         /// <returns><see langword="true"/> if the question was responded with with 'Y' or 'Yes'. <see langword="false"/> if the response is 'N', 'No' or if the sequence was escaped otherwise.</returns>
@@ -39,7 +39,7 @@ namespace Commands
         ///     Asks the console to respond to a prompt.
         /// </summary>
         /// <remarks>
-        ///     This method waits for the response of a console read. This should not be used when <see cref="AsyncMode.Async"/> is used, as it will take over the console input until a response is provided.
+        ///     This method waits for the response of a console read. This should not be used when <see cref="CommandOptions.DoAsynchronousExecution"/> is used, as it will take over the console input until a response is provided.
         /// </remarks>
         /// <param name="prompt">The prompt that should be responded to by the console.</param>
         /// <returns>The result of the text prompt.</returns>
@@ -52,7 +52,7 @@ namespace Commands
         ///     Asks the console to choose an item in a selection.
         /// </summary>
         /// <remarks>
-        ///     This method waits for the response of a console read. This should not be used when <see cref="AsyncMode.Async"/> is used, as it will take over the console input until a response is provided.
+        ///     This method waits for the response of a console read. This should not be used when <see cref="CommandOptions.DoAsynchronousExecution"/> is used, as it will take over the console input until a response is provided.
         /// </remarks>
         /// <param name="prompt"></param>
         /// <returns>The result of the selection.</returns>

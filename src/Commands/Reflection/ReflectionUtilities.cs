@@ -238,19 +238,13 @@ namespace Commands.Reflection
         public static TypeConverterBase? GetTypeConverter(Type type, CommandConfiguration options)
         {
             if (!type.IsConvertible())
-            {
                 return null;
-            }
 
             if (options.TypeConverters.TryGetValue(type, out var converter))
-            {
                 return converter;
-            }
 
             if (type.IsEnum)
-            {
                 return EnumTypeReader.GetOrCreate(type);
-            }
 
             if (type.IsArray)
             {
@@ -333,21 +327,15 @@ namespace Commands.Reflection
         internal static CollectionType GetCollectionType(this Type type, Type? elementType = null)
         {
             if (type.IsArray)
-            {
                 return CollectionType.Array;
-            }
 
             if (elementType != null)
             {
                 if (type.IsAssignableFrom(l_type.MakeGenericType(elementType)))
-                {
                     return CollectionType.List;
-                }
 
                 if (type.IsAssignableFrom(h_type.MakeGenericType(elementType)))
-                {
                     return CollectionType.Set;
-                }
             }
 
             return CollectionType.None;
@@ -358,9 +346,7 @@ namespace Commands.Reflection
             var parameters = method.GetParameters();
 
             if (withContext)
-            {
                 parameters = parameters.Skip(1).ToArray();
-            }
 
             var arr = new IArgument[parameters.Length];
 
@@ -371,9 +357,7 @@ namespace Commands.Reflection
                 foreach (var attr in parameters[i].GetCustomAttributes())
                 {
                     if (attr is ComplexAttribute)
-                    {
                         complex = true;
-                    }
 
                     if (attr is NameAttribute names)
                     {
@@ -383,28 +367,22 @@ namespace Commands.Reflection
                 }
 
                 if (complex)
-                {
                     arr[i] = new ComplexArgumentInfo(parameters[i], name, options);
-                }
                 else
-                {
                     arr[i] = new ArgumentInfo(parameters[i], name, options);
-                }
             }
 
             return arr;
         }
 
-        internal static IParameter[] GetParameters(this MethodBase method, CommandConfiguration _)
+        internal static IParameter[] GetServices(this MethodBase method)
         {
             var parameters = method.GetParameters();
 
             var arr = new IParameter[parameters.Length];
 
             for (var i = 0; i < parameters.Length; i++)
-            {
                 arr[i] = new ServiceInfo(parameters[i]);
-            }
 
             return arr;
         }

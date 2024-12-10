@@ -32,12 +32,6 @@ namespace Commands.Reflection
         public string[] Aliases { get; }
 
         /// <inheritdoc />
-        public bool IsSearchable { get; }
-
-        /// <inheritdoc />
-        public bool IsDefault { get; }
-
-        /// <inheritdoc />
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
@@ -50,19 +44,23 @@ namespace Commands.Reflection
         public float Priority { get; }
 
         /// <inheritdoc />
-        /// <remarks>
-        ///     Always <see langword="null"/> for when a module serves delegate commands.
-        /// </remarks>
         public ModuleInfo? Module { get; }
 
         /// <inheritdoc />
         public float Score
-        {
-            get
-            {
-                return GetScore();
-            }
-        }
+            => GetScore();
+
+        /// <inheritdoc />
+        public bool IsRuntimeComponent
+            => Type == null;
+
+        /// <inheritdoc />
+        public bool IsSearchable
+            => Aliases.Length > 0;
+
+        /// <inheritdoc />
+        public bool IsDefault
+            => false;
 
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, CommandConfiguration options)
@@ -82,25 +80,15 @@ namespace Commands.Reflection
             Aliases = aliases;
 
             if (aliases.Length > 0)
-            {
-                IsSearchable = true;
                 Name = aliases[0];
-            }
             else
-            {
-                IsSearchable = false;
                 Name = null;
-            }
 
             FullName = $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
 
-            IsDefault = false;
+            Invoker = new ConstructorInvoker(type);
 
-            Invoker = new ConstructorInvoker(type, options);
-
-            Components = ReflectionUtilities.GetComponents(this, options)
-                .OrderByDescending(x => x.Score)
-                .ToHashSet();
+            Components = [.. ReflectionUtilities.GetComponents(this, options).OrderByDescending(x => x.Score)];
         }
 
         internal ModuleInfo(
@@ -108,19 +96,15 @@ namespace Commands.Reflection
         {
             Module = root;
 
-            Components      = [];
-            Attributes      = [];
-            PreEvaluations  = [];
+            Components = [];
+            Attributes = [];
+            PreEvaluations = [];
             PostEvaluations = [];
 
             Aliases = aliases;
             Name = aliases[0];
 
-            IsSearchable = true;
-
             FullName = $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
-
-            IsDefault = false;
         }
 
         /// <inheritdoc />
@@ -132,9 +116,7 @@ namespace Commands.Reflection
             var score = 1.0f;
 
             foreach (var component in Components)
-            {
                 score += component.GetScore();
-            }
 
             if (Name != Type?.Name)
                 score += 1.0f;
@@ -156,9 +138,7 @@ namespace Commands.Reflection
             Components.Clear();
 
             foreach (var component in copy)
-            {
                 Components.Add(component);
-            }
         }
 
         /// <inheritdoc />

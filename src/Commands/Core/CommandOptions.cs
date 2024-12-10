@@ -1,4 +1,5 @@
 ﻿using Commands.Conditions;
+using Commands.Converters;
 
 namespace Commands
 {
@@ -16,19 +17,6 @@ namespace Commands
         public IServiceProvider Services { get; set; } = EmptyServiceProvider.Instance;
 
         /// <summary>
-        ///     Gets or sets the approach to asynchronousity in command execution.
-        /// </summary>
-        /// <remarks>
-        ///     If set to <see cref="AsyncMode.Await"/>, the manager will wait for a command to finish before allowing another to be executed.
-        ///     If set to <see cref="AsyncMode.Async"/>, the manager will seperate the command execution from the entry stack, and slip it to another if necessary. 
-        ///     Only change this value if you have read the documentation of <see cref="Commands.AsyncMode"/> and understand the definitions.
-        ///     <br/>
-        ///     <br/>
-        ///     Default: <see cref="AsyncMode.Default"/> (await).
-        /// </remarks>
-        public AsyncMode AsyncMode { get; set; } = AsyncMode.Default;
-
-        /// <summary>
         ///     Gets or sets a token that can be provided from a <see cref="CancellationTokenSource"/> and later used to cancel asynchronous execution
         /// </summary>
         /// <remarks>
@@ -43,6 +31,40 @@ namespace Commands
         ///     Default: <see cref="Guid.NewGuid"/>
         /// </remarks>
         public Guid TraceId { get; set; } = Guid.NewGuid();
+
+        /// <summary>
+        ///     Gets or sets the approach to asynchronousity in command execution.
+        ///     The asynchronous execution approach drastically changes the expected behavior of executing a command:
+        ///     <list type="bullet">
+        ///         <item>
+        ///             <see langword="false"/> is the default value and tells the pipeline to finish executing before returning control to the caller. 
+        ///             This ensures that the execution will fully finish executing, whether it failed or not, before allowing another to be executed.
+        ///         </item>
+        ///         <item>
+        ///             <see langword="true"/> is a value to be treated with care. 
+        ///             Instead of waiting for the full execution before returning control, the execution will return immediately after the entrypoint is called, slipping thread for the rest of execution. 
+        ///             When more than one input source is expected to be handled, this is generally the advised method of execution. 
+        ///         </item>
+        ///     </list>
+        /// </summary>
+        /// <remarks>
+        ///     When changing this setting, the following should be checked for thread-safety:
+        ///     <list type="number">
+        ///         <item>
+        ///             Services, specifically those created as singleton or scoped to anything but a single command.
+        ///         </item>
+        ///         <item>
+        ///             Implementations of <see cref="TypeConverterBase"/>, <see cref="TypeConverterBase{T}"/>, <see cref="PreconditionAttribute{T}"/> and <see cref="PostconditionAttribute{T}"/>.
+        ///         </item>
+        ///         <item>
+        ///             Generic collections and objects with shared access.
+        ///         </item>
+        ///     </list>
+        ///     For ensuring thread safety in any of the above situations, it is important to know what this actually means. 
+        ///     <br/>
+        ///     For more information, consider reading this article: <see href="https://learn.microsoft.com/en-us/dotnet/standard/threading/managed-threading-best-practices"/>
+        /// </remarks>
+        public bool DoAsynchronousExecution { get; set; } = false;
 
         /// <summary>
         ///     Gets or sets whether the defined <see cref="PostconditionAttribute{T}"/>'s for this execution should be ran.

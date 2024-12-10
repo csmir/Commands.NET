@@ -34,7 +34,6 @@ while (true)
 
     await manager.Execute(new ConsumerBase(), Console.ReadLine()!, new()
     {
-        AsyncMode = AsyncMode.Await,
         Services = scope.ServiceProvider
     });
 

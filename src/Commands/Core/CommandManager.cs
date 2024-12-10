@@ -66,8 +66,7 @@ namespace Commands
                         foreach (var subItem in Flatten(subModule.Components))
                             yield return subItem;
                     }
-                    else 
-                        yield return (item as CommandInfo)!;
+                    else yield return (item as CommandInfo)!;
                 }
             }
 
@@ -104,10 +103,48 @@ namespace Commands
         /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the results of the search query.</returns>
         public IEnumerable<SearchResult> Search(ArgumentEnumerator args)
         {
+            static IEnumerable<SearchResult> Flatten(IEnumerable<ISearchable> components, ArgumentEnumerator args, int searchHeight = 0, bool isNested = false)
+            {
+                List<SearchResult> discovered = [];
+
+                foreach (var component in components)
+                {
+                    // we should add defaults even if there are more args to resolve.
+                    if (component.IsDefault && isNested)
+                        discovered.Add(SearchResult.FromSuccess(component, searchHeight));
+
+                    // if the search is already done, we simply continue and only look for defaults.
+                    if (args.Length == searchHeight)
+                        continue;
+
+                    if (!args.TryNext(searchHeight, out var value))
+                        continue;
+
+                    if (!component.Aliases.Any(x => x == value))
+                        continue;
+
+                    // if the search found a module, we do inner module checks.
+                    if (component is ModuleInfo module)
+                    {
+                        // add the cluster found in the next iteration, if any.
+                        var nested = Flatten(module.Components, args, searchHeight + 1, true);
+                        discovered.AddRange(nested);
+
+                        // add fallback overloads for module discovery.
+                        discovered.Add(SearchResult.FromError(module));
+                    }
+                    else
+                        // add the top level matches immediately.
+                        discovered.Add(SearchResult.FromSuccess(component, searchHeight + 1));
+                }
+
+                return discovered;
+            }
+
             if (args == null)
                 throw new ArgumentNullException(nameof(args));
 
-            return Commands.SearchMany(args, 0, false);
+            return Flatten(Commands, args);
         }
 
         /// <summary>
@@ -116,7 +153,7 @@ namespace Commands
         /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">An unparsed input that is expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
+        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
             T consumer, string args, CommandOptions? options = null)
             where T : ConsumerBase
@@ -136,7 +173,7 @@ namespace Commands
         /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
+        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
             T consumer, IEnumerable<object> args, CommandOptions? options = null)
             where T : ConsumerBase
@@ -150,7 +187,7 @@ namespace Commands
         /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
+        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
             T consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
             where T : ConsumerBase
@@ -166,20 +203,20 @@ namespace Commands
         /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.AsyncMode"/> is set to <see cref="AsyncMode.Async"/>.</returns>
+        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
             T consumer, ArgumentEnumerator args, CommandOptions options)
             where T : ConsumerBase
         {
-            var task = Enter(consumer, args, options);
+            var task = StartAsynchronousPipeline(consumer, args, options);
 
-            if (options.AsyncMode is AsyncMode.Async)
+            if (options.DoAsynchronousExecution)
                 return Task.CompletedTask;
 
             return task;
         }
 
-        private async Task Enter<T>(
+        private async Task StartAsynchronousPipeline<T>(
             T consumer, ArgumentEnumerator args, CommandOptions options)
             where T : ConsumerBase
         {
@@ -190,7 +227,7 @@ namespace Commands
             {
                 if (search.Component is CommandInfo command)
                 {
-                    result = await Run(consumer, command, search.SearchHeight, args, options);
+                    result = await InvokeCommand(consumer, command, search.SearchHeight, args, options);
 
                     if (!result.Success)
                         continue;
@@ -207,13 +244,13 @@ namespace Commands
             await _disposer.Dispose(consumer, result, options);
         }
 
-        private async ValueTask<ICommandResult> Run<T>(
+        private async ValueTask<ICommandResult> InvokeCommand<T>(
             T consumer, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
             where T : ConsumerBase
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            var conversion = await command.Convert(consumer, argHeight, args, options);
+            var conversion = await ConvertCommand(consumer, command, argHeight, args, options);
 
             var arguments = new object[conversion.Length];
 
@@ -227,7 +264,7 @@ namespace Commands
 
             try
             {
-                var preCheckResult = await command.EvaluatePreconditions(consumer, options);
+                var preCheckResult = await EvaluatePreconditions(consumer, command, options);
 
                 if (!preCheckResult.Success)
                     return preCheckResult;
@@ -236,7 +273,7 @@ namespace Commands
 
                 await _disposer.Respond(consumer, command, value, options);
 
-                var postCheckResult = await command.EvaluatePostconditions(consumer, options);
+                var postCheckResult = await EvaluatePostconditions(consumer, command, options);
 
                 if (!postCheckResult.Success)
                     return postCheckResult;
@@ -247,6 +284,154 @@ namespace Commands
             {
                 return InvokeResult.FromError(command, exception);
             }
+        }
+
+        private async ValueTask<ConvertResult[]> ConvertCommand<T>(
+            T consumer, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
+            where T : ConsumerBase
+        {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
+            args.SetSize(argHeight);
+
+            if (!command.HasArguments && args.Length == 0)
+                return [];
+
+            if (command.MaxLength == args.Length)
+                return await ConvertArguments(consumer, command.Arguments, args, options);
+
+            if (command.MaxLength <= args.Length && command.HasRemainder)
+                return await ConvertArguments(consumer, command.Arguments, args, options);
+
+            if (command.MaxLength > args.Length && command.MinLength <= args.Length)
+                return await ConvertArguments(consumer, command.Arguments, args, options);
+
+            return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
+        }
+
+        private async ValueTask<ConvertResult[]> ConvertArguments(
+            ConsumerBase consumer, IArgument[] arguments, ArgumentEnumerator args, CommandOptions options)
+        {
+            static ValueTask<ConvertResult> Convert(IArgument argument, ConsumerBase consumer, object? value, bool isArray, CommandOptions options)
+            {
+                options.CancellationToken.ThrowIfCancellationRequested();
+
+                if (argument.IsNullable && value is null or "null")
+                    return ConvertResult.FromSuccess();
+
+                if (value is null)
+                    return ConvertResult.FromError(new ArgumentNullException(argument.Name));
+
+                if (argument.Type.IsString())
+                    return ConvertResult.FromSuccess(value?.ToString());
+
+                if (argument.Type.IsObject())
+                    return ConvertResult.FromSuccess(value);
+
+                return argument.Converter!.Evaluate(consumer, argument, value, options.Services, options.CancellationToken);
+            }
+
+            options.CancellationToken.ThrowIfCancellationRequested();
+
+            var results = new ConvertResult[arguments.Length];
+
+            // loop all arguments.
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                var argument = arguments[i];
+
+                // parse remainder.
+                if (argument.IsRemainder)
+                {
+                    results[i] = await Convert(argument, consumer, argument.IsCollection ? args.TakeRemaining() : args.JoinRemaining(), true, options);
+
+                    // End of the line, as remainder is always the last argument.
+                    break;
+                }
+
+                // parse complex argument.
+                if (argument is ComplexArgumentInfo complexArgument)
+                {
+                    var result = await ConvertArguments(consumer, complexArgument.Arguments, args, options);
+
+                    if (result.All(x => x.Success))
+                    {
+                        try
+                        {
+                            var instance = complexArgument.Constructor.Invoke(result.Select(x => x.Value).ToArray());
+                            results[i] = ConvertResult.FromSuccess(instance);
+                        }
+                        catch (Exception ex)
+                        {
+                            results[i] = ConvertResult.FromError(ex);
+                        }
+
+                        continue;
+                    }
+
+                    if (complexArgument.IsOptional)
+                        results[i] = ConvertResult.FromSuccess(Type.Missing);
+
+                    // continue looking for more args
+                    continue;
+                }
+
+                if (args.TryNext(argument.Name!, out var value))
+                {
+                    results[i] = await Convert(argument, consumer, value, false, options);
+                    continue;
+                }
+
+                if (argument.IsOptional)
+                {
+                    results[i] = ConvertResult.FromSuccess(Type.Missing);
+                    continue;
+                }
+
+                results[i] = ConvertResult.FromError(new ArgumentNullException(argument.Name));
+            }
+
+            return results;
+        }
+
+        private async ValueTask<ConditionResult> EvaluatePreconditions<T>(
+            T consumer, CommandInfo command, CommandOptions options)
+            where T : ConsumerBase
+        {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
+            if (!options.SkipPreconditions)
+            {
+                foreach (var precon in command.PreEvaluations)
+                {
+                    var checkResult = await precon.Evaluate(consumer, command, options.Services, options.CancellationToken);
+
+                    if (!checkResult.Success)
+                        return checkResult;
+                }
+            }
+
+            return ConditionResult.FromSuccess();
+        }
+
+        private async ValueTask<ConditionResult> EvaluatePostconditions<T>(
+            T consumer, CommandInfo command, CommandOptions options)
+            where T : ConsumerBase
+        {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
+            if (!options.SkipPostconditions)
+            {
+                foreach (var postcon in command.PostEvaluations)
+                {
+                    var checkResult = await postcon.Evaluate(consumer, command, options.Services, options.CancellationToken);
+
+                    if (!checkResult.Success)
+                        return checkResult;
+                }
+            }
+
+            return ConditionResult.FromSuccess();
         }
 
         /// <summary>

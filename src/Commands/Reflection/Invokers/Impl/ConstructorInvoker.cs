@@ -25,13 +25,13 @@ namespace Commands.Reflection
         /// </summary>
         public IParameter[] Parameters { get; }
 
-        internal ConstructorInvoker(Type type, CommandConfiguration options)
+        internal ConstructorInvoker(Type type)
         {
             var ctor = GetConstructor(type);
 
             _ctor = ctor;
 
-            Parameters = ctor.GetParameters(options);
+            Parameters = ctor.GetServices();
         }
 
         private static ConstructorInfo GetConstructor(Type type)
