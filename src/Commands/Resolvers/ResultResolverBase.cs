@@ -1,4 +1,6 @@
-﻿namespace Commands.Resolvers
+﻿using Commands.Reflection;
+
+namespace Commands.Resolvers
 {
     /// <summary>
     ///     A handler for post-execution processes.
@@ -18,42 +20,83 @@
         public virtual ValueTask Evaluate(
             ConsumerBase consumer, ICommandResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            if (!result.Success)
+            if (result.Success)
+                return default;
+
+            switch (result)
             {
-                switch (result)
-                {
-                    case SearchResult search:
-                        {
-                            if (search.Component != null)
-                            {
-                                return SearchIncomplete(consumer, search, services, cancellationToken);
-                            }
-                            return CommandNotFound(consumer, search, services, cancellationToken);
-                        }
-                    case MatchResult match:
-                        {
-                            if (match.Arguments != null)
-                            {
-                                return ConversionFailed(consumer, match, services, cancellationToken);
-                            }
-                            return ArgumentMismatch(consumer, match, services, cancellationToken);
-                        }
-                    case ConditionResult condition:
-                        {
-                            return ConditionUnmet(consumer, condition, services, cancellationToken);
-                        }
-                    case InvokeResult invoke:
-                        {
-                            return InvocationFailed(consumer, invoke, services, cancellationToken);
-                        }
-                    default:
-                        {
-                            return UnhandledFailure(consumer, result, services, cancellationToken);
-                        }
-                }
+                case SearchResult search:
+                    if (search.Component != null)
+                        return SearchIncomplete(consumer, search, services, cancellationToken);
+                    return CommandNotFound(consumer, search, services, cancellationToken);
+
+                case MatchResult match:
+                    if (match.Arguments != null)
+                        return ConversionFailed(consumer, match, services, cancellationToken);
+                    return ArgumentMismatch(consumer, match, services, cancellationToken);
+
+                case ConditionResult condition:
+                    return ConditionUnmet(consumer, condition, services, cancellationToken);
+
+                case InvokeResult invoke:
+                    return InvocationFailed(consumer, invoke, services, cancellationToken);
+
+                default:
+                    return UnhandledFailure(consumer, result, services, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        ///     Handles the return type of the command, sending the result to the consumer if the return type is not a non-generic task type or void.
+        /// </summary>
+        /// <param name="consumer">The consumer of the command.</param>
+        /// <param name="command">The current command which returned a return value.</param>
+        /// <param name="value">The value returned by the command.</param>
+        /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
+        /// <param name="cancellationToken">A token to cancel the operation.</param>
+        public virtual async ValueTask Respond(
+            ConsumerBase consumer, CommandInfo command, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        {
+            switch (value)
+            {
+                case null: // (void)
+                    break;
+
+                case Task awaitablet:
+                    await awaitablet;
+
+                    var ttype = command.Invoker.GetReturnType()!;
+
+                    if (ttype.IsGenericType)
+                    {
+                        var result = ttype.GetProperty("Result")?.GetValue(awaitablet);
+
+                        if (result != null)
+                            await consumer.Send(result);
+                    }
+                    break;
+
+                case ValueTask awaitablevt:
+                    await awaitablevt;
+
+                    var vttype = command.Invoker.GetReturnType()!;
+
+                    if (vttype.IsGenericType)
+                    {
+                        var result = vttype.GetProperty("Result")?.GetValue(awaitablevt);
+
+                        if (result != null)
+                            await consumer.Send(result);
+                    }
+                    break;
+
+                case object obj:
+                    if (obj != null)
+                        await consumer.Send(obj);
+                    break;
             }
 
-            return default;
+            return;
         }
 
         /// <summary>

@@ -22,7 +22,7 @@ namespace Commands
     [DebuggerDisplay("Commands = {Commands},nq")]
     public sealed class CommandManager
     {
-        private readonly SequenceDisposer _disposer;
+        private readonly SequenceFinalizer _disposer;
 
         /// <summary>
         ///     Gets the collection containing all commands, named modules and subcommands as implem ented by the assemblies that were registered in the <see cref="ConfigurationBuilder"/> provided when creating the manager.
@@ -40,7 +40,7 @@ namespace Commands
         /// <param name="configuration">The options through which to construct the collection of <see cref="Commands"/>.</param>
         public CommandManager(CommandConfiguration configuration)
         {
-            _disposer = new SequenceDisposer(configuration.ResultResolvers);
+            _disposer = new SequenceFinalizer(configuration.ResultResolvers);
 
             var commands = ReflectionUtilities.GetTopLevelComponents(configuration)
                 .Concat(configuration.Components.Select(x => x.Build(configuration)))
@@ -244,7 +244,7 @@ namespace Commands
 
                 var value = command.Invoker.Invoke(consumer, command, arguments, this, options);
 
-                var result = await command.HandleReturnType(consumer, value);
+                await _disposer.Respond(consumer, command, value, options);
 
                 var postCheckResult = await command.EvaluatePostconditions(consumer, options);
 
@@ -253,7 +253,7 @@ namespace Commands
                     return postCheckResult;
                 }
 
-                return result;
+                return InvokeResult.FromSuccess(command);
             }
             catch (Exception exception)
             {
@@ -280,7 +280,7 @@ namespace Commands
             return new ConfigurationBuilder();
         }
 
-        internal sealed class SequenceDisposer(IEnumerable<ResultResolverBase> eventHandlers)
+        internal sealed class SequenceFinalizer(IEnumerable<ResultResolverBase> eventHandlers)
         {
             private readonly ResultResolverBase[] _resolvers = eventHandlers.ToArray();
 
@@ -290,6 +290,15 @@ namespace Commands
                 foreach (var resolver in _resolvers)
                 {
                     await resolver.Evaluate(consumer, result, options.Services, options.CancellationToken);
+                }
+            }
+
+            internal async ValueTask Respond(
+                ConsumerBase consumer, CommandInfo command, object? value, CommandOptions options)
+            {
+                foreach (var resolver in _resolvers)
+                {
+                    await resolver.Respond(consumer, command, value, options.Services, options.CancellationToken);
                 }
             }
         }
