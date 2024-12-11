@@ -16,7 +16,7 @@
         public Attribute[] Attributes { get; }
 
         /// <summary>
-        ///     Generates the score of the component.
+        ///     Builds the score of the component.
         /// </summary>
         /// <returns>A float representing the score of the component.</returns>
         public float GetScore();

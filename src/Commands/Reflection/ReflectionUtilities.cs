@@ -257,7 +257,7 @@ namespace Commands.Reflection
                     else if (elementType!.IsObject())
                         converter = ObjectTypeConverter.Instance;
                     else
-                        throw new NotSupportedException($"The inner type of this generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type. Type: {elementType}");
+                        throw new NotSupportedException($"The inner type of a collection's generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type: {elementType}");
                 }
 
                 return ArrayTypeConverter.GetOrCreate(converter);
@@ -276,7 +276,7 @@ namespace Commands.Reflection
                     else if (elementType.IsObject())
                         converter = ObjectTypeConverter.Instance;
                     else
-                        throw new NotSupportedException($"The inner type of this generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type. Type: {elementType}");
+                        throw new NotSupportedException($"The inner type of a collection's generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type: {elementType}");
                 }
 
                 if (enumType == CollectionType.List)
@@ -291,9 +291,9 @@ namespace Commands.Reflection
             }
             catch
             {
-                throw new NotSupportedException($"The inner type of this generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type. Generic type: {type}");
+                throw new NotSupportedException($"The collection type or inner type of the collection's generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type: {type}");
             }
-
+             
             return null;
         }
 
@@ -371,18 +371,6 @@ namespace Commands.Reflection
                 else
                     arr[i] = new ArgumentInfo(parameters[i], name, options);
             }
-
-            return arr;
-        }
-
-        internal static IParameter[] GetServices(this MethodBase method)
-        {
-            var parameters = method.GetParameters();
-
-            var arr = new IParameter[parameters.Length];
-
-            for (var i = 0; i < parameters.Length; i++)
-                arr[i] = new ServiceInfo(parameters[i]);
 
             return arr;
         }

@@ -13,12 +13,6 @@ namespace Commands.Reflection
         public IInvoker Invoker { get; }
 
         /// <inheritdoc />
-        public string? Name { get; }
-
-        /// <inheritdoc />
-        public string FullName { get; }
-
-        /// <inheritdoc />
         public string[] Aliases { get; }
 
         /// <inheritdoc />
@@ -32,9 +26,6 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public IArgument[] Arguments { get; }
-
-        /// <inheritdoc />
-        public bool HasArguments { get; }
 
         /// <inheritdoc />
         public bool HasRemainder { get; }
@@ -52,6 +43,14 @@ namespace Commands.Reflection
         public ModuleInfo? Module { get; }
 
         /// <inheritdoc />
+        public string? Name
+            => Aliases.Length > 0 ? Aliases[0] : null;
+
+        /// <inheritdoc />
+        public string FullName
+            => $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
+
+        /// <inheritdoc />
         public float Score
             => GetScore();
 
@@ -66,6 +65,10 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public bool IsDefault
             => Aliases.Length == 0;
+
+        /// <inheritdoc />
+        public bool HasArguments
+            => Arguments.Length > 0;
 
         internal CommandInfo(StaticInvoker invoker, string[] aliases, bool hasContext, CommandConfiguration options)
             : this(null, invoker, aliases, hasContext, options)
@@ -87,13 +90,6 @@ namespace Commands.Reflection
             var (minLength, maxLength) = parameters.GetLength();
 
             Aliases = aliases;
-
-            if (aliases.Length > 0)
-                Name = aliases[0];
-            else
-                Name = null;
-
-            FullName = $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
 
             if (parameters.Any(x => x.IsRemainder))
             {
@@ -117,7 +113,6 @@ namespace Commands.Reflection
             PostEvaluations = ConditionEvaluator.CreateEvaluators(attributes.OfType<IPostExecutionCondition>()).ToArray();
 
             Arguments = parameters;
-            HasArguments = parameters.Length > 0;
             HasRemainder = parameters.Any(x => x.IsRemainder);
 
             MinLength = minLength;
@@ -144,8 +139,6 @@ namespace Commands.Reflection
         /// <inheritdoc cref="ToString()"/>
         /// <param name="withModuleInfo">Defines if the module information should be appended on the command level.</param>
         public string ToString(bool withModuleInfo)
-        {
-            return $"{(withModuleInfo ? $"{Module}." : "")}{Invoker.Target.Name}{(Name != null ? $"['{Name}']" : "")}({string.Join<IArgument>(", ", Arguments)})";
-        }
+            => $"{(withModuleInfo ? $"{Module}." : "")}{Invoker.Target.Name}{(Name != null ? $"['{Name}']" : "")}({string.Join<IArgument>(", ", Arguments)})";
     }
 }

@@ -23,12 +23,6 @@ namespace Commands.Reflection
         public IInvoker? Invoker { get; }
 
         /// <inheritdoc />
-        public string? Name { get; }
-
-        /// <inheritdoc />
-        public string FullName { get; }
-
-        /// <inheritdoc />
         public string[] Aliases { get; }
 
         /// <inheritdoc />
@@ -45,6 +39,14 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public ModuleInfo? Module { get; }
+
+        /// <inheritdoc />
+        public string? Name
+            => Aliases.Length > 0 ? Aliases[0] : null;
+
+        /// <inheritdoc />
+        public string FullName
+            => $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
 
         /// <inheritdoc />
         public float Score
@@ -79,13 +81,6 @@ namespace Commands.Reflection
 
             Aliases = aliases;
 
-            if (aliases.Length > 0)
-                Name = aliases[0];
-            else
-                Name = null;
-
-            FullName = $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
-
             Invoker = new ConstructorInvoker(type);
 
             Components = [.. ReflectionUtilities.GetComponents(this, options).OrderByDescending(x => x.Score)];
@@ -102,9 +97,6 @@ namespace Commands.Reflection
             PostEvaluations = [];
 
             Aliases = aliases;
-            Name = aliases[0];
-
-            FullName = $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
         }
 
         /// <inheritdoc />
@@ -129,11 +121,9 @@ namespace Commands.Reflection
         /// <summary>
         ///     Sorts all items in the module based on their score, which should be called when new components are added at runtime after the module has already been initialized.
         /// </summary>
-        public void SortScores()
+        public void Sort()
         {
-            var copy = Components.ToArray();
-
-            copy.OrderByDescending(x => x.Score);
+            var copy = Components.OrderByDescending(x => x.Score);
 
             Components.Clear();
 
@@ -143,8 +133,6 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public override string ToString()
-        {
-            return $"{(Module != null ? $"{Module}." : "")}{(Name != null ? $"{Type?.Name}['{Name}']" : $"{Type?.Name}")}";
-        }
+            => $"{(Module != null ? $"{Module}." : "")}{(Name != null ? $"{Type?.Name}['{Name}']" : $"{Type?.Name}")}";
     }
 }

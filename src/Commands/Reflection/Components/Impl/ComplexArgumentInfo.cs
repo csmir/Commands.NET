@@ -31,19 +31,10 @@ namespace Commands.Reflection
         public bool IsOptional { get; }
 
         /// <inheritdoc />
-        public bool IsRemainder { get; }
-
-        /// <inheritdoc />
-        public bool IsCollection { get; }
-
-        /// <inheritdoc />
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
         public IArgument[] Arguments { get; }
-
-        /// <inheritdoc />
-        public bool HasArguments { get; }
 
         /// <inheritdoc />
         public int MinLength { get; }
@@ -53,6 +44,18 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public TypeConverterBase? Converter { get; } = null;
+
+        /// <inheritdoc />
+        public bool IsCollection
+            => false;
+
+        /// <inheritdoc />
+        public bool IsRemainder
+            => false;
+
+        /// <inheritdoc />
+        public bool HasArguments
+            => Arguments.Length > 0;
 
         internal ComplexArgumentInfo(
             ParameterInfo parameterInfo, string? name, CommandConfiguration options)
@@ -84,28 +87,20 @@ namespace Commands.Reflection
 
             var (minLength, maxLength) = parameters.GetLength();
 
-            IsRemainder = false;
-            IsCollection = false;
-
             MinLength = minLength;
             MaxLength = maxLength;
 
             Constructor = constructor;
             Arguments = parameters;
-            HasArguments = parameters.Length > 0;
 
             Attributes = attributes.ToArray();
 
             ExposedType = parameterInfo.ParameterType;
 
             if (!string.IsNullOrEmpty(name))
-            {
                 Name = name;
-            }
             else
-            {
                 Name = parameterInfo.Name ?? "";
-            }
         }
 
         /// <inheritdoc />
@@ -120,9 +115,7 @@ namespace Commands.Reflection
                 score -= 0.25f;
 
             foreach (var arg in Arguments)
-            {
                 score += arg.GetScore();
-            }
 
             return score;
         }
@@ -134,8 +127,6 @@ namespace Commands.Reflection
         /// <inheritdoc cref="ToString()"/>
         /// <param name="includeArgumentNames">Defines whether the argument signatures should be named or not.</param>
         public string ToString(bool includeArgumentNames)
-        {
-            return $"{Type.Name}{(includeArgumentNames ? $" {Name} " : "")}({string.Join<IArgument>(", ", Arguments)})";
-        }
+            => $"{Type.Name}{(includeArgumentNames ? $" {Name} " : "")}({string.Join<IArgument>(", ", Arguments)})";
     }
 }

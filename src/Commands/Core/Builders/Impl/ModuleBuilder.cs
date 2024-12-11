@@ -216,7 +216,7 @@ namespace Commands
                 }
             }
 
-            moduleInfo.SortScores();
+            moduleInfo.Sort();
 
             return moduleInfo;
         }

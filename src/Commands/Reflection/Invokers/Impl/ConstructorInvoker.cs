@@ -1,9 +1,10 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 
 namespace Commands.Reflection
 {
     /// <summary>
-    ///     
+    ///     An invoker that invokes a constructor.
     /// </summary>
     public sealed class ConstructorInvoker : IInvoker
     {
@@ -11,19 +12,14 @@ namespace Commands.Reflection
 
         private readonly ConstructorInfo _ctor;
 
-        /// <inheritdoc />
-        public MethodBase Target
-        {
-            get
-            {
-                return _ctor;
-            }
-        }
-
         /// <summary>
         ///     Gets a collection of parameters for the constructor.
         /// </summary>
         public IParameter[] Parameters { get; }
+
+        /// <inheritdoc />
+        public MethodBase Target
+            => _ctor;
 
         internal ConstructorInvoker(Type type)
         {
@@ -31,7 +27,12 @@ namespace Commands.Reflection
 
             _ctor = ctor;
 
-            Parameters = ctor.GetServices();
+            var parameters = ctor.GetParameters();
+
+            Parameters = new IParameter[parameters.Length];
+
+            for (var i = 0; i < parameters.Length; i++)
+                Parameters[i] = new ServiceInfo(parameters[i]);
         }
 
         private static ConstructorInfo GetConstructor(Type type)
@@ -42,9 +43,7 @@ namespace Commands.Reflection
             foreach (var ctor in ctors)
             {
                 if (ctor.GetCustomAttributes().Any(attr => attr is SkipAttribute))
-                {
                     continue;
-                }
 
                 return ctor;
             }
@@ -83,7 +82,7 @@ namespace Commands.Reflection
                         continue;
                     }
 
-                    throw new InvalidOperationException($"{Target.Name} defines {parameter.Type} but the {nameof(IServiceProvider)} does not know a service by that type.");
+                    throw new InvalidOperationException($"Constructor {command.Module?.Name ?? Target.Name} defines {parameter.Type} but {c_serviceType.Name} does not know a service by that type.");
                 }
 
                 services[i] = service;
@@ -94,8 +93,6 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public Type? GetReturnType()
-        {
-            return default;
-        }
+            => default;
     }
 }

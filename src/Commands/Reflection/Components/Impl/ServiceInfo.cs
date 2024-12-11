@@ -38,23 +38,15 @@ namespace Commands.Reflection
             }
 
             if (parameterInfo.IsOptional)
-            {
                 IsOptional = true;
-            }
             else
-            {
                 IsOptional = false;
-            }
 
             ExposedType = parameterInfo.ParameterType;
         }
 
         /// <inheritdoc />
         public override string ToString()
-        {
-            var str = Type.Name;
-
-            return str;
-        }
+            => Type.Name;
     }
 }

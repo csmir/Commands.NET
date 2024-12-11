@@ -27,13 +27,14 @@ namespace Commands.Reflection
         public bool IsRemainder { get; }
 
         /// <inheritdoc />
-        public bool IsCollection { get; }
-
-        /// <inheritdoc />
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
         public TypeConverterBase? Converter { get; } = null;
+
+        /// <inheritdoc />
+        public bool IsCollection
+            => Converter is ICollectionConverter;
 
         internal ArgumentInfo(
             ParameterInfo parameterInfo, string? name, CommandConfiguration options)
@@ -65,7 +66,6 @@ namespace Commands.Reflection
             var converter = ReflectionUtilities.GetTypeConverter(Type, options);
 
             Converter = converter;
-            IsCollection = converter is ICollectionConverter;
             ExposedType = parameterInfo.ParameterType;
             Attributes = attributes.ToArray();
 
@@ -102,15 +102,6 @@ namespace Commands.Reflection
         /// <inheritdoc cref="ToString()"/>
         /// <param name="includeArgumentNames">Defines whether the argument signatures should be named or not.</param>
         public string ToString(bool includeArgumentNames)
-        {
-            var str = Type.Name;
-
-            if (includeArgumentNames)
-            {
-                str += $" {Name}";
-            }
-
-            return str;
-        }
+            => $"{Type.Name}{(includeArgumentNames ? Name : "")}";
     }
 }
