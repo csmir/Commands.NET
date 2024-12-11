@@ -1,4 +1,5 @@
 ﻿using Commands.Conditions;
+using System.Collections;
 using System.Diagnostics;
 
 namespace Commands.Reflection
@@ -7,12 +8,15 @@ namespace Commands.Reflection
     ///     Reveals information about a command module, hosting zero-or-more commands.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public sealed class ModuleInfo : ISearchable
+    public sealed class ModuleInfo : ISearchable, IEnumerable<ISearchable>
     {
+        private readonly HashSet<ISearchable> _components;
+
         /// <summary>
         ///     Gets an array containing nested modules or commands inside this module.
         /// </summary>
-        public HashSet<ISearchable> Components { get; }
+        public IReadOnlyCollection<ISearchable> Components
+            => _components;
 
         /// <summary>
         ///     Gets the type of this module.
@@ -64,6 +68,18 @@ namespace Commands.Reflection
         public bool IsDefault
             => false;
 
+        /// <summary>
+        ///     Gets the number of components in the module.
+        /// </summary>
+        public int Count
+            => _components.Count;
+
+        /// <summary>
+        ///     Gets the depth of the module, being how deeply nested it is in the command tree.
+        /// </summary>
+        public int Depth
+            => Module?.Depth + 1 ?? 0;
+
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, CommandConfiguration options)
         {
@@ -83,7 +99,7 @@ namespace Commands.Reflection
 
             Invoker = new ConstructorInvoker(type);
 
-            Components = [.. ReflectionUtilities.GetComponents(this, options).OrderByDescending(x => x.Score)];
+            _components = [.. ReflectionUtilities.GetComponents(this, options).OrderByDescending(x => x.Score)];
         }
 
         internal ModuleInfo(
@@ -91,7 +107,7 @@ namespace Commands.Reflection
         {
             Module = root;
 
-            Components = [];
+            _components = [];
             Attributes = [];
             PreEvaluations = [];
             PostEvaluations = [];
@@ -119,20 +135,63 @@ namespace Commands.Reflection
         }
 
         /// <summary>
-        ///     Sorts all items in the module based on their score, which should be called when new components are added at runtime after the module has already been initialized.
+        ///     Adds a component to the current module.
         /// </summary>
-        public void Sort()
+        /// <param name="component">The component to be added to the module.</param>
+        /// <returns><see langword="true"/> if the component was added; otherwise, <see langword="false"/>.</returns>
+        public bool AddComponent(ISearchable component)
+            => AddComponents(component) > 0;
+
+        /// <summary>
+        ///     Adds all provided components to the current module.
+        /// </summary>
+        /// <param name="components">The components to be added to the module.</param>
+        /// <returns>The number of added components, being 0 if no records were added.</returns>
+        public int AddComponents(params ISearchable[] components)
         {
-            var copy = Components.OrderByDescending(x => x.Score);
+            var hasChanged = 0;
 
-            Components.Clear();
+            foreach (var component in components)
+                hasChanged += (_components.Add(component) ? 1 : 0);
 
-            foreach (var component in copy)
-                Components.Add(component);
+            var copy = _components.OrderByDescending(x => x.Score);
+
+            _components.Clear();
+
+            foreach (var copiedItem in copy)
+                _components.Add(copiedItem);
+
+            return hasChanged;
         }
+
+        /// <summary>
+        ///     Removes a component from the current module if it exists.
+        /// </summary>
+        /// <param name="component">The component to be added to the module.</param>
+        /// <returns><see langword="true"/> if the component was removed; otherwise, <see langword="false"/>.</returns>
+        public bool RemoveComponent(ISearchable component)
+            => _components.Remove(component);
+
+        /// <summary>
+        ///     Removes all components from the current module that match the predicate.
+        /// </summary>
+        /// <param name="predicate">The predicate which determines which items should be removed from the module.</param>
+        /// <returns>The number of removed components, being 0 if no records were removed.</returns>
+        public int RemoveComponents(Predicate<ISearchable> predicate)
+            => _components.RemoveWhere(predicate);
+
+        /// <summary>
+        ///    Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>A <see cref="HashSet{T}.Enumerator"/> object for the underlying <see cref="HashSet{T}"/> of this module.</returns>
+        public IEnumerator<ISearchable> GetEnumerator()
+            => _components.GetEnumerator();
 
         /// <inheritdoc />
         public override string ToString()
             => $"{(Module != null ? $"{Module}." : "")}{(Name != null ? $"{Type?.Name}['{Name}']" : $"{Type?.Name}")}";
+
+        IEnumerator IEnumerable.GetEnumerator()
+            => GetEnumerator();
     }
 }

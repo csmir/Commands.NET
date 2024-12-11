@@ -206,17 +206,15 @@ namespace Commands
                 {
                     var subModuleInfo = moduleBuilder.Build(configuration, moduleInfo);
 
-                    moduleInfo.Components.Add(subModuleInfo);
+                    moduleInfo.AddComponent(subModuleInfo);
                 }
                 else
                 {
                     var commandInfo = component.Build(configuration);
 
-                    moduleInfo.Components.Add(commandInfo);
+                    moduleInfo.AddComponent(commandInfo);
                 }
             }
-
-            moduleInfo.Sort();
 
             return moduleInfo;
         }

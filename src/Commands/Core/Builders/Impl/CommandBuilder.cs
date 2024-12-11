@@ -1,5 +1,7 @@
 ﻿using Commands.Conditions;
+using Commands.Converters;
 using Commands.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Commands
 {
@@ -21,7 +23,7 @@ namespace Commands
         /// <summary>
         ///     Gets the conditions necessary for the command to execute.
         /// </summary>
-        public List<IExecuteCondition> Conditions { get; } = [];
+        public List<IExecuteCondition> Conditions { get; set; } = [];
 
         /// <summary>
         ///     Gets the delegate that is executed when the command is invoked.
@@ -97,6 +99,28 @@ namespace Commands
             return this;
         }
 
+        /// <summary>
+        ///     Replaces the current collection of conditions with the specified conditions. Conditions are used to determine if the command can be executed.
+        /// </summary>
+        /// <param name="conditions">The conditions to add to the command execution flow.</param>
+        /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+        public CommandBuilder WithConditions(params IExecuteCondition[] conditions)
+        {
+            Conditions = [.. conditions];
+            return this;
+        }
+
+        /// <summary>
+        ///     Adds a condition to the command. Conditions are used to determine if the command can be executed.
+        /// </summary>
+        /// <param name="condition">The condition to add to the command execution flow.</param>
+        /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+        public CommandBuilder AddCondition(IExecuteCondition condition)
+        {
+            Conditions.Add(condition);
+            return this;
+        }
+
         /// <inheritdoc />
         public ISearchable Build(CommandConfiguration configuration)
         {
@@ -119,7 +143,17 @@ namespace Commands
             if (param.Length > 0 && param[0].ParameterType.IsGenericType && param[0].ParameterType.GetGenericTypeDefinition() == c_type)
                 hasContext = true;
 
-            return new CommandInfo(new DelegateInvoker(ExecuteDelegate.Method, ExecuteDelegate.Target, hasContext), Aliases, hasContext, configuration);
+            return new CommandInfo(new DelegateInvoker(ExecuteDelegate.Method, ExecuteDelegate.Target, hasContext), [.. Conditions], Aliases, hasContext, configuration);
         }
+
+        /// <summary>
+        ///     Builds a searchable component from the provided configuration.
+        /// </summary>
+        /// <param name="converters">The typeconverters from which the current command constructs its argument converters.</param>
+        /// <param name="nameFilter">A filter which is used to determine how the command aliases are validated.</param>
+        /// <returns>A reflection-based container that holds information for a component ready to be executed or serves as a container for executable components.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the component aliases do not match <see cref="CommandConfiguration.NamingRegex"/>.</exception>
+        public ISearchable Build(IEnumerable<TypeConverterBase> converters, string nameFilter = @"^[a-z0-9_-]*$")
+            => Build(new CommandConfiguration(converters, nameFilter));
     }
 }

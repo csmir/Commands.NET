@@ -3,19 +3,16 @@
     public class MutationModule : ModuleBase
     {
         [Name("add-command")]
-        public async Task MutateCurrentModule(string commandName)
+        public Task MutateCurrentModule(string commandName)
         {
-            await Task.CompletedTask;
+            var command = new CommandBuilder()
+                .WithAliases(commandName)
+                .WithDelegate(() => "Hello, World!")
+                .Build(Manager.Configuration);
 
-            var command = new CommandBuilder();
+            Command.Module!.AddComponent(command);
 
-            command.WithAliases(commandName);
-            command.WithDelegate(() => "Hello, World!");
-
-            var result = command.Build(Manager.Configuration);
-
-            Command.Module!.Components.Add(result);
-            Command.Module.Sort();
+            return Send("Command added.");
         }
     }
 }

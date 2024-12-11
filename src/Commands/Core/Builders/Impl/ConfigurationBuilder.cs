@@ -289,7 +289,7 @@ namespace Commands
         /// <returns>A new instance of <see cref="CommandManager"/> built by this builder.</returns>
         public CommandManager Build()
         {
-            var configuration = new CommandConfiguration(this);
+            var configuration = new CommandManager.CommandManagerConfiguration(this);
 
             return new CommandManager(configuration);
         }
