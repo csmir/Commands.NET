@@ -70,11 +70,14 @@ namespace Commands.Reflection
         internal CommandInfo(StaticInvoker invoker, string[] aliases, bool hasContext, CommandConfiguration options)
             : this(null, invoker, aliases, hasContext, options)
         {
+
         }
 
-        internal CommandInfo(DelegateInvoker invoker, string[] aliases, bool hasContext, CommandConfiguration options)
+        internal CommandInfo(DelegateInvoker invoker, IExecuteCondition[] conditions, string[] aliases, bool hasContext, CommandConfiguration options)
             : this(null, invoker, aliases, hasContext, options)
         {
+            PreEvaluations = ConditionEvaluator.CreateEvaluators(conditions.OfType<IPreExecutionCondition>()).ToArray();
+            PostEvaluations = ConditionEvaluator.CreateEvaluators(conditions.OfType<IPostExecutionCondition>()).ToArray();
         }
 
         internal CommandInfo(

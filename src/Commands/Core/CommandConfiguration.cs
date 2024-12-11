@@ -6,42 +6,35 @@ using System.Text.RegularExpressions;
 namespace Commands
 {
     /// <summary>
-    ///     A read-only configuration entity which is used by the <see cref="CommandManager"/> to construct commands and prepare them for execution. This class cannot be inherited.
+    ///     A read-only configuration base class which is used by individual components to set up their own configuration.
     /// </summary>
-    public sealed class CommandConfiguration
+    public class CommandConfiguration
     {
-        /// <summary>
-        ///     Gets a collection of assemblies that are used to search for command types.
-        /// </summary>
-        public List<Assembly> Assemblies { get; }
-
         /// <summary>
         ///     Gets a collection of type converters that are used to convert arguments.
         /// </summary>
         public Dictionary<Type, TypeConverterBase> TypeConverters { get; }
 
         /// <summary>
-        ///     Gets a collection of result resolvers that are used to handle command results.
-        /// </summary>
-        public List<ResultResolverBase> ResultResolvers { get; }
-
-        /// <summary>
-        ///     Gets a collection of commands based on delegates that are added to the manager at runtime.
-        /// </summary>
-        public List<IComponentBuilder> Components { get; }
-
-        /// <summary>
         ///     Gets the naming convention used to identify command methods.
         /// </summary>
         public Regex NamingRegex { get; }
 
-        internal CommandConfiguration(ConfigurationBuilder configuration)
+        /// <summary>
+        ///     Creates a new instance of <see cref="CommandConfiguration"/>.
+        /// </summary>
+        /// <param name="converters">The range of type converters to match to command arguments.</param>
+        /// <param name="namingPattern">The naming pattern which should determine how aliases are verified for their validity.</param>
+        public CommandConfiguration(IEnumerable<TypeConverterBase> converters, string namingPattern = @"^[a-z0-9_-]*$")
+            : this(converters.ToDictionary(x => x.Type), new Regex(namingPattern))
         {
-            Assemblies = configuration.Assemblies;
-            TypeConverters = configuration.TypeConverters;
-            ResultResolvers = configuration.ResultResolvers;
-            Components = configuration.Components;
-            NamingRegex = configuration.NamingRegex;
+
+        }
+
+        internal CommandConfiguration(Dictionary<Type, TypeConverterBase> converters, Regex namingPattern)
+        {
+            TypeConverters = converters;
+            NamingRegex = namingPattern;
         }
     }
 }

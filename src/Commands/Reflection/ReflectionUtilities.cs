@@ -54,15 +54,18 @@ namespace Commands.Reflection
         /// <returns>A top-level enumerable of all discovered modules.</returns>
         public static IEnumerable<ModuleInfo> GetTopLevelModules(CommandConfiguration options)
         {
-            var arr = new IEnumerable<ModuleInfo>[options.Assemblies.Count];
-
-            // run through all defined assemblies.
-            for (int i = 0; i < options.Assemblies.Count; i++)
+            if (options is CommandManager.CommandManagerConfiguration managerOptions)
             {
-                arr[i] = GetModules(options.Assemblies[i], options);
+                var arr = new IEnumerable<ModuleInfo>[managerOptions.Assemblies.Count];
+
+                // run through all defined assemblies.
+                for (int i = 0; i < managerOptions.Assemblies.Count; i++)
+                    arr[i] = GetModules(managerOptions.Assemblies[i], managerOptions);
+
+                return arr.SelectMany(x => x);
             }
 
-            return arr.SelectMany(x => x);
+            return [];
         }
 
         /// <summary>

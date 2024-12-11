@@ -3,6 +3,7 @@ using Commands.Parsing;
 using Commands.Reflection;
 using Commands.Resolvers;
 using System.Diagnostics;
+using System.Reflection;
 
 [assembly: CLSCompliant(true)]
 
@@ -23,22 +24,20 @@ namespace Commands
     public sealed class CommandManager
     {
         private readonly SequenceFinalizer _disposer;
+        private readonly HashSet<ISearchable> _components;
 
         /// <summary>
         ///     Gets the collection containing all commands, named modules and subcommands as implem ented by the assemblies that were registered in the <see cref="ConfigurationBuilder"/> provided when creating the manager.
         /// </summary>
-        public HashSet<ISearchable> Commands { get; }
+        public IReadOnlyCollection<ISearchable> Commands
+            => _components;
 
         /// <summary>
         ///     Gets the configuration that was used to construct the <see cref="CommandManager"/>, and which can be used in adding extended functionality to the manager.
         /// </summary>
         public CommandConfiguration Configuration { get; }
 
-        /// <summary>
-        ///     Creates a new <see cref="CommandManager"/> based on the provided arguments.
-        /// </summary>
-        /// <param name="configuration">The options through which to construct the collection of <see cref="Commands"/>.</param>
-        public CommandManager(CommandConfiguration configuration)
+        internal CommandManager(CommandManagerConfiguration configuration)
         {
             _disposer = new SequenceFinalizer(configuration.ResultResolvers);
 
@@ -46,7 +45,7 @@ namespace Commands
                 .Concat(configuration.Components.Select(x => x.Build(configuration)))
                 .OrderByDescending(command => command.Score);
 
-            Commands = [.. commands];
+            _components = [.. commands];
 
             Configuration = configuration;
         }
@@ -451,6 +450,16 @@ namespace Commands
         public static ConfigurationBuilder CreateDefaultBuilder()
         {
             return new ConfigurationBuilder();
+        }
+
+        internal sealed class CommandManagerConfiguration(ConfigurationBuilder configurationBuilder)
+            : CommandConfiguration(configurationBuilder.TypeConverters, configurationBuilder.NamingRegex)
+        {
+            public List<Assembly> Assemblies { get; } = configurationBuilder.Assemblies;
+
+            public List<ResultResolverBase> ResultResolvers { get; } = configurationBuilder.ResultResolvers;
+
+            public List<IComponentBuilder> Components { get; } = configurationBuilder.Components;
         }
 
         internal sealed class SequenceFinalizer(IEnumerable<ResultResolverBase> eventHandlers)
