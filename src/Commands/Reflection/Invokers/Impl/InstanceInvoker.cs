@@ -11,12 +11,7 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public MethodBase Target
-        {
-            get
-            {
-                return _method;
-            }
-        }
+            => _method;
 
         internal InstanceInvoker(MethodInfo target)
         {

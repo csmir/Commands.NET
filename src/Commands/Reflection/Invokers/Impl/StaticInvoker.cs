@@ -12,12 +12,7 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public MethodBase Target
-        {
-            get
-            {
-                return _method;
-            }
-        }
+            => _method;
 
         internal StaticInvoker(MethodInfo target, bool withContext)
         {

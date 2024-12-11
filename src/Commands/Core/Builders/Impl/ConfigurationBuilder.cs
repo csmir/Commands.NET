@@ -289,9 +289,14 @@ namespace Commands
         /// <returns>A new instance of <see cref="CommandManager"/> built by this builder.</returns>
         public CommandManager Build()
         {
-            var configuration = new CommandManager.CommandManagerConfiguration(this);
+            var configuration = new CommandConfiguration(TypeConverters, NamingRegex);
 
-            return new CommandManager(configuration);
+            var components = Components.Select(x => x.Build(configuration));
+
+            return new CommandManager(configuration, 
+                assemblies: Assemblies, 
+                resolvers: ResultResolvers, 
+                runtimeComponents: components);
         }
     }
 }

@@ -1,12 +1,10 @@
 ﻿using Commands.Converters;
-using Commands.Resolvers;
-using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Commands
 {
     /// <summary>
-    ///     A read-only configuration base class which is used by individual components to set up their own configuration.
+    ///     A read-only configuration class which is used by individual components to set up their own configuration.
     /// </summary>
     public class CommandConfiguration
     {

@@ -20,13 +20,14 @@ namespace Commands.Reflection
         private static readonly Type h_type = typeof(HashSet<>);
 
         /// <summary>
-        ///     Iterates through all assemblies registered in <paramref name="options"/> and creates a top-level enumerable with all discovered members that can be directly searched for.
+        ///     Iterates through all assemblies and creates a top-level enumerable with all discovered members that can be directly searched for.
         /// </summary>
+        /// <param name="assemblies">The assemblies to iterate through for command discovery.</param>
         /// <param name="options">The options that define the command registration process.</param>
         /// <returns>A top-level enumerable of all discovered components which can be searched.</returns>
-        public static IEnumerable<ISearchable> GetTopLevelComponents(CommandConfiguration options)
+        public static IEnumerable<ISearchable> GetTopLevelComponents(Assembly[] assemblies, CommandConfiguration options)
         {
-            var modules = GetTopLevelModules(options);
+            var modules = GetTopLevelModules(assemblies, options);
 
             // run through components to discovery queryability
             foreach (var module in modules)
@@ -48,24 +49,22 @@ namespace Commands.Reflection
         }
 
         /// <summary>
-        ///     Iterates through all assemblies registered in <paramref name="options"/> and creates an enumerable of all discovered top-level modules.
+        ///     Iterates through all provided assemblies and creates an enumerable of all discovered top-level modules.
         /// </summary>
+        /// <param name="assemblies">The assemblies to iterate through for command discovery.</param>
         /// <param name="options">The options that define the command registration process.</param>
         /// <returns>A top-level enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetTopLevelModules(CommandConfiguration options)
+        public static IEnumerable<ModuleInfo> GetTopLevelModules(Assembly[] assemblies, CommandConfiguration options)
         {
-            if (options is CommandManager.CommandManagerConfiguration managerOptions)
-            {
-                var arr = new IEnumerable<ModuleInfo>[managerOptions.Assemblies.Count];
+            var copy = assemblies.ToArray();
 
-                // run through all defined assemblies.
-                for (int i = 0; i < managerOptions.Assemblies.Count; i++)
-                    arr[i] = GetModules(managerOptions.Assemblies[i], managerOptions);
+            var arr = new IEnumerable<ModuleInfo>[copy.Length];
 
-                return arr.SelectMany(x => x);
-            }
+            // run through all defined assemblies.
+            for (int i = 0; i < copy.Length; i++)
+                arr[i] = GetModules(copy[i], options);
 
-            return [];
+            return arr.SelectMany(x => x);
         }
 
         /// <summary>

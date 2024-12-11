@@ -3,11 +3,11 @@
     public class MutationModule : ModuleBase
     {
         [Name("add-command")]
-        public Task MutateCurrentModule(string commandName)
+        public Task MutateCurrentModule(string commandName, [Remainder] Delegate executionAction)
         {
             var command = new CommandBuilder()
                 .WithAliases(commandName)
-                .WithDelegate(() => "Hello, World!")
+                .WithDelegate(executionAction)
                 .Build(Manager.Configuration);
 
             Command.Module!.AddComponent(command);

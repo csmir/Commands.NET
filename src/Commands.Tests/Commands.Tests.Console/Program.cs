@@ -1,7 +1,9 @@
 ﻿using Commands;
+using Commands.Tests;
 using Microsoft.Extensions.DependencyInjection;
 
 var manager = CommandManager.CreateDefaultBuilder()
+    .AddTypeConverter(new CSharpScriptConverter())
     .AddResultResolver((c, r, s) =>
     {
         if (!r.Success)

@@ -20,7 +20,7 @@ namespace Commands.Reflection
         /// <param name="args">The converted arguments to invoke the command with.</param>
         /// <param name="manager">The command manager responsible for executing the current pipeline.</param>
         /// <param name="options">The options that determine the execution pattern of this invoker.</param>
-        /// <returns>An awaitable <see cref="ValueTask"/> holding the result of the invocation.</returns>
+        /// <returns>The result of the invocation. This result is <see langword="null"/> if the method signature returns void.</returns>
         public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandManager manager, CommandOptions options)
             where T : ConsumerBase;
 

@@ -37,15 +37,33 @@ namespace Commands
         /// </summary>
         public CommandConfiguration Configuration { get; }
 
-        internal CommandManager(CommandManagerConfiguration configuration)
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="CommandManager"/> class.
+        /// </summary>
+        /// <param name="configuration">The configuration by which all reflected components should be configured.</param>
+        /// <param name="assemblies">An optional collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="ModuleBase"/> within the provided assemblies.</param>
+        /// <param name="resolvers">An optional collection of handlers of command results.</param>
+        /// <param name="runtimeComponents">Delegate-based components that should be passed to the manager at runtime.</param>
+        public CommandManager(CommandConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<ResultResolverBase>? resolvers = null, IEnumerable<ISearchable>? runtimeComponents = null)
         {
-            _disposer = new SequenceFinalizer(configuration.ResultResolvers);
+            resolvers         ??= [];
+            assemblies        ??= [];
+            runtimeComponents ??= [];
 
-            var commands = ReflectionUtilities.GetTopLevelComponents(configuration)
-                .Concat(configuration.Components.Select(x => x.Build(configuration)))
-                .OrderByDescending(command => command.Score);
+            _disposer = new SequenceFinalizer(resolvers);
 
-            _components = [.. commands];
+            if (assemblies.Any() || runtimeComponents.Any())
+            {
+                var commands = ReflectionUtilities.GetTopLevelComponents(assemblies.ToArray(), configuration)
+                    .Concat(runtimeComponents)
+                    .OrderByDescending(command => command.Score);
+
+                _components = [.. commands];
+            }
+            else
+            {
+                _components = [];
+            }
 
             Configuration = configuration;
         }
@@ -450,16 +468,6 @@ namespace Commands
         public static ConfigurationBuilder CreateDefaultBuilder()
         {
             return new ConfigurationBuilder();
-        }
-
-        internal sealed class CommandManagerConfiguration(ConfigurationBuilder configurationBuilder)
-            : CommandConfiguration(configurationBuilder.TypeConverters, configurationBuilder.NamingRegex)
-        {
-            public List<Assembly> Assemblies { get; } = configurationBuilder.Assemblies;
-
-            public List<ResultResolverBase> ResultResolvers { get; } = configurationBuilder.ResultResolvers;
-
-            public List<IComponentBuilder> Components { get; } = configurationBuilder.Components;
         }
 
         internal sealed class SequenceFinalizer(IEnumerable<ResultResolverBase> eventHandlers)

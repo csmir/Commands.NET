@@ -13,12 +13,7 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public MethodBase Target
-        {
-            get
-            {
-                return _method;
-            }
-        }
+            => _method;
 
         internal DelegateInvoker(MethodInfo target, object? instance, bool withContext)
         {
