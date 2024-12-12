@@ -22,7 +22,7 @@ namespace Commands
     ///     To start using this manager, call <see cref="CreateDefaultBuilder"/> and configure it using the minimal API's implemented by the <see cref="ConfigurationBuilder"/>.
     /// </remarks>
     [DebuggerDisplay("Components = {Count},nq")]
-    public sealed class CommandManager : IComponentSet
+    public sealed class CommandManager : ISearchableSet
     {
         private HashSet<ISearchable> _components;
         private readonly ResultEnumerator _resultEnumerator;
@@ -31,6 +31,10 @@ namespace Commands
         public int Count
             => _components.Count;
 
+        /// <inheritdoc />
+        public bool IsReadOnly
+            => false;
+
         /// <summary>
         ///     Initializes a new instance of the <see cref="CommandManager"/> class.
         /// </summary>
@@ -38,7 +42,7 @@ namespace Commands
         /// <param name="assemblies">An optional collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="ModuleBase"/> within the provided assemblies.</param>
         /// <param name="resolvers">An optional collection of handlers of command results.</param>
         /// <param name="runtimeComponents">Delegate-based components that should be passed to the manager at runtime.</param>
-        public CommandManager(CommandConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<ResultResolverBase>? resolvers = null, IEnumerable<ISearchable>? runtimeComponents = null)
+        public CommandManager(BuildConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<ResultResolverBase>? resolvers = null, IEnumerable<ISearchable>? runtimeComponents = null)
         {
             resolvers ??= [];
             assemblies ??= [];

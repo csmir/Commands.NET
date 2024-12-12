@@ -48,6 +48,14 @@ namespace Commands
         public Regex NamingRegex { get; set; } = new(DEFAULT_REGEX, RegexOptions.Compiled);
 
         /// <summary>
+        ///     Gets or sets if registered modules should be made read-only at creation, meaning they cannot be modified at runtime.
+        /// </summary>
+        /// <remarks>
+        ///     Default: <see langword="false"/>.
+        /// </remarks>
+        public bool SealModuleDefinitions { get; set; } = false;
+
+        /// <summary>
         ///     Adds a command to the <see cref="Components"/> collection.
         /// </summary>
         /// <param name="commandBuilder">The builder instance to add to the collection, which will be built into a <see cref="CommandInfo"/> instance that can be executed by the <see cref="CommandManager"/>.</param>
@@ -284,12 +292,12 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Builds the current <see cref="ConfigurationBuilder"/> instance into a new <see cref="CommandConfiguration"/>, which is used to create a new instance of <see cref="CommandManager"/>.
+        ///     Builds the current <see cref="ConfigurationBuilder"/> instance into a new <see cref="BuildConfiguration"/>, which is used to create a new instance of <see cref="CommandManager"/>.
         /// </summary>
         /// <returns>A new instance of <see cref="CommandManager"/> built by this builder.</returns>
         public CommandManager Build()
         {
-            var configuration = new CommandConfiguration(TypeConverters, NamingRegex);
+            var configuration = new BuildConfiguration(TypeConverters, NamingRegex);
 
             var components = Components.Select(x => x.Build(configuration));
 

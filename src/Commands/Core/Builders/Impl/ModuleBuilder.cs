@@ -6,7 +6,7 @@ namespace Commands
     ///     Represents the builder of a module that can contain commands and sub-modules. This class cannot be inherited.
     /// </summary>
     /// <remarks>
-    ///     This class is used to build a module that can contain commands and sub-modules. The module can be built using the <see cref="Build(CommandConfiguration)"/> method, which returns a <see cref="ModuleInfo"/> instance. 
+    ///     This class is used to build a module that can contain commands and sub-modules. The module can be built using the <see cref="Build(BuildConfiguration)"/> method, which returns a <see cref="ModuleInfo"/> instance. 
     ///     This reflection container is not type-locked and does not have an instance. It is used to run delegate commands in a tree-like structure.
     /// </remarks>
     public sealed class ModuleBuilder : IComponentBuilder
@@ -186,8 +186,8 @@ namespace Commands
         /// <param name="configuration">The configuration that should be used to determine the validity of the provided module.</param>
         /// <param name="root">The root module of this (sub)module. Can be left null, but it will affect how the module is visually formatted in the debugger and by calling the ToString() override on the returned type.</param>
         /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when any of the aliases of the module to be built do not match <see cref="CommandConfiguration.NamingRegex"/>.</exception>
-        public ModuleInfo Build(CommandConfiguration configuration, ModuleInfo? root)
+        /// <exception cref="InvalidOperationException">Thrown when any of the aliases of the module to be built do not match <see cref="BuildConfiguration.NamingRegex"/>.</exception>
+        public ModuleInfo Build(BuildConfiguration configuration, ModuleInfo? root)
         {
             if (Aliases.Length == 0)
                 throw new InvalidOperationException("The module must have at least one alias.");
@@ -195,7 +195,7 @@ namespace Commands
             foreach (var alias in Aliases)
             {
                 if (!configuration.NamingRegex.IsMatch(alias))
-                    throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(CommandConfiguration.NamingRegex)} of the {nameof(CommandConfiguration)}.");
+                    throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(BuildConfiguration.NamingRegex)} of the {nameof(BuildConfiguration)}.");
             }
 
             var moduleInfo = new ModuleInfo(root, Aliases);
@@ -220,7 +220,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public ISearchable Build(CommandConfiguration configuration)
+        public ISearchable Build(BuildConfiguration configuration)
             => Build(configuration, null);
     }
 }

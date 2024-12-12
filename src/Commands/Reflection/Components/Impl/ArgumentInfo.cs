@@ -37,7 +37,7 @@ namespace Commands.Reflection
             => Converter is ICollectionConverter;
 
         internal ArgumentInfo(
-            ParameterInfo parameterInfo, string? name, CommandConfiguration options)
+            ParameterInfo parameterInfo, string? name, BuildConfiguration options)
         {
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);

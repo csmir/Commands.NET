@@ -71,7 +71,7 @@ namespace Commands
             foreach (var alias in Aliases)
             {
                 if (!regex.IsMatch(alias))
-                    throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(CommandConfiguration.NamingRegex)} of the {nameof(CommandConfiguration)}.");
+                    throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(BuildConfiguration.NamingRegex)} of the {nameof(BuildConfiguration)}.");
             }
         }
     }

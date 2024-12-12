@@ -8,7 +8,7 @@ namespace Commands
     ///     A base class that represents a delegate based command, before it is built into a reflection-based executable object. This class cannot be inherited.
     /// </summary>
     /// <remarks>
-    ///     This class is used to configure a command before it is built into a <see cref="CommandInfo"/> object. By calling the <see cref="Build(CommandConfiguration)"/> or <see cref="Build(IEnumerable{TypeConverterBase}, string)"/> method, the command is built into an object that can be executed by the <see cref="CommandManager"/>>.
+    ///     This class is used to configure a command before it is built into a <see cref="CommandInfo"/> object. By calling the <see cref="Build(BuildConfiguration)"/> or <see cref="Build(IEnumerable{TypeConverterBase}, string)"/> method, the command is built into an object that can be executed by the <see cref="CommandManager"/>>.
     /// </remarks>
     public sealed class CommandBuilder : IComponentBuilder
     {
@@ -121,7 +121,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public ISearchable Build(CommandConfiguration configuration)
+        public ISearchable Build(BuildConfiguration configuration)
         {
             if (ExecuteDelegate is null)
                 throw new InvalidOperationException("The command must have a delegate to execute.");
@@ -132,7 +132,7 @@ namespace Commands
             foreach (var alias in Aliases)
             {
                 if (!configuration.NamingRegex.IsMatch(alias))
-                    throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(CommandConfiguration.NamingRegex)} of the {nameof(CommandConfiguration)}.");
+                    throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(BuildConfiguration.NamingRegex)} of the {nameof(BuildConfiguration)}.");
             }
 
             var param = ExecuteDelegate.Method.GetParameters();
@@ -151,8 +151,8 @@ namespace Commands
         /// <param name="converters">The typeconverters from which the current command constructs its argument converters.</param>
         /// <param name="nameFilter">A filter which is used to determine how the command aliases are validated.</param>
         /// <returns>A reflection-based container that holds information for a component ready to be executed or serves as a container for executable components.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when the component aliases do not match <see cref="CommandConfiguration.NamingRegex"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the component aliases do not match <see cref="BuildConfiguration.NamingRegex"/>.</exception>
         public ISearchable Build(IEnumerable<TypeConverterBase> converters, string nameFilter = @"^[a-z0-9_-]*$")
-            => Build(new CommandConfiguration(converters, nameFilter));
+            => Build(new BuildConfiguration(converters, nameFilter));
     }
 }

@@ -17,7 +17,7 @@ namespace Commands
         /// </summary>
         /// <param name="configuration">The configuration which sets the component up for execution.</param>
         /// <returns>A reflection-based container that holds information for a component ready to be executed or serves as a container for executable components.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when the component aliases do not match <see cref="CommandConfiguration.NamingRegex"/>.</exception>
-        public ISearchable Build(CommandConfiguration configuration);
+        /// <exception cref="InvalidOperationException">Thrown when the component aliases do not match <see cref="BuildConfiguration.NamingRegex"/>.</exception>
+        public ISearchable Build(BuildConfiguration configuration);
     }
 }

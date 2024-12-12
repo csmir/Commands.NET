@@ -5,12 +5,17 @@ namespace Commands.Reflection
     /// <summary>
     ///     Contains a set of components that can be mutated and searched based on specific criteria.
     /// </summary>
-    public interface IComponentSet : IEnumerable<ISearchable>
+    public interface ISearchableSet : IEnumerable<ISearchable>
     {
         /// <summary>
         ///     Gets the count of components in the current set.
         /// </summary>
         public int Count { get; }
+
+        /// <summary>
+        ///     Gets if the set has been marked as readonly when created by configuring <see cref="BuildConfiguration.SealModuleDefinitions"/>.
+        /// </summary>
+        public bool IsReadOnly { get; }
 
         /// <summary>
         ///     Searches recursively through this and all subcollections for components that match the provided arguments.
@@ -62,31 +67,35 @@ namespace Commands.Reflection
         public int CountAll();
 
         /// <summary>
-        ///     Adds a component to the current module.
+        ///     Adds a component to the current set.
         /// </summary>
         /// <param name="component">The component to be added to the module.</param>
         /// <returns><see langword="true"/> if the component was added; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="ComponentException">Thrown when a set is marked as read-only.</exception>
         public bool Add(ISearchable component);
 
         /// <summary>
-        ///     Adds all provided components to the current module.
+        ///     Adds all provided components to the current set.
         /// </summary>
-        /// <param name="components">The components to be added to the module.</param>
+        /// <param name="components">The components to be added to the set.</param>
         /// <returns>The number of added components, being 0 if no records were added.</returns>
+        /// <exception cref="ComponentException">Thrown when a set is marked as read-only.</exception>
         public int AddRange(params ISearchable[] components);
 
         /// <summary>
-        ///     Removes a component from the current module if it exists.
+        ///     Removes a component from the current set if it exists.
         /// </summary>
-        /// <param name="component">The component to be added to the module.</param>
+        /// <param name="component">The component to be removed from the set.</param>
         /// <returns><see langword="true"/> if the component was removed; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="ComponentException">Thrown when the set is marked as read-only.</exception>
         public bool Remove(ISearchable component);
 
         /// <summary>
-        ///     Removes all components from the current module that match the predicate.
+        ///     Removes all components from the current set that match the predicate.
         /// </summary>
-        /// <param name="predicate">The predicate which determines which items should be removed from the module.</param>
+        /// <param name="predicate">The predicate which determines which items should be removed from the set.</param>
         /// <returns>The number of removed components, being 0 if no records were removed.</returns>
+        /// <exception cref="ComponentException">Thrown when the set is marked as read-only.</exception>
         public int RemoveWhere(Predicate<ISearchable> predicate);
     }
 }

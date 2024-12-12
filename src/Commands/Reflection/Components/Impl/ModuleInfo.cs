@@ -9,7 +9,7 @@ namespace Commands.Reflection
     ///     Reveals information about a command module, hosting zero-or-more commands.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public sealed class ModuleInfo : ISearchable, IComponentSet
+    public sealed class ModuleInfo : ISearchable, ISearchableSet
     {
         private HashSet<ISearchable> _components;
         private readonly Action<ISearchable[]>? _notifyTopLevelMutation;
@@ -18,6 +18,19 @@ namespace Commands.Reflection
         ///     Gets the type of this module.
         /// </summary>
         public Type? Type { get; }
+
+        /// <summary>
+        ///     Gets the depth of the module, being how deeply nested it is in the command tree.
+        /// </summary>
+        public int Depth
+            => Module?.Depth + 1 ?? 1;
+
+        /// <inheritdoc />
+        public int Count
+            => _components.Count;
+
+        /// <inheritdoc />
+        public bool IsReadOnly { get; }
 
         /// <inheritdoc />
         public IInvoker? Invoker { get; }
@@ -64,25 +77,15 @@ namespace Commands.Reflection
         public bool IsDefault
             => false;
 
-        /// <summary>
-        ///     Gets the number of components in the module.
-        /// </summary>
-        public int Count
-            => _components.Count;
-
-        /// <summary>
-        ///     Gets the depth of the module, being how deeply nested it is in the command tree.
-        /// </summary>
-        public int Depth
-            => Module?.Depth + 1 ?? 1;
-
         internal ModuleInfo(
-            Type type, ModuleInfo? root, string[] aliases, CommandConfiguration options)
+            Type type, ModuleInfo? root, string[] aliases, BuildConfiguration options)
         {
             // If the root is null, we are at the top-level module. In this case, we need to set a notifier for the command manager that its command tree has changed.
             // This is an expensive operation, so we only do it once for every collection of added components. See: AddComponent, AddComponents.
             if (root == null)
                 _notifyTopLevelMutation = options.N_NotifyTopLevelMutation;
+
+            IsReadOnly = options.SealModuleDefinitions;
 
             Module = root;
             Type = type;
@@ -246,6 +249,9 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public int AddRange(params ISearchable[] components)
         {
+            if (IsReadOnly)
+                throw ComponentException.AccessDenied();
+
             var hasChanged = 0;
 
             var copy = new HashSet<ISearchable>(_components);
@@ -271,7 +277,12 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public int RemoveWhere(Predicate<ISearchable> predicate)
-            => _components.RemoveWhere(predicate);
+        {
+            if (IsReadOnly)
+                throw ComponentException.AccessDenied();
+
+            return _components.RemoveWhere(predicate);
+        }
 
         /// <summary>
         ///    Returns an enumerator that iterates through the collection.

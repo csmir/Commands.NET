@@ -70,13 +70,13 @@ namespace Commands.Reflection
         public bool HasArguments
             => Arguments.Length > 0;
 
-        internal CommandInfo(StaticInvoker invoker, string[] aliases, bool hasContext, CommandConfiguration options)
+        internal CommandInfo(StaticInvoker invoker, string[] aliases, bool hasContext, BuildConfiguration options)
             : this(null, invoker, aliases, hasContext, options)
         {
 
         }
 
-        internal CommandInfo(DelegateInvoker invoker, IExecuteCondition[] conditions, string[] aliases, bool hasContext, CommandConfiguration options)
+        internal CommandInfo(DelegateInvoker invoker, IExecuteCondition[] conditions, string[] aliases, bool hasContext, BuildConfiguration options)
             : this(null, invoker, aliases, hasContext, options)
         {
             PreEvaluations = ConditionEvaluator.CreateEvaluators(conditions.OfType<IPreExecutionCondition>()).ToArray();
@@ -84,7 +84,7 @@ namespace Commands.Reflection
         }
 
         internal CommandInfo(
-            ModuleInfo? module, IInvoker invoker, string[] aliases, bool hasContext, CommandConfiguration options)
+            ModuleInfo? module, IInvoker invoker, string[] aliases, bool hasContext, BuildConfiguration options)
         {
             var attributes = invoker.Target.GetAttributes(true).Concat(module?.Attributes ?? []).Distinct();
 
