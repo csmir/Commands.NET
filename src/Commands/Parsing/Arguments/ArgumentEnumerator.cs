@@ -1,13 +1,15 @@
-﻿namespace Commands.Parsing
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Commands.Parsing
 {
     /// <summary>
     ///     Contains a set of arguments for the command pipeline. This class is not intended to be implemented by end-users. 
-    ///     By using either <see cref="CommandManager.Execute{T}(T, IEnumerable{KeyValuePair{string, object?}}, CommandOptions?)"/> or <see cref="CommandManager.Execute{T}(T, IEnumerable{object?}, CommandOptions?)"/> you can use named or unnamed command entry.
+    ///     By using either <see cref="CommandTree.Execute{T}(T, IEnumerable{KeyValuePair{string, object?}}, CommandOptions?)"/> or <see cref="CommandTree.Execute{T}(T, IEnumerable{object?}, CommandOptions?)"/> you can use named or unnamed command entry.
     /// </summary>
     /// <remarks>
     ///     Searching for commands supports only unnamed arguments. Named arguments are used for command parameter population.
     /// </remarks>
-    public sealed class ArgumentEnumerator
+    public struct ArgumentEnumerator
     {
         const char u0020 = ' ';
 
@@ -20,11 +22,8 @@
         /// <summary>
         ///     Gets the length of the argument set. This is represented by a sum of named and unnamed arguments, reducing it by the search range of the resulted command by calling <see cref="SetSize(int)"/>.
         /// </summary>
-        public int Length
-        {
-            get
-                => _size;
-        }
+        public readonly int Length
+            => _size;
 
         /// <summary>
         ///     Creates a new instance of the <see cref="ArgumentEnumerator"/> class with a set of named arguments.
@@ -95,26 +94,15 @@
         /// <param name="searchHeight">The next incrementation that the search operation should attempt to match in the command set.</param>
         /// <param name="value">The value returned when an item is discovered in the set.</param>
         /// <returns><see langword="true"/> when an item was discovered in the set, otherwise <see langword="false"/>.</returns>
-        public bool TryNext(int searchHeight, out string value)
+        public readonly bool TryNext(int searchHeight, [NotNullWhen(true)] out string? value)
         {
-            if (searchHeight < _unnamedArgs.Length)
+            if (searchHeight < _unnamedArgs.Length && _unnamedArgs[searchHeight] is string str)
             {
-                var obj = _unnamedArgs[searchHeight];
-
-                if (obj is string str)
-                {
-                    value = str;
-                }
-                else
-                {
-                    value = string.Empty;
-                    return false;
-                }
-
+                value = str;
                 return true;
             }
 
-            value = string.Empty;
+            value = null;
             return false;
         }
 
@@ -132,7 +120,7 @@
         ///     Joins the remaining unnamed arguments in the set into a single string.
         /// </summary>
         /// <returns>A joined string containing all remaining arguments in this enumerator.</returns>
-        public string JoinRemaining()
+        public readonly string JoinRemaining()
         {
             return string.Join(u0020, _unnamedArgs[_indexUnnamed..]);
         }
@@ -141,7 +129,7 @@
         ///     Takes the remaining unnamed arguments in the set into an array which is used by Collector arguments.
         /// </summary>
         /// <returns>An array of objects that represent the remaining arguments of this enumerator.</returns>
-        public object[] TakeRemaining()
+        public readonly object[] TakeRemaining()
         {
             return _unnamedArgs[_indexUnnamed..];
         }

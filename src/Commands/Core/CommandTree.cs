@@ -2,7 +2,6 @@
 using Commands.Parsing;
 using Commands.Reflection;
 using Commands.Resolvers;
-using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -22,27 +21,19 @@ namespace Commands
     ///     To start using this manager, call <see cref="CreateDefaultBuilder"/> and configure it using the minimal API's implemented by the <see cref="ConfigurationBuilder"/>.
     /// </remarks>
     [DebuggerDisplay("Components = {Count},nq")]
-    public sealed class CommandManager : ISearchableSet
+    public sealed class CommandTree : SearchableSet
     {
-        private HashSet<ISearchable> _components;
         private readonly ResultEnumerator _resultEnumerator;
 
-        /// <inheritdoc />
-        public int Count
-            => _components.Count;
-
-        /// <inheritdoc />
-        public bool IsReadOnly
-            => false;
-
         /// <summary>
-        ///     Initializes a new instance of the <see cref="CommandManager"/> class.
+        ///     Initializes a new instance of the <see cref="CommandTree"/> class.
         /// </summary>
         /// <param name="configuration">The configuration by which all reflected components should be configured.</param>
         /// <param name="assemblies">An optional collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="ModuleBase"/> within the provided assemblies.</param>
         /// <param name="resolvers">An optional collection of handlers of command results.</param>
         /// <param name="runtimeComponents">Delegate-based components that should be passed to the manager at runtime.</param>
-        public CommandManager(BuildConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<ResultResolverBase>? resolvers = null, IEnumerable<ISearchable>? runtimeComponents = null)
+        public CommandTree(BuildConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<ResultResolverBase>? resolvers = null, IEnumerable<ISearchable>? runtimeComponents = null)
+            : base(false, null)
         {
             resolvers ??= [];
             assemblies ??= [];
@@ -52,20 +43,18 @@ namespace Commands
 
             if (assemblies.Any() || runtimeComponents.Any())
             {
-                configuration.N_NotifyTopLevelMutation = NotifyTreeMutation;
+                configuration.N_NotifyTopLevelMutation = HierarchyRetentionHandler;
 
                 var commands = ReflectionUtilities.GetTopLevelComponents(assemblies.ToArray(), configuration)
                     .Concat(runtimeComponents)
                     .OrderByDescending(command => command.Score);
 
-                _components = [.. commands];
+                PushDangerous(commands);
             }
-            else
-                _components = [];
         }
 
         /// <summary>
-        ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="CommandManager"/>.
+        ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="CommandTree"/>.
         /// </summary>
         /// <remarks>
         ///     This builder is able to configure the following:
@@ -77,147 +66,30 @@ namespace Commands
         ///         <item>Custom naming patterns that validate naming across the whole process.</item>
         ///     </list>
         /// </remarks>
-        /// <returns>A new <see cref="ConfigurationBuilder"/> that implements the currently accessed <see cref="CommandManager"/>.</returns>
+        /// <returns>A new <see cref="ConfigurationBuilder"/> that implements the currently accessed <see cref="CommandTree"/>.</returns>
         public static ConfigurationBuilder CreateDefaultBuilder()
             => new();
 
         /// <inheritdoc />
-        public IEnumerable<SearchResult> Find(ArgumentEnumerator args)
+        public override IEnumerable<SearchResult> Find(ArgumentEnumerator args)
         {
             List<SearchResult> discovered = [];
 
             var searchHeight = 0;
 
-            foreach (var component in _components)
+            foreach (var component in this)
             {
-                if (args.Length == searchHeight)
-                    continue;
-
-                if (!args.TryNext(searchHeight, out var value))
-                    continue;
-
-                if (!component.Aliases.Any(x => x == value))
+                if (!args.TryNext(searchHeight, out var value) || !component.Aliases.Contains(value))
                     continue;
 
                 if (component is ModuleInfo module)
-                {
-                    var nested = module.Find(args);
-
-                    discovered.AddRange(nested);
-
-                    discovered.Add(SearchResult.FromError(module));
-                }
+                    discovered.AddRange(module.Find(args));
                 else
                     discovered.Add(SearchResult.FromSuccess(component, searchHeight + 1));
             }
 
             return discovered;
         }
-
-        /// <inheritdoc />
-        public IEnumerable<ISearchable> GetCommands(bool browseNestedComponents = true)
-            => GetCommands(_ => true, browseNestedComponents);
-
-        /// <inheritdoc />
-        public IEnumerable<ISearchable> GetCommands(Predicate<CommandInfo> predicate, bool browseNestedComponents = true)
-        {
-            if (!browseNestedComponents)
-                return _components.Where(x => x is CommandInfo info && predicate(info));
-
-            List<ISearchable> discovered = [];
-
-            foreach (var component in _components)
-            {
-                if (component is CommandInfo command && predicate(command))
-                    discovered.Add(command);
-
-                if (component is ModuleInfo module)
-                    discovered.AddRange(module.GetCommands(predicate, browseNestedComponents));
-            }
-
-            return discovered;
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<ISearchable> GetModules(bool browseNestedComponents = true)
-            => GetModules(_ => true, browseNestedComponents);
-
-        /// <inheritdoc />
-        public IEnumerable<ISearchable> GetModules(Predicate<ModuleInfo> predicate, bool browseNestedComponents = true)
-        {
-            if (!browseNestedComponents)
-                return _components.Where(x => x is ModuleInfo info && predicate(info));
-
-            List<ISearchable> discovered = [];
-
-            foreach (var component in _components)
-            {
-                if (component is ModuleInfo module)
-                {
-                    if (predicate(module))
-                        discovered.Add(component);
-
-                    discovered.AddRange(module.GetModules(predicate, browseNestedComponents));
-                }
-            }
-
-            return discovered;
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<ISearchable> GetAll()
-            => _components;
-
-        /// <inheritdoc />
-        public int CountAll()
-        {
-            var sum = 0;
-            foreach (var component in _components)
-            {
-                if (component is ModuleInfo module)
-                    sum += module.CountAll();
-
-                sum++;
-            }
-
-            return sum;
-        }
-
-        /// <inheritdoc />
-        public bool Add(ISearchable component)
-            => AddRange(component) > 0;
-
-        /// <inheritdoc />
-        public int AddRange(params ISearchable[] components)
-        {
-            var hasChanged = 0;
-
-            var copy = new HashSet<ISearchable>(_components);
-
-            foreach (var component in components)
-                hasChanged += (copy.Add(component) ? 1 : 0);
-
-            if (hasChanged > 0)
-            {
-                var orderedCopy = new HashSet<ISearchable>(copy.OrderByDescending(x => x.Score));
-
-                Interlocked.Exchange(ref _components, orderedCopy);
-            }
-
-            return hasChanged;
-        }
-
-        /// <inheritdoc />
-        public bool Remove(ISearchable component)
-            => _components.Remove(component);
-
-        /// <inheritdoc />
-        public int RemoveWhere(Predicate<ISearchable> predicate)
-            => _components.RemoveWhere(predicate);
-
-        /// <inheritdoc />
-        public IEnumerator<ISearchable> GetEnumerator()
-            => _components.GetEnumerator();
 
         /// <summary>
         ///     Attempts to execute a command based on the provided <paramref name="args"/>.
@@ -287,6 +159,8 @@ namespace Commands
 
             return task;
         }
+
+        #region Pipeline
 
         private async Task StartAsynchronousPipeline<T>(
             T consumer, ArgumentEnumerator args, CommandOptions options)
@@ -506,16 +380,21 @@ namespace Commands
             return ConditionResult.FromSuccess();
         }
 
-        private void NotifyTreeMutation(params ISearchable[] newComponents)
+        #endregion
+
+        // This method is called when a top-level commands' module receives a mutation which prompts a re-sort of the hierarchy.
+        private void HierarchyRetentionHandler(ISearchable[] newComponents, bool removing = false)
         {
-            var copy = new HashSet<ISearchable>(_components);
+            if (removing)
+                RemoveRange(newComponents);
+            else
+            {
+                AddRange(newComponents);
 
-            foreach (var component in newComponents)
-                copy.Add(component);
-
-            var orderedCopy = new HashSet<ISearchable>(_components.OrderByDescending(x => x.Score));
-
-            Interlocked.Exchange(ref _components, orderedCopy);
+                // Only re-sort if the new components are being added.
+                // It is unnecessary to re-sort if they are being removed, as the hierarchy will be re-sorted on the next addition.
+                Sort();
+            }
         }
 
         internal readonly struct ResultEnumerator(IEnumerable<ResultResolverBase> eventHandlers)
@@ -536,8 +415,5 @@ namespace Commands
                     await resolver.Respond(consumer, command, value, options.Services, options.CancellationToken);
             }
         }
-
-        IEnumerator IEnumerable.GetEnumerator()
-            => GetEnumerator();
     }
 }

@@ -40,7 +40,7 @@ namespace Commands.Reflection
         /// <summary>
         ///     Gets the root module of this component. This property will be <see langword="null"/> if the component is not nested in a module.
         /// </summary>
-        public ModuleInfo? Module { get; }
+        public ModuleInfo? Parent { get; }
 
         /// <summary>
         ///     Gets the score of the component.
@@ -54,7 +54,7 @@ namespace Commands.Reflection
         ///     Gets if the component is runtime built, meaning it was created dynamically through the fluent API.
         /// </summary>
         /// <remarks>
-        ///     Runtime components are delegate-based. They are not bound to a specific type, and are only structurally defined through the <see cref="CommandManager"/>.
+        ///     Runtime components are delegate-based. They are not bound to a specific type, and are only structurally defined through the <see cref="CommandTree"/>.
         /// </remarks>
         public bool IsRuntimeComponent { get; }
 

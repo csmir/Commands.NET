@@ -10,7 +10,7 @@ namespace Commands
     public class BuildConfiguration
     {
         // The following property is only used when configuring the command manager.
-        internal Action<ISearchable[]>? N_NotifyTopLevelMutation;
+        internal Action<ISearchable[], bool>? N_NotifyTopLevelMutation;
 
         /// <summary>
         ///     Gets a collection of type converters that are used to convert arguments.

@@ -41,7 +41,7 @@ namespace Commands
     ///     Modules do not have state, they are instantiated and populated before a command runs and immediately disposed when it finishes.
     /// </summary>
     /// <remarks>
-    ///      All derived types must be known in <see cref="ConfigurationBuilder.Assemblies"/> to be discoverable and automatically registered during the creation of a <see cref="CommandManager"/>.
+    ///      All derived types must be known in <see cref="ConfigurationBuilder.Assemblies"/> to be discoverable and automatically registered during the creation of a <see cref="CommandTree"/>.
     /// </remarks>
     public abstract class ModuleBase
     {
@@ -59,7 +59,7 @@ namespace Commands
         /// <summary>
         ///     Gets the command manager that is responsible for the current command pipeline.
         /// </summary>
-        public CommandManager Manager { get; internal set; }
+        public CommandTree Tree { get; internal set; }
 #pragma warning restore CS8618
 
         /// <summary>

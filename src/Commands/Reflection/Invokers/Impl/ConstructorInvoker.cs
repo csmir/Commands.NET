@@ -51,7 +51,7 @@ namespace Commands.Reflection
         }
 
         /// <inheritdoc />
-        public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandManager manager, CommandOptions options)
+        public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandTree manager, CommandOptions options)
             where T : ConsumerBase
         {
             var services = new object?[Parameters.Length];
@@ -81,7 +81,7 @@ namespace Commands.Reflection
                         continue;
                     }
 
-                    throw new InvalidOperationException($"Constructor {command.Module?.Name ?? Target.Name} defines {parameter.Type} but {c_serviceType.Name} does not know a service by that type.");
+                    throw new InvalidOperationException($"Constructor {command.Parent?.Name ?? Target.Name} defines {parameter.Type} but {c_serviceType.Name} does not know a service by that type.");
                 }
 
                 services[i] = service;

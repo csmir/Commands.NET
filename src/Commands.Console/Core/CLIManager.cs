@@ -12,10 +12,10 @@ namespace Commands
         /// <summary>
         ///     Runs the provided <see cref="CLIOptions"/> as a command.
         /// </summary>
-        /// <param name="manager">The <see cref="CommandManager"/> instance that should be used to run the CLI command.</param>
+        /// <param name="manager">The <see cref="CommandTree"/> instance that should be used to run the CLI command.</param>
         /// <param name="options">The options that set up a single command execution.</param>
         /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
-        public static Task Run(this CommandManager manager, CLIOptions options)
+        public static Task Run(this CommandTree manager, CLIOptions options)
         {
             var args = StringParser.ParseKeyValueCollection(options.CommandArguments);
 
@@ -27,10 +27,10 @@ namespace Commands
         /// <summary>
         ///     Sets the provided <paramref name="args"/> in a <see cref="CLIOptions"/> with default settings, and runs them as a command.
         /// </summary>
-        /// <param name="manager">The <see cref="CommandManager"/> instance that should be used to run the CLI command.</param>
+        /// <param name="manager">The <see cref="CommandTree"/> instance that should be used to run the CLI command.</param>
         /// <param name="args">The CLI arguments that should be used to execute a command.</param>
         /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
-        public static Task Run(this CommandManager manager, string[] args)
+        public static Task Run(this CommandTree manager, string[] args)
         {
             var options = new CLIOptions
             {
@@ -41,7 +41,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Creates a builder that is responsible for setting up all required arguments to discover and populate <see cref="CommandManager.Components"/>.
+        ///     Creates a builder that is responsible for setting up all required arguments to discover and populate the <see cref="CommandTree"/>.
         /// </summary>
         /// <remarks>
         ///     This builder is able to configure the following:
@@ -53,7 +53,7 @@ namespace Commands
         ///         <item>Custom naming patterns that validate naming across the whole process.</item>
         ///     </list>
         /// </remarks>
-        /// <returns>A new <see cref="ConfigurationBuilder"/> that implements <see cref="CommandManager"/></returns>
+        /// <returns>A new <see cref="ConfigurationBuilder"/> that implements <see cref="CommandTree"/></returns>
         public static ConfigurationBuilder CreateDefaultBuilder()
         {
             return new ConfigurationBuilder();

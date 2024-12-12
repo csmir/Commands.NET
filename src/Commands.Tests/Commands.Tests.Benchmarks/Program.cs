@@ -8,7 +8,7 @@ namespace Commands.Tests
     [MemoryDiagnoser]
     public class Program
     {
-        private readonly CommandManager _manager;
+        private readonly CommandTree _manager;
 
         public Program()
         {
@@ -19,7 +19,7 @@ namespace Commands.Tests
                 }.Build())
                 .BuildServiceProvider();
 
-            _manager = services.GetRequiredService<CommandManager>();
+            _manager = services.GetRequiredService<CommandTree>();
         }
 
         static void Main()
@@ -34,66 +34,84 @@ namespace Commands.Tests
         }
 
         [Benchmark]
+        public void SearchCommand()
+        {
+            _manager.Find(new ArgumentEnumerator(["scenario"]));
+        }
+
+        [Benchmark]
+        public void SearchParametered()
+        {
+            _manager.Find(new ArgumentEnumerator(["scenario-parameterized", "1"]));
+        }
+
+        [Benchmark]
+        public void SearchNested()
+        {
+            _manager.Find(new ArgumentEnumerator(["scenario-nested", "scenario-injected"]));
+        }
+
+        //[Benchmark]
         public async Task RunCommand()
         {
             await _manager!.Execute(new ConsumerBase(), ["scenario"]);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task RunParametered()
         {
             await _manager!.Execute(new ConsumerBase(), ["scenario-parameterized", "1"]);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task RunNested()
         {
             await _manager!.Execute(new ConsumerBase(), ["scenario-nested", "scenario-injected"]);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task RunException()
         {
             await _manager!.Execute(new ConsumerBase(), ["scenario-exception"]);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task RunTaskException()
         {
             await _manager!.Execute(new ConsumerBase(), ["scenario-task-exception"]);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task RunExceptionThrow()
         {
             await _manager!.Execute(new ConsumerBase(), ["scenario-exception-throw"]);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task RunTaskExceptionThrow()
         {
             await _manager!.Execute(new ConsumerBase(), ["scenario-task-exception-throw"]);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task RunOperationMutation()
         {
             await _manager!.Execute(new ConsumerBase(), ["scenario-operation-mutation"]);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task RunOperationTaskMutation()
         {
             await _manager!.Execute(new ConsumerBase(), ["scenario-task-operation-mutation"]);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task RunOperationFormattable()
         {
             await _manager!.Execute(new ConsumerBase(), ["scenario-operation-formattable"]);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public async Task RunOperationTaskFormattable()
         {
             await _manager!.Execute(new ConsumerBase(), ["scenario-task-operation-formattable"]);

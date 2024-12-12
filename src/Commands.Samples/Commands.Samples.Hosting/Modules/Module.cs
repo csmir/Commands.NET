@@ -5,7 +5,7 @@
         [Name("help")]
         public void Help()
         {
-            var commands = Manager.GetCommands();
+            var commands = Tree.GetCommands();
 
             foreach (var command in commands)
             {

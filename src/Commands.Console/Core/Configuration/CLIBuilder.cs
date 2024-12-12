@@ -24,7 +24,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Builds the underlying <see cref="CommandManager"/> and runs it with the provided <see cref="CLIOptions"/>.
+        ///     Builds the underlying <see cref="CommandTree"/> and runs it with the provided <see cref="CLIOptions"/>.
         /// </summary>
         /// <param name="builder">The command builder to build into a manager.</param>
         /// <param name="options">The options that set up a single command execution.</param>
@@ -46,7 +46,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Builds the underlying <see cref="CommandManager"/> and runs it with the provided <see cref="CLIOptions"/>.
+        ///     Builds the underlying <see cref="CommandTree"/> and runs it with the provided <see cref="CLIOptions"/>.
         /// </summary>
         /// <param name="builder">The command builder to build into a manager.</param>
         /// <param name="args">The CLI arguments that should be used to execute a command.</param>

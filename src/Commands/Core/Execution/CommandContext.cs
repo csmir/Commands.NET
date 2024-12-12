@@ -6,7 +6,7 @@ namespace Commands
     ///     Represents data about a command, as a <see cref="ModuleBase"/> normally would. 
     ///     This context is used for <see langword="static"/> and <see langword="delegate"/> commands.
     /// </summary>
-    public sealed class CommandContext<T>(T consumer, CommandInfo command, CommandManager manager, CommandOptions options)
+    public sealed class CommandContext<T>(T consumer, CommandInfo command, CommandTree manager, CommandOptions options)
         where T : ConsumerBase
     {
         /// <summary>
@@ -27,7 +27,7 @@ namespace Commands
         /// <summary>
         ///     Gets the command manager responsible for executing the current pipeline.
         /// </summary>
-        public CommandManager Manager { get; } = manager;
+        public CommandTree Manager { get; } = manager;
 
         /// <summary>
         ///     Sends a response to the consumer of the command.

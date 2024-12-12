@@ -2,7 +2,7 @@
 using Commands.Tests;
 using Microsoft.Extensions.DependencyInjection;
 
-var manager = CommandManager.CreateDefaultBuilder()
+var tree = CommandTree.CreateDefaultBuilder()
     .AddTypeConverter(new CSharpScriptConverter())
     .AddResultResolver((c, r, s) =>
     {
@@ -25,7 +25,7 @@ var manager = CommandManager.CreateDefaultBuilder()
 
 var services = new ServiceCollection();
 
-services.AddSingleton(manager);
+services.AddSingleton(tree);
 
 var provider = services.BuildServiceProvider();
 
@@ -36,7 +36,7 @@ while (true)
 
     using var scope = provider.CreateAsyncScope();
 
-    await manager.Execute(new ConsumerBase(), Console.ReadLine()!, new()
+    await tree.Execute(new ConsumerBase(), Console.ReadLine()!, new()
     {
         Services = scope.ServiceProvider
     });

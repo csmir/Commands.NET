@@ -9,6 +9,8 @@ namespace Commands.Reflection
     [DebuggerDisplay("{ToString()}")]
     public sealed class CommandInfo : ISearchable, IArgumentBucket
     {
+        private readonly Guid __id = Guid.NewGuid();
+
         /// <inheritdoc />
         public IInvoker Invoker { get; }
 
@@ -40,7 +42,7 @@ namespace Commands.Reflection
         public float Priority { get; }
 
         /// <inheritdoc />
-        public ModuleInfo? Module { get; }
+        public ModuleInfo? Parent { get; }
 
         /// <inheritdoc />
         public string? Name
@@ -48,7 +50,7 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public string FullName
-            => $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
+            => $"{(Parent != null && Parent.Name != null ? $"{Parent.FullName} " : "")}{Name}";
 
         /// <inheritdoc />
         public float Score
@@ -56,7 +58,7 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public bool IsRuntimeComponent
-            => Module == null;
+            => Parent == null;
 
         /// <inheritdoc />
         public bool IsSearchable
@@ -108,7 +110,7 @@ namespace Commands.Reflection
             Priority = attributes.GetAttribute<PriorityAttribute>()?.Priority ?? 0;
 
             Invoker = invoker;
-            Module = module;
+            Parent = module;
 
             Attributes = attributes.ToArray();
 
@@ -142,6 +144,14 @@ namespace Commands.Reflection
         /// <inheritdoc cref="ToString()"/>
         /// <param name="withModuleInfo">Defines if the module information should be appended on the command level.</param>
         public string ToString(bool withModuleInfo)
-            => $"{(withModuleInfo ? $"{Module}." : "")}{Invoker.Target.Name}{(Name != null ? $"['{Name}']" : "")}({string.Join<IArgument>(", ", Arguments)})";
+            => $"{(withModuleInfo ? $"{Parent}." : "")}{Invoker.Target.Name}{(Name != null ? $"['{Name}']" : "")}({string.Join<IArgument>(", ", Arguments)})";
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+            => obj is CommandInfo info && info.__id == __id;
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+            => __id.GetHashCode();
     }
 }

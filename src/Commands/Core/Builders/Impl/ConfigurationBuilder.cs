@@ -40,7 +40,7 @@ namespace Commands
         public List<IComponentBuilder> Components { get; set; } = [];
 
         /// <summary>
-        ///     Gets or sets the naming convention of commands and groups being registered into the <see cref="CommandManager"/>.
+        ///     Gets or sets the naming convention of commands and groups being registered into the <see cref="CommandTree"/>.
         /// </summary>
         /// <remarks>
         ///     Default: <c>@"^[a-z0-9_-]*$"</c>
@@ -58,7 +58,7 @@ namespace Commands
         /// <summary>
         ///     Adds a command to the <see cref="Components"/> collection.
         /// </summary>
-        /// <param name="commandBuilder">The builder instance to add to the collection, which will be built into a <see cref="CommandInfo"/> instance that can be executed by the <see cref="CommandManager"/>.</param>
+        /// <param name="commandBuilder">The builder instance to add to the collection, which will be built into a <see cref="CommandInfo"/> instance that can be executed by the <see cref="CommandTree"/>.</param>
         /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided builder is <see langword="null"/>.</exception>
         public ConfigurationBuilder AddCommand(CommandBuilder commandBuilder)
@@ -124,7 +124,7 @@ namespace Commands
         /// <summary>
         ///     Adds a module to the <see cref="Components"/> collection.
         /// </summary>
-        /// <param name="moduleBuilder">The builder instance to add to the collection, which will be built into a <see cref="ModuleInfo"/> instance that can contain commands to be executed by the <see cref="CommandManager"/>.</param>
+        /// <param name="moduleBuilder">The builder instance to add to the collection, which will be built into a <see cref="ModuleInfo"/> instance that can contain commands to be executed by the <see cref="CommandTree"/>.</param>
         /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided builder is <see langword="null"/>.</exception>
         public ConfigurationBuilder AddModule(ModuleBuilder moduleBuilder)
@@ -292,16 +292,16 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Builds the current <see cref="ConfigurationBuilder"/> instance into a new <see cref="BuildConfiguration"/>, which is used to create a new instance of <see cref="CommandManager"/>.
+        ///     Builds the current <see cref="ConfigurationBuilder"/> instance into a new <see cref="BuildConfiguration"/>, which is used to create a new instance of <see cref="CommandTree"/>.
         /// </summary>
-        /// <returns>A new instance of <see cref="CommandManager"/> built by this builder.</returns>
-        public CommandManager Build()
+        /// <returns>A new instance of <see cref="CommandTree"/> built by this builder.</returns>
+        public CommandTree Build()
         {
-            var configuration = new BuildConfiguration(TypeConverters, NamingRegex);
+            var configuration = new BuildConfiguration(TypeConverters, NamingRegex, SealModuleDefinitions);
 
             var components = Components.Select(x => x.Build(configuration));
 
-            return new CommandManager(configuration,
+            return new CommandTree(configuration,
                 assemblies: Assemblies,
                 resolvers: ResultResolvers,
                 runtimeComponents: components);

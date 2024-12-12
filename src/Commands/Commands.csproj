@@ -51,4 +51,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Reflection\Collections\Impl\" />
+  </ItemGroup>
+
 </Project>

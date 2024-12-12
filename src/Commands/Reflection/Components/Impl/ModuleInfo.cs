@@ -1,6 +1,6 @@
 ﻿using Commands.Conditions;
 using Commands.Parsing;
-using System.Collections;
+using System.Buffers;
 using System.Diagnostics;
 
 namespace Commands.Reflection
@@ -9,10 +9,9 @@ namespace Commands.Reflection
     ///     Reveals information about a command module, hosting zero-or-more commands.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public sealed class ModuleInfo : ISearchable, ISearchableSet
+    public sealed class ModuleInfo : SearchableSet, ISearchable
     {
-        private HashSet<ISearchable> _components;
-        private readonly Action<ISearchable[]>? _notifyTopLevelMutation;
+        private readonly Guid __id = Guid.NewGuid();
 
         /// <summary>
         ///     Gets the type of this module.
@@ -23,14 +22,7 @@ namespace Commands.Reflection
         ///     Gets the depth of the module, being how deeply nested it is in the command tree.
         /// </summary>
         public int Depth
-            => Module?.Depth + 1 ?? 1;
-
-        /// <inheritdoc />
-        public int Count
-            => _components.Count;
-
-        /// <inheritdoc />
-        public bool IsReadOnly { get; }
+            => Parent?.Depth + 1 ?? 1;
 
         /// <inheritdoc />
         public IInvoker? Invoker { get; }
@@ -51,7 +43,7 @@ namespace Commands.Reflection
         public float Priority { get; }
 
         /// <inheritdoc />
-        public ModuleInfo? Module { get; }
+        public ModuleInfo? Parent { get; }
 
         /// <inheritdoc />
         public string? Name
@@ -59,7 +51,7 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public string FullName
-            => $"{(Module != null && Module.Name != null ? $"{Module.FullName} " : "")}{Name}";
+            => $"{(Parent != null && Parent.Name != null ? $"{Parent.FullName} " : "")}{Name}";
 
         /// <inheritdoc />
         public float Score
@@ -79,15 +71,9 @@ namespace Commands.Reflection
 
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, BuildConfiguration options)
+            : base(options.SealModuleDefinitions, aliases.Length > 0 ? options.N_NotifyTopLevelMutation : null)
         {
-            // If the root is null, we are at the top-level module. In this case, we need to set a notifier for the command manager that its command tree has changed.
-            // This is an expensive operation, so we only do it once for every collection of added components. See: AddComponent, AddComponents.
-            if (root == null)
-                _notifyTopLevelMutation = options.N_NotifyTopLevelMutation;
-
-            IsReadOnly = options.SealModuleDefinitions;
-
-            Module = root;
+            Parent = root;
             Type = type;
 
             var attributes = type.GetAttributes(true).Concat(root?.Attributes ?? []).Distinct();
@@ -103,15 +89,15 @@ namespace Commands.Reflection
 
             Invoker = new ConstructorInvoker(type);
 
-            _components = [.. ReflectionUtilities.GetComponents(this, options).OrderByDescending(x => x.Score)];
+            PushDangerous(ReflectionUtilities.GetComponents(this, options).OrderByDescending(x => x.Score));
         }
 
         internal ModuleInfo(
             ModuleInfo? root, string[] aliases)
+            : base(false, null)
         {
-            Module = root;
+            Parent = root;
 
-            _components = [];
             Attributes = [];
             PreEvaluations = [];
             PostEvaluations = [];
@@ -122,12 +108,12 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public float GetScore()
         {
-            if (_components.Count == 0)
+            if (Count == 0)
                 return 0.0f;
 
             var score = 1.0f;
 
-            foreach (var component in _components)
+            foreach (var component in this)
                 score += component.GetScore();
 
             if (Name != Type?.Name)
@@ -139,163 +125,42 @@ namespace Commands.Reflection
         }
 
         /// <inheritdoc />
-        public IEnumerable<SearchResult> Find(ArgumentEnumerator args)
+        public override IEnumerable<SearchResult> Find(ArgumentEnumerator args)
         {
-            List<SearchResult> discovered = [];
+            List<SearchResult> discovered =
+            [
+                SearchResult.FromError(this)
+            ];
 
             var searchHeight = Depth;
 
-            foreach (var component in _components)
+            foreach (var component in this)
             {
                 if (component.IsDefault)
                     discovered.Add(SearchResult.FromSuccess(component, searchHeight));
 
-                if (args.Length == searchHeight)
-                    continue;
-
-                if (!args.TryNext(searchHeight, out var value))
-                    continue;
-
-                if (!component.Aliases.Any(x => x == value))
-                    continue;
-
-                if (component is ModuleInfo module)
+                if (!args.TryNext(searchHeight, out var value) || !component.Aliases.Contains(value))
                 {
-                    var nested = module.Find(args);
-
-                    discovered.AddRange(nested);
-                    discovered.Add(SearchResult.FromError(module));
-                }
-                else
-                    discovered.Add(SearchResult.FromSuccess(component, searchHeight + 1));
-            }
-
-            return discovered;
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<ISearchable> GetCommands(bool browseNestedComponents = true)
-            => GetCommands(_ => true, browseNestedComponents);
-
-        /// <inheritdoc />
-        public IEnumerable<ISearchable> GetCommands(Predicate<CommandInfo> predicate, bool browseNestedComponents = true)
-        {
-            if (!browseNestedComponents)
-                return _components.Where(x => x is CommandInfo info && predicate(info));
-
-            List<ISearchable> discovered = [];
-
-            foreach (var component in _components)
-            {
-                if (component is CommandInfo command && predicate(command))
-                    discovered.Add(command);
-
-                if (component is ModuleInfo module)
-                    discovered.AddRange(module.GetCommands(predicate, browseNestedComponents));
-            }
-
-            return discovered;
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<ISearchable> GetModules(bool browseNestedComponents = true)
-            => GetModules(_ => true, browseNestedComponents);
-
-        /// <inheritdoc />
-        public IEnumerable<ISearchable> GetModules(Predicate<ModuleInfo> predicate, bool browseNestedComponents = true)
-        {
-            if (!browseNestedComponents)
-                return _components.Where(x => x is ModuleInfo info && predicate(info));
-
-            List<ISearchable> discovered = [];
-
-            foreach (var component in _components)
-            {
-                if (component is ModuleInfo module)
-                {
-                    if (predicate(module))
-                        discovered.Add(component);
-
-                    discovered.AddRange(module.GetModules(predicate, browseNestedComponents));
+                    if (component is ModuleInfo module)
+                        discovered.AddRange(module.Find(args));
+                    else
+                        discovered.Add(SearchResult.FromSuccess(component, searchHeight + 1));
                 }
             }
 
             return discovered;
         }
-
-        /// <inheritdoc />
-        public IEnumerable<ISearchable> GetAll()
-            => _components;
-
-        /// <inheritdoc />
-        public int CountAll()
-        {
-            var sum = 0;
-            foreach (var component in _components)
-            {
-                if (component is ModuleInfo module)
-                    sum += module.CountAll();
-
-                sum++;
-            }
-
-            return sum;
-        }
-
-        /// <inheritdoc />
-        public bool Add(ISearchable component)
-            => AddRange(component) > 0;
-
-        /// <inheritdoc />
-        public int AddRange(params ISearchable[] components)
-        {
-            if (IsReadOnly)
-                throw ComponentException.AccessDenied();
-
-            var hasChanged = 0;
-
-            var copy = new HashSet<ISearchable>(_components);
-
-            foreach (var component in components)
-                hasChanged += (copy.Add(component) ? 1 : 0);
-
-            if (hasChanged > 0)
-            {
-                var orderedCopy = new HashSet<ISearchable>(copy.OrderByDescending(x => x.Score));
-
-                Interlocked.Exchange(ref _components, orderedCopy);
-
-                _notifyTopLevelMutation?.Invoke(components);
-            }
-
-            return hasChanged;
-        }
-
-        /// <inheritdoc />
-        public bool Remove(ISearchable component)
-            => _components.Remove(component);
-
-        /// <inheritdoc />
-        public int RemoveWhere(Predicate<ISearchable> predicate)
-        {
-            if (IsReadOnly)
-                throw ComponentException.AccessDenied();
-
-            return _components.RemoveWhere(predicate);
-        }
-
-        /// <summary>
-        ///    Returns an enumerator that iterates through the collection.
-        /// </summary>
-        /// <returns>A <see cref="HashSet{T}.Enumerator"/> object for the underlying <see cref="HashSet{T}"/> of this module.</returns>
-        public IEnumerator<ISearchable> GetEnumerator()
-            => _components.GetEnumerator();
 
         /// <inheritdoc />
         public override string ToString()
-            => $"{(Module != null ? $"{Module}." : "")}{(Name != null ? $"{Type?.Name}['{Name}']" : $"{Type?.Name}")}";
+            => $"{(Parent != null ? $"{Parent}." : "")}{(Name != null ? $"{Type?.Name}['{Name}']" : $"{Type?.Name}")}";
 
-        IEnumerator IEnumerable.GetEnumerator()
-            => GetEnumerator();
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+            => obj is ModuleInfo info && info.__id == __id;
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+            => __id.GetHashCode();
     }
 }

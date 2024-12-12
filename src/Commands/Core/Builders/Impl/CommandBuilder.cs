@@ -8,7 +8,7 @@ namespace Commands
     ///     A base class that represents a delegate based command, before it is built into a reflection-based executable object. This class cannot be inherited.
     /// </summary>
     /// <remarks>
-    ///     This class is used to configure a command before it is built into a <see cref="CommandInfo"/> object. By calling the <see cref="Build(BuildConfiguration)"/> or <see cref="Build(IEnumerable{TypeConverterBase}, string)"/> method, the command is built into an object that can be executed by the <see cref="CommandManager"/>>.
+    ///     This class is used to configure a command before it is built into a <see cref="CommandInfo"/> object. By calling the <see cref="Build(BuildConfiguration)"/> or <see cref="Build(IEnumerable{TypeConverterBase}, string)"/> method, the command is built into an object that can be executed by the <see cref="CommandTree"/>>.
     /// </remarks>
     public sealed class CommandBuilder : IComponentBuilder
     {

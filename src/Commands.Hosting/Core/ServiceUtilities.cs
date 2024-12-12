@@ -11,7 +11,7 @@ using System.Reflection;
 namespace Commands
 {
     /// <summary>
-    ///     A utility class that provides extension methods for configuring services with a hosted execution sequence <see cref="CommandManager"/>.
+    ///     A utility class that provides extension methods for configuring services with a hosted execution sequence <see cref="CommandTree"/>.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class ServiceUtilities

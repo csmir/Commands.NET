@@ -10,7 +10,7 @@
                 .WithDelegate(executionAction)
                 .Build([]);
 
-            Command.Module!.Add(command);
+            Command.Parent!.Add(command);
 
             return Send("Command added.");
         }

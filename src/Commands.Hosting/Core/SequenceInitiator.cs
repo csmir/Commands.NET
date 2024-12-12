@@ -14,11 +14,11 @@ namespace Commands
     /// <param name="logger">A logger that logs the execution process.</param>
     /// <param name="lifetime">The lifetime of the application.</param>
     public sealed class SequenceInitiator(
-        CommandManager manager, IEnumerable<SourceResolverBase> resolvers, IServiceProvider services, ILogger<SequenceInitiator> logger, IHostApplicationLifetime lifetime)
+        CommandTree manager, IEnumerable<SourceResolverBase> resolvers, IServiceProvider services, ILogger<SequenceInitiator> logger, IHostApplicationLifetime lifetime)
         : IHostedService
     {
         private readonly ILogger<SequenceInitiator> _logger = logger;
-        private readonly CommandManager _manager = manager;
+        private readonly CommandTree _manager = manager;
         private readonly IEnumerable<SourceResolverBase> _resolvers = resolvers;
         private readonly IHostApplicationLifetime _lifetime = lifetime;
         private readonly IServiceProvider _services = services;
@@ -143,7 +143,7 @@ namespace Commands
                         options.DoAsynchronousExecution = false;
                         options.Services = scope.ServiceProvider;
 
-                        await _manager.Execute(source.Consumer!, source.Args!, options); // never null if source succeeded.
+                        await _manager.Execute(source.Consumer!, source.Args!.Value, options); // never null if source succeeded.
 
                         await scope.DisposeAsync();
                     }
