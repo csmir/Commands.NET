@@ -2,6 +2,7 @@
 using Commands.Parsing;
 using Commands.Reflection;
 using Commands.Resolvers;
+using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -20,22 +21,15 @@ namespace Commands
     ///     <br/>
     ///     To start using this manager, call <see cref="CreateDefaultBuilder"/> and configure it using the minimal API's implemented by the <see cref="ConfigurationBuilder"/>.
     /// </remarks>
-    [DebuggerDisplay("Commands = {Commands},nq")]
-    public sealed class CommandManager
+    [DebuggerDisplay("Components = {Count},nq")]
+    public sealed class CommandManager : IComponentSet
     {
         private HashSet<ISearchable> _components;
-        private readonly SequenceFinalizer _disposer;
+        private readonly ResultEnumerator _resultEnumerator;
 
-        /// <summary>
-        ///     Gets the collection containing all commands, named modules and subcommands as implem ented by the assemblies that were registered in the <see cref="ConfigurationBuilder"/> provided when creating the manager.
-        /// </summary>
-        public IReadOnlyCollection<ISearchable> Commands
-            => _components;
-
-        /// <summary>
-        ///     Gets the configuration that was used to construct the <see cref="CommandManager"/>, and which can be used in adding extended functionality to the manager.
-        /// </summary>
-        public CommandConfiguration Configuration { get; }
+        /// <inheritdoc />
+        public int Count
+            => _components.Count;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CommandManager"/> class.
@@ -50,7 +44,7 @@ namespace Commands
             assemblies ??= [];
             runtimeComponents ??= [];
 
-            _disposer = new SequenceFinalizer(resolvers);
+            _resultEnumerator = new ResultEnumerator(resolvers);
 
             if (assemblies.Any() || runtimeComponents.Any())
             {
@@ -63,108 +57,163 @@ namespace Commands
                 _components = [.. commands];
             }
             else
-            {
                 _components = [];
-            }
-
-            Configuration = configuration;
         }
 
         /// <summary>
-        ///     Flattens the top level commands in <see cref="Commands"/> into a single enumerable collection.
+        ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="CommandManager"/>.
         /// </summary>
-        /// <returns>A lazily evaluated, flattened <see cref="IEnumerable{T}"/> that holds all <see cref="CommandInfo"/>'s registered in this manager.</returns>
-        public IEnumerable<CommandInfo> GetCommands()
+        /// <remarks>
+        ///     This builder is able to configure the following:
+        ///     <list type="number">
+        ///         <item>Defining assemblies through which will be searched to discover modules and commands.</item>
+        ///         <item>Defining custom commands that do not appear in the assemblies.</item>
+        ///         <item>Registering implementations of <see cref="TypeConverterBase"/> which define custom argument conversion.</item>
+        ///         <item>Registering implementations of <see cref="ResultResolverBase"/> which define custom result handling.</item>
+        ///         <item>Custom naming patterns that validate naming across the whole process.</item>
+        ///     </list>
+        /// </remarks>
+        /// <returns>A new <see cref="ConfigurationBuilder"/> that implements the currently accessed <see cref="CommandManager"/>.</returns>
+        public static ConfigurationBuilder CreateDefaultBuilder()
+            => new();
+
+        /// <inheritdoc />
+        public IEnumerable<SearchResult> Find(ArgumentEnumerator args)
         {
-            static IEnumerable<CommandInfo> Flatten(IEnumerable<ISearchable> components)
+            List<SearchResult> discovered = [];
+
+            var searchHeight = 0;
+
+            foreach (var component in _components)
             {
-                foreach (var item in components)
+                if (args.Length == searchHeight)
+                    continue;
+
+                if (!args.TryNext(searchHeight, out var value))
+                    continue;
+
+                if (!component.Aliases.Any(x => x == value))
+                    continue;
+
+                if (component is ModuleInfo module)
                 {
-                    if (item is ModuleInfo subModule)
-                    {
-                        foreach (var subItem in Flatten(subModule.Components))
-                            yield return subItem;
-                    }
-                    else yield return (item as CommandInfo)!;
+                    var nested = module.Find(args);
+
+                    discovered.AddRange(nested);
+
+                    discovered.Add(SearchResult.FromError(module));
+                }
+                else
+                    discovered.Add(SearchResult.FromSuccess(component, searchHeight + 1));
+            }
+
+            return discovered;
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<ISearchable> GetCommands(bool browseNestedComponents = true)
+            => GetCommands(_ => true, browseNestedComponents);
+
+        /// <inheritdoc />
+        public IEnumerable<ISearchable> GetCommands(Predicate<CommandInfo> predicate, bool browseNestedComponents = true)
+        {
+            if (!browseNestedComponents)
+                return _components.Where(x => x is CommandInfo info && predicate(info));
+
+            List<ISearchable> discovered = [];
+
+            foreach (var component in _components)
+            {
+                if (component is CommandInfo command && predicate(command))
+                    discovered.Add(command);
+
+                if (component is ModuleInfo module)
+                    discovered.AddRange(module.GetCommands(predicate, browseNestedComponents));
+            }
+
+            return discovered;
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<ISearchable> GetModules(bool browseNestedComponents = true)
+            => GetModules(_ => true, browseNestedComponents);
+
+        /// <inheritdoc />
+        public IEnumerable<ISearchable> GetModules(Predicate<ModuleInfo> predicate, bool browseNestedComponents = true)
+        {
+            if (!browseNestedComponents)
+                return _components.Where(x => x is ModuleInfo info && predicate(info));
+
+            List<ISearchable> discovered = [];
+
+            foreach (var component in _components)
+            {
+                if (component is ModuleInfo module)
+                {
+                    if (predicate(module))
+                        discovered.Add(component);
+
+                    discovered.AddRange(module.GetModules(predicate, browseNestedComponents));
                 }
             }
 
-            return Flatten(_components);
+            return discovered;
         }
 
-        /// <summary>
-        ///     Groups the command modules in <see cref="Commands"/> info a single enumerable collection. 
-        /// </summary>
-        /// <returns>A lazily evaluated, flattened <see cref="IEnumerable{T}"/> that holds all <see cref="ModuleInfo"/>'s registered in this manager.</returns>
-        public IEnumerable<ModuleInfo> GetModules()
-        {
-            static IEnumerable<ModuleInfo> Flatten(IEnumerable<ISearchable> components)
-            {
-                foreach (var item in components)
-                {
-                    if (item is ModuleInfo subModule)
-                    {
-                        foreach (var subItem in Flatten(subModule.Components))
-                            yield return subItem;
+        /// <inheritdoc />
+        public IEnumerable<ISearchable> GetAll()
+            => _components;
 
-                        yield return subModule;
-                    }
-                }
+        /// <inheritdoc />
+        public int CountAll()
+        {
+            var sum = 0;
+            foreach (var component in _components)
+            {
+                if (component is ModuleInfo module)
+                    sum += module.CountAll();
+
+                sum++;
             }
 
-            return Flatten(_components);
+            return sum;
         }
 
-        /// <summary>
-        ///     Runs a thread safe search operation over all commands for any matches of <paramref name="args"/>.
-        /// </summary>
-        /// <param name="args">A set of arguments intended to discover commands as a query.</param>
-        /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> that holds the results of the search query.</returns>
-        public IEnumerable<SearchResult> Search(ArgumentEnumerator args)
+        /// <inheritdoc />
+        public bool Add(ISearchable component)
+            => AddRange(component) > 0;
+
+        /// <inheritdoc />
+        public int AddRange(params ISearchable[] components)
         {
-            static IEnumerable<SearchResult> Flatten(IEnumerable<ISearchable> components, ArgumentEnumerator args, int searchHeight = 0, bool isNested = false)
+            var hasChanged = 0;
+
+            var copy = new HashSet<ISearchable>(_components);
+
+            foreach (var component in components)
+                hasChanged += (copy.Add(component) ? 1 : 0);
+
+            if (hasChanged > 0)
             {
-                List<SearchResult> discovered = [];
+                var orderedCopy = new HashSet<ISearchable>(copy.OrderByDescending(x => x.Score));
 
-                foreach (var component in components)
-                {
-                    // we should add defaults even if there are more args to resolve.
-                    if (component.IsDefault && isNested)
-                        discovered.Add(SearchResult.FromSuccess(component, searchHeight));
-
-                    // if the search is already done, we simply continue and only look for defaults.
-                    if (args.Length == searchHeight)
-                        continue;
-
-                    if (!args.TryNext(searchHeight, out var value))
-                        continue;
-
-                    if (!component.Aliases.Any(x => x == value))
-                        continue;
-
-                    // if the search found a module, we do inner module checks.
-                    if (component is ModuleInfo module)
-                    {
-                        // add the cluster found in the next iteration, if any.
-                        var nested = Flatten(module.Components, args, searchHeight + 1, true);
-                        discovered.AddRange(nested);
-
-                        // add fallback overloads for module discovery.
-                        discovered.Add(SearchResult.FromError(module));
-                    }
-                    else
-                        // add the top level matches immediately.
-                        discovered.Add(SearchResult.FromSuccess(component, searchHeight + 1));
-                }
-
-                return discovered;
+                Interlocked.Exchange(ref _components, orderedCopy);
             }
 
-            if (args == null)
-                throw new ArgumentNullException(nameof(args));
-
-            return Flatten(_components, args);
+            return hasChanged;
         }
+
+        /// <inheritdoc />
+        public bool Remove(ISearchable component)
+            => _components.Remove(component);
+
+        /// <inheritdoc />
+        public int RemoveWhere(Predicate<ISearchable> predicate)
+            => _components.RemoveWhere(predicate);
+
+        /// <inheritdoc />
+        public IEnumerator<ISearchable> GetEnumerator()
+            => _components.GetEnumerator();
 
         /// <summary>
         ///     Attempts to execute a command based on the provided <paramref name="args"/>.
@@ -241,7 +290,7 @@ namespace Commands
         {
             ICommandResult? result = null;
 
-            var searches = Search(args);
+            var searches = Find(args);
             foreach (var search in searches)
             {
                 if (search.Component is CommandInfo command)
@@ -260,7 +309,7 @@ namespace Commands
 
             result ??= SearchResult.FromError();
 
-            await _disposer.Dispose(consumer, result, options);
+            await _resultEnumerator.Dispose(consumer, result, options);
         }
 
         private async ValueTask<ICommandResult> InvokeCommand<T>(
@@ -290,7 +339,7 @@ namespace Commands
 
                 var value = command.Invoker.Invoke(consumer, command, arguments, this, options);
 
-                await _disposer.Respond(consumer, command, value, options);
+                await _resultEnumerator.Respond(consumer, command, value, options);
 
                 var postCheckResult = await EvaluatePostconditions(consumer, command, options);
 
@@ -453,35 +502,19 @@ namespace Commands
             return ConditionResult.FromSuccess();
         }
 
-        private void NotifyTreeMutation(ISearchable searchable)
+        private void NotifyTreeMutation(params ISearchable[] newComponents)
         {
-            _components.Add(searchable);
+            var copy = new HashSet<ISearchable>(_components);
+
+            foreach (var component in newComponents)
+                copy.Add(component);
 
             var orderedCopy = new HashSet<ISearchable>(_components.OrderByDescending(x => x.Score));
 
             Interlocked.Exchange(ref _components, orderedCopy);
         }
 
-        /// <summary>
-        ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="CommandManager"/>.
-        /// </summary>
-        /// <remarks>
-        ///     This builder is able to configure the following:
-        ///     <list type="number">
-        ///         <item>Defining assemblies through which will be searched to discover modules and commands.</item>
-        ///         <item>Defining custom commands that do not appear in the assemblies.</item>
-        ///         <item>Registering implementations of <see cref="TypeConverterBase"/> which define custom argument conversion.</item>
-        ///         <item>Registering implementations of <see cref="ResultResolverBase"/> which define custom result handling.</item>
-        ///         <item>Custom naming patterns that validate naming across the whole process.</item>
-        ///     </list>
-        /// </remarks>
-        /// <returns>A new <see cref="ConfigurationBuilder"/> that implements the currently accessed <see cref="CommandManager"/>.</returns>
-        public static ConfigurationBuilder CreateDefaultBuilder()
-        {
-            return new ConfigurationBuilder();
-        }
-
-        internal sealed class SequenceFinalizer(IEnumerable<ResultResolverBase> eventHandlers)
+        internal readonly struct ResultEnumerator(IEnumerable<ResultResolverBase> eventHandlers)
         {
             private readonly ResultResolverBase[] _resolvers = eventHandlers.ToArray();
 
@@ -499,5 +532,8 @@ namespace Commands
                     await resolver.Respond(consumer, command, value, options.Services, options.CancellationToken);
             }
         }
+
+        IEnumerator IEnumerable.GetEnumerator()
+            => GetEnumerator();
     }
 }

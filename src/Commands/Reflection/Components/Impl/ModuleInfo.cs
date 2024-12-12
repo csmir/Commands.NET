@@ -1,4 +1,5 @@
 ﻿using Commands.Conditions;
+using Commands.Parsing;
 using System.Collections;
 using System.Diagnostics;
 
@@ -8,16 +9,10 @@ namespace Commands.Reflection
     ///     Reveals information about a command module, hosting zero-or-more commands.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public sealed class ModuleInfo : ISearchable, IEnumerable<ISearchable>
+    public sealed class ModuleInfo : ISearchable, IComponentSet
     {
         private HashSet<ISearchable> _components;
-        private readonly Action<ISearchable>? _notifyTopLevelMutation;
-
-        /// <summary>
-        ///     Gets an array containing nested modules or commands inside this module.
-        /// </summary>
-        public IReadOnlyCollection<ISearchable> Components
-            => _components;
+        private readonly Action<ISearchable[]>? _notifyTopLevelMutation;
 
         /// <summary>
         ///     Gets the type of this module.
@@ -79,7 +74,7 @@ namespace Commands.Reflection
         ///     Gets the depth of the module, being how deeply nested it is in the command tree.
         /// </summary>
         public int Depth
-            => Module?.Depth + 1 ?? 0;
+            => Module?.Depth + 1 ?? 1;
 
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, CommandConfiguration options)
@@ -124,12 +119,12 @@ namespace Commands.Reflection
         /// <inheritdoc />
         public float GetScore()
         {
-            if (Components.Count == 0)
+            if (_components.Count == 0)
                 return 0.0f;
 
             var score = 1.0f;
 
-            foreach (var component in Components)
+            foreach (var component in _components)
                 score += component.GetScore();
 
             if (Name != Type?.Name)
@@ -140,52 +135,142 @@ namespace Commands.Reflection
             return score;
         }
 
-        /// <summary>
-        ///     Adds a component to the current module.
-        /// </summary>
-        /// <param name="component">The component to be added to the module.</param>
-        /// <returns><see langword="true"/> if the component was added; otherwise, <see langword="false"/>.</returns>
-        public bool AddComponent(ISearchable component)
-            => AddComponents(component) > 0;
+        /// <inheritdoc />
+        public IEnumerable<SearchResult> Find(ArgumentEnumerator args)
+        {
+            List<SearchResult> discovered = [];
 
-        /// <summary>
-        ///     Adds all provided components to the current module.
-        /// </summary>
-        /// <param name="components">The components to be added to the module.</param>
-        /// <returns>The number of added components, being 0 if no records were added.</returns>
-        public int AddComponents(params ISearchable[] components)
+            var searchHeight = Depth;
+
+            foreach (var component in _components)
+            {
+                if (component.IsDefault)
+                    discovered.Add(SearchResult.FromSuccess(component, searchHeight));
+
+                if (args.Length == searchHeight)
+                    continue;
+
+                if (!args.TryNext(searchHeight, out var value))
+                    continue;
+
+                if (!component.Aliases.Any(x => x == value))
+                    continue;
+
+                if (component is ModuleInfo module)
+                {
+                    var nested = module.Find(args);
+
+                    discovered.AddRange(nested);
+                    discovered.Add(SearchResult.FromError(module));
+                }
+                else
+                    discovered.Add(SearchResult.FromSuccess(component, searchHeight + 1));
+            }
+
+            return discovered;
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<ISearchable> GetCommands(bool browseNestedComponents = true)
+            => GetCommands(_ => true, browseNestedComponents);
+
+        /// <inheritdoc />
+        public IEnumerable<ISearchable> GetCommands(Predicate<CommandInfo> predicate, bool browseNestedComponents = true)
+        {
+            if (!browseNestedComponents)
+                return _components.Where(x => x is CommandInfo info && predicate(info));
+
+            List<ISearchable> discovered = [];
+
+            foreach (var component in _components)
+            {
+                if (component is CommandInfo command && predicate(command))
+                    discovered.Add(command);
+
+                if (component is ModuleInfo module)
+                    discovered.AddRange(module.GetCommands(predicate, browseNestedComponents));
+            }
+
+            return discovered;
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<ISearchable> GetModules(bool browseNestedComponents = true)
+            => GetModules(_ => true, browseNestedComponents);
+
+        /// <inheritdoc />
+        public IEnumerable<ISearchable> GetModules(Predicate<ModuleInfo> predicate, bool browseNestedComponents = true)
+        {
+            if (!browseNestedComponents)
+                return _components.Where(x => x is ModuleInfo info && predicate(info));
+
+            List<ISearchable> discovered = [];
+
+            foreach (var component in _components)
+            {
+                if (component is ModuleInfo module)
+                {
+                    if (predicate(module))
+                        discovered.Add(component);
+
+                    discovered.AddRange(module.GetModules(predicate, browseNestedComponents));
+                }
+            }
+
+            return discovered;
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<ISearchable> GetAll()
+            => _components;
+
+        /// <inheritdoc />
+        public int CountAll()
+        {
+            var sum = 0;
+            foreach (var component in _components)
+            {
+                if (component is ModuleInfo module)
+                    sum += module.CountAll();
+
+                sum++;
+            }
+
+            return sum;
+        }
+
+        /// <inheritdoc />
+        public bool Add(ISearchable component)
+            => AddRange(component) > 0;
+
+        /// <inheritdoc />
+        public int AddRange(params ISearchable[] components)
         {
             var hasChanged = 0;
 
+            var copy = new HashSet<ISearchable>(_components);
+
             foreach (var component in components)
-                hasChanged += (_components.Add(component) ? 1 : 0);
+                hasChanged += (copy.Add(component) ? 1 : 0);
 
             if (hasChanged > 0)
             {
-                var orderedCopy = new HashSet<ISearchable>(_components.OrderByDescending(x => x.Score));
+                var orderedCopy = new HashSet<ISearchable>(copy.OrderByDescending(x => x.Score));
 
                 Interlocked.Exchange(ref _components, orderedCopy);
 
-                _notifyTopLevelMutation?.Invoke(this);
+                _notifyTopLevelMutation?.Invoke(components);
             }
 
             return hasChanged;
         }
 
-        /// <summary>
-        ///     Removes a component from the current module if it exists.
-        /// </summary>
-        /// <param name="component">The component to be added to the module.</param>
-        /// <returns><see langword="true"/> if the component was removed; otherwise, <see langword="false"/>.</returns>
-        public bool RemoveComponent(ISearchable component)
+        /// <inheritdoc />
+        public bool Remove(ISearchable component)
             => _components.Remove(component);
 
-        /// <summary>
-        ///     Removes all components from the current module that match the predicate.
-        /// </summary>
-        /// <param name="predicate">The predicate which determines which items should be removed from the module.</param>
-        /// <returns>The number of removed components, being 0 if no records were removed.</returns>
-        public int RemoveComponents(Predicate<ISearchable> predicate)
+        /// <inheritdoc />
+        public int RemoveWhere(Predicate<ISearchable> predicate)
             => _components.RemoveWhere(predicate);
 
         /// <summary>

@@ -8,9 +8,9 @@
             var command = new CommandBuilder()
                 .WithAliases(commandName)
                 .WithDelegate(executionAction)
-                .Build(Manager.Configuration);
+                .Build([]);
 
-            Command.Module!.AddComponent(command);
+            Command.Module!.Add(command);
 
             return Send("Command added.");
         }

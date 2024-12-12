@@ -41,7 +41,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Creates a builder that is responsible for setting up all required arguments to discover and populate <see cref="CommandManager.Commands"/>.
+        ///     Creates a builder that is responsible for setting up all required arguments to discover and populate <see cref="CommandManager.Components"/>.
         /// </summary>
         /// <remarks>
         ///     This builder is able to configure the following:

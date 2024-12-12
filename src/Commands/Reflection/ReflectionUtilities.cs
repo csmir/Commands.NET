@@ -38,7 +38,7 @@ namespace Commands.Reflection
                 // if this is not the case, its subcomponents will be added as top level components.
                 else
                 {
-                    foreach (var subComponent in module.Components)
+                    foreach (var subComponent in module)
                         yield return subComponent;
                 }
             }
