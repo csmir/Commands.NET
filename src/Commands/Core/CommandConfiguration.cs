@@ -1,4 +1,5 @@
 ﻿using Commands.Converters;
+using Commands.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Commands
@@ -8,10 +9,13 @@ namespace Commands
     /// </summary>
     public class CommandConfiguration
     {
+        // The following property is only used when configuring the command manager.
+        internal Action<ISearchable>? N_NotifyTopLevelMutation;
+
         /// <summary>
         ///     Gets a collection of type converters that are used to convert arguments.
         /// </summary>
-        public Dictionary<Type, TypeConverterBase> TypeConverters { get; }
+        public IReadOnlyDictionary<Type, TypeConverterBase> TypeConverters { get; }
 
         /// <summary>
         ///     Gets the naming convention used to identify command methods.

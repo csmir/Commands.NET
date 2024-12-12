@@ -23,8 +23,8 @@ namespace Commands
     [DebuggerDisplay("Commands = {Commands},nq")]
     public sealed class CommandManager
     {
+        private HashSet<ISearchable> _components;
         private readonly SequenceFinalizer _disposer;
-        private readonly HashSet<ISearchable> _components;
 
         /// <summary>
         ///     Gets the collection containing all commands, named modules and subcommands as implem ented by the assemblies that were registered in the <see cref="ConfigurationBuilder"/> provided when creating the manager.
@@ -54,6 +54,8 @@ namespace Commands
 
             if (assemblies.Any() || runtimeComponents.Any())
             {
+                configuration.N_NotifyTopLevelMutation = NotifyTreeMutation;
+
                 var commands = ReflectionUtilities.GetTopLevelComponents(assemblies.ToArray(), configuration)
                     .Concat(runtimeComponents)
                     .OrderByDescending(command => command.Score);
@@ -87,7 +89,7 @@ namespace Commands
                 }
             }
 
-            return Flatten(Commands);
+            return Flatten(_components);
         }
 
         /// <summary>
@@ -110,7 +112,7 @@ namespace Commands
                 }
             }
 
-            return Flatten(Commands);
+            return Flatten(_components);
         }
 
         /// <summary>
@@ -161,7 +163,7 @@ namespace Commands
             if (args == null)
                 throw new ArgumentNullException(nameof(args));
 
-            return Flatten(Commands, args);
+            return Flatten(_components, args);
         }
 
         /// <summary>
@@ -449,6 +451,15 @@ namespace Commands
             }
 
             return ConditionResult.FromSuccess();
+        }
+
+        private void NotifyTreeMutation(ISearchable searchable)
+        {
+            _components.Add(searchable);
+
+            var orderedCopy = new HashSet<ISearchable>(_components.OrderByDescending(x => x.Score));
+
+            Interlocked.Exchange(ref _components, orderedCopy);
         }
 
         /// <summary>

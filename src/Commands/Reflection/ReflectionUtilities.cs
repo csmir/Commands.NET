@@ -34,16 +34,12 @@ namespace Commands.Reflection
             {
                 // if module is searchable, it can serve as a top level component.
                 if (module.IsSearchable)
-                {
                     yield return module;
-                }
                 // if this is not the case, its subcomponents will be added as top level components.
                 else
                 {
                     foreach (var subComponent in module.Components)
-                    {
                         yield return subComponent;
-                    }
                 }
             }
         }

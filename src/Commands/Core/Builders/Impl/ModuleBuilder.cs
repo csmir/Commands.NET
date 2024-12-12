@@ -20,6 +20,25 @@ namespace Commands
         public List<IComponentBuilder> Components { get; set; } = [];
 
         /// <summary>
+        ///     Creates a new instance of <see cref="ModuleBuilder"/>
+        /// </summary>
+        public ModuleBuilder()
+        {
+
+        }
+
+        /// <summary>
+        ///     Creates a new instance of <see cref="ModuleBuilder"/> with the specified name.
+        /// </summary>
+        /// <param name="name">The primary alias of the module.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the provided aliases or name are null.</exception>
+        public ModuleBuilder(string name)
+            : this(name, [])
+        {
+
+        }
+
+        /// <summary>
         ///     Creates a new instance of <see cref="ModuleBuilder"/> with the specified name and aliases.
         /// </summary>
         /// <param name="name">The primary alias of the module.</param>
@@ -39,25 +58,6 @@ namespace Commands
                 .ToArray();
 
             Aliases = aliases;
-        }
-
-        /// <summary>
-        ///     Creates a new instance of <see cref="ModuleBuilder"/> with the specified name.
-        /// </summary>
-        /// <param name="name">The primary alias of the module.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the provided aliases or name are null.</exception>
-        public ModuleBuilder(string name)
-            : this(name, [])
-        {
-
-        }
-
-        /// <summary>
-        ///     Creates a new instance of <see cref="ModuleBuilder"/>
-        /// </summary>
-        public ModuleBuilder()
-        {
-
         }
 
         /// <summary>
@@ -187,7 +187,7 @@ namespace Commands
         /// <param name="root">The root module of this (sub)module. Can be left null, but it will affect how the module is visually formatted in the debugger and by calling the ToString() override on the returned type.</param>
         /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
         /// <exception cref="InvalidOperationException">Thrown when any of the aliases of the module to be built do not match <see cref="CommandConfiguration.NamingRegex"/>.</exception>
-        public ModuleInfo Build(CommandConfiguration configuration, ModuleInfo? root = null)
+        public ModuleInfo Build(CommandConfiguration configuration, ModuleInfo? root)
         {
             if (Aliases.Length == 0)
                 throw new InvalidOperationException("The module must have at least one alias.");
@@ -221,8 +221,6 @@ namespace Commands
 
         /// <inheritdoc />
         public ISearchable Build(CommandConfiguration configuration)
-        {
-            return Build(configuration, null);
-        }
+            => Build(configuration, null);
     }
 }

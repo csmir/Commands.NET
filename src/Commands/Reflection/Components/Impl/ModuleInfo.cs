@@ -10,7 +10,8 @@ namespace Commands.Reflection
     [DebuggerDisplay("{ToString()}")]
     public sealed class ModuleInfo : ISearchable, IEnumerable<ISearchable>
     {
-        private readonly HashSet<ISearchable> _components;
+        private HashSet<ISearchable> _components;
+        private readonly Action<ISearchable>? _notifyTopLevelMutation;
 
         /// <summary>
         ///     Gets an array containing nested modules or commands inside this module.
@@ -83,6 +84,11 @@ namespace Commands.Reflection
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, CommandConfiguration options)
         {
+            // If the root is null, we are at the top-level module. In this case, we need to set a notifier for the command manager that its command tree has changed.
+            // This is an expensive operation, so we only do it once for every collection of added components. See: AddComponent, AddComponents.
+            if (root == null)
+                _notifyTopLevelMutation = options.N_NotifyTopLevelMutation;
+
             Module = root;
             Type = type;
 
@@ -154,12 +160,14 @@ namespace Commands.Reflection
             foreach (var component in components)
                 hasChanged += (_components.Add(component) ? 1 : 0);
 
-            var copy = _components.OrderByDescending(x => x.Score);
+            if (hasChanged > 0)
+            {
+                var orderedCopy = new HashSet<ISearchable>(_components.OrderByDescending(x => x.Score));
 
-            _components.Clear();
+                Interlocked.Exchange(ref _components, orderedCopy);
 
-            foreach (var copiedItem in copy)
-                _components.Add(copiedItem);
+                _notifyTopLevelMutation?.Invoke(this);
+            }
 
             return hasChanged;
         }
