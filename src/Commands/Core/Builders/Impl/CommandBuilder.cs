@@ -1,7 +1,6 @@
 ﻿using Commands.Conditions;
 using Commands.Converters;
 using Commands.Reflection;
-using System.Text.RegularExpressions;
 
 namespace Commands
 {

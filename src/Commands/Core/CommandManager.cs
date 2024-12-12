@@ -46,8 +46,8 @@ namespace Commands
         /// <param name="runtimeComponents">Delegate-based components that should be passed to the manager at runtime.</param>
         public CommandManager(CommandConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<ResultResolverBase>? resolvers = null, IEnumerable<ISearchable>? runtimeComponents = null)
         {
-            resolvers         ??= [];
-            assemblies        ??= [];
+            resolvers ??= [];
+            assemblies ??= [];
             runtimeComponents ??= [];
 
             _disposer = new SequenceFinalizer(resolvers);

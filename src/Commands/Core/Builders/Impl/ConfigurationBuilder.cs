@@ -293,9 +293,9 @@ namespace Commands
 
             var components = Components.Select(x => x.Build(configuration));
 
-            return new CommandManager(configuration, 
-                assemblies: Assemblies, 
-                resolvers: ResultResolvers, 
+            return new CommandManager(configuration,
+                assemblies: Assemblies,
+                resolvers: ResultResolvers,
                 runtimeComponents: components);
         }
     }

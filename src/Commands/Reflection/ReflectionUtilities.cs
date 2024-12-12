@@ -291,7 +291,7 @@ namespace Commands.Reflection
             {
                 throw new NotSupportedException($"The collection type or inner type of the collection's generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type: {type}");
             }
-             
+
             return null;
         }
 
