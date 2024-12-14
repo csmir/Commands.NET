@@ -7,7 +7,7 @@ namespace Commands.Reflection
     ///     Reveals information about a command.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public sealed class CommandInfo : ISearchable, IArgumentBucket
+    public sealed class CommandInfo : IComponent, IArgumentBucket
     {
         private readonly Guid __id = Guid.NewGuid();
 

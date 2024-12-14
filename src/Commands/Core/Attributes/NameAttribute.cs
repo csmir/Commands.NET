@@ -66,8 +66,11 @@ namespace Commands
             Aliases = arr;
         }
 
-        internal void ValidateAliases(Regex regex)
+        internal void ValidateAliases(Regex? regex)
         {
+            if (regex is null)
+                return;
+
             foreach (var alias in Aliases)
             {
                 if (!regex.IsMatch(alias))

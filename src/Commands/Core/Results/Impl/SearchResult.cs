@@ -12,7 +12,7 @@ namespace Commands
         /// <summary>
         ///     Gets the component that was discovered for this result.
         /// </summary>
-        public ISearchable? Component { get; }
+        public IComponent? Component { get; }
 
         /// <inheritdoc />
         public Exception? Exception { get; }
@@ -28,7 +28,7 @@ namespace Commands
 
         internal int SearchHeight { get; }
 
-        private SearchResult(ISearchable? component, int searchHeight, Exception? exception)
+        private SearchResult(IComponent? component, int searchHeight, Exception? exception)
         {
             Component = component;
             SearchHeight = searchHeight;
@@ -41,7 +41,7 @@ namespace Commands
         /// <param name="component">The discovered component.</param>
         /// <param name="searchHeight">The argument index of the discovered component.</param>
         /// <returns>A new result containing information about the operation.</returns>
-        public static SearchResult FromSuccess(ISearchable component, int searchHeight)
+        public static SearchResult FromSuccess(IComponent component, int searchHeight)
         {
             return new(component, searchHeight, null);
         }

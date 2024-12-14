@@ -1,7 +1,4 @@
-﻿using Commands.Parsing;
-using Commands.Results;
-
-namespace Commands.Resolvers
+﻿namespace Commands.Resolvers
 {
     internal sealed class DefaultSourceResolver : SourceResolverBase
     {
@@ -18,7 +15,7 @@ namespace Commands.Resolvers
 
                 Console.CursorVisible = false;
 
-                return Success(new ConsumerBase(), StringParser.ParseKeyValueCollection(src));
+                return Success(new ConsumerBase(), CommandParser.ParseKeyValueCollection(src));
             }
 
             return Error(new InvalidOperationException("The application failed to start."));

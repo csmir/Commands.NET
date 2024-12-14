@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<LangVersion>12.0</LangVersion>
+		<LangVersion>13.0</LangVersion>
 		<WarningsAsErrors>true</WarningsAsErrors>
 	  
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -49,10 +49,6 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Reflection\Collections\Impl\" />
   </ItemGroup>
 
 </Project>

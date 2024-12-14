@@ -1,7 +1,6 @@
 ﻿using Commands.Converters;
 using Commands.Reflection;
 using Commands.Resolvers;
-using Commands.Results;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -434,11 +433,11 @@ namespace Commands
             builder.ConfigureServices((context, services) =>
             {
                 services.AddHostedService<SequenceInitiator>();
-                services.AddSingleton<ConfigurationBuilder>();
+                services.AddSingleton<CommandTreeBuilder>();
 
                 var descriptor = ServiceDescriptor.Singleton((services) =>
                 {
-                    var builder = services.GetRequiredService<ConfigurationBuilder>();
+                    var builder = services.GetRequiredService<CommandTreeBuilder>();
 
                     var resolvers = services.GetServices<ResultResolverBase>();
                     var converters = services.GetServices<TypeConverterBase>();

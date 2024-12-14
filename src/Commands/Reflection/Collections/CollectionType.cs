@@ -11,7 +11,7 @@
         None,
 
         /// <summary>
-        ///     The collection type is an <see cref="System.Array"/>.
+        ///     The collection type is a <see cref="System.Array"/>.
         /// </summary>
         Array = 1,
 

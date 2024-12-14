@@ -1,6 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-using Commands.Parsing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Commands.Tests
@@ -13,7 +12,7 @@ namespace Commands.Tests
         public Program()
         {
             var services = new ServiceCollection()
-                .AddSingleton(new ConfigurationBuilder()
+                .AddSingleton(new CommandTreeBuilder()
                 {
 
                 }.Build())
@@ -30,7 +29,7 @@ namespace Commands.Tests
         //[Benchmark]
         public void ParseText()
         {
-            StringParser.ParseKeyCollection("command");
+            CommandParser.ParseKeyCollection("command");
         }
 
         [Benchmark]

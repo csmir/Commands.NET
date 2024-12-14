@@ -1,6 +1,4 @@
-﻿using Commands.Converters;
-using Commands.Parsing;
-using Commands.Reflection;
+﻿using Commands.Reflection;
 using Commands.Resolvers;
 using System.Diagnostics;
 using System.Reflection;
@@ -18,28 +16,47 @@ namespace Commands
     ///     which introduces native IoC based command operations alongside the preexisting DI support.
     ///     <br/>
     ///     <br/>
-    ///     To start using this manager, call <see cref="CreateDefaultBuilder"/> and configure it using the minimal API's implemented by the <see cref="ConfigurationBuilder"/>.
+    ///     To start using this tree, call <see cref="CreateDefaultBuilder"/> and configure it using the minimal API's implemented by the <see cref="CommandTreeBuilder"/>.
     /// </remarks>
     [DebuggerDisplay("Components = {Count},nq")]
-    public sealed class CommandTree : SearchableSet
+    public sealed class CommandTree : ComponentCollection
     {
-        private readonly ResultEnumerator _resultEnumerator;
+        private readonly ResultResolverBase[] _resolvers;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="CommandTree"/> class.
+        ///     Initializes a new instance of the <see cref="CommandTree"/> class, using the provided <paramref name="configuration"/> to build the command tree.
+        /// </summary>
+        /// <remarks>
+        ///     This constructor searches for all components that inherit <see cref="ModuleBase"/> in the provided assemblies.
+        /// </remarks>
+        /// <param name="configuration">The configuration by which all reflected components should be configured.</param>
+        /// <param name="assemblies">A collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="ModuleBase"/>.</param>
+        public CommandTree(BuildConfiguration configuration, params IEnumerable<Assembly> assemblies)
+            : this(configuration, assemblies, null, null) { }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="CommandTree"/> class, using the provided <paramref name="configuration"/> to build the command tree.
+        /// </summary>
+        /// <remarks>
+        ///     This constructor implements a collection of <see cref="IComponent"/> components that are passed to the tree.
+        /// </remarks>
+        /// <param name="configuration"></param>
+        /// <param name="components"></param>
+        public CommandTree(BuildConfiguration configuration, params IEnumerable<IComponent> components)
+            : this(configuration, null, components, null) { }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="CommandTree"/> class, using the provided <paramref name="configuration"/> to build the command tree.
         /// </summary>
         /// <param name="configuration">The configuration by which all reflected components should be configured.</param>
-        /// <param name="assemblies">An optional collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="ModuleBase"/> within the provided assemblies.</param>
+        /// <param name="assemblies">An optional collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="ModuleBase"/>.</param>
+        /// <param name="runtimeComponents">Delegate-based components that should be passed to the tree at runtime.</param>
         /// <param name="resolvers">An optional collection of handlers of command results.</param>
-        /// <param name="runtimeComponents">Delegate-based components that should be passed to the manager at runtime.</param>
-        public CommandTree(BuildConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<ResultResolverBase>? resolvers = null, IEnumerable<ISearchable>? runtimeComponents = null)
+        public CommandTree(BuildConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<IComponent>? runtimeComponents = null, IEnumerable<ResultResolverBase>? resolvers = null)
             : base(false, null)
         {
-            resolvers ??= [];
             assemblies ??= [];
             runtimeComponents ??= [];
-
-            _resultEnumerator = new ResultEnumerator(resolvers);
 
             if (assemblies.Any() || runtimeComponents.Any())
             {
@@ -51,24 +68,9 @@ namespace Commands
 
                 PushDangerous(commands);
             }
-        }
 
-        /// <summary>
-        ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="CommandTree"/>.
-        /// </summary>
-        /// <remarks>
-        ///     This builder is able to configure the following:
-        ///     <list type="number">
-        ///         <item>Defining assemblies through which will be searched to discover modules and commands.</item>
-        ///         <item>Defining custom commands that do not appear in the assemblies.</item>
-        ///         <item>Registering implementations of <see cref="TypeConverterBase"/> which define custom argument conversion.</item>
-        ///         <item>Registering implementations of <see cref="ResultResolverBase"/> which define custom result handling.</item>
-        ///         <item>Custom naming patterns that validate naming across the whole process.</item>
-        ///     </list>
-        /// </remarks>
-        /// <returns>A new <see cref="ConfigurationBuilder"/> that implements the currently accessed <see cref="CommandTree"/>.</returns>
-        public static ConfigurationBuilder CreateDefaultBuilder()
-            => new();
+            _resolvers = resolvers?.ToArray() ?? [];
+        }
 
         /// <inheritdoc />
         public override IEnumerable<SearchResult> Find(ArgumentEnumerator args)
@@ -105,7 +107,7 @@ namespace Commands
             if (string.IsNullOrWhiteSpace(args))
                 throw new ArgumentNullException(nameof(args));
 
-            return Execute(consumer, StringParser.ParseKeyValueCollection(args), options);
+            return Execute(consumer, CommandParser.ParseKeyValueCollection(args), options);
         }
 
         /// <summary>
@@ -187,7 +189,7 @@ namespace Commands
 
             result ??= SearchResult.FromError();
 
-            await _resultEnumerator.Dispose(consumer, result, options);
+            await EvaluateResult(consumer, result, options);
         }
 
         private async ValueTask<ICommandResult> InvokeCommand<T>(
@@ -217,7 +219,7 @@ namespace Commands
 
                 var value = command.Invoker.Invoke(consumer, command, arguments, this, options);
 
-                await _resultEnumerator.Respond(consumer, command, value, options);
+                await RespondResult(consumer, command, value, options);
 
                 var postCheckResult = await EvaluatePostconditions(consumer, command, options);
 
@@ -340,6 +342,23 @@ namespace Commands
             return results;
         }
 
+        private async ValueTask EvaluateResult(
+            ConsumerBase consumer, ICommandResult result, CommandOptions options)
+        {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
+            foreach (var resolver in _resolvers)
+                await resolver.Evaluate(consumer, result, options.Services, options.CancellationToken);
+        }
+
+        private async ValueTask RespondResult(
+            ConsumerBase consumer, CommandInfo command, object? value, CommandOptions options)
+        {
+            options.CancellationToken.ThrowIfCancellationRequested();
+            foreach (var resolver in _resolvers)
+                await resolver.Respond(consumer, command, value, options.Services, options.CancellationToken);
+        }
+
         private async ValueTask<ConditionResult> EvaluatePreconditions<T>(
             T consumer, CommandInfo command, CommandOptions options)
             where T : ConsumerBase
@@ -383,7 +402,7 @@ namespace Commands
         #endregion
 
         // This method is called when a top-level commands' module receives a mutation which prompts a re-sort of the hierarchy.
-        private void HierarchyRetentionHandler(ISearchable[] newComponents, bool removing = false)
+        private void HierarchyRetentionHandler(IComponent[] newComponents, bool removing = false)
         {
             if (removing)
                 RemoveRange(newComponents);
@@ -397,23 +416,18 @@ namespace Commands
             }
         }
 
-        internal readonly struct ResultEnumerator(IEnumerable<ResultResolverBase> eventHandlers)
-        {
-            private readonly ResultResolverBase[] _resolvers = eventHandlers.ToArray();
+        /// <summary>
+        ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="CommandTree"/>. This builder is pre-configured with default settings.
+        /// </summary>
+        /// <returns>A new instance of <see cref="CommandTreeBuilder"/> that builds into a new instance of the <see cref="CommandTree"/>.</returns>
+        public static CommandTreeBuilder CreateDefaultBuilder()
+            => new(true);
 
-            internal async ValueTask Dispose(
-                ConsumerBase consumer, ICommandResult result, CommandOptions options)
-            {
-                foreach (var resolver in _resolvers)
-                    await resolver.Evaluate(consumer, result, options.Services, options.CancellationToken);
-            }
-
-            internal async ValueTask Respond(
-                ConsumerBase consumer, CommandInfo command, object? value, CommandOptions options)
-            {
-                foreach (var resolver in _resolvers)
-                    await resolver.Respond(consumer, command, value, options.Services, options.CancellationToken);
-            }
-        }
+        /// <summary>
+        ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="CommandTree"/>.
+        /// </summary>
+        /// <returns>A new instance of <see cref="CommandTreeBuilder"/> that builds into a new instance of the <see cref="CommandTree"/>.</returns>
+        public static CommandTreeBuilder CreateBuilder()
+            => new(false);
     }
 }

@@ -1,7 +1,4 @@
-﻿using Commands.Exceptions;
-using Commands.Parsing;
-
-namespace Commands.Results
+﻿namespace Commands
 {
     /// <summary>
     ///     The result of the source acquirement within the command execution pipeline.
@@ -38,12 +35,12 @@ namespace Commands.Results
         ///     Creates a new <see cref="SourceResult"/> resembling a successful sourcing operation.
         /// </summary>
         /// <param name="consumer">The consumer of the command.</param>
-        /// <param name="args">An unparsed command query, which will be parsed using <see cref="StringParser.ParseKeyValueCollection(string)"/>.</param>
+        /// <param name="args">An unparsed command query, which will be parsed using <see cref="CommandParser.ParseKeyValueCollection(string)"/>.</param>
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
         public static SourceResult FromSuccess(ConsumerBase consumer, string args, CommandOptions? options = null)
         {
-            var parseResult = StringParser.ParseKeyValueCollection(args);
+            var parseResult = CommandParser.ParseKeyValueCollection(args);
 
             options ??= new CommandOptions();
 

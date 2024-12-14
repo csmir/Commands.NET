@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Text;
 
-namespace Commands.Parsing
+namespace Commands
 {
     /// <summary>
     ///     A thread-safe argument parser, implementing <see cref="string"/> as the raw value.
@@ -10,7 +10,7 @@ namespace Commands.Parsing
     ///     <b>This class does not adhere to semantic versioning. </b>
     ///     As edge cases are discovered in the parser logic, the parser guidelines may change, and command input might improve or degrade based on different usecases.
     /// </remarks>
-    public static partial class StringParser
+    public static partial class CommandParser
     {
         const char u0022 = '"';
         const char u0020 = ' ';
@@ -26,9 +26,7 @@ namespace Commands.Parsing
         public static object[] Parse(string? toParse)
         {
             if (string.IsNullOrWhiteSpace(toParse))
-            {
                 return [];
-            }
 
             return ParseKeyCollection(toParse).Select(x => (object)x).ToArray();
         }
@@ -118,9 +116,7 @@ namespace Commands.Parsing
                         if (argument.Length > 1)
                         {
                             if (argument[1..].Contains(u0022))
-                            {
                                 openState--;
-                            }
                         }
 
                         continue;
@@ -205,9 +201,7 @@ namespace Commands.Parsing
                 if (name is null)
                     yield return new(string.Join(u0020, concatenation), null);
                 else
-                {
                     yield return new(name, string.Join(u0020, concatenation));
-                }
             }
         }
 

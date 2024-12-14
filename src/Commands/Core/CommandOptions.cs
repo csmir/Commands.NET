@@ -98,19 +98,12 @@ namespace Commands
         {
             private static readonly Lazy<EmptyServiceProvider> _i = new();
 
-            internal static EmptyServiceProvider Instance
-            {
-                get
-                {
-                    return _i.Value;
-                }
-            }
+            internal static EmptyServiceProvider Instance 
+                => _i.Value;
 
             /// <inheritdoc />
             public object? GetService(Type serviceType)
-            {
-                return null;
-            }
+                => null;
         }
     }
 }

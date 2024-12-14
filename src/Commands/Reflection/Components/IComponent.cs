@@ -5,7 +5,7 @@ namespace Commands.Reflection
     /// <summary>
     ///     Reveals information about a conditional component, needing validation in order to become part of execution.
     /// </summary>
-    public interface ISearchable : IScoreable
+    public interface IComponent : IScoreable
     {
         /// <summary>
         ///     Gets the full name of the component, including the names of its parent components.

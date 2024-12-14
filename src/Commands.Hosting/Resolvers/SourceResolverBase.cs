@@ -1,7 +1,4 @@
-﻿using Commands.Exceptions;
-using Commands.Results;
-
-namespace Commands.Resolvers
+﻿namespace Commands.Resolvers
 {
     /// <summary>
     ///     A handler for pre-execution processes.

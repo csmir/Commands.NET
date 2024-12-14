@@ -1,6 +1,4 @@
-﻿using Commands.Parsing;
-using Commands.Resolvers;
-using Commands.Results;
+﻿using Commands.Resolvers;
 
 namespace Commands.Tests
 {
@@ -17,7 +15,7 @@ namespace Commands.Tests
 
                 Console.CursorVisible = false;
 
-                return ValueTask.FromResult(Success(new ConsumerBase(), StringParser.ParseKeyCollection(src)));
+                return ValueTask.FromResult(Success(new ConsumerBase(), CommandParser.ParseKeyCollection(src)));
             }
 
             return ValueTask.FromResult(Error(new InvalidOperationException("The application failed to start.")));

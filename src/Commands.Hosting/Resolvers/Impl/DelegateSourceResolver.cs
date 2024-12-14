@@ -1,6 +1,4 @@
-﻿using Commands.Results;
-
-namespace Commands.Resolvers
+﻿namespace Commands.Resolvers
 {
     internal sealed class DelegateSourceResolver(
         Func<SourceResult> func) : SourceResolverBase

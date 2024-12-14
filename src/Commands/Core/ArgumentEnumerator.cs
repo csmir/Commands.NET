@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace Commands.Parsing
+namespace Commands
 {
     /// <summary>
     ///     Contains a set of arguments for the command pipeline. This class is not intended to be implemented by end-users. 
@@ -76,9 +76,7 @@ namespace Commands.Parsing
         public bool TryNext(string parameterName, out object? value)
         {
             if (_namedArgs.TryGetValue(parameterName, out value))
-            {
                 return true;
-            }
 
             if (_indexUnnamed >= _unnamedArgs.Length)
                 return false;
@@ -121,17 +119,34 @@ namespace Commands.Parsing
         /// </summary>
         /// <returns>A joined string containing all remaining arguments in this enumerator.</returns>
         public readonly string JoinRemaining()
-        {
-            return string.Join(u0020, _unnamedArgs[_indexUnnamed..]);
-        }
+            => string.Join(u0020, _unnamedArgs[_indexUnnamed..]);
 
         /// <summary>
         ///     Takes the remaining unnamed arguments in the set into an array which is used by Collector arguments.
         /// </summary>
         /// <returns>An array of objects that represent the remaining arguments of this enumerator.</returns>
         public readonly object[] TakeRemaining()
-        {
-            return _unnamedArgs[_indexUnnamed..];
-        }
+            => _unnamedArgs[_indexUnnamed..];
+
+        /// <summary>
+        ///     Implicitly converts an array of objects into an <see cref="ArgumentEnumerator"/> instance.
+        /// </summary>
+        /// <param name="args">An array of objects to create a new <see cref="ArgumentEnumerator"/> from.</param>
+        public static implicit operator ArgumentEnumerator(object[] args)
+            => new(args);
+
+        /// <summary>
+        ///     Implicitly converts an array of key-value pairs into an <see cref="ArgumentEnumerator"/> instance, using the standard <see cref="StringComparer.OrdinalIgnoreCase"/> to compare keys.
+        /// </summary>
+        /// <param name="args">An array of <see cref="KeyValuePair{TKey, TValue}"/>'s to create a new <see cref="ArgumentEnumerator"/> from.</param>
+        public static implicit operator ArgumentEnumerator(KeyValuePair<string, object?>[] args)
+            => new(args, StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        ///     Implicitly converts a string into an <see cref="ArgumentEnumerator"/> instance, using the standard <see cref="StringComparer.OrdinalIgnoreCase"/> to compare keys.
+        /// </summary>
+        /// <param name="args">The string to parse, and then create a new <see cref="ArgumentEnumerator"/> from.</param>
+        public static implicit operator ArgumentEnumerator(string args)
+            => new(CommandParser.ParseKeyValueCollection(args), StringComparer.OrdinalIgnoreCase);
     }
 }

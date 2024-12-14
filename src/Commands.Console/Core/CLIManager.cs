@@ -1,5 +1,4 @@
 ﻿using Commands.Converters;
-using Commands.Parsing;
 using Commands.Resolvers;
 
 namespace Commands
@@ -17,7 +16,7 @@ namespace Commands
         /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
         public static Task Run(this CommandTree manager, CLIOptions options)
         {
-            var args = StringParser.ParseKeyValueCollection(options.CommandArguments);
+            var args = CommandParser.ParseKeyValueCollection(options.CommandArguments);
 
             options.Consumer ??= new ConsoleConsumerBase();
 
@@ -53,10 +52,10 @@ namespace Commands
         ///         <item>Custom naming patterns that validate naming across the whole process.</item>
         ///     </list>
         /// </remarks>
-        /// <returns>A new <see cref="ConfigurationBuilder"/> that implements <see cref="CommandTree"/></returns>
-        public static ConfigurationBuilder CreateDefaultBuilder()
+        /// <returns>A new <see cref="CommandTreeBuilder"/> that implements <see cref="CommandTree"/></returns>
+        public static CommandTreeBuilder CreateDefaultBuilder()
         {
-            return new ConfigurationBuilder();
+            return new CommandTreeBuilder();
         }
     }
 }

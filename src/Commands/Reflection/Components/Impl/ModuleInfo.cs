@@ -1,5 +1,4 @@
 ﻿using Commands.Conditions;
-using Commands.Parsing;
 using System.Buffers;
 using System.Diagnostics;
 
@@ -9,7 +8,7 @@ namespace Commands.Reflection
     ///     Reveals information about a command module, hosting zero-or-more commands.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public sealed class ModuleInfo : SearchableSet, ISearchable
+    public sealed class ModuleInfo : ComponentCollection, IComponent
     {
         private readonly Guid __id = Guid.NewGuid();
 
@@ -80,7 +79,7 @@ namespace Commands.Reflection
 
             Attributes = attributes.ToArray();
 
-            PreEvaluations = ConditionEvaluator.CreateEvaluators(attributes.OfType<IPreExecutionCondition>()).ToArray();
+            PreEvaluations  = ConditionEvaluator.CreateEvaluators(attributes.OfType<IPreExecutionCondition>()).ToArray();
             PostEvaluations = ConditionEvaluator.CreateEvaluators(attributes.OfType<IPostExecutionCondition>()).ToArray();
 
             Priority = attributes.GetAttribute<PriorityAttribute>()?.Priority ?? 0;
@@ -98,8 +97,8 @@ namespace Commands.Reflection
         {
             Parent = root;
 
-            Attributes = [];
-            PreEvaluations = [];
+            Attributes      = [];
+            PreEvaluations  = [];
             PostEvaluations = [];
 
             Aliases = aliases;

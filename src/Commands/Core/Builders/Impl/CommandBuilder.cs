@@ -121,7 +121,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public ISearchable Build(BuildConfiguration configuration)
+        public IComponent Build(BuildConfiguration configuration)
         {
             if (ExecuteDelegate is null)
                 throw new InvalidOperationException("The command must have a delegate to execute.");
@@ -129,10 +129,13 @@ namespace Commands
             if (!_isNested && Aliases.Length == 0)
                 throw new InvalidOperationException("The command must have at least one alias.");
 
-            foreach (var alias in Aliases)
+            if (configuration.NamingRegex is not null)
             {
-                if (!configuration.NamingRegex.IsMatch(alias))
-                    throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(BuildConfiguration.NamingRegex)} of the {nameof(BuildConfiguration)}.");
+                foreach (var alias in Aliases)
+                {
+                    if (!configuration.NamingRegex.IsMatch(alias))
+                        throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(BuildConfiguration.NamingRegex)} of the {nameof(BuildConfiguration)}.");
+                }
             }
 
             var param = ExecuteDelegate.Method.GetParameters();
@@ -152,7 +155,7 @@ namespace Commands
         /// <param name="nameFilter">A filter which is used to determine how the command aliases are validated.</param>
         /// <returns>A reflection-based container that holds information for a component ready to be executed or serves as a container for executable components.</returns>
         /// <exception cref="InvalidOperationException">Thrown when the component aliases do not match <see cref="BuildConfiguration.NamingRegex"/>.</exception>
-        public ISearchable Build(IEnumerable<TypeConverterBase> converters, string nameFilter = @"^[a-z0-9_-]*$")
+        public IComponent Build(IEnumerable<TypeConverterBase> converters, string? nameFilter = @"^[a-z0-9_-]*$")
             => Build(new BuildConfiguration(converters, nameFilter));
     }
 }

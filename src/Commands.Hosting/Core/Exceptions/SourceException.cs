@@ -1,4 +1,4 @@
-﻿namespace Commands.Exceptions
+﻿namespace Commands
 {
     /// <summary>
     ///     An <see cref="CommandException"/> that is thrown when command source acquirement failed.

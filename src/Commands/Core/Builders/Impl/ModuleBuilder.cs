@@ -192,10 +192,13 @@ namespace Commands
             if (Aliases.Length == 0)
                 throw new InvalidOperationException("The module must have at least one alias.");
 
-            foreach (var alias in Aliases)
+            if (configuration.NamingRegex is not null)
             {
-                if (!configuration.NamingRegex.IsMatch(alias))
-                    throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(BuildConfiguration.NamingRegex)} of the {nameof(BuildConfiguration)}.");
+                foreach (var alias in Aliases)
+                {
+                    if (!configuration.NamingRegex.IsMatch(alias))
+                        throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(BuildConfiguration.NamingRegex)} of the {nameof(BuildConfiguration)}.");
+                }
             }
 
             var moduleInfo = new ModuleInfo(root, Aliases);
@@ -220,7 +223,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public ISearchable Build(BuildConfiguration configuration)
+        public IComponent Build(BuildConfiguration configuration)
             => Build(configuration, null);
     }
 }

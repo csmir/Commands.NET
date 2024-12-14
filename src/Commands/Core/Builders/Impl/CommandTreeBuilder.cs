@@ -7,61 +7,92 @@ using System.Text.RegularExpressions;
 namespace Commands
 {
     /// <summary>
-    ///     A container for options determining the build process for modules and commands. This class cannot be inherited.
+    ///     A configuration model determining the build process for modules and commands in a <see cref="CommandTree"/>. This class cannot be inherited.
     /// </summary>
-    public sealed class ConfigurationBuilder
+    /// <remarks>
+    ///     This builder is able to configure the following:
+    ///     <list type="number">
+    ///         <item>Defining assemblies through which will be searched to discover modules and commands.</item>
+    ///         <item>Defining custom commands that do not appear in the assemblies.</item>
+    ///         <item>Registering implementations of <see cref="TypeConverterBase"/> which define custom argument conversion.</item>
+    ///         <item>Registering implementations of <see cref="ResultResolverBase"/> which define custom result handling.</item>
+    ///         <item>Custom naming patterns that validate naming across the whole process.</item>
+    ///     </list>
+    /// </remarks>
+    public sealed class CommandTreeBuilder
     {
         const string DEFAULT_REGEX = @"^[a-z0-9_-]*$";
 
         /// <summary>
         ///     Gets or sets a collection of assemblies that are to be used to discover created modules.
         /// </summary>
-        /// <remarks>
-        ///     Default: <see cref="Assembly.GetEntryAssembly"/>
-        /// </remarks>
-        public List<Assembly> Assemblies { get; set; } = [Assembly.GetEntryAssembly()!]; // never null in managed context.
+        public List<Assembly> Assemblies { get; set; }
 
         /// <summary>
         ///     Gets or sets a collection of <see cref="TypeConverterBase"/>'s representing predefined <see cref="Type"/> conversion.
         /// </summary>
-        /// <remarks>
-        ///     Default: <see cref="TypeConverterBase.BuildDefaults"/>
-        /// </remarks>
-        public Dictionary<Type, TypeConverterBase> TypeConverters { get; set; } = TypeConverterBase.BuildDefaults();
+        public Dictionary<Type, TypeConverterBase> TypeConverters { get; set; }
 
         /// <summary>
         ///     Gets or sets a collection of <see cref="ResultResolverBase"/>'s that serve as post-execution handlers.
         /// </summary>
-        public List<ResultResolverBase> ResultResolvers { get; set; } = [];
+        public List<ResultResolverBase> ResultResolvers { get; set; }
 
         /// <summary>
         ///     Gets or sets a collection of <see cref="CommandInfo"/>'s that are manually created before the registration process runs.
         /// </summary>
-        public List<IComponentBuilder> Components { get; set; } = [];
+        public List<IComponentBuilder> Components { get; set; }
 
         /// <summary>
         ///     Gets or sets the naming convention of commands and groups being registered into the <see cref="CommandTree"/>.
         /// </summary>
-        /// <remarks>
-        ///     Default: <c>@"^[a-z0-9_-]*$"</c>
-        /// </remarks>
-        public Regex NamingRegex { get; set; } = new(DEFAULT_REGEX, RegexOptions.Compiled);
+        public Regex? NamingRegex { get; set; }
 
         /// <summary>
         ///     Gets or sets if registered modules should be made read-only at creation, meaning they cannot be modified at runtime.
         /// </summary>
-        /// <remarks>
-        ///     Default: <see langword="false"/>.
-        /// </remarks>
-        public bool SealModuleDefinitions { get; set; } = false;
+        public bool SealModuleDefinitions { get; set; }
+
+        /// <summary>
+        ///     Creates a new instance of <see cref="CommandTreeBuilder"/>, with default values applied.
+        /// </summary>
+        public CommandTreeBuilder()
+            : this(true)
+        {
+
+        }
+
+        internal CommandTreeBuilder(bool applyStandards)
+        {
+            if (applyStandards)
+            {
+                NamingRegex = new(DEFAULT_REGEX, RegexOptions.Compiled);
+                SealModuleDefinitions = false;
+
+                Assemblies      = [Assembly.GetEntryAssembly()!];
+                TypeConverters  = TypeConverterBase.BuildDefaults();
+                ResultResolvers = [];
+                Components      = [];
+            }
+            else
+            {
+                NamingRegex = null;
+                SealModuleDefinitions = false;
+
+                Assemblies      = [];
+                TypeConverters  = [];
+                ResultResolvers = [];
+                Components      = [];
+            }
+        }
 
         /// <summary>
         ///     Adds a command to the <see cref="Components"/> collection.
         /// </summary>
         /// <param name="commandBuilder">The builder instance to add to the collection, which will be built into a <see cref="CommandInfo"/> instance that can be executed by the <see cref="CommandTree"/>.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided builder is <see langword="null"/>.</exception>
-        public ConfigurationBuilder AddCommand(CommandBuilder commandBuilder)
+        public CommandTreeBuilder AddCommand(CommandBuilder commandBuilder)
         {
             if (commandBuilder == null)
                 throw new ArgumentNullException(nameof(commandBuilder));
@@ -78,8 +109,8 @@ namespace Commands
         ///     When using this method, the command will be created with the default constructor. In order for the command to be valid for execution, <see cref="ModuleBuilder.WithAliases(string[])"/> must be called within <paramref name="configureCommand"/>.
         /// </remarks>
         /// <param name="configureCommand">An action that extends the fluent API of this type to configure the command.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddCommand(Action<CommandBuilder> configureCommand)
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public CommandTreeBuilder AddCommand(Action<CommandBuilder> configureCommand)
         {
             var commandBuilder = new CommandBuilder();
 
@@ -96,8 +127,8 @@ namespace Commands
         /// </remarks>
         /// <param name="name">The name of the component.</param>
         /// <param name="executionDelegate">The delegate to execute when the provided name of this object is discovered in a search operation.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddCommand(string name, Delegate executionDelegate)
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public CommandTreeBuilder AddCommand(string name, Delegate executionDelegate)
         {
             var commandBuilder = new CommandBuilder(name, [], executionDelegate);
 
@@ -113,8 +144,8 @@ namespace Commands
         /// <param name="name">The name of the component.</param>
         /// <param name="executionDelegate">The delegate to execute when the provided name of this object is discovered in a search operation.</param>
         /// <param name="aliases">The aliases of the component, excluding the name.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddCommand(string name, Delegate executionDelegate, params string[] aliases)
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public CommandTreeBuilder AddCommand(string name, Delegate executionDelegate, params string[] aliases)
         {
             var commandBuilder = new CommandBuilder(name, aliases, executionDelegate);
 
@@ -125,9 +156,9 @@ namespace Commands
         ///     Adds a module to the <see cref="Components"/> collection.
         /// </summary>
         /// <param name="moduleBuilder">The builder instance to add to the collection, which will be built into a <see cref="ModuleInfo"/> instance that can contain commands to be executed by the <see cref="CommandTree"/>.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided builder is <see langword="null"/>.</exception>
-        public ConfigurationBuilder AddModule(ModuleBuilder moduleBuilder)
+        public CommandTreeBuilder AddModule(ModuleBuilder moduleBuilder)
         {
             if (moduleBuilder == null)
                 throw new ArgumentNullException(nameof(moduleBuilder));
@@ -144,8 +175,8 @@ namespace Commands
         ///     When using this method, the module will be created with the default constructor. In order for the module to be valid for execution, <see cref="ModuleBuilder.WithAliases(string[])"/> must be called within <paramref name="configureModule"/>.
         /// </remarks>
         /// <param name="configureModule">An action that extends the fluent API of this type to configure the module.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddModule(Action<ModuleBuilder> configureModule)
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public CommandTreeBuilder AddModule(Action<ModuleBuilder> configureModule)
         {
             var moduleBuilder = new ModuleBuilder();
 
@@ -162,8 +193,8 @@ namespace Commands
         ///     Check <see cref="ICommandResult.Success"/> to determine whether or not the command ran successfully.
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddResultResolver(Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public CommandTreeBuilder AddResultResolver(Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
         {
             if (resultAction == null)
                 throw new ArgumentNullException(nameof(resultAction));
@@ -181,8 +212,8 @@ namespace Commands
         ///     Check <see cref="ICommandResult.Success"/> to determine whether or not the command ran successfully.
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddResultResolver(Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public CommandTreeBuilder AddResultResolver(Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
         {
             if (resultAction == null)
                 throw new ArgumentNullException(nameof(resultAction));
@@ -197,8 +228,8 @@ namespace Commands
         /// </summary>
         /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolverBase"/> to add.</typeparam>
         /// <param name="resolver">The implementation of <see cref="ResultResolverBase"/> to add.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddResultResolver<TResolver>(TResolver resolver)
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public CommandTreeBuilder AddResultResolver<TResolver>(TResolver resolver)
             where TResolver : ResultResolverBase
         {
             if (resolver == null)
@@ -214,8 +245,8 @@ namespace Commands
         /// </summary>
         /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the conversion process.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public CommandTreeBuilder AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
         {
             if (convertAction == null)
                 throw new ArgumentNullException(nameof(convertAction));
@@ -232,8 +263,8 @@ namespace Commands
         /// </summary>
         /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the conversion process.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public CommandTreeBuilder AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
         {
             if (convertAction == null)
                 throw new ArgumentNullException(nameof(convertAction));
@@ -250,8 +281,8 @@ namespace Commands
         /// </summary>
         /// <typeparam name="TConverter">The implementation type of <see cref="TypeConverterBase"/> to add.</typeparam>
         /// <param name="converter">The implementation of <see cref="TypeConverterBase"/> to add.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddTypeConverter<TConverter>(TConverter converter)
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public CommandTreeBuilder AddTypeConverter<TConverter>(TConverter converter)
             where TConverter : TypeConverterBase
         {
             if (converter == null)
@@ -266,8 +297,8 @@ namespace Commands
         ///     Configures the <see cref="Assemblies"/> with an additional assembly.
         /// </summary>
         /// <param name="assembly">An assembly that should be added to <see cref="Assemblies"/>.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddAssembly(Assembly assembly)
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public CommandTreeBuilder AddAssembly(Assembly assembly)
         {
             if (assembly == null)
                 throw new ArgumentNullException(nameof(assembly));
@@ -281,8 +312,8 @@ namespace Commands
         ///     Configures the <see cref="Assemblies"/> with an additional set of assemblies.
         /// </summary>
         /// <param name="assemblies">A collection of assemblies that should be added to <see cref="Assemblies"/>.</param>
-        /// <returns>The same <see cref="ConfigurationBuilder"/> for call-chaining.</returns>
-        public ConfigurationBuilder AddAssemblies(params Assembly[] assemblies)
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public CommandTreeBuilder AddAssemblies(params Assembly[] assemblies)
         {
             if (assemblies == null)
                 throw new ArgumentNullException(nameof(assemblies));
@@ -292,7 +323,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Builds the current <see cref="ConfigurationBuilder"/> instance into a new <see cref="BuildConfiguration"/>, which is used to create a new instance of <see cref="CommandTree"/>.
+        ///     Builds the current <see cref="CommandTreeBuilder"/> instance into a new <see cref="BuildConfiguration"/>, which is used to create a new instance of <see cref="CommandTree"/>.
         /// </summary>
         /// <returns>A new instance of <see cref="CommandTree"/> built by this builder.</returns>
         public CommandTree Build()

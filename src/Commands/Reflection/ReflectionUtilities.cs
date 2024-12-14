@@ -25,7 +25,7 @@ namespace Commands.Reflection
         /// <param name="assemblies">The assemblies to iterate through for command discovery.</param>
         /// <param name="options">The options that define the command registration process.</param>
         /// <returns>A top-level enumerable of all discovered components which can be searched.</returns>
-        public static IEnumerable<ISearchable> GetTopLevelComponents(Assembly[] assemblies, BuildConfiguration options)
+        public static IEnumerable<IComponent> GetTopLevelComponents(Assembly[] assemblies, BuildConfiguration options)
         {
             var modules = GetTopLevelModules(assemblies, options);
 
@@ -146,7 +146,7 @@ namespace Commands.Reflection
         /// <param name="withDefaults">Determines if the root module has any defaults to take into consideration.</param>
         /// <param name="options">The options that define the command registration process.</param>
         /// <returns>An enumerable of all discovered commands.</returns>
-        public static IEnumerable<ISearchable> GetCommands(Type type, ModuleInfo? module, bool withDefaults, BuildConfiguration options)
+        public static IEnumerable<IComponent> GetCommands(Type type, ModuleInfo? module, bool withDefaults, BuildConfiguration options)
         {
             // run through all type methods.
 
@@ -212,7 +212,7 @@ namespace Commands.Reflection
         /// <param name="module">The module who'se members should be iterated.</param>
         /// <param name="options">The options that define the command registration process.</param>
         /// <returns>An array of all discovered components.</returns>
-        public static ISearchable[] GetComponents(ModuleInfo module, BuildConfiguration options)
+        public static IComponent[] GetComponents(ModuleInfo module, BuildConfiguration options)
         {
             if (module.Type == null)
             {
