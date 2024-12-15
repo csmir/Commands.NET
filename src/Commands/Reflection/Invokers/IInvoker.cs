@@ -22,7 +22,7 @@ namespace Commands.Reflection
         /// <param name="options">The options that determine the execution pattern of this invoker.</param>
         /// <returns>The result of the invocation. This result is <see langword="null"/> if the method signature returns void.</returns>
         public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandTree manager, CommandOptions options)
-            where T : ConsumerBase;
+            where T : CallerContext;
 
         /// <summary>
         ///     Gets the return type of the target, if it is a method. If it is a constructor, it will return null.

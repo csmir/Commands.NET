@@ -9,7 +9,7 @@ builder.AddResultResolver((consumer, result, services) =>
 {
     if (!result.Success)
     {
-        consumer.Send(result);
+        consumer.Respond(result);
     }
 });
 
@@ -26,7 +26,7 @@ builder.AddTypeConverter<Version>((consumer, argument, value, services) =>
 builder.AddTypeConverter(new ReflectionTypeConverter(caseIgnore: true));
 
 builder.AddCommand("delegate", () => "Hello World!");
-builder.AddCommand("delegate-context", (CommandContext<CustomConsumer> ctx) => $"Hello, {ctx.Consumer.Name}!");
+builder.AddCommand("delegate-context", (CommandContext<CustomConsumer> ctx) => $"Hello, {ctx.Caller.Name}!");
 builder.AddCommand("delegate-params", (string name) => $"Hello, {name}!");
 
 var manager = builder.Build();

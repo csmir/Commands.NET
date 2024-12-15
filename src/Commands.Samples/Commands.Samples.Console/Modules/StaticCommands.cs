@@ -2,13 +2,13 @@
 
 namespace Commands.Samples
 {
-    public class StaticCommands : ModuleBase
+    public class StaticCommands : CommandModule
     {
         [Name("static")]
         [Description("Sends a hello world message.")]
         public static void StaticHelloWorld(CommandContext<CustomConsumer> context)
         {
-            context.Consumer.Send("Hello world!");
+            context.Caller.Respond("Hello world!");
         }
     }
 }

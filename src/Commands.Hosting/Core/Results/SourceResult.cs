@@ -3,7 +3,7 @@
     /// <summary>
     ///     The result of the source acquirement within the command execution pipeline.
     /// </summary>
-    public readonly struct SourceResult : ICommandResult
+    public readonly struct SourceResult : IExecuteResult
     {
         /// <inheritdoc />
         public Exception? Exception { get; }
@@ -19,11 +19,11 @@
 
         internal CommandOptions? Options { get; }
 
-        internal ConsumerBase? Consumer { get; }
+        internal CallerContext? Consumer { get; }
 
         internal ArgumentEnumerator? Args { get; }
 
-        private SourceResult(ConsumerBase? consumer, ArgumentEnumerator? args, CommandOptions? options, Exception? exception)
+        private SourceResult(CallerContext? consumer, ArgumentEnumerator? args, CommandOptions? options, Exception? exception)
         {
             Options = options;
             Consumer = consumer;
@@ -38,7 +38,7 @@
         /// <param name="args">An unparsed command query, which will be parsed using <see cref="CommandParser.ParseKeyValueCollection(string)"/>.</param>
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
-        public static SourceResult FromSuccess(ConsumerBase consumer, string args, CommandOptions? options = null)
+        public static SourceResult FromSuccess(CallerContext consumer, string args, CommandOptions? options = null)
         {
             var parseResult = CommandParser.ParseKeyValueCollection(args);
 
@@ -54,7 +54,7 @@
         /// <param name="args">A parsed command query.</param>
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
-        public static SourceResult FromSuccess(ConsumerBase consumer, IEnumerable<object> args, CommandOptions? options = null)
+        public static SourceResult FromSuccess(CallerContext consumer, IEnumerable<object> args, CommandOptions? options = null)
         {
             return new(consumer, new ArgumentEnumerator(args), options, null);
         }
@@ -66,7 +66,7 @@
         /// <param name="args">A parsed command query.</param>
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
-        public static SourceResult FromSuccess(ConsumerBase consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
+        public static SourceResult FromSuccess(CallerContext consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
         {
             options ??= new CommandOptions();
             return new(consumer, new ArgumentEnumerator(args, options.MatchComparer), options, null);

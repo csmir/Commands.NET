@@ -134,7 +134,7 @@ namespace Commands
         /// <param name="resolveDelegate">The delegate that is invoked when the result of a command needs to be handled.</param>
         /// <param name="scopeToExecution">Determines if the service should be scoped to the command execution. If <see langword="false"/>, the service will be added as a singleton.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
-        public static IHostBuilder AddResultResolver(this IHostBuilder builder, Action<ConsumerBase, ICommandResult, IServiceProvider> resolveDelegate, bool scopeToExecution = false)
+        public static IHostBuilder AddResultResolver(this IHostBuilder builder, Action<CallerContext, IExecuteResult, IServiceProvider> resolveDelegate, bool scopeToExecution = false)
         {
             EnsureConfigured(builder);
 
@@ -156,7 +156,7 @@ namespace Commands
         /// <param name="resolveDelegate">The delegate that is invoked when the result of a command needs to be handled.</param>
         /// <param name="scopeToExecution">Determines if the service should be scoped to the command execution. If <see langword="false"/>, the service will be added as a singleton.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
-        public static IHostBuilder AddResultResolver(this IHostBuilder builder, Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resolveDelegate, bool scopeToExecution = false)
+        public static IHostBuilder AddResultResolver(this IHostBuilder builder, Func<CallerContext, IExecuteResult, IServiceProvider, ValueTask> resolveDelegate, bool scopeToExecution = false)
         {
             EnsureConfigured(builder);
 
@@ -202,7 +202,7 @@ namespace Commands
         /// <param name="convertDelegate">The delegate that is invoked when the conversion of a command argument of the given type is requested.</param>
         /// <param name="scopeToExecution">Determines if the service should be scoped to the command execution. If <see langword="false"/>, the service will be added as a singleton.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
-        public static IHostBuilder AddTypeConverter<TConvertible>(this IHostBuilder builder, Func<ConsumerBase, IArgument, object?, IServiceProvider, ConvertResult> convertDelegate, bool scopeToExecution = false)
+        public static IHostBuilder AddTypeConverter<TConvertible>(this IHostBuilder builder, Func<CallerContext, IArgument, object?, IServiceProvider, ConvertResult> convertDelegate, bool scopeToExecution = false)
         {
             EnsureConfigured(builder);
 
@@ -233,7 +233,7 @@ namespace Commands
         /// <param name="convertDelegate">The delegate that is invoked when the conversion of a command argument of the given type is requested.</param>
         /// <param name="scopeToExecution">Determines if the service should be scoped to the command execution. If <see langword="false"/>, the service will be added as a singleton.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
-        public static IHostBuilder AddTypeConverter<TConvertible>(this IHostBuilder builder, Func<ConsumerBase, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertDelegate, bool scopeToExecution = false)
+        public static IHostBuilder AddTypeConverter<TConvertible>(this IHostBuilder builder, Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertDelegate, bool scopeToExecution = false)
         {
             EnsureConfigured(builder);
 

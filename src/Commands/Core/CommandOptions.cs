@@ -25,14 +25,6 @@ namespace Commands
         public CancellationToken CancellationToken { get; set; } = default;
 
         /// <summary>
-        ///     Gets or sets an ID that can be used to trace a command execution task through the pipeline. This ID should be unique per execution.
-        /// </summary>
-        /// <remarks>
-        ///     Default: <see cref="Guid.NewGuid"/>
-        /// </remarks>
-        public Guid TraceId { get; set; } = Guid.NewGuid();
-
-        /// <summary>
         ///     Gets or sets the approach to asynchronousity in command execution.
         ///     The asynchronous execution approach drastically changes the expected behavior of executing a command:
         ///     <list type="bullet">
@@ -81,6 +73,14 @@ namespace Commands
         ///     Default: <see langword="false"/>
         /// </remarks>
         public bool SkipPreconditions { get; set; } = false;
+
+        /// <summary>
+        ///     Gets or sets the separator used to join remaining arguments in a command.
+        /// </summary>
+        /// <remarks>
+        ///     Default: <c>' '</c> (whitespace)
+        /// </remarks>
+        public char RemainderSeparator { get; set; } = ' ';
 
         /// <summary>
         ///     Gets or sets the comparer used to match command names and named arguments.

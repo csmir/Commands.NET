@@ -74,7 +74,7 @@
         /// <param name="args">The arguments to be used to run a command.</param>
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
         protected SourceResult Success<T>(T consumer, IEnumerable<object> args)
-            where T : ConsumerBase
+            where T : CallerContext
         {
             return SourceResult.FromSuccess(consumer, args);
         }
@@ -87,7 +87,7 @@
         /// <param name="options">The options used to configure command execution.</param>
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
         protected SourceResult Success<T>(T consumer, IEnumerable<object> args, CommandOptions options)
-            where T : ConsumerBase
+            where T : CallerContext
         {
             return SourceResult.FromSuccess(consumer, args, options);
         }
@@ -99,7 +99,7 @@
         /// <param name="args">The arguments to be used to run a command.</param>
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
         protected SourceResult Success<T>(T consumer, IEnumerable<KeyValuePair<string, object?>> args)
-            where T : ConsumerBase
+            where T : CallerContext
         {
             return SourceResult.FromSuccess(consumer, args);
         }
@@ -112,7 +112,7 @@
         /// <param name="options">The options used to configure command execution.</param>
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
         protected SourceResult Success<T>(T consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions options)
-            where T : ConsumerBase
+            where T : CallerContext
         {
             return SourceResult.FromSuccess(consumer, args);
         }

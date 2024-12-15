@@ -21,7 +21,7 @@ namespace Commands.Conditions
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
         public abstract ValueTask<ConditionResult> Evaluate(
-            ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
+            CallerContext consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
 
         internal static IEnumerable<ConditionEvaluator> CreateEvaluators(IEnumerable<IExecuteCondition> conditions)
         {

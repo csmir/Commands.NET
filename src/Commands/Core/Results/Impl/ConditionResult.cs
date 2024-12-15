@@ -6,7 +6,7 @@ namespace Commands
     ///     The result of a check operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public readonly struct ConditionResult : ICommandResult
+    public readonly struct ConditionResult : IExecuteResult
     {
         /// <inheritdoc />
         public Exception? Exception { get; }

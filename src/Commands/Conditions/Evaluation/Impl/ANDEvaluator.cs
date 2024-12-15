@@ -8,16 +8,14 @@ namespace Commands.Conditions
     public sealed class ANDEvaluator : ConditionEvaluator
     {
         /// <inheritdoc />
-        public override async ValueTask<ConditionResult> Evaluate(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask<ConditionResult> Evaluate(CallerContext consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
         {
             foreach (var condition in Conditions)
             {
                 var result = await condition.Evaluate(consumer, command, services, cancellationToken);
 
                 if (!result.Success)
-                {
                     return result;
-                }
             }
 
             return ConditionResult.FromSuccess();

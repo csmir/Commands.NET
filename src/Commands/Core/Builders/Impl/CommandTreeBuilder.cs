@@ -54,6 +54,11 @@ namespace Commands
         public bool SealModuleDefinitions { get; set; }
 
         /// <summary>
+        ///     Gets or sets a filter that determines whether a created component should be yielded back to the registration process or skipped entirely, based on state provided within the component itself.
+        /// </summary>
+        public Func<IComponent, bool> RegisterComponentFilter { get; set; }
+
+        /// <summary>
         ///     Creates a new instance of <see cref="CommandTreeBuilder"/>, with default values applied.
         /// </summary>
         public CommandTreeBuilder()
@@ -67,23 +72,21 @@ namespace Commands
             if (applyStandards)
             {
                 NamingRegex = new(DEFAULT_REGEX, RegexOptions.Compiled);
-                SealModuleDefinitions = false;
 
                 Assemblies      = [Assembly.GetEntryAssembly()!];
                 TypeConverters  = TypeConverterBase.BuildDefaults();
-                ResultResolvers = [];
-                Components      = [];
             }
             else
             {
-                NamingRegex = null;
-                SealModuleDefinitions = false;
-
                 Assemblies      = [];
                 TypeConverters  = [];
-                ResultResolvers = [];
-                Components      = [];
             }
+
+            ResultResolvers = [];
+            Components      = [];
+
+            SealModuleDefinitions = false;
+            RegisterComponentFilter = _ => true;
         }
 
         /// <summary>
@@ -189,12 +192,12 @@ namespace Commands
         ///     Configures an action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
         /// </summary>
         /// <remarks>
-        ///     The <see cref="ICommandResult"/> revealed by this action contains data about command success. 
-        ///     Check <see cref="ICommandResult.Success"/> to determine whether or not the command ran successfully.
+        ///     The <see cref="IExecuteResult"/> revealed by this action contains data about command success. 
+        ///     Check <see cref="IExecuteResult.Success"/> to determine whether or not the command ran successfully.
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
-        public CommandTreeBuilder AddResultResolver(Action<ConsumerBase, ICommandResult, IServiceProvider> resultAction)
+        public CommandTreeBuilder AddResultResolver(Action<CallerContext, IExecuteResult, IServiceProvider> resultAction)
         {
             if (resultAction == null)
                 throw new ArgumentNullException(nameof(resultAction));
@@ -208,12 +211,12 @@ namespace Commands
         ///     Configures an asynchronous action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
         /// </summary>
         /// <remarks>
-        ///     The <see cref="ICommandResult"/> revealed by this action contains data about command success. 
-        ///     Check <see cref="ICommandResult.Success"/> to determine whether or not the command ran successfully.
+        ///     The <see cref="IExecuteResult"/> revealed by this action contains data about command success. 
+        ///     Check <see cref="IExecuteResult.Success"/> to determine whether or not the command ran successfully.
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
-        public CommandTreeBuilder AddResultResolver(Func<ConsumerBase, ICommandResult, IServiceProvider, ValueTask> resultAction)
+        public CommandTreeBuilder AddResultResolver(Func<CallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction)
         {
             if (resultAction == null)
                 throw new ArgumentNullException(nameof(resultAction));
@@ -246,7 +249,7 @@ namespace Commands
         /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the conversion process.</param>
         /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
-        public CommandTreeBuilder AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
+        public CommandTreeBuilder AddTypeConverter<TConvertable>(Func<CallerContext, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
         {
             if (convertAction == null)
                 throw new ArgumentNullException(nameof(convertAction));
@@ -264,7 +267,7 @@ namespace Commands
         /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the conversion process.</param>
         /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
-        public CommandTreeBuilder AddTypeConverter<TConvertable>(Func<ConsumerBase, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
+        public CommandTreeBuilder AddTypeConverter<TConvertable>(Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
         {
             if (convertAction == null)
                 throw new ArgumentNullException(nameof(convertAction));
@@ -323,12 +326,23 @@ namespace Commands
         }
 
         /// <summary>
+        ///     Configures the <see cref="RegisterComponentFilter"/> to filter components at registration, based on the provided predicate.
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        public CommandTreeBuilder WithRegistrationFilter(Func<IComponent, bool> filter)
+        {
+            RegisterComponentFilter = filter;
+            return this;
+        }
+
+        /// <summary>
         ///     Builds the current <see cref="CommandTreeBuilder"/> instance into a new <see cref="BuildConfiguration"/>, which is used to create a new instance of <see cref="CommandTree"/>.
         /// </summary>
         /// <returns>A new instance of <see cref="CommandTree"/> built by this builder.</returns>
         public CommandTree Build()
         {
-            var configuration = new BuildConfiguration(TypeConverters, NamingRegex, SealModuleDefinitions);
+            var configuration = new BuildConfiguration(TypeConverters, NamingRegex, SealModuleDefinitions, RegisterComponentFilter);
 
             var components = Components.Select(x => x.Build(configuration));
 

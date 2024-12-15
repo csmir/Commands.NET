@@ -7,7 +7,7 @@ namespace Commands
     ///     The result of a search operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public readonly struct SearchResult : ICommandResult
+    public readonly struct SearchResult : IExecuteResult
     {
         /// <summary>
         ///     Gets the component that was discovered for this result.

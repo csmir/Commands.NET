@@ -1,7 +1,7 @@
 ﻿namespace Commands.Tests
 {
     [Name("overload")]
-    public class OverloadTests : ModuleBase
+    public class OverloadTests : CommandModule
     {
         public string GetDefault => Get("someId");
 

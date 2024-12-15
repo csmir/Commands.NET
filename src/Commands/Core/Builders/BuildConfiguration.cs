@@ -9,8 +9,9 @@ namespace Commands
     /// </summary>
     public class BuildConfiguration
     {
-        // The following property is only used when configuring the command manager.
+        // The following properties are only used when configuring the command tree.
         internal Action<IComponent[], bool>? N_NotifyTopLevelMutation;
+        internal Func<IComponent, bool>? N_ComponentRegistrationFilter;
 
         /// <summary>
         ///     Gets a collection of type converters that are used to convert arguments.
@@ -34,14 +35,15 @@ namespace Commands
         /// <param name="namingPattern">The naming pattern which should determine how aliases are verified for their validity.</param>
         /// <param name="sealModuleDefinitions">Defines if modules registered by this configuration will be read-only, making them unable to be modified.</param>
         public BuildConfiguration(IEnumerable<TypeConverterBase> converters, string? namingPattern = @"^[a-z0-9_-]*$", bool sealModuleDefinitions = false)
-            : this(converters.ToDictionary(x => x.Type), namingPattern is not null ? new Regex(namingPattern) : null, sealModuleDefinitions)
+            : this(converters.ToDictionary(x => x.Type), namingPattern is not null ? new Regex(namingPattern) : null, sealModuleDefinitions, null)
         {
 
         }
 
-        internal BuildConfiguration(Dictionary<Type, TypeConverterBase> converters, Regex? namingPattern, bool sealModuleDefinitions)
+        internal BuildConfiguration(Dictionary<Type, TypeConverterBase> converters, Regex? namingPattern, bool enforceReadonly, Func<IComponent, bool>? filter)
         {
-            SealModuleDefinitions = sealModuleDefinitions;
+            N_ComponentRegistrationFilter = filter;
+            SealModuleDefinitions = enforceReadonly;
             TypeConverters = converters;
             NamingRegex = namingPattern;
         }

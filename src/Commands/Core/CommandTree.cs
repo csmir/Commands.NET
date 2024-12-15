@@ -27,10 +27,10 @@ namespace Commands
         ///     Initializes a new instance of the <see cref="CommandTree"/> class, using the provided <paramref name="configuration"/> to build the command tree.
         /// </summary>
         /// <remarks>
-        ///     This constructor searches for all components that inherit <see cref="ModuleBase"/> in the provided assemblies.
+        ///     This constructor searches for all components that inherit <see cref="CommandModule"/> in the provided assemblies.
         /// </remarks>
         /// <param name="configuration">The configuration by which all reflected components should be configured.</param>
-        /// <param name="assemblies">A collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="ModuleBase"/>.</param>
+        /// <param name="assemblies">A collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="CommandModule"/>.</param>
         public CommandTree(BuildConfiguration configuration, params IEnumerable<Assembly> assemblies)
             : this(configuration, assemblies, null, null) { }
 
@@ -49,7 +49,7 @@ namespace Commands
         ///     Initializes a new instance of the <see cref="CommandTree"/> class, using the provided <paramref name="configuration"/> to build the command tree.
         /// </summary>
         /// <param name="configuration">The configuration by which all reflected components should be configured.</param>
-        /// <param name="assemblies">An optional collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="ModuleBase"/>.</param>
+        /// <param name="assemblies">An optional collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="CommandModule"/>.</param>
         /// <param name="runtimeComponents">Delegate-based components that should be passed to the tree at runtime.</param>
         /// <param name="resolvers">An optional collection of handlers of command results.</param>
         public CommandTree(BuildConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<IComponent>? runtimeComponents = null, IEnumerable<ResultResolverBase>? resolvers = null)
@@ -96,18 +96,18 @@ namespace Commands
         /// <summary>
         ///     Attempts to execute a command based on the provided <paramref name="args"/>.
         /// </summary>
-        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
+        /// <param name="caller">A command caller that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">An unparsed input that is expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
-            T consumer, string args, CommandOptions? options = null)
-            where T : ConsumerBase
+            T caller, string args, CommandOptions? options = null)
+            where T : CallerContext
         {
             if (string.IsNullOrWhiteSpace(args))
                 throw new ArgumentNullException(nameof(args));
 
-            return Execute(consumer, CommandParser.ParseKeyValueCollection(args), options);
+            return Execute(caller, CommandParser.ParseKeyValueCollection(args), options);
         }
 
         /// <summary>
@@ -116,45 +116,45 @@ namespace Commands
         /// <remarks>
         ///     The arguments intended for searching for a target need to be <see cref="string"/>, as <see cref="ModuleInfo"/> and <see cref="CommandInfo"/> store their aliases as <see cref="string"/> values.
         /// </remarks>
-        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
+        /// <param name="caller">A command caller that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
-            T consumer, IEnumerable<object> args, CommandOptions? options = null)
-            where T : ConsumerBase
+            T caller, IEnumerable<object> args, CommandOptions? options = null)
+            where T : CallerContext
         {
-            return Execute(consumer, new ArgumentEnumerator(args), options ?? new CommandOptions());
+            return Execute(caller, new ArgumentEnumerator(args), options ?? new CommandOptions());
         }
 
         /// <summary>
         ///     Attempts to execute a command based on the provided <paramref name="args"/>.
         /// </summary>
-        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
+        /// <param name="caller">A command caller that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
-            T consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
-            where T : ConsumerBase
+            T caller, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
+            where T : CallerContext
         {
             options ??= new CommandOptions();
 
-            return Execute(consumer, new ArgumentEnumerator(args, options.MatchComparer), options);
+            return Execute(caller, new ArgumentEnumerator(args, options.MatchComparer), options);
         }
 
         /// <summary>
         ///     Attempts to execute a command based on the provided <paramref name="args"/>.
         /// </summary>
-        /// <param name="consumer">A command consumer that persist for the duration of the execution pipeline, serving as a metadata container.</param>
+        /// <param name="caller">A command caller that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
-            T consumer, ArgumentEnumerator args, CommandOptions options)
-            where T : ConsumerBase
+            T caller, ArgumentEnumerator args, CommandOptions options)
+            where T : CallerContext
         {
-            var task = StartAsynchronousPipeline(consumer, args, options);
+            var task = StartAsynchronousPipeline(caller, args, options);
 
             if (options.DoAsynchronousExecution)
                 return Task.CompletedTask;
@@ -165,17 +165,17 @@ namespace Commands
         #region Pipeline
 
         private async Task StartAsynchronousPipeline<T>(
-            T consumer, ArgumentEnumerator args, CommandOptions options)
-            where T : ConsumerBase
+            T caller, ArgumentEnumerator args, CommandOptions options)
+            where T : CallerContext
         {
-            ICommandResult? result = null;
+            IExecuteResult? result = null;
 
             var searches = Find(args);
             foreach (var search in searches)
             {
                 if (search.Component is CommandInfo command)
                 {
-                    result = await InvokeCommand(consumer, command, search.SearchHeight, args, options);
+                    result = await InvokeCommand(caller, command, search.SearchHeight, args, options);
 
                     if (!result.Success)
                         continue;
@@ -189,16 +189,16 @@ namespace Commands
 
             result ??= SearchResult.FromError();
 
-            await EvaluateResult(consumer, result, options);
+            await FinalizeInvocation(caller, result, options);
         }
 
-        private async ValueTask<ICommandResult> InvokeCommand<T>(
-            T consumer, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
-            where T : ConsumerBase
+        private async ValueTask<IExecuteResult> InvokeCommand<T>(
+            T caller, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
+            where T : CallerContext
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            var conversion = await ConvertCommand(consumer, command, argHeight, args, options);
+            var conversion = await ConvertCommand(caller, command, argHeight, args, options);
 
             var arguments = new object[conversion.Length];
 
@@ -212,16 +212,16 @@ namespace Commands
 
             try
             {
-                var preCheckResult = await EvaluatePreconditions(consumer, command, options);
+                var preCheckResult = await EvaluatePreconditions(caller, command, options);
 
                 if (!preCheckResult.Success)
                     return preCheckResult;
 
-                var value = command.Invoker.Invoke(consumer, command, arguments, this, options);
+                var value = command.Invoker.Invoke(caller, command, arguments, this, options);
 
-                await RespondResult(consumer, command, value, options);
+                await EvaluateInvocationResult(caller, command, value, options);
 
-                var postCheckResult = await EvaluatePostconditions(consumer, command, options);
+                var postCheckResult = await EvaluatePostconditions(caller, command, options);
 
                 if (!postCheckResult.Success)
                     return postCheckResult;
@@ -235,8 +235,8 @@ namespace Commands
         }
 
         private async ValueTask<ConvertResult[]> ConvertCommand<T>(
-            T consumer, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
-            where T : ConsumerBase
+            T caller, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
+            where T : CallerContext
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -246,21 +246,21 @@ namespace Commands
                 return [];
 
             if (command.MaxLength == args.Length)
-                return await ConvertArguments(consumer, command.Arguments, args, options);
+                return await ConvertArguments(caller, command.Arguments, args, options);
 
             if (command.MaxLength <= args.Length && command.HasRemainder)
-                return await ConvertArguments(consumer, command.Arguments, args, options);
+                return await ConvertArguments(caller, command.Arguments, args, options);
 
             if (command.MaxLength > args.Length && command.MinLength <= args.Length)
-                return await ConvertArguments(consumer, command.Arguments, args, options);
+                return await ConvertArguments(caller, command.Arguments, args, options);
 
             return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
         }
 
         private async ValueTask<ConvertResult[]> ConvertArguments(
-            ConsumerBase consumer, IArgument[] arguments, ArgumentEnumerator args, CommandOptions options)
+            CallerContext caller, IArgument[] arguments, ArgumentEnumerator args, CommandOptions options)
         {
-            static ValueTask<ConvertResult> Convert(IArgument argument, ConsumerBase consumer, object? value, bool isArray, CommandOptions options)
+            static ValueTask<ConvertResult> Convert(IArgument argument, CallerContext caller, object? value, bool isArray, CommandOptions options)
             {
                 options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -276,7 +276,7 @@ namespace Commands
                 if (argument.Type.IsObject())
                     return ConvertResult.FromSuccess(value);
 
-                return argument.Converter!.Evaluate(consumer, argument, value, options.Services, options.CancellationToken);
+                return argument.Converter!.Evaluate(caller, argument, value, options.Services, options.CancellationToken);
             }
 
             options.CancellationToken.ThrowIfCancellationRequested();
@@ -291,7 +291,7 @@ namespace Commands
                 // parse remainder.
                 if (argument.IsRemainder)
                 {
-                    results[i] = await Convert(argument, consumer, argument.IsCollection ? args.TakeRemaining() : args.JoinRemaining(), true, options);
+                    results[i] = await Convert(argument, caller, argument.IsCollection ? args.TakeRemaining() : args.JoinRemaining(options.RemainderSeparator), true, options);
 
                     // End of the line, as remainder is always the last argument.
                     break;
@@ -300,7 +300,7 @@ namespace Commands
                 // parse complex argument.
                 if (argument is ComplexArgumentInfo complexArgument)
                 {
-                    var result = await ConvertArguments(consumer, complexArgument.Arguments, args, options);
+                    var result = await ConvertArguments(caller, complexArgument.Arguments, args, options);
 
                     if (result.All(x => x.Success))
                     {
@@ -326,7 +326,7 @@ namespace Commands
 
                 if (args.TryNext(argument.Name!, out var value))
                 {
-                    results[i] = await Convert(argument, consumer, value, false, options);
+                    results[i] = await Convert(argument, caller, value, false, options);
                     continue;
                 }
 
@@ -342,26 +342,9 @@ namespace Commands
             return results;
         }
 
-        private async ValueTask EvaluateResult(
-            ConsumerBase consumer, ICommandResult result, CommandOptions options)
-        {
-            options.CancellationToken.ThrowIfCancellationRequested();
-
-            foreach (var resolver in _resolvers)
-                await resolver.Evaluate(consumer, result, options.Services, options.CancellationToken);
-        }
-
-        private async ValueTask RespondResult(
-            ConsumerBase consumer, CommandInfo command, object? value, CommandOptions options)
-        {
-            options.CancellationToken.ThrowIfCancellationRequested();
-            foreach (var resolver in _resolvers)
-                await resolver.Respond(consumer, command, value, options.Services, options.CancellationToken);
-        }
-
         private async ValueTask<ConditionResult> EvaluatePreconditions<T>(
-            T consumer, CommandInfo command, CommandOptions options)
-            where T : ConsumerBase
+            T caller, CommandInfo command, CommandOptions options)
+            where T : CallerContext
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -369,7 +352,7 @@ namespace Commands
             {
                 foreach (var precon in command.PreEvaluations)
                 {
-                    var checkResult = await precon.Evaluate(consumer, command, options.Services, options.CancellationToken);
+                    var checkResult = await precon.Evaluate(caller, command, options.Services, options.CancellationToken);
 
                     if (!checkResult.Success)
                         return checkResult;
@@ -380,8 +363,8 @@ namespace Commands
         }
 
         private async ValueTask<ConditionResult> EvaluatePostconditions<T>(
-            T consumer, CommandInfo command, CommandOptions options)
-            where T : ConsumerBase
+            T caller, CommandInfo command, CommandOptions options)
+            where T : CallerContext
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -389,7 +372,7 @@ namespace Commands
             {
                 foreach (var postcon in command.PostEvaluations)
                 {
-                    var checkResult = await postcon.Evaluate(consumer, command, options.Services, options.CancellationToken);
+                    var checkResult = await postcon.Evaluate(caller, command, options.Services, options.CancellationToken);
 
                     if (!checkResult.Success)
                         return checkResult;
@@ -397,6 +380,24 @@ namespace Commands
             }
 
             return ConditionResult.FromSuccess();
+        }
+
+        private async ValueTask EvaluateInvocationResult(
+            CallerContext caller, CommandInfo command, object? value, CommandOptions options)
+        {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
+            foreach (var resolver in _resolvers)
+                await resolver.EvaluateResponse(caller, command, value, options.Services, options.CancellationToken);
+        }
+
+        private async ValueTask FinalizeInvocation(
+            CallerContext caller, IExecuteResult result, CommandOptions options)
+        {
+            options.CancellationToken.ThrowIfCancellationRequested();
+
+            foreach (var resolver in _resolvers)
+                await resolver.EvaluateResult(caller, result, options.Services, options.CancellationToken);
         }
 
         #endregion

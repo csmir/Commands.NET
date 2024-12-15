@@ -3,16 +3,16 @@
 namespace Commands
 {
     /// <summary>
-    ///     Represents data about a command, as a <see cref="ModuleBase"/> normally would. 
+    ///     Represents data about a command, as a <see cref="CommandModule"/> normally would. 
     ///     This context is used for <see langword="static"/> and <see langword="delegate"/> commands.
     /// </summary>
-    public sealed class CommandContext<T>(T consumer, CommandInfo command, CommandTree tree, CommandOptions options)
-        where T : ConsumerBase
+    public class CommandContext<T>(T consumer, CommandInfo command, CommandTree tree, CommandOptions options) 
+        where T : CallerContext
     {
         /// <summary>
         ///     Gets the consumer of the command currently in scope.
         /// </summary>
-        public T Consumer { get; } = consumer;
+        public T Caller { get; } = consumer;
 
         /// <summary>
         ///     Gets the options for the command currently in scope.
@@ -35,8 +35,6 @@ namespace Commands
         /// <param name="response">The response to send to the consumer.</param>
         /// <returns>An asynchronous <see cref="Task"/> that can be awaited to wait for the response to send, otherwise dismissed.</returns>
         public Task Send(object response)
-        {
-            return Consumer.Send(response);
-        }
+            => Caller.Respond(response);
     }
 }

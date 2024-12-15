@@ -8,7 +8,7 @@ namespace Commands.Conditions
     public sealed class OREvaluator : ConditionEvaluator
     {
         /// <inheritdoc />
-        public override async ValueTask<ConditionResult> Evaluate(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask<ConditionResult> Evaluate(CallerContext consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
         {
             var lastFailure = default(ConditionResult);
 

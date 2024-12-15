@@ -20,7 +20,7 @@ namespace Commands.Conditions
     ///     An attribute that defines that a check should succeed before a command can be executed.
     /// </summary>
     /// <remarks>
-    ///     The <see cref="Evaluate(ConsumerBase, CommandInfo, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
+    ///     The <see cref="Evaluate(CallerContext, CommandInfo, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
     ///     Custom implementations of <see cref="PreconditionAttribute{T}"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     ///     If multiple commands are found during matching, multiple sequences of preconditions will be ran to find a match that succeeds.
     /// </remarks>
@@ -34,7 +34,7 @@ namespace Commands.Conditions
         ///     Make use of <see cref="Error(Exception)"/> or <see cref="Error(string)"/> and <see cref="Success"/> to safely create the intended result.
         /// </remarks>
         public abstract ValueTask<ConditionResult> Evaluate(
-            ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
+            CallerContext consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]

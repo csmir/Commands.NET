@@ -7,7 +7,7 @@ namespace Commands.Reflection
     /// </summary>
     public sealed class ConstructorInvoker : IInvoker
     {
-        private readonly Type c_serviceType = typeof(IServiceProvider);
+        private static readonly Type c_serviceType = typeof(IServiceProvider);
 
         private readonly ConstructorInfo _ctor;
 
@@ -47,12 +47,12 @@ namespace Commands.Reflection
                 return ctor;
             }
 
-            throw new InvalidOperationException($"{type} is marked as {nameof(ModuleBase)}, but no public constructors are accessible for this type to be constructed.");
+            throw new InvalidOperationException($"{type} is marked as {nameof(CommandModule)}, but no public constructors are accessible for this type to be constructed.");
         }
 
         /// <inheritdoc />
         public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandTree manager, CommandOptions options)
-            where T : ConsumerBase
+            where T : CallerContext
         {
             var services = new object?[Parameters.Length];
             for (int i = 0; i < Parameters.Length; i++)
@@ -63,7 +63,7 @@ namespace Commands.Reflection
 
                 if (service == null)
                 {
-                    if (parameter.Type == c_serviceType)
+                    if (parameter.Type.GUID == c_serviceType.GUID)
                     {
                         services[i] = options.Services;
                         continue;

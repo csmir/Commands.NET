@@ -20,13 +20,13 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandTree manager, CommandOptions options)
-            where T : ConsumerBase
+            where T : CallerContext
         {
-            var module = command.Parent?.Invoker?.Invoke(consumer, command, args, manager, options) as ModuleBase;
+            var module = command.Parent?.Invoker?.Invoke(consumer, command, args, manager, options) as CommandModule;
 
             if (module != null)
             {
-                module.Consumer = consumer;
+                module.Caller = consumer;
                 module.Command = command;
                 module.Tree = manager;
             }

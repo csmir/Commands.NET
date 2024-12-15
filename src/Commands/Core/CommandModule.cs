@@ -3,11 +3,11 @@
 namespace Commands
 {
     /// <summary>
-    ///     Represents a <see cref="ModuleBase"/> that implements an implementation-friendly accessor to the <see cref="ConsumerBase"/>.
+    ///     Represents a <see cref="CommandModule"/> that implements an implementation-friendly accessor to the <see cref="CallerContext"/>.
     /// </summary>
-    /// <typeparam name="T">The implementation of <see cref="ConsumerBase"/> known during command pipeline execution.</typeparam>
-    public abstract class ModuleBase<T> : ModuleBase
-        where T : ConsumerBase
+    /// <typeparam name="T">The implementation of <see cref="CallerContext"/> known during command pipeline execution.</typeparam>
+    public abstract class CommandModule<T> : CommandModule
+        where T : CallerContext
     {
         private T? _consumer;
 
@@ -15,21 +15,21 @@ namespace Commands
         ///     Gets the consumer for the command currently in scope.
         /// </summary>
         /// <remarks>
-        ///     Throws if the <see cref="ConsumerBase"/> provided in this scope does not match <typeparamref name="T"/>.
+        ///     Throws if the <see cref="CallerContext"/> provided in this scope does not match <typeparamref name="T"/>.
         /// </remarks>
         /// <exception cref="InvalidOperationException">Thrown when <typeparamref name="T"/> does not match with the provided</exception>
-        public new T Consumer
+        public new T Caller
         {
             get
             {
                 if (_consumer == null)
                 {
-                    if (base.Consumer is T t)
+                    if (base.Caller is T t)
                     {
                         _consumer = t;
                     }
                     else
-                        throw new InvalidOperationException($"{Consumer.GetType()} cannot be cast to {typeof(T)}.");
+                        throw new InvalidOperationException($"{base.Caller.GetType()} cannot be cast to {typeof(T)}.");
                 }
                 return _consumer;
             }
@@ -43,13 +43,13 @@ namespace Commands
     /// <remarks>
     ///      All derived types must be known in <see cref="CommandTreeBuilder.Assemblies"/> to be discoverable and automatically registered during the creation of a <see cref="CommandTree"/>.
     /// </remarks>
-    public abstract class ModuleBase
+    public abstract class CommandModule
     {
         /// <summary>
         ///     Gets the consumer for the command currently in scope.
         /// </summary>
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
-        public ConsumerBase Consumer { get; internal set; }
+        public CallerContext Caller { get; internal set; }
 
         /// <summary>
         ///     Gets the reflection information about the command currently in scope.
@@ -69,7 +69,7 @@ namespace Commands
         /// <returns>An asynchronous <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
         public Task Send(object response)
         {
-            return Consumer.Send(response);
+            return Caller.Respond(response);
         }
     }
 }

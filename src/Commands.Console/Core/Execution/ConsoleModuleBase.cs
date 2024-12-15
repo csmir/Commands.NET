@@ -3,10 +3,10 @@
 namespace Commands
 {
     /// <summary>
-    ///     Represents a module that can contain commands to execute, implementing <see cref="ModuleBase{TConsumer}"/> with expanded functionality for console applications.
+    ///     Represents a module that can contain commands to execute, implementing <see cref="CommandModule{TConsumer}"/> with expanded functionality for console applications.
     /// </summary>
     /// <typeparam name="TConsumer">The consumer of the command being executed.</typeparam>
-    public class ConsoleModuleBase<TConsumer> : ModuleBase<TConsumer>
+    public class ConsoleModuleBase<TConsumer> : CommandModule<TConsumer>
         where TConsumer : ConsoleConsumerBase
     {
         /// <summary>
@@ -19,7 +19,7 @@ namespace Commands
         /// <returns>The response to the question.</returns>
         public virtual string Ask(string question)
         {
-            return Consumer.Ask(question);
+            return Caller.Ask(question);
         }
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace Commands
         /// <returns><see langword="true"/> if the question was responded with with 'Y' or 'Yes'. <see langword="false"/> if the response is 'N', 'No' or if the sequence was escaped otherwise.</returns>
         public virtual bool Confirm(string question)
         {
-            return Consumer.Confirm(question);
+            return Caller.Confirm(question);
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Commands
         /// <returns>The result of the text prompt.</returns>
         public virtual T Prompt<T>(TextPrompt<T> prompt)
         {
-            return Consumer.Prompt(prompt);
+            return Caller.Prompt(prompt);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Commands
         public virtual T Select<T>(SelectionPrompt<T> prompt)
             where T : notnull
         {
-            return Consumer.Select(prompt);
+            return Caller.Select(prompt);
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Commands
         /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
         public virtual Task Send()
         {
-            return Consumer.Send();
+            return Caller.Send();
         }
     }
 }

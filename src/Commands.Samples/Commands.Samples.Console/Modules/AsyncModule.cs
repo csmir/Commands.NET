@@ -1,6 +1,6 @@
 ﻿namespace Commands.Samples.Console.Modules
 {
-    public class AsyncModule : ModuleBase
+    public class AsyncModule : CommandModule
     {
         [Name("task-string")]
         public Task<string> GetString()

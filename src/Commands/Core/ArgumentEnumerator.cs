@@ -118,8 +118,8 @@ namespace Commands
         ///     Joins the remaining unnamed arguments in the set into a single string.
         /// </summary>
         /// <returns>A joined string containing all remaining arguments in this enumerator.</returns>
-        public readonly string JoinRemaining()
-            => string.Join(u0020, _unnamedArgs[_indexUnnamed..]);
+        public readonly string JoinRemaining(char separator = u0020)
+            => string.Join(separator, _unnamedArgs[_indexUnnamed..]);
 
         /// <summary>
         ///     Takes the remaining unnamed arguments in the set into an array which is used by Collector arguments.

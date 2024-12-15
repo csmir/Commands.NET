@@ -35,7 +35,7 @@ namespace Commands.Converters
         }
 
         public override async ValueTask<ConvertResult> Evaluate(
-            ConsumerBase consumer, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
+            CallerContext consumer, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
 

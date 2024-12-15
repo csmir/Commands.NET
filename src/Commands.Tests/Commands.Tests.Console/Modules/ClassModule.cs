@@ -3,7 +3,7 @@
     [Name("class-based", "cb")]
     [ANDCondition(true)]
     [ORCondition(true)]
-    public class ClassModule : ModuleBase
+    public class ClassModule : CommandModule
     {
         public void Run()
         {

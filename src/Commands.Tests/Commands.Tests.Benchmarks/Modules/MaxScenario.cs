@@ -1,6 +1,6 @@
 ﻿namespace Commands.Tests
 {
-    public sealed class MaxScenario : ModuleBase
+    public sealed class MaxScenario : CommandModule
     {
         public class MaxScenarioFormattable
         {

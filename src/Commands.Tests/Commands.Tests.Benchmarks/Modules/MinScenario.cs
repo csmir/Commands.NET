@@ -1,6 +1,6 @@
 ﻿namespace Commands.Tests
 {
-    public sealed class MinScenario : ModuleBase<ConsumerBase>
+    public sealed class MinScenario : CommandModule<CallerContext>
     {
         [Name("scenario")]
         public void Test()
@@ -16,7 +16,7 @@
         }
 
         [Name("scenario-nested")]
-        public sealed class NestedModule(IServiceProvider services) : ModuleBase<ConsumerBase>
+        public sealed class NestedModule(IServiceProvider services) : CommandModule<CallerContext>
         {
             private readonly IServiceProvider _services = services;
 

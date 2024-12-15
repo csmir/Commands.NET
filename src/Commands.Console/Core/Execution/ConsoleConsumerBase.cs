@@ -6,7 +6,7 @@ namespace Commands
     /// <summary>
     ///     Represents a consumer that represents the current console window that the application is running in.
     /// </summary>
-    public class ConsoleConsumerBase : ConsumerBase
+    public class ConsoleConsumerBase : CallerContext
     {
         /// <summary>
         ///     Gets the console that the consumer should write to.
@@ -35,7 +35,7 @@ namespace Commands
         /// </summary>
         /// <param name="response">The message that should be sent in response to the console.</param>
         /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
-        public override Task Send(object response)
+        public override Task Respond(object response)
         {
             if (response is IRenderable renderable)
             {

@@ -20,7 +20,7 @@ namespace Commands.Conditions
     ///     An attribute that defines that a check should succeed after a command can be executed.
     /// </summary>
     /// <remarks>
-    ///     The <see cref="Evaluate(ConsumerBase, CommandInfo, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
+    ///     The <see cref="Evaluate(CallerContext, CommandInfo, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
     ///     Custom implementations of <see cref="PostconditionAttribute{T}"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     /// </remarks>
     /// <typeparam name="T">The type of evaluator that will be used to determine the result of the evaluation.</typeparam>
@@ -33,7 +33,7 @@ namespace Commands.Conditions
         ///     Make use of <see cref="Error(Exception)"/> or <see cref="Error(string)"/> and <see cref="Success"/> to safely create the intended result.
         /// </remarks>
         public abstract ValueTask<ConditionResult> Evaluate(
-            ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
+            CallerContext consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]

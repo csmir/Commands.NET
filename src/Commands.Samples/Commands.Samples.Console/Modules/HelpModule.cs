@@ -3,7 +3,7 @@ using System.ComponentModel;
 
 namespace Commands.Samples
 {
-    public class HelpModule : ModuleBase
+    public class HelpModule : CommandModule
     {
         [Name("help")]
         public async Task Help()
@@ -14,9 +14,9 @@ namespace Commands.Samples
             {
                 var description = command.GetAttribute<DescriptionAttribute>()?.Description ?? "No description available.";
 
-                await Consumer.Send(command.ToString() ?? "Unnamed component.");
-                await Consumer.Send(command.FullName ?? "Unnamed command.");
-                await Consumer.Send(description);
+                await Caller.Respond(command.ToString() ?? "Unnamed component.");
+                await Caller.Respond(command.FullName ?? "Unnamed command.");
+                await Caller.Respond(description);
             }
         }
     }

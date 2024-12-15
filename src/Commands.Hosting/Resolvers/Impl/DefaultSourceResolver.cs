@@ -15,7 +15,7 @@
 
                 Console.CursorVisible = false;
 
-                return Success(new ConsumerBase(), CommandParser.ParseKeyValueCollection(src));
+                return Success(new CallerContext(), CommandParser.ParseKeyValueCollection(src));
             }
 
             return Error(new InvalidOperationException("The application failed to start."));

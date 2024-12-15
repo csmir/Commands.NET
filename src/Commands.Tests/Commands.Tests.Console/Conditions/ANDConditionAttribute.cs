@@ -5,7 +5,7 @@ namespace Commands.Tests
 {
     public class ANDConditionAttribute(bool pass) : PreconditionAttribute<ANDEvaluator>
     {
-        public override ValueTask<ConditionResult> Evaluate(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConditionResult> Evaluate(CallerContext consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (pass)
                 return ValueTask.FromResult(Success());

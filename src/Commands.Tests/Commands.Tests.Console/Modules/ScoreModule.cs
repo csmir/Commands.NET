@@ -1,7 +1,7 @@
 ﻿namespace Commands.Tests
 {
     [Name("score")]
-    public class ScoreModule : ModuleBase
+    public class ScoreModule : CommandModule
     {
         [Name("command")]
         public void ByBool(bool b)

@@ -7,7 +7,7 @@ namespace Commands
     ///     The result of an invocation operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public readonly struct InvokeResult : ICommandResult
+    public readonly struct InvokeResult : IExecuteResult
     {
         /// <summary>
         ///     Gets the command responsible for the invocation.

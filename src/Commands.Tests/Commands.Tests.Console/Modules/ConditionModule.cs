@@ -1,6 +1,6 @@
 ﻿namespace Commands.Tests
 {
-    public class ConditionModule : ModuleBase
+    public class ConditionModule : CommandModule
     {
         [Name("condition-or")]
         [ORCondition(true)]

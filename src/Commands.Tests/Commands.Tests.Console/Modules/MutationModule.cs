@@ -1,6 +1,6 @@
 ﻿namespace Commands.Tests
 {
-    public class MutationModule : ModuleBase
+    public class MutationModule : CommandModule
     {
         [Name("add-command")]
         public Task MutateCurrentModule(string commandName, [Remainder] Delegate executionAction)

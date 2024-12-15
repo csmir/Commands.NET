@@ -1,7 +1,7 @@
 ﻿namespace Commands.Samples
 {
     [Name("class")]
-    public class ClassModule : ModuleBase
+    public class ClassModule : CommandModule
     {
         public string ClassCommand()
         {

@@ -24,7 +24,7 @@ namespace Commands.Reflection
 
         /// <inheritdoc />
         public object? Invoke<T>(T consumer, CommandInfo command, object?[] args, CommandTree manager, CommandOptions options)
-            where T : ConsumerBase
+            where T : CallerContext
         {
             if (_withContext)
             {

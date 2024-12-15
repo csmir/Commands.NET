@@ -1,6 +1,6 @@
 ﻿namespace Commands.Tests
 {
-    public sealed class HelpModule : ModuleBase
+    public sealed class HelpModule : CommandModule
     {
         [Name("help")]
         public void Help()

@@ -3,11 +3,11 @@
 namespace Commands
 {
     /// <summary>
-    ///     An attribute that defines the name of a module (<see cref="ModuleBase"/>), a command and a command parameter.
+    ///     An attribute that defines the name of a module (<see cref="CommandModule"/>), a command and a command parameter.
     /// </summary>
     /// <remarks>
     ///     This attribute defines the name of a top-level component as well as all its members. 
-    ///     If a <see cref="ModuleBase"/> is named and its invokable members (command methods) are not, they will take on the name of the module instead, serving as default overloads.
+    ///     If a <see cref="CommandModule"/> is named and its invokable members (command methods) are not, they will take on the name of the module instead, serving as default overloads.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Parameter)]
     public sealed class NameAttribute : Attribute

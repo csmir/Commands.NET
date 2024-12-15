@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Commands.Samples
 {
-    public class BasicModule : ModuleBase<CustomConsumer>
+    public class BasicModule : CommandModule<CustomConsumer>
     {
         [Name("helloworld")]
         public string HelloWorld()
@@ -14,7 +14,7 @@ namespace Commands.Samples
         [Name("reply")]
         public string Reply([Remainder] string message)
         {
-            return "Hi, " + Consumer.Name + ". " + message + "!";
+            return "Hi, " + Caller.Name + ". " + message + "!";
         }
 
         [Name("type-info", "typeinfo", "type")]
@@ -26,7 +26,7 @@ namespace Commands.Samples
             response.AppendLine($"Fullname: {type.FullName}");
             response.AppendLine($"Assembly: {type.Assembly.FullName}");
 
-            Consumer.Send(response.ToString()).Wait();
+            Caller.Respond(response.ToString()).Wait();
         }
 
         [Name("copy")]

@@ -7,7 +7,7 @@ namespace Commands
     ///     The result of a match operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public readonly struct MatchResult : ICommandResult
+    public readonly struct MatchResult : IExecuteResult
     {
         /// <summary>
         ///     Gets the command known during the matching operation.

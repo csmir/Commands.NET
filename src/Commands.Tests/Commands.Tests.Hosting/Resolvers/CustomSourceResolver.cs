@@ -15,7 +15,7 @@ namespace Commands.Tests
 
                 Console.CursorVisible = false;
 
-                return ValueTask.FromResult(Success(new ConsumerBase(), CommandParser.ParseKeyCollection(src)));
+                return ValueTask.FromResult(Success(new CallerContext(), CommandParser.ParseKeyCollection(src)));
             }
 
             return ValueTask.FromResult(Error(new InvalidOperationException("The application failed to start.")));

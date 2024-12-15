@@ -1,6 +1,6 @@
 ﻿namespace Commands.Tests
 {
-    public sealed class EnumerableModule : ModuleBase
+    public sealed class EnumerableModule : CommandModule
     {
         [Name("param-array")]
         public void ParamArray(params string[] input)

@@ -10,7 +10,7 @@ namespace Commands.Reflection
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class ReflectionUtilities
     {
-        private static readonly Type m_type = typeof(ModuleBase);
+        private static readonly Type m_type = typeof(CommandModule);
         private static readonly Type c_type = typeof(CommandContext<>);
 
         private static readonly Type o_type = typeof(object);
@@ -23,11 +23,11 @@ namespace Commands.Reflection
         ///     Iterates through all assemblies and creates a top-level enumerable with all discovered members that can be directly searched for.
         /// </summary>
         /// <param name="assemblies">The assemblies to iterate through for command discovery.</param>
-        /// <param name="options">The options that define the command registration process.</param>
+        /// <param name="configuration">The configuration that define the command registration process.</param>
         /// <returns>A top-level enumerable of all discovered components which can be searched.</returns>
-        public static IEnumerable<IComponent> GetTopLevelComponents(Assembly[] assemblies, BuildConfiguration options)
+        public static IEnumerable<IComponent> GetTopLevelComponents(Assembly[] assemblies, BuildConfiguration configuration)
         {
-            var modules = GetTopLevelModules(assemblies, options);
+            var modules = GetTopLevelModules(assemblies, configuration);
 
             // run through components to discovery queryability
             foreach (var module in modules)
@@ -48,9 +48,9 @@ namespace Commands.Reflection
         ///     Iterates through all provided assemblies and creates an enumerable of all discovered top-level modules.
         /// </summary>
         /// <param name="assemblies">The assemblies to iterate through for command discovery.</param>
-        /// <param name="options">The options that define the command registration process.</param>
+        /// <param name="configuration">The configuration that define the command registration process.</param>
         /// <returns>A top-level enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetTopLevelModules(Assembly[] assemblies, BuildConfiguration options)
+        public static IEnumerable<ModuleInfo> GetTopLevelModules(Assembly[] assemblies, BuildConfiguration configuration)
         {
             var copy = assemblies.ToArray();
 
@@ -58,7 +58,7 @@ namespace Commands.Reflection
 
             // run through all defined assemblies.
             for (int i = 0; i < copy.Length; i++)
-                arr[i] = GetModules(copy[i], options);
+                arr[i] = GetModules(copy[i], configuration);
 
             return arr.SelectMany(x => x);
         }
@@ -67,11 +67,11 @@ namespace Commands.Reflection
         ///     Iterates through the types known in the <paramref name="assembly"/> and returns every discovered module.
         /// </summary>
         /// <param name="assembly">The assembly who'se types should be iterated to discover new modules.</param>
-        /// <param name="options">The options that define the command registration process.</param>
+        /// <param name="configuration">The configuration that define the command registration process.</param>
         /// <returns>An enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetModules(Assembly assembly, BuildConfiguration options)
+        public static IEnumerable<ModuleInfo> GetModules(Assembly assembly, BuildConfiguration configuration)
         {
-            return GetModules(assembly.GetTypes(), null, false, options);
+            return GetModules(assembly.GetTypes(), null, false, configuration);
         }
 
         /// <summary>
@@ -79,11 +79,11 @@ namespace Commands.Reflection
         /// </summary>
         /// <param name="type">The types who'se subtypes should be iterated to discover new modules.</param>
         /// <param name="module">The root module of this iteration, if any.</param>
-        /// <param name="options">The options that define the command registration process.</param>
+        /// <param name="configuration">The configuration that define the command registration process.</param>
         /// <returns>An enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetModules(Type type, ModuleInfo? module, BuildConfiguration options)
+        public static IEnumerable<ModuleInfo> GetModules(Type type, ModuleInfo? module, BuildConfiguration configuration)
         {
-            return GetModules(type.GetNestedTypes(), module, true, options);
+            return GetModules(type.GetNestedTypes(), module, true, configuration);
         }
 
         /// <summary>
@@ -92,21 +92,17 @@ namespace Commands.Reflection
         /// <param name="types">The types that should be iterated to discover new modules.</param>
         /// <param name="module">The root module of this iteration, if any.</param>
         /// <param name="withNested">Determines if the iteration should include nested types.</param>
-        /// <param name="options">The options that define the command registration process.</param>
+        /// <param name="configuration">The configuration that define the command registration process.</param>
         /// <returns>An enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetModules(IEnumerable<Type> types, ModuleInfo? module, bool withNested, BuildConfiguration options)
+        public static IEnumerable<ModuleInfo> GetModules(IEnumerable<Type> types, ModuleInfo? module, bool withNested, BuildConfiguration configuration)
         {
             foreach (var type in types)
             {
                 if (!withNested && type.IsNested)
-                {
                     continue;
-                }
 
                 if (!m_type.IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
-                {
                     continue;
-                }
 
                 var aliases = Array.Empty<string>();
 
@@ -117,7 +113,7 @@ namespace Commands.Reflection
                     if (attribute is NameAttribute names)
                     {
                         // validate aliases.
-                        names.ValidateAliases(options.NamingRegex);
+                        names.ValidateAliases(configuration.NamingRegex);
 
                         aliases = names.Aliases;
                         continue;
@@ -133,7 +129,10 @@ namespace Commands.Reflection
                 if (!skip)
                 {
                     // yield a new module if all aliases are valid and it shouldn't be skipped.
-                    yield return new ModuleInfo(type, module, aliases, options);
+                    var component = new ModuleInfo(type, module, aliases, configuration);
+
+                    if (configuration.N_ComponentRegistrationFilter?.Invoke(component) ?? true)
+                        yield return component;
                 }
             }
         }
@@ -144,9 +143,9 @@ namespace Commands.Reflection
         /// <param name="type">The type who'se methods should be iterated through to discover commands.</param>
         /// <param name="module">The root module of the commands that should be registered.</param>
         /// <param name="withDefaults">Determines if the root module has any defaults to take into consideration.</param>
-        /// <param name="options">The options that define the command registration process.</param>
+        /// <param name="configuration">The configuration that define the command registration process.</param>
         /// <returns>An enumerable of all discovered commands.</returns>
-        public static IEnumerable<IComponent> GetCommands(Type type, ModuleInfo? module, bool withDefaults, BuildConfiguration options)
+        public static IEnumerable<IComponent> GetCommands(Type type, ModuleInfo? module, bool withDefaults, BuildConfiguration configuration)
         {
             // run through all type methods.
 
@@ -161,7 +160,7 @@ namespace Commands.Reflection
                 {
                     if (attribute is NameAttribute names)
                     {
-                        names.ValidateAliases(options.NamingRegex);
+                        names.ValidateAliases(configuration.NamingRegex);
 
                         aliases = names.Aliases;
                         continue;
@@ -185,22 +184,22 @@ namespace Commands.Reflection
 
                     if (method != null)
                     {
+                        var component = default(CommandInfo);
                         if (method.IsStatic)
                         {
                             var param = method.GetParameters();
 
                             var hasContext = false;
                             if (param.Length > 0 && param[0].ParameterType.IsGenericType && param[0].ParameterType.GetGenericTypeDefinition() == c_type)
-                            {
                                 hasContext = true;
-                            }
 
-                            yield return new CommandInfo(module, new StaticInvoker(method, hasContext), aliases, hasContext, options);
+                            component = new CommandInfo(module, new StaticInvoker(method, hasContext), aliases, hasContext, configuration);
                         }
                         else
-                        {
-                            yield return new CommandInfo(module, new InstanceInvoker(method), aliases, false, options);
-                        }
+                            component = new CommandInfo(module, new InstanceInvoker(method), aliases, false, configuration);
+
+                        if (component != null && (configuration.N_ComponentRegistrationFilter?.Invoke(component) ?? true))
+                            yield return component;
                     }
                 }
             }
@@ -210,18 +209,18 @@ namespace Commands.Reflection
         ///     Iterates through all members of the <paramref name="module"/> and returns every discovered component.
         /// </summary>
         /// <param name="module">The module who'se members should be iterated.</param>
-        /// <param name="options">The options that define the command registration process.</param>
+        /// <param name="configuration">The configuration that define the command registration process.</param>
         /// <returns>An array of all discovered components.</returns>
-        public static IComponent[] GetComponents(ModuleInfo module, BuildConfiguration options)
+        public static IComponent[] GetComponents(ModuleInfo module, BuildConfiguration configuration)
         {
             if (module.Type == null)
             {
                 return [];
             }
 
-            var commands = GetCommands(module.Type, module, module.Aliases.Length > 0, options);
+            var commands = GetCommands(module.Type, module, module.Aliases.Length > 0, configuration);
 
-            var modules = GetModules(module.Type.GetNestedTypes(), module, true, options);
+            var modules = GetModules(module.Type.GetNestedTypes(), module, true, configuration);
 
             return commands.Concat(modules)
                 .ToArray();
@@ -231,14 +230,14 @@ namespace Commands.Reflection
         ///     Returns the type converter for the specified <paramref name="type"/> if it needs to be parsed. Otherwise, returns <see langword="null"/>.
         /// </summary>
         /// <param name="type">The type to get or create a converter for.</param>
-        /// <param name="options">The options which serves as a base from which new converters are </param>
+        /// <param name="configuration">The configuration which serves as a base from which new converters are </param>
         /// <returns>An instance of <see cref="TypeConverterBase"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object, which does not need to be converted.</returns>
-        public static TypeConverterBase? GetTypeConverter(Type type, BuildConfiguration options)
+        public static TypeConverterBase? GetTypeConverter(Type type, BuildConfiguration configuration)
         {
             if (!type.IsConvertible())
                 return null;
 
-            if (options.TypeConverters.TryGetValue(type, out var converter))
+            if (configuration.TypeConverters.TryGetValue(type, out var converter))
                 return converter;
 
             if (type.IsEnum)
@@ -248,7 +247,7 @@ namespace Commands.Reflection
             {
                 var elementType = type.GetElementType();
 
-                if (!options.TypeConverters.TryGetValue(elementType!, out converter))
+                if (!configuration.TypeConverters.TryGetValue(elementType!, out converter))
                 {
                     if (elementType!.IsString())
                         converter = StringTypeConverter.Instance;
@@ -267,7 +266,7 @@ namespace Commands.Reflection
 
                 var enumType = type.GetCollectionType(elementType);
 
-                if (!options.TypeConverters.TryGetValue(elementType, out converter))
+                if (!configuration.TypeConverters.TryGetValue(elementType, out converter))
                 {
                     if (elementType.IsString())
                         converter = StringTypeConverter.Instance;
@@ -309,17 +308,17 @@ namespace Commands.Reflection
 
         internal static bool IsString(this Type type)
         {
-            return type.FullName == s_type.FullName;
+            return type.GUID == s_type.GUID;
         }
 
         internal static bool IsObject(this Type type)
         {
-            return type.FullName == o_type.FullName;
+            return type.GUID == o_type.GUID;
         }
 
         internal static bool IsConvertible(this Type type)
         {
-            return type != o_type && type != s_type;
+            return type.GUID != o_type.GUID && type.GUID != s_type.GUID;
         }
 
         internal static CollectionType GetCollectionType(this Type type, Type? elementType = null)
@@ -339,7 +338,7 @@ namespace Commands.Reflection
             return CollectionType.None;
         }
 
-        internal static IArgument[] GetArguments(this MethodBase method, bool withContext, BuildConfiguration options)
+        internal static IArgument[] GetArguments(this MethodBase method, bool withContext, BuildConfiguration configuration)
         {
             var parameters = method.GetParameters();
 
@@ -365,9 +364,9 @@ namespace Commands.Reflection
                 }
 
                 if (complex)
-                    arr[i] = new ComplexArgumentInfo(parameters[i], name, options);
+                    arr[i] = new ComplexArgumentInfo(parameters[i], name, configuration);
                 else
-                    arr[i] = new ArgumentInfo(parameters[i], name, options);
+                    arr[i] = new ArgumentInfo(parameters[i], name, configuration);
             }
 
             return arr;

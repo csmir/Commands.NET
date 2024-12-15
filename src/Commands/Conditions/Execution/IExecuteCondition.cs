@@ -33,7 +33,7 @@ namespace Commands.Conditions
         /// <param name="services">The provider used to register modules and inject services.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
-        public ValueTask<ConditionResult> Evaluate(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
+        public ValueTask<ConditionResult> Evaluate(CallerContext consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Gets an evaluator that is used to determine the result of the evaluation.
