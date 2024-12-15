@@ -1,4 +1,5 @@
-﻿using Commands.Reflection;
+﻿using Commands.Conditions;
+using Commands.Reflection;
 using Commands.Resolvers;
 using System.Diagnostics;
 using System.Reflection;
@@ -198,6 +199,11 @@ namespace Commands
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
+            var beforeConvertConditions = await EvaluateConditions(caller, command, ConditionTrigger.BeforeConversion, options);
+
+            if (!beforeConvertConditions.Success)
+                return beforeConvertConditions;
+
             var conversion = await ConvertCommand(caller, command, argHeight, args, options);
 
             var arguments = new object[conversion.Length];
@@ -212,19 +218,19 @@ namespace Commands
 
             try
             {
-                var preCheckResult = await EvaluatePreconditions(caller, command, options);
+                var beforeInvocationConditions = await EvaluateConditions(caller, command, ConditionTrigger.BeforeInvocation, options);
 
-                if (!preCheckResult.Success)
-                    return preCheckResult;
+                if (!beforeInvocationConditions.Success)
+                    return beforeInvocationConditions;
 
                 var value = command.Invoker.Invoke(caller, command, arguments, this, options);
 
                 await EvaluateInvocationResult(caller, command, value, options);
 
-                var postCheckResult = await EvaluatePostconditions(caller, command, options);
+                var afterInvocationConditions = await EvaluateConditions(caller, command, ConditionTrigger.AfterInvocation, options);
 
-                if (!postCheckResult.Success)
-                    return postCheckResult;
+                if (!afterInvocationConditions.Success)
+                    return afterInvocationConditions;
 
                 return InvokeResult.FromSuccess(command);
             }
@@ -254,7 +260,7 @@ namespace Commands
             if (command.MaxLength > args.Length && command.MinLength <= args.Length)
                 return await ConvertArguments(caller, command.Arguments, args, options);
 
-            return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
+            return [ConvertResult.FromError()];
         }
 
         private async ValueTask<ConvertResult[]> ConvertArguments(
@@ -262,10 +268,8 @@ namespace Commands
         {
             static ValueTask<ConvertResult> Convert(IArgument argument, CallerContext caller, object? value, bool isArray, CommandOptions options)
             {
-                options.CancellationToken.ThrowIfCancellationRequested();
-
                 if (argument.IsNullable && value is null or "null")
-                    return ConvertResult.FromSuccess();
+                    return ConvertResult.FromSuccess(null);
 
                 if (value is null)
                     return ConvertResult.FromError(new ArgumentNullException(argument.Name));
@@ -342,51 +346,30 @@ namespace Commands
             return results;
         }
 
-        private async ValueTask<ConditionResult> EvaluatePreconditions<T>(
-            T caller, CommandInfo command, CommandOptions options)
+        private async ValueTask<ConditionResult> EvaluateConditions<T>(
+            T caller, CommandInfo command, ConditionTrigger trigger, CommandOptions options)
             where T : CallerContext
         {
-            options.CancellationToken.ThrowIfCancellationRequested();
-
-            if (!options.SkipPreconditions)
+            if (!options.SkipConditions)
             {
-                foreach (var precon in command.PreEvaluations)
+                foreach (var condition in command.Conditions)
                 {
-                    var checkResult = await precon.Evaluate(caller, command, options.Services, options.CancellationToken);
+                    if (condition.Trigger.HasFlag(trigger))
+                    {
+                        var checkResult = await condition.Evaluate(caller, command, trigger, options.Services, options.CancellationToken);
 
-                    if (!checkResult.Success)
-                        return checkResult;
+                        if (!checkResult.Success)
+                            return checkResult;
+                    }
                 }
             }
 
-            return ConditionResult.FromSuccess();
-        }
-
-        private async ValueTask<ConditionResult> EvaluatePostconditions<T>(
-            T caller, CommandInfo command, CommandOptions options)
-            where T : CallerContext
-        {
-            options.CancellationToken.ThrowIfCancellationRequested();
-
-            if (!options.SkipPostconditions)
-            {
-                foreach (var postcon in command.PostEvaluations)
-                {
-                    var checkResult = await postcon.Evaluate(caller, command, options.Services, options.CancellationToken);
-
-                    if (!checkResult.Success)
-                        return checkResult;
-                }
-            }
-
-            return ConditionResult.FromSuccess();
+            return ConditionResult.FromSuccess(trigger);
         }
 
         private async ValueTask EvaluateInvocationResult(
             CallerContext caller, CommandInfo command, object? value, CommandOptions options)
         {
-            options.CancellationToken.ThrowIfCancellationRequested();
-
             foreach (var resolver in _resolvers)
                 await resolver.EvaluateResponse(caller, command, value, options.Services, options.CancellationToken);
         }
@@ -394,8 +377,6 @@ namespace Commands
         private async ValueTask FinalizeInvocation(
             CallerContext caller, IExecuteResult result, CommandOptions options)
         {
-            options.CancellationToken.ThrowIfCancellationRequested();
-
             foreach (var resolver in _resolvers)
                 await resolver.EvaluateResult(caller, result, options.Services, options.CancellationToken);
         }

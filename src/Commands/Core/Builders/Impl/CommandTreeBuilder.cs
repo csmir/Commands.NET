@@ -73,17 +73,17 @@ namespace Commands
             {
                 NamingRegex = new(DEFAULT_REGEX, RegexOptions.Compiled);
 
-                Assemblies      = [Assembly.GetEntryAssembly()!];
-                TypeConverters  = TypeConverterBase.BuildDefaults();
+                Assemblies = [Assembly.GetEntryAssembly()!];
+                TypeConverters = TypeConverterBase.BuildDefaults();
             }
             else
             {
-                Assemblies      = [];
-                TypeConverters  = [];
+                Assemblies = [];
+                TypeConverters = [];
             }
 
             ResultResolvers = [];
-            Components      = [];
+            Components = [];
 
             SealModuleDefinitions = false;
             RegisterComponentFilter = _ => true;

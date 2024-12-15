@@ -46,7 +46,7 @@ namespace Commands
         ///             Services, specifically those created as singleton or scoped to anything but a single command.
         ///         </item>
         ///         <item>
-        ///             Implementations of <see cref="TypeConverterBase"/>, <see cref="TypeConverterBase{T}"/>, <see cref="PreconditionAttribute{T}"/> and <see cref="PostconditionAttribute{T}"/>.
+        ///             Implementations of <see cref="TypeConverterBase"/>, <see cref="TypeConverterBase{T}"/> and <see cref="ConditionAttribute"/>, <see cref="ConditionAttribute{T}"/>.
         ///         </item>
         ///         <item>
         ///             Generic collections and objects with shared access.
@@ -59,20 +59,12 @@ namespace Commands
         public bool DoAsynchronousExecution { get; set; } = false;
 
         /// <summary>
-        ///     Gets or sets whether the defined <see cref="PostconditionAttribute{T}"/>'s for this execution should be ran.
-        /// </summary>
-        /// <remarks>
-        ///     Default: <see langword="true"/>
-        /// </remarks>
-        public bool SkipPostconditions { get; set; } = true;
-
-        /// <summary>
-        ///     Gets or sets whether the defined <see cref="PreconditionAttribute{T}"/>'s for this execution should be ran.
+        ///     Gets or sets whether the defined <see cref="ConditionAttribute{T}"/>'s for this execution should be ran.
         /// </summary>
         /// <remarks>
         ///     Default: <see langword="false"/>
         /// </remarks>
-        public bool SkipPreconditions { get; set; } = false;
+        public bool SkipConditions { get; set; } = false;
 
         /// <summary>
         ///     Gets or sets the separator used to join remaining arguments in a command.
@@ -98,7 +90,7 @@ namespace Commands
         {
             private static readonly Lazy<EmptyServiceProvider> _i = new();
 
-            internal static EmptyServiceProvider Instance 
+            internal static EmptyServiceProvider Instance
                 => _i.Value;
 
             /// <inheritdoc />

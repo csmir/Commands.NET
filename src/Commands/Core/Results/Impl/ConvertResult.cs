@@ -1,6 +1,4 @@
-﻿using Commands.Converters;
-using Commands.Reflection;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Commands
 {
@@ -15,12 +13,7 @@ namespace Commands
 
         /// <inheritdoc />
         public bool Success
-        {
-            get
-            {
-                return Exception == null;
-            }
-        }
+            => Exception == null;
 
         /// <summary>
         ///    The value of the conversion operation.
@@ -42,21 +35,7 @@ namespace Commands
         /// <param name="value">The converted value of the operation.</param>
         /// <returns>A new result containing information about the operation.</returns>
         public static ConvertResult FromSuccess(object? value)
-        {
-            return new(null, value);
-        }
-
-        /// <summary>
-        ///     Creates a new <see cref="ConvertResult"/> resembling a successful conversion operation.
-        /// </summary>
-        /// <remarks>
-        ///     This overload is called when conversion succeeds with a null value. This should not be called when implementing <see cref="TypeConverterBase.Evaluate(CallerContext, IArgument, object, IServiceProvider, CancellationToken)"/>.
-        /// </remarks>
-        /// <returns>A new result containing information about the operation.</returns>
-        public static ConvertResult FromSuccess()
-        {
-            return new(null, null);
-        }
+            => new(null, value);
 
         /// <summary>
         ///     Creates a new <see cref="ConvertResult"/> resembling a failed conversion operation.
@@ -64,15 +43,18 @@ namespace Commands
         /// <param name="exception">The exception that occurred during the conversion operation.</param>
         /// <returns>A new result containing information about the operation.</returns>
         public static ConvertResult FromError(Exception exception)
-        {
-            return new(exception, null);
-        }
+            => new(exception, null);
+
+        /// <summary>
+        ///     Creates a new <see cref="ConvertResult"/> resembling a failed conversion operation, containing a mismatch of arguments.
+        /// </summary>
+        /// <returns></returns>
+        public static ConvertResult FromError()
+            => new(ConvertException.ArgumentMismatch(), null);
 
         /// <inheritdoc />
         public override string ToString()
-        {
-            return $"Success = {(Exception == null ? "True" : $"False \nException = {Exception.Message}")}";
-        }
+            => $"Success = {(Exception == null ? "True" : $"False \nException = {Exception.Message}")}";
 
         /// <summary>
         ///     Gets a string representation of this result.
@@ -80,24 +62,13 @@ namespace Commands
         /// <param name="inline">Sets whether the string representation should be inlined or not.</param>
         /// <returns></returns>
         public string ToString(bool inline)
-        {
-            if (inline)
-            {
-                return $"Success = {(Exception == null ? "True" : $"False")}";
-            }
-            else
-            {
-                return ToString();
-            }
-        }
+            => inline ? $"Success = {(Exception == null ? "True" : $"False")}" : ToString();
 
         /// <summary>
         ///     Implicitly converts a <see cref="ConvertResult"/> to a <see cref="ValueTask{TResult}"/>.
         /// </summary>
         /// <param name="result">The result to convert.</param>
         public static implicit operator ValueTask<ConvertResult>(ConvertResult result)
-        {
-            return new(result);
-        }
+            => new(result);
     }
 }

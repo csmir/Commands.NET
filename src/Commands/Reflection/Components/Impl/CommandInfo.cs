@@ -21,10 +21,7 @@ namespace Commands.Reflection
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
-        public ConditionEvaluator[] PreEvaluations { get; }
-
-        /// <inheritdoc />
-        public ConditionEvaluator[] PostEvaluations { get; }
+        public ConditionEvaluator[] Conditions { get; }
 
         /// <inheritdoc />
         public IArgument[] Arguments { get; }
@@ -81,8 +78,7 @@ namespace Commands.Reflection
         internal CommandInfo(DelegateInvoker invoker, IExecuteCondition[] conditions, string[] aliases, bool hasContext, BuildConfiguration options)
             : this(null, invoker, aliases, hasContext, options)
         {
-            PreEvaluations = ConditionEvaluator.CreateEvaluators(conditions.OfType<IPreExecutionCondition>()).ToArray();
-            PostEvaluations = ConditionEvaluator.CreateEvaluators(conditions.OfType<IPostExecutionCondition>()).ToArray();
+            Conditions = ConditionEvaluator.CreateEvaluators(conditions).ToArray();
         }
 
         internal CommandInfo(
@@ -114,8 +110,7 @@ namespace Commands.Reflection
 
             Attributes = attributes.ToArray();
 
-            PreEvaluations = ConditionEvaluator.CreateEvaluators(attributes.OfType<IPreExecutionCondition>()).ToArray();
-            PostEvaluations = ConditionEvaluator.CreateEvaluators(attributes.OfType<IPostExecutionCondition>()).ToArray();
+            Conditions = ConditionEvaluator.CreateEvaluators(attributes.OfType<IExecuteCondition>()).ToArray();
 
             Arguments = parameters;
             HasRemainder = parameters.Any(x => x.IsRemainder);

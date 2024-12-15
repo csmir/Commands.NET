@@ -12,13 +12,9 @@
         const string ARGUMENT_MISMATCH = "Argument mismatch between best target and input.";
 
         internal static ConvertException ConvertFailed(Type type, Exception? innerException = null)
-        {
-            return new(string.Format(CONVERTER_FAILED, type), innerException);
-        }
+            => new(string.Format(CONVERTER_FAILED, type), innerException);
 
         internal static ConvertException ArgumentMismatch()
-        {
-            return new(ARGUMENT_MISMATCH);
-        }
+            => new(ARGUMENT_MISMATCH);
     }
 }

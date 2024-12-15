@@ -6,7 +6,7 @@ namespace Commands
     ///     Represents data about a command, as a <see cref="CommandModule"/> normally would. 
     ///     This context is used for <see langword="static"/> and <see langword="delegate"/> commands.
     /// </summary>
-    public class CommandContext<T>(T consumer, CommandInfo command, CommandTree tree, CommandOptions options) 
+    public class CommandContext<T>(T consumer, CommandInfo command, CommandTree tree, CommandOptions options)
         where T : CallerContext
     {
         /// <summary>

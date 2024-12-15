@@ -23,6 +23,8 @@ namespace Commands.Resolvers
         public virtual async ValueTask EvaluateResponse(
             CallerContext caller, CommandInfo command, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             switch (value)
             {
                 case null: // (void)
@@ -79,6 +81,8 @@ namespace Commands.Resolvers
         public virtual ValueTask EvaluateResult(
             CallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (result.Success)
                 return default;
 

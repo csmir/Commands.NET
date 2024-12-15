@@ -33,10 +33,7 @@ namespace Commands.Reflection
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
-        public ConditionEvaluator[] PreEvaluations { get; }
-
-        /// <inheritdoc />
-        public ConditionEvaluator[] PostEvaluations { get; }
+        public ConditionEvaluator[] Conditions { get; }
 
         /// <inheritdoc />
         public float Priority { get; }
@@ -79,8 +76,7 @@ namespace Commands.Reflection
 
             Attributes = attributes.ToArray();
 
-            PreEvaluations  = ConditionEvaluator.CreateEvaluators(attributes.OfType<IPreExecutionCondition>()).ToArray();
-            PostEvaluations = ConditionEvaluator.CreateEvaluators(attributes.OfType<IPostExecutionCondition>()).ToArray();
+            Conditions = ConditionEvaluator.CreateEvaluators(attributes.OfType<IExecuteCondition>()).ToArray();
 
             Priority = attributes.GetAttribute<PriorityAttribute>()?.Priority ?? 0;
 
@@ -97,9 +93,8 @@ namespace Commands.Reflection
         {
             Parent = root;
 
-            Attributes      = [];
-            PreEvaluations  = [];
-            PostEvaluations = [];
+            Attributes = [];
+            Conditions = [];
 
             Aliases = aliases;
         }

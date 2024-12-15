@@ -145,7 +145,7 @@ namespace Commands.Reflection
         /// </summary>
         /// <param name="component">The component to be added to the module.</param>
         /// <returns><see langword="true"/> if the component was added; otherwise, <see langword="false"/>.</returns>
-        /// <exception cref="ComponentException">Thrown when a collection is marked as read-only.</exception>
+        /// <exception cref="BuildException">Thrown when a collection is marked as read-only.</exception>
         public bool Add(IComponent component)
             => AddRange(component) > 0;
 
@@ -154,11 +154,11 @@ namespace Commands.Reflection
         /// </summary>
         /// <param name="components">The components to be added to the collection.</param>
         /// <returns>The number of added components, being 0 if no records were added.</returns>
-        /// <exception cref="ComponentException">Thrown when a collection is marked as read-only.</exception>
+        /// <exception cref="BuildException">Thrown when a collection is marked as read-only.</exception>
         public int AddRange(params IComponent[] components)
         {
             if (IsReadOnly)
-                throw ComponentException.AccessDenied();
+                throw BuildException.AccessDenied();
 
             var hasChanged = 0;
 
@@ -185,7 +185,7 @@ namespace Commands.Reflection
         /// </summary>
         /// <param name="component">The component to be removed from the collection.</param>
         /// <returns><see langword="true"/> if the component was removed; otherwise, <see langword="false"/>.</returns>
-        /// <exception cref="ComponentException">Thrown when the collection is marked as read-only.</exception>
+        /// <exception cref="BuildException">Thrown when the collection is marked as read-only.</exception>
         public bool Remove(IComponent component)
             => RemoveRange(component) > 0;
 
@@ -194,11 +194,11 @@ namespace Commands.Reflection
         /// </summary>
         /// <param name="components">The components to be removed from the collection.</param>
         /// <returns>The number of removed components, being 0 if no commands were removed.</returns>
-        /// <exception cref="ComponentException">Thrown when the collection is marked as read-only.</exception>
+        /// <exception cref="BuildException">Thrown when the collection is marked as read-only.</exception>
         public int RemoveRange(params IComponent[] components)
         {
             if (IsReadOnly)
-                throw ComponentException.AccessDenied();
+                throw BuildException.AccessDenied();
 
             var copy = new HashSet<IComponent>(_components);
             var removed = 0;
@@ -219,11 +219,11 @@ namespace Commands.Reflection
         /// <summary>
         ///     Removes all components from the current collection.
         /// </summary>
-        /// <exception cref="ComponentException">Thrown when the collection is marked as read-only.</exception>
+        /// <exception cref="BuildException">Thrown when the collection is marked as read-only.</exception>
         public void Clear()
         {
             if (IsReadOnly)
-                throw ComponentException.AccessDenied();
+                throw BuildException.AccessDenied();
 
             Interlocked.Exchange(ref _components, []);
         }

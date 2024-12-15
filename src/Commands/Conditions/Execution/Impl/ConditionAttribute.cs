@@ -4,50 +4,50 @@ using System.ComponentModel;
 namespace Commands.Conditions
 {
     /// <summary>
-    ///     An attribute that defines that a check should succeed after a command can be executed, implementing <see cref="PostconditionAttribute{T}"/> with an <see cref="ANDEvaluator"/>. 
-    ///     For use of other evaluators, use <see cref="PostconditionAttribute{T}"/>.
+    ///     An attribute that defines that a check should succeed before a command can be executed, implementing <see cref="ConditionAttribute{T}"/> with an <see cref="ANDEvaluator"/>. 
+    ///     For use of other evaluators, use <see cref="ConditionAttribute{T}"/>.
     /// </summary>
     /// <remarks>
-    ///     Custom implementations of <see cref="PostconditionAttribute"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
+    ///     Custom implementations of <see cref="ConditionAttribute"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     /// </remarks>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
-    public abstract class PostconditionAttribute : PostconditionAttribute<ANDEvaluator>
+    public abstract class ConditionAttribute : ConditionAttribute<ANDEvaluator>
     {
 
     }
 
     /// <summary>
-    ///     An attribute that defines that a check should succeed after a command can be executed.
+    ///     An attribute that defines that a check should succeed before a command can be executed.
     /// </summary>
     /// <remarks>
-    ///     The <see cref="Evaluate(CallerContext, CommandInfo, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
-    ///     Custom implementations of <see cref="PostconditionAttribute{T}"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
+    ///     The <see cref="Evaluate(CallerContext, CommandInfo, ConditionTrigger, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
+    ///     Custom implementations of <see cref="ConditionAttribute{T}"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
+    ///     If multiple commands are found during matching, multiple sequences of preconditions will be ran to find a match that succeeds.
     /// </remarks>
     /// <typeparam name="T">The type of evaluator that will be used to determine the result of the evaluation.</typeparam>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
-    public abstract class PostconditionAttribute<T> : Attribute, IPostExecutionCondition
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
+    public abstract class ConditionAttribute<T>() : Attribute, IExecuteCondition
         where T : ConditionEvaluator, new()
     {
+        /// <inheritdoc />
+        public ConditionTrigger Trigger { get; set; } = ConditionTrigger.BeforeInvocation;
+
         /// <inheritdoc />
         /// <remarks>
         ///     Make use of <see cref="Error(Exception)"/> or <see cref="Error(string)"/> and <see cref="Success"/> to safely create the intended result.
         /// </remarks>
         public abstract ValueTask<ConditionResult> Evaluate(
-            CallerContext consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken);
+            CallerContext consumer, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public ConditionEvaluator GetEvaluator()
-        {
-            return new T();
-        }
+            => new T() { Trigger = Trigger };
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public virtual string GetGroupId()
-        {
-            return $"{GetType().Name}:{typeof(T).Name}";
-        }
+            => $"{GetType().Name}:{typeof(T).Name}:{Trigger}";
 
         /// <summary>
         ///     Creates a new <see cref="ConditionResult"/> representing a failed evaluation.
@@ -60,11 +60,9 @@ namespace Commands.Conditions
                 throw new ArgumentNullException(nameof(exception));
 
             if (exception is ConditionException checkEx)
-            {
-                return ConditionResult.FromError(checkEx);
-            }
+                return ConditionResult.FromError(Trigger, checkEx);
 
-            return ConditionResult.FromError(ConditionException.PostconditionFailed(exception));
+            return ConditionResult.FromError(Trigger, ConditionException.ConditionFailed(exception));
         }
 
         /// <summary>
@@ -77,7 +75,7 @@ namespace Commands.Conditions
             if (string.IsNullOrEmpty(error))
                 throw new ArgumentNullException(nameof(error));
 
-            return ConditionResult.FromError(new ConditionException(error));
+            return ConditionResult.FromError(Trigger, new ConditionException(error));
         }
 
         /// <summary>
@@ -85,8 +83,6 @@ namespace Commands.Conditions
         /// </summary>
         /// <returns>A <see cref="ConditionResult"/> representing the successful evaluation.</returns>
         protected ConditionResult Success()
-        {
-            return ConditionResult.FromSuccess();
-        }
+            => ConditionResult.FromSuccess(Trigger);
     }
 }

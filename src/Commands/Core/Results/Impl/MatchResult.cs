@@ -19,12 +19,7 @@ namespace Commands
 
         /// <inheritdoc />
         public bool Success
-        {
-            get
-            {
-                return Exception == null;
-            }
-        }
+            => Exception == null;
 
         internal object?[]? Arguments { get; }
 
@@ -42,9 +37,7 @@ namespace Commands
         /// <param name="arguments">The converted arguments of the command.</param>
         /// <returns>A new result containing information about the operation.</returns>
         public static MatchResult FromSuccess(CommandInfo command, object[] arguments)
-        {
-            return new(command, arguments, null);
-        }
+            => new(command, arguments, null);
 
         /// <summary>
         ///     Creates a new <see cref="MatchResult"/> resembling a failed match operation.
@@ -53,15 +46,11 @@ namespace Commands
         /// <param name="exception">The exception that occurred during the matching process.</param>
         /// <returns>A new result containing information about the operation.</returns>
         public static MatchResult FromError(CommandInfo command, Exception exception)
-        {
-            return new(command, null, exception);
-        }
+            => new(command, null, exception);
 
         /// <inheritdoc />
         public override string ToString()
-        {
-            return $"Command = {Command} \nSuccess = {(Exception == null ? "True" : $"False \nException = {Exception.Message}")}";
-        }
+            => $"Command = {Command} \nSuccess = {(Exception == null ? "True" : $"False \nException = {Exception.Message}")}";
 
         /// <summary>
         ///     Gets a string representation of this result.
@@ -69,15 +58,13 @@ namespace Commands
         /// <param name="inline">Sets whether the string representation should be inlined or not.</param>
         /// <returns></returns>
         public string ToString(bool inline)
-        {
-            if (inline)
-            {
-                return $"Command = {Command} Success = {(Exception == null ? "True" : $"False")}";
-            }
-            else
-            {
-                return ToString();
-            }
-        }
+            => inline ? $"Command = {Command} Success = {(Exception == null ? "True" : $"False")}" : ToString();
+
+        /// <summary>
+        ///     Implicitly converts a <see cref="MatchResult"/> to a <see cref="ValueTask{TResult}"/>.
+        /// </summary>
+        /// <param name="result">The result to convert.</param>
+        public static implicit operator ValueTask<MatchResult>(MatchResult result)
+            => new(result);
     }
 }

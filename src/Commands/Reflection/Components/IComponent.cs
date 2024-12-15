@@ -25,12 +25,7 @@ namespace Commands.Reflection
         /// <summary>
         ///     Gets all evaluations that this component should do prior to executing the command.
         /// </summary>
-        public ConditionEvaluator[] PreEvaluations { get; }
-
-        /// <summary>
-        ///     Gets all evaluations that this component should do after executing the command.
-        /// </summary>
-        public ConditionEvaluator[] PostEvaluations { get; }
+        public ConditionEvaluator[] Conditions { get; }
 
         /// <summary>
         ///     Gets the invocation target of this component.

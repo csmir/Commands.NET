@@ -5,11 +5,11 @@ using Commands.Reflection;
 
 namespace Commands.Samples
 {
-    public class RequireOperatingSystemAttribute(PlatformID platform) : PreconditionAttribute<ANDEvaluator>
+    public class RequireOperatingSystemAttribute(PlatformID platform) : ConditionAttribute<ANDEvaluator>
     {
         public PlatformID Platform { get; } = platform;
 
-        public override ValueTask<ConditionResult> Evaluate(CallerContext context, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConditionResult> Evaluate(CallerContext context, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Environment.OSVersion.Platform == Platform)
                 return ValueTask.FromResult(Success());

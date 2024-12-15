@@ -3,9 +3,9 @@ using Commands.Reflection;
 
 namespace Commands.Tests
 {
-    public class ORConditionAttribute(bool pass) : PreconditionAttribute<OREvaluator>
+    public class ORConditionAttribute(bool pass) : ConditionAttribute<OREvaluator>
     {
-        public override ValueTask<ConditionResult> Evaluate(CallerContext consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConditionResult> Evaluate(CallerContext consumer, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (pass)
                 return ValueTask.FromResult(Success());
