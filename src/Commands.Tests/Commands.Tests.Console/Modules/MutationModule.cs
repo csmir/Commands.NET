@@ -5,10 +5,13 @@
         [Name("add-command")]
         public Task MutateCurrentModule(string commandName, [Remainder] Delegate executionAction)
         {
+            var configuration = new BuildConfigurationBuilder()
+                .Build();
+
             var command = new CommandBuilder()
                 .WithAliases(commandName)
                 .WithDelegate(executionAction)
-                .Build([]);
+                .Build(configuration);
 
             Command.Parent!.Add(command);
 
