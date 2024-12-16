@@ -98,6 +98,5 @@
         {
             Send($"({complex?.X}, {complex?.Y}, {complex?.Z})");
         }
-
     }
 }

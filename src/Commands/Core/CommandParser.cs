@@ -11,9 +11,9 @@ namespace Commands
     /// </remarks>
     public static partial class CommandParser
     {
-        const char u0022 = '"';
-        const char u0020 = ' ';
-        const char u002D = '-';
+        const char U0022 = '"';
+        const char U0020 = ' ';
+        const char U002D = '-';
 
         /// <summary>
         ///     Parses a <see cref="string"/> into a collection of command arguments. This collection is a key-value pair, where the key is the argument name and the value is the argument value. 
@@ -91,7 +91,7 @@ namespace Commands
             {
                 if (concatenating)
                 {
-                    if (argument.StartsWith(u0022))
+                    if (argument.StartsWith(U0022))
                     {
                         openState++;
 
@@ -99,14 +99,14 @@ namespace Commands
 
                         if (argument.Length > 1)
                         {
-                            if (argument[1..].Contains(u0022))
+                            if (argument[1..].Contains(U0022))
                                 openState--;
                         }
 
                         continue;
                     }
 
-                    if (argument.EndsWith(u0022))
+                    if (argument.EndsWith(U0022))
                     {
                         if (openState is 0)
                         {
@@ -115,10 +115,10 @@ namespace Commands
                             concatenation.Add(argument);
 
                             if (name is null)
-                                yield return new(string.Join(u0020, concatenation), null);
+                                yield return new(string.Join(U0020, concatenation), null);
                             else
                             {
-                                yield return new(name, string.Join(u0020, concatenation));
+                                yield return new(name, string.Join(U0020, concatenation));
 
                                 name = null;
                             }
@@ -139,11 +139,11 @@ namespace Commands
                 }
                 else
                 {
-                    if (argument.StartsWith(u002D))
+                    if (argument.StartsWith(U002D))
                     {
                         if (argument.Length > 1)
                         {
-                            if (argument[1] is u002D)
+                            if (argument[1] is U002D)
                             {
                                 if (name is not null)
                                     yield return new(name, null);
@@ -159,7 +159,7 @@ namespace Commands
                         continue;
                     }
 
-                    if (argument.StartsWith(u0022) && !argument.EndsWith(u0022))
+                    if (argument.StartsWith(U0022) && !argument.EndsWith(U0022))
                     {
                         concatenating = true;
 
@@ -183,9 +183,9 @@ namespace Commands
             if (concatenation.Any())
             {
                 if (name is null)
-                    yield return new(string.Join(u0020, concatenation), null);
+                    yield return new(string.Join(U0020, concatenation), null);
                 else
-                    yield return new(name, string.Join(u0020, concatenation));
+                    yield return new(name, string.Join(U0020, concatenation));
             }
         }
 
@@ -244,7 +244,7 @@ namespace Commands
                 if (quoted)
                 {
                     // next quote occurrence.
-                    if (toParse[i] is u0022)
+                    if (toParse[i] is U0022)
                     {
                         // add discovered until now, skipping quote itself.
                         Reset();
@@ -264,7 +264,7 @@ namespace Commands
                 }
 
                 // check for startquote.
-                if (toParse[i] is u0022)
+                if (toParse[i] is U0022)
                 {
                     // check end of loop, skipping add.
                     if (i + 1 == toParse.Length)

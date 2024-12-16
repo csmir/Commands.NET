@@ -17,5 +17,13 @@
 
             return Send("Command added.");
         }
+
+        [Name("test-delegate")]
+        public Task TestDelegate([Remainder] Delegate action)
+        {
+            var response = action.DynamicInvoke();
+
+            return Send(response?.ToString() ?? "null");
+        }
     }
 }

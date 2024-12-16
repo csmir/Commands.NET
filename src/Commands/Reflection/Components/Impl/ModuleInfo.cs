@@ -67,7 +67,7 @@ namespace Commands.Reflection
 
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, BuildConfiguration options)
-            : base(options.SealModuleDefinitions, aliases.Length > 0 ? options.Properties.GetValueOrDefault("HierarchyRetentionHandler") : null)
+            : base(options.SealModuleDefinitions, aliases.Length == 0 ? options.Properties.GetValueOrDefault("HierarchyRetentionHandler") : null)
         {
             Parent = root;
             Type = type;
@@ -133,7 +133,7 @@ namespace Commands.Reflection
                 if (component.IsDefault)
                     discovered.Add(SearchResult.FromSuccess(component, searchHeight));
 
-                if (!args.TryNext(searchHeight, out var value) || !component.Aliases.Contains(value))
+                if (args.TryNext(searchHeight, out var value) && component.Aliases.Contains(value))
                 {
                     if (component is ModuleInfo module)
                         discovered.AddRange(module.Find(args));

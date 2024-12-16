@@ -11,7 +11,7 @@ namespace Commands
     /// </remarks>
     public struct ArgumentEnumerator
     {
-        const char u0020 = ' ';
+        const char U0020 = ' ';
 
         private int _size;
         private int _indexUnnamed = 0;
@@ -118,7 +118,7 @@ namespace Commands
         ///     Joins the remaining unnamed arguments in the set into a single string.
         /// </summary>
         /// <returns>A joined string containing all remaining arguments in this enumerator.</returns>
-        public readonly string JoinRemaining(char separator = u0020)
+        public readonly string JoinRemaining(char separator = U0020)
             => string.Join(separator, _unnamedArgs[_indexUnnamed..]);
 
         /// <summary>
