@@ -403,13 +403,6 @@ namespace Commands
         /// </summary>
         /// <returns>A new instance of <see cref="CommandTreeBuilder"/> that builds into a new instance of the <see cref="CommandTree"/>.</returns>
         public static CommandTreeBuilder CreateDefaultBuilder()
-            => new(true);
-
-        /// <summary>
-        ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="CommandTree"/>.
-        /// </summary>
-        /// <returns>A new instance of <see cref="CommandTreeBuilder"/> that builds into a new instance of the <see cref="CommandTree"/>.</returns>
-        public static CommandTreeBuilder CreateBuilder()
-            => new(false);
+            => new();
     }
 }

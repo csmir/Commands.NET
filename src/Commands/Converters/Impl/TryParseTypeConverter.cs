@@ -37,7 +37,7 @@ namespace Commands.Converters
         /// </summary>
         /// <param name="str">The raw value to parse.</param>
         /// <param name="value">The out-value of <typeparamref name="T"/>. This value is not <see langword="null"/> when this delegate returns <see langword="true"/></param>
-        /// <returns><see langword="true"/> if the parsing was successful, otherwise <see langword="false"/>.</returns></returns>
+        /// <returns><see langword="true"/> if the parsing was successful, otherwise <see langword="false"/>.</returns>
         public delegate bool ParseDelegate(string? str, [NotNullWhen(true)] out T value);
     }
 
