@@ -2,7 +2,7 @@
 
 namespace Commands.Converters
 {
-    internal sealed class EnumTypeReader(Type targetEnumType) : TypeConverterBase
+    internal sealed class EnumTypeReader(Type targetEnumType) : TypeConverter
     {
         private static readonly Dictionary<Type, EnumTypeReader> _converters = [];
 

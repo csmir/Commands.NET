@@ -22,7 +22,7 @@ namespace Commands
     [DebuggerDisplay("Components = {Count},nq")]
     public sealed class CommandTree : ComponentCollection
     {
-        private readonly ResultResolverBase[] _resolvers;
+        private readonly ResultResolver[] _resolvers;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CommandTree"/> class, using the provided <paramref name="configuration"/> to build the command tree.
@@ -53,7 +53,7 @@ namespace Commands
         /// <param name="assemblies">An optional collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="CommandModule"/>.</param>
         /// <param name="runtimeComponents">Delegate-based components that should be passed to the tree at runtime.</param>
         /// <param name="resolvers">An optional collection of handlers of command results.</param>
-        public CommandTree(BuildConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<IComponent>? runtimeComponents = null, IEnumerable<ResultResolverBase>? resolvers = null)
+        public CommandTree(BuildConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<IComponent>? runtimeComponents = null, IEnumerable<ResultResolver>? resolvers = null)
             : base(false, null)
         {
             assemblies ??= [];

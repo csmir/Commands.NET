@@ -3,7 +3,7 @@
 namespace Commands.Converters
 {
     // This converter is used exclusively for enumerable conversion.
-    internal sealed class ObjectTypeConverter : TypeConverterBase<object>
+    internal sealed class ObjectTypeConverter : TypeConverter<object>
     {
         public static ObjectTypeConverter Instance { get; } = new();
 

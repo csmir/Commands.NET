@@ -30,7 +30,7 @@ namespace Commands.Reflection
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
-        public TypeConverterBase? Converter { get; } = null;
+        public TypeConverter? Converter { get; } = null;
 
         /// <inheritdoc />
         public bool IsCollection

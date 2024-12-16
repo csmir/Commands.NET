@@ -16,7 +16,7 @@ namespace Commands
         /// <summary>
         ///     Gets a collection of type converters that are used to convert arguments.
         /// </summary>
-        public IReadOnlyDictionary<Type, TypeConverterBase> TypeConverters { get; }
+        public IReadOnlyDictionary<Type, TypeConverter> TypeConverters { get; }
 
         /// <summary>
         ///     Gets the naming convention used to identify command methods.
@@ -34,13 +34,13 @@ namespace Commands
         /// <param name="converters">The range of type converters to match to command arguments.</param>
         /// <param name="namingPattern">The naming pattern which should determine how aliases are verified for their validity.</param>
         /// <param name="sealModuleDefinitions">Defines if modules registered by this configuration will be read-only, making them unable to be modified.</param>
-        public BuildConfiguration(IEnumerable<TypeConverterBase> converters, string? namingPattern = @"^[a-z0-9_-]*$", bool sealModuleDefinitions = false)
+        public BuildConfiguration(IEnumerable<TypeConverter> converters, string? namingPattern = @"^[a-z0-9_-]*$", bool sealModuleDefinitions = false)
             : this(converters.ToDictionary(x => x.Type), namingPattern is not null ? new Regex(namingPattern) : null, sealModuleDefinitions, null)
         {
 
         }
 
-        internal BuildConfiguration(Dictionary<Type, TypeConverterBase> converters, Regex? namingPattern, bool enforceReadonly, Func<IComponent, bool>? filter)
+        internal BuildConfiguration(Dictionary<Type, TypeConverter> converters, Regex? namingPattern, bool enforceReadonly, Func<IComponent, bool>? filter)
         {
             N_ComponentRegistrationFilter = filter;
             SealModuleDefinitions = enforceReadonly;

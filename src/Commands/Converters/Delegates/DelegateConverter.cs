@@ -11,7 +11,7 @@ namespace Commands.Converters
     [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class DelegateConverter<T>(
         Func<CallerContext, IArgument, object?, IServiceProvider, ConvertResult> func)
-        : TypeConverterBase<T>
+        : TypeConverter<T>
     {
         private readonly Func<CallerContext, IArgument, object?, IServiceProvider, ConvertResult> _func = func;
 

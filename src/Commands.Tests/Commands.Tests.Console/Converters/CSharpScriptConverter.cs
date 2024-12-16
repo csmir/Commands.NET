@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.Scripting;
 
 namespace Commands.Tests
 {
-    public class CSharpScriptConverter : TypeConverterBase<Delegate>
+    public class CSharpScriptConverter : TypeConverter<Delegate>
     {
         public override async ValueTask<ConvertResult> Evaluate(CallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {

@@ -3,8 +3,8 @@
 namespace Commands.Converters
 {
     /// <inheritdoc />
-    /// <typeparam name="T">The type this <see cref="TypeConverterBase{T}"/> should convert into.</typeparam>
-    public abstract class TypeConverterBase<T> : TypeConverterBase
+    /// <typeparam name="T">The type this <see cref="TypeConverter{T}"/> should convert into.</typeparam>
+    public abstract class TypeConverter<T> : TypeConverter
     {
         /// <summary>
         ///     Gets the type that should be converted to.
@@ -31,7 +31,7 @@ namespace Commands.Converters
     /// <remarks>
     ///     To register converters for the <see cref="CommandTree"/> to use, add them to the <see cref="CommandTreeBuilder.TypeConverters"/> collection.
     /// </remarks>
-    public abstract class TypeConverterBase
+    public abstract class TypeConverter
     {
         /// <summary>
         ///     Gets the type that should be converted to. This value determines what command arguments will use this converter.
@@ -94,7 +94,7 @@ namespace Commands.Converters
             return ConvertResult.FromSuccess(value);
         }
 
-        internal static Dictionary<Type, TypeConverterBase> BuildDefaults()
+        internal static Dictionary<Type, TypeConverter> BuildDefaults()
         {
             var list = ValueTypeConverter.CreateBaseConverters();
 

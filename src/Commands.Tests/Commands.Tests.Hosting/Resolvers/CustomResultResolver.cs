@@ -2,7 +2,7 @@
 
 namespace Commands.Tests
 {
-    internal class CustomResultResolver : ResultResolverBase
+    internal class CustomResultResolver : ResultResolver
     {
         protected override ValueTask ArgumentMismatch(CallerContext consumer, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
         {

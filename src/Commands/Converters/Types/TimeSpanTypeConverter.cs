@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Commands.Converters
 {
-    internal sealed partial class TimeSpanTypeConverter : TypeConverterBase<TimeSpan>
+    internal sealed partial class TimeSpanTypeConverter : TypeConverter<TimeSpan>
     {
         private readonly IReadOnlyDictionary<string, Func<string, TimeSpan>> _callback;
         private readonly Regex _regex = new(@"(\d*)\s*([a-zA-Z]*)\s*(?:and|,)?\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);

@@ -16,7 +16,7 @@ namespace Commands
     public static class ServiceUtilities
     {
         /// <summary>
-        ///     Tries to add a default <see cref="SourceResolverBase"/> to the service collection. If a resolver is already added, this add operation will be skipped.
+        ///     Tries to add a default <see cref="SourceResolver"/> to the service collection. If a resolver is already added, this add operation will be skipped.
         /// </summary>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
@@ -26,33 +26,33 @@ namespace Commands
 
             builder.ConfigureServices((context, services) =>
             {
-                services.TryAddSingleton<SourceResolverBase, DefaultSourceResolver>();
+                services.TryAddSingleton<SourceResolver, DefaultSourceResolver>();
             });
 
             return builder;
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="SourceResolverBase"/> to the service collection by the specified type.  If a resolver of the same type is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="SourceResolver"/> to the service collection by the specified type.  If a resolver of the same type is already added, this add operation will be skipped.
         /// </summary>
         /// <typeparam name="TResolver">The type of the resolver that should be added to the service collection.</typeparam>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
         public static IHostBuilder AddSourceResolver<TResolver>(this IHostBuilder builder)
-            where TResolver : SourceResolverBase
+            where TResolver : SourceResolver
         {
             EnsureConfigured(builder);
 
             builder.ConfigureServices((context, services) =>
             {
-                services.TryAddSingleton<SourceResolverBase, TResolver>();
+                services.TryAddSingleton<SourceResolver, TResolver>();
             });
 
             return builder;
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="SourceResolverBase"/> to the service collection by the specified delegate. If a delegate resolver is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="SourceResolver"/> to the service collection by the specified delegate. If a delegate resolver is already added, this add operation will be skipped.
         /// </summary>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <param name="resolveDelegate">The delegate is invoked runs when the input of a command is requested.</param>
@@ -63,14 +63,14 @@ namespace Commands
 
             builder.ConfigureServices((context, services) =>
             {
-                services.TryAddSingleton<SourceResolverBase>(new DelegateSourceResolver(resolveDelegate));
+                services.TryAddSingleton<SourceResolver>(new DelegateSourceResolver(resolveDelegate));
             });
 
             return builder;
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="SourceResolverBase"/> to the service collection by the specified delegate. If a delegate resolver is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="SourceResolver"/> to the service collection by the specified delegate. If a delegate resolver is already added, this add operation will be skipped.
         /// </summary>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <param name="resolveDelegate">The delegate is invoked runs when the input of a command is requested.</param>
@@ -81,14 +81,14 @@ namespace Commands
 
             builder.ConfigureServices((context, services) =>
             {
-                services.TryAddSingleton<SourceResolverBase>(new AsyncDelegateSourceResolver(resolveDelegate));
+                services.TryAddSingleton<SourceResolver>(new AsyncDelegateSourceResolver(resolveDelegate));
             });
 
             return builder;
         }
 
         /// <summary>
-        ///     Tries to add a default <see cref="ResultResolverBase"/> to the service collection. If a resolver is already added, this add operation will be skipped.
+        ///     Tries to add a default <see cref="ResultResolver"/> to the service collection. If a resolver is already added, this add operation will be skipped.
         /// </summary>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
@@ -98,37 +98,37 @@ namespace Commands
 
             builder.ConfigureServices((context, services) =>
             {
-                services.TryAddSingleton<ResultResolverBase, DefaultResultResolver>();
+                services.TryAddSingleton<ResultResolver, DefaultResultResolver>();
             });
 
             return builder;
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="ResultResolverBase"/> to the service collection by the specified type. If a resolver with the same type is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="ResultResolver"/> to the service collection by the specified type. If a resolver with the same type is already added, this add operation will be skipped.
         /// </summary>
         /// <typeparam name="TResolver">The type of the resolver that should be added to the service collection.</typeparam>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <param name="scopeToExecution">Determines if the service should be scoped to the command execution. If <see langword="false"/>, the service will be added as a singleton.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
         public static IHostBuilder AddResultResolver<TResolver>(this IHostBuilder builder, bool scopeToExecution = false)
-            where TResolver : ResultResolverBase
+            where TResolver : ResultResolver
         {
             EnsureConfigured(builder);
 
             builder.ConfigureServices((context, services) =>
             {
                 if (scopeToExecution)
-                    services.TryAddScoped<ResultResolverBase, TResolver>();
+                    services.TryAddScoped<ResultResolver, TResolver>();
                 else
-                    services.TryAddSingleton<ResultResolverBase, TResolver>();
+                    services.TryAddSingleton<ResultResolver, TResolver>();
             });
 
             return builder;
         }
 
         /// <summary>
-        ///     Try to add a <see cref="ResultResolverBase"/> to the service collection by the specified delegate. If a delegate resolver is already added, this add operation will be skipped.
+        ///     Try to add a <see cref="ResultResolver"/> to the service collection by the specified delegate. If a delegate resolver is already added, this add operation will be skipped.
         /// </summary>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <param name="resolveDelegate">The delegate that is invoked when the result of a command needs to be handled.</param>
@@ -141,16 +141,16 @@ namespace Commands
             builder.ConfigureServices((context, services) =>
             {
                 if (scopeToExecution)
-                    services.TryAddScoped(typeof(ResultResolverBase), (services) => new DelegateResolver(resolveDelegate));
+                    services.TryAddScoped(typeof(ResultResolver), (services) => new DelegateResolver(resolveDelegate));
                 else
-                    services.TryAddSingleton<ResultResolverBase>(new DelegateResolver(resolveDelegate));
+                    services.TryAddSingleton<ResultResolver>(new DelegateResolver(resolveDelegate));
             });
 
             return builder;
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="ResultResolverBase"/> to the service collection by the specified delegate. If a delegate resolver is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="ResultResolver"/> to the service collection by the specified delegate. If a delegate resolver is already added, this add operation will be skipped.
         /// </summary>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <param name="resolveDelegate">The delegate that is invoked when the result of a command needs to be handled.</param>
@@ -163,39 +163,39 @@ namespace Commands
             builder.ConfigureServices((context, services) =>
             {
                 if (scopeToExecution)
-                    services.TryAddScoped(typeof(ResultResolverBase), (services) => new AsyncDelegateResolver(resolveDelegate));
+                    services.TryAddScoped(typeof(ResultResolver), (services) => new AsyncDelegateResolver(resolveDelegate));
                 else
-                    services.TryAddSingleton<ResultResolverBase>(new AsyncDelegateResolver(resolveDelegate));
+                    services.TryAddSingleton<ResultResolver>(new AsyncDelegateResolver(resolveDelegate));
             });
 
             return builder;
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="TypeConverterBase"/> to the service collection by the specified type. If a converter of the same type is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="Converters.TypeConverter"/> to the service collection by the specified type. If a converter of the same type is already added, this add operation will be skipped.
         /// </summary>
         /// <typeparam name="TConverter"></typeparam>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <param name="scopeToExecution">Determines if the service should be scoped to the command execution. If <see langword="false"/>, the service will be added as a singleton.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
         public static IHostBuilder AddTypeConverter<TConverter>(this IHostBuilder builder, bool scopeToExecution = false)
-            where TConverter : TypeConverterBase
+            where TConverter : Converters.TypeConverter
         {
             EnsureConfigured(builder);
 
             builder.ConfigureServices((context, services) =>
             {
                 if (scopeToExecution)
-                    services.TryAddScoped<TypeConverterBase, TConverter>();
+                    services.TryAddScoped<Converters.TypeConverter, TConverter>();
                 else
-                    services.TryAddSingleton<TypeConverterBase, TConverter>();
+                    services.TryAddSingleton<Converters.TypeConverter, TConverter>();
             });
 
             return builder;
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="TypeConverterBase"/> to the service collection by the specified delegate. If a converter with the same conversion type is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="Converters.TypeConverter"/> to the service collection by the specified delegate. If a converter with the same conversion type is already added, this add operation will be skipped.
         /// </summary>
         /// <typeparam name="TConvertible"></typeparam>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
@@ -210,13 +210,13 @@ namespace Commands
             {
                 if (scopeToExecution)
                 {
-                    var descriptor = ServiceDescriptor.Scoped<TypeConverterBase, DelegateConverter<TConvertible>>((services) => new DelegateConverter<TConvertible>(convertDelegate));
+                    var descriptor = ServiceDescriptor.Scoped<Converters.TypeConverter, DelegateConverter<TConvertible>>((services) => new DelegateConverter<TConvertible>(convertDelegate));
 
                     services.TryAddEnumerable(descriptor);
                 }
                 else
                 {
-                    var descriptor = ServiceDescriptor.Singleton<TypeConverterBase, DelegateConverter<TConvertible>>((services) => new DelegateConverter<TConvertible>(convertDelegate));
+                    var descriptor = ServiceDescriptor.Singleton<Converters.TypeConverter, DelegateConverter<TConvertible>>((services) => new DelegateConverter<TConvertible>(convertDelegate));
 
                     services.TryAddEnumerable(descriptor);
                 }
@@ -226,7 +226,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="TypeConverterBase"/> to the service collection by the specified delegate. If a converter with the same conversion type is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="Converters.TypeConverter"/> to the service collection by the specified delegate. If a converter with the same conversion type is already added, this add operation will be skipped.
         /// </summary>
         /// <typeparam name="TConvertible"></typeparam>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
@@ -241,13 +241,13 @@ namespace Commands
             {
                 if (scopeToExecution)
                 {
-                    var descriptor = ServiceDescriptor.Scoped<TypeConverterBase, AsyncDelegateConverter<TConvertible>>((services) => new AsyncDelegateConverter<TConvertible>(convertDelegate));
+                    var descriptor = ServiceDescriptor.Scoped<Converters.TypeConverter, AsyncDelegateConverter<TConvertible>>((services) => new AsyncDelegateConverter<TConvertible>(convertDelegate));
 
                     services.TryAddEnumerable(descriptor);
                 }
                 else
                 {
-                    var descriptor = ServiceDescriptor.Singleton<TypeConverterBase, AsyncDelegateConverter<TConvertible>>((services) => new AsyncDelegateConverter<TConvertible>(convertDelegate));
+                    var descriptor = ServiceDescriptor.Singleton<Converters.TypeConverter, AsyncDelegateConverter<TConvertible>>((services) => new AsyncDelegateConverter<TConvertible>(convertDelegate));
 
                     services.TryAddEnumerable(descriptor);
                 }
@@ -439,8 +439,8 @@ namespace Commands
                 {
                     var builder = services.GetRequiredService<CommandTreeBuilder>();
 
-                    var resolvers = services.GetServices<ResultResolverBase>();
-                    var converters = services.GetServices<TypeConverterBase>();
+                    var resolvers = services.GetServices<ResultResolver>();
+                    var converters = services.GetServices<Converters.TypeConverter>();
 
                     var assemblies = context.Properties.TryGetValue("Commands:Assemblies", out var propAsm)
                         ? propAsm as List<Assembly>

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace Commands
 {
     /// <summary>
-    ///     A generator for command execution scopes, listening to data within the provided <see cref="SourceResolverBase"/>[] <paramref name="resolvers"/> to run a new command. This class cannot be inherited.
+    ///     A generator for command execution scopes, listening to data within the provided <see cref="SourceResolver"/>[] <paramref name="resolvers"/> to run a new command. This class cannot be inherited.
     /// </summary>
     /// <param name="manager">The manager used to run the command query.</param>
     /// <param name="resolvers">A collection of registered resolvers intended to be activated.</param>
@@ -14,12 +14,12 @@ namespace Commands
     /// <param name="logger">A logger that logs the execution process.</param>
     /// <param name="lifetime">The lifetime of the application.</param>
     public sealed class SequenceInitiator(
-        CommandTree manager, IEnumerable<SourceResolverBase> resolvers, IServiceProvider services, ILogger<SequenceInitiator> logger, IHostApplicationLifetime lifetime)
+        CommandTree manager, IEnumerable<SourceResolver> resolvers, IServiceProvider services, ILogger<SequenceInitiator> logger, IHostApplicationLifetime lifetime)
         : IHostedService
     {
         private readonly ILogger<SequenceInitiator> _logger = logger;
         private readonly CommandTree _manager = manager;
-        private readonly IEnumerable<SourceResolverBase> _resolvers = resolvers;
+        private readonly IEnumerable<SourceResolver> _resolvers = resolvers;
         private readonly IHostApplicationLifetime _lifetime = lifetime;
         private readonly IServiceProvider _services = services;
 

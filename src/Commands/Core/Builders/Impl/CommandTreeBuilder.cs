@@ -14,8 +14,8 @@ namespace Commands
     ///     <list type="number">
     ///         <item>Defining assemblies through which will be searched to discover modules and commands.</item>
     ///         <item>Defining custom commands that do not appear in the assemblies.</item>
-    ///         <item>Registering implementations of <see cref="TypeConverterBase"/> which define custom argument conversion.</item>
-    ///         <item>Registering implementations of <see cref="ResultResolverBase"/> which define custom result handling.</item>
+    ///         <item>Registering implementations of <see cref="TypeConverter"/> which define custom argument conversion.</item>
+    ///         <item>Registering implementations of <see cref="ResultResolver"/> which define custom result handling.</item>
     ///         <item>Custom naming patterns that validate naming across the whole process.</item>
     ///     </list>
     /// </remarks>
@@ -29,14 +29,14 @@ namespace Commands
         public List<Assembly> Assemblies { get; set; }
 
         /// <summary>
-        ///     Gets or sets a collection of <see cref="TypeConverterBase"/>'s representing predefined <see cref="Type"/> conversion.
+        ///     Gets or sets a collection of <see cref="TypeConverter"/>'s representing predefined <see cref="Type"/> conversion.
         /// </summary>
-        public Dictionary<Type, TypeConverterBase> TypeConverters { get; set; }
+        public Dictionary<Type, TypeConverter> TypeConverters { get; set; }
 
         /// <summary>
-        ///     Gets or sets a collection of <see cref="ResultResolverBase"/>'s that serve as post-execution handlers.
+        ///     Gets or sets a collection of <see cref="ResultResolver"/>'s that serve as post-execution handlers.
         /// </summary>
-        public List<ResultResolverBase> ResultResolvers { get; set; }
+        public List<ResultResolver> ResultResolvers { get; set; }
 
         /// <summary>
         ///     Gets or sets a collection of <see cref="CommandInfo"/>'s that are manually created before the registration process runs.
@@ -74,7 +74,7 @@ namespace Commands
                 NamingRegex = new(DEFAULT_REGEX, RegexOptions.Compiled);
 
                 Assemblies = [Assembly.GetEntryAssembly()!];
-                TypeConverters = TypeConverterBase.BuildDefaults();
+                TypeConverters = TypeConverter.BuildDefaults();
             }
             else
             {
@@ -227,13 +227,13 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Adds an implementation of <see cref="ResultResolverBase"/> to <see cref="ResultResolvers"/>.
+        ///     Adds an implementation of <see cref="ResultResolver"/> to <see cref="ResultResolvers"/>.
         /// </summary>
-        /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolverBase"/> to add.</typeparam>
-        /// <param name="resolver">The implementation of <see cref="ResultResolverBase"/> to add.</param>
+        /// <typeparam name="TResolver">The implementation type of <see cref="ResultResolver"/> to add.</typeparam>
+        /// <param name="resolver">The implementation of <see cref="ResultResolver"/> to add.</param>
         /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
         public CommandTreeBuilder AddResultResolver<TResolver>(TResolver resolver)
-            where TResolver : ResultResolverBase
+            where TResolver : ResultResolver
         {
             if (resolver == null)
                 throw new ArgumentNullException(nameof(resolver));
@@ -280,13 +280,13 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Adds an implementation of <see cref="TypeConverterBase"/> to <see cref="TypeConverters"/>.
+        ///     Adds an implementation of <see cref="TypeConverter"/> to <see cref="TypeConverters"/>.
         /// </summary>
-        /// <typeparam name="TConverter">The implementation type of <see cref="TypeConverterBase"/> to add.</typeparam>
-        /// <param name="converter">The implementation of <see cref="TypeConverterBase"/> to add.</param>
+        /// <typeparam name="TConverter">The implementation type of <see cref="TypeConverter"/> to add.</typeparam>
+        /// <param name="converter">The implementation of <see cref="TypeConverter"/> to add.</param>
         /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
         public CommandTreeBuilder AddTypeConverter<TConverter>(TConverter converter)
-            where TConverter : TypeConverterBase
+            where TConverter : TypeConverter
         {
             if (converter == null)
                 throw new ArgumentNullException(nameof(converter));

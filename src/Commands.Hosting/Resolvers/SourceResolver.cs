@@ -3,7 +3,7 @@
     /// <summary>
     ///     A handler for pre-execution processes.
     /// </summary>
-    public abstract class SourceResolverBase
+    public abstract class SourceResolver
     {
         internal bool ReadAvailable { get; set; }
 

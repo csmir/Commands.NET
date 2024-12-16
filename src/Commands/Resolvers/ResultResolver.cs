@@ -8,7 +8,7 @@ namespace Commands.Resolvers
     /// <remarks>
     ///     Implementing this type allows you to treat result data and scope finalization, regardless on whether the command execution succeeded or not.
     /// </remarks>
-    public abstract class ResultResolverBase
+    public abstract class ResultResolver
     {
         private readonly static Func<object, object>[] _taskResultPropertyCallers = new Func<object, object>[2];
 

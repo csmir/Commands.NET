@@ -5,7 +5,7 @@ using Commands.Reflection;
 
 namespace Commands.Samples
 {
-    public class ReflectionTypeConverter(bool caseIgnore) : TypeConverterBase<Type>
+    public class ReflectionTypeConverter(bool caseIgnore) : TypeConverter<Type>
     {
         private readonly bool _caseIgnore = caseIgnore;
 

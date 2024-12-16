@@ -9,7 +9,7 @@ namespace Commands.Resolvers
     [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class AsyncDelegateResolver(
         Func<CallerContext, IExecuteResult, IServiceProvider, ValueTask> action)
-        : ResultResolverBase
+        : ResultResolver
     {
         private readonly Func<CallerContext, IExecuteResult, IServiceProvider, ValueTask> _action = action;
 

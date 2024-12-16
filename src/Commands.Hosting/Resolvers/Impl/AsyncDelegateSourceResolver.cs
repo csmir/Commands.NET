@@ -1,7 +1,7 @@
 ﻿namespace Commands.Resolvers
 {
     internal sealed class AsyncDelegateSourceResolver(
-        Func<ValueTask<SourceResult>> func) : SourceResolverBase
+        Func<ValueTask<SourceResult>> func) : SourceResolver
     {
         private readonly Func<ValueTask<SourceResult>> _func = func;
 

@@ -1,7 +1,7 @@
 ﻿namespace Commands.Resolvers
 {
     internal sealed class DelegateSourceResolver(
-        Func<SourceResult> func) : SourceResolverBase
+        Func<SourceResult> func) : SourceResolver
     {
         private readonly Func<SourceResult> _func = func;
 

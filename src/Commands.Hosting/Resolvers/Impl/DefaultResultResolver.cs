@@ -2,7 +2,7 @@
 
 namespace Commands.Resolvers
 {
-    internal sealed class DefaultResultResolver(ILogger<DefaultResultResolver> logger) : ResultResolverBase
+    internal sealed class DefaultResultResolver(ILogger<DefaultResultResolver> logger) : ResultResolver
     {
 #pragma warning disable CA2254 // Template should be a static expression
         protected override ValueTask ArgumentMismatch(CallerContext consumer, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)

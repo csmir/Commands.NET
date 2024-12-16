@@ -9,7 +9,7 @@ namespace Commands.Resolvers
     [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class DelegateResolver(
         Action<CallerContext, IExecuteResult, IServiceProvider> action)
-        : ResultResolverBase
+        : ResultResolver
     {
         private readonly Action<CallerContext, IExecuteResult, IServiceProvider> _action = action;
 

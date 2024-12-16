@@ -11,7 +11,7 @@ namespace Commands.Converters
     [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class AsyncDelegateConverter<T>(
         Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> func)
-        : TypeConverterBase<T>
+        : TypeConverter<T>
     {
         private readonly Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> _func = func;
 

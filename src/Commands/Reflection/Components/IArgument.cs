@@ -23,6 +23,6 @@ namespace Commands.Reflection
         /// <remarks>
         ///     Will be <see langword="null"/> if <see cref="Type"/> is <see cref="string"/>, <see cref="object"/>, or if this argument is <see cref="ComplexArgumentInfo"/>.
         /// </remarks>
-        public TypeConverterBase? Converter { get; }
+        public TypeConverter? Converter { get; }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Commands.Tests
 {
-    internal class CustomSourceResolver : SourceResolverBase
+    internal class CustomSourceResolver : SourceResolver
     {
         public override ValueTask<SourceResult> Evaluate(CancellationToken cancellationToken)
         {

@@ -1,6 +1,6 @@
 ﻿namespace Commands.Resolvers
 {
-    internal sealed class DefaultSourceResolver : SourceResolverBase
+    internal sealed class DefaultSourceResolver : SourceResolver
     {
         public override async ValueTask<SourceResult> Evaluate(CancellationToken cancellationToken)
         {

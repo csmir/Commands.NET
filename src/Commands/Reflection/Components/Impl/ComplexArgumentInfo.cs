@@ -43,7 +43,7 @@ namespace Commands.Reflection
         public int MaxLength { get; }
 
         /// <inheritdoc />
-        public TypeConverterBase? Converter { get; } = null;
+        public TypeConverter? Converter { get; } = null;
 
         /// <inheritdoc />
         public bool IsCollection

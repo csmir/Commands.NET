@@ -2,7 +2,7 @@
 
 namespace Commands.Converters
 {
-    internal sealed class ValueTypeConverter<T> : TypeConverterBase<T>
+    internal sealed class ValueTypeConverter<T> : TypeConverter<T>
     {
         private delegate bool Parser<TValue>(string? str, out TValue value);
 
@@ -66,7 +66,7 @@ namespace Commands.Converters
 
     internal static class ValueTypeConverter
     {
-        public static List<TypeConverterBase> CreateBaseConverters()
+        public static List<TypeConverter> CreateBaseConverters()
         {
             return
             [

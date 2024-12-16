@@ -2,7 +2,7 @@
 
 namespace Commands.Converters
 {
-    internal sealed class StringTypeConverter : TypeConverterBase<string>
+    internal sealed class StringTypeConverter : TypeConverter<string>
     {
         public static StringTypeConverter Instance { get; } = new();
 

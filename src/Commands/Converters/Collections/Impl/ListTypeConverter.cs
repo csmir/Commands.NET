@@ -2,7 +2,7 @@
 
 namespace Commands.Converters
 {
-    internal sealed class ListTypeConverter<T>(TypeConverterBase underlyingConverter) : TypeConverterBase<T>, ICollectionConverter
+    internal sealed class ListTypeConverter<T>(TypeConverter underlyingConverter) : TypeConverter<T>, ICollectionConverter
     {
         public CollectionType CollectionType { get; } = CollectionType.List;
 
@@ -29,14 +29,14 @@ namespace Commands.Converters
 
     internal static class ListTypeConverter
     {
-        private static readonly Dictionary<Type, TypeConverterBase> _converters = [];
+        private static readonly Dictionary<Type, TypeConverter> _converters = [];
 
-        public static TypeConverterBase GetOrCreate(TypeConverterBase underlyingConverter)
+        public static TypeConverter GetOrCreate(TypeConverter underlyingConverter)
         {
             if (_converters.TryGetValue(underlyingConverter.Type, out var converter))
                 return converter;
 
-            converter = (TypeConverterBase)Activator.CreateInstance(typeof(ListTypeConverter<>).MakeGenericType(underlyingConverter.Type), underlyingConverter)!;
+            converter = (TypeConverter)Activator.CreateInstance(typeof(ListTypeConverter<>).MakeGenericType(underlyingConverter.Type), underlyingConverter)!;
 
             _converters.Add(underlyingConverter.Type, converter);
 
