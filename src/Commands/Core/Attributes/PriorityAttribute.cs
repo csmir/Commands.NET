@@ -1,7 +1,7 @@
 ﻿namespace Commands
 {
     /// <summary>
-    ///     An attribute that can prioritize one result over another when multiple matches were found.
+    ///     An attribute that can prioritize one result over another when multiple matches were found. This class cannot be inherited.
     /// </summary>
     /// <remarks>
     ///     By default, a command has a priority calculated by the following logic:

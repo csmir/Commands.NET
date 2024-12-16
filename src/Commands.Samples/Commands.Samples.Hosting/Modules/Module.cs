@@ -9,7 +9,7 @@
 
             foreach (var command in commands)
             {
-                Send(command.FullName ?? "Unnamed command.");
+                Respond(command.FullName ?? "Unnamed command.");
             }
         }
     }

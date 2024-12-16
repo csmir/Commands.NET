@@ -7,8 +7,8 @@
     {
         public void Run()
         {
-            Send(Command.Attributes.Length);
-            Send("Succesfully ran " + Command.ToString());
+            Respond(Command.Attributes.Length);
+            Respond("Succesfully ran " + Command.ToString());
         }
     }
 }

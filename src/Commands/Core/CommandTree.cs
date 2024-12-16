@@ -9,7 +9,7 @@ using System.Reflection;
 namespace Commands
 {
     /// <summary>
-    ///     The root type serving as a basis for all operations and functionality as provided by Commands.NET. 
+    ///     The root type serving as a basis for all operations and functionality as provided by Commands.NET. This class cannot be inherited.
     ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
     /// </summary>
     /// <remarks>

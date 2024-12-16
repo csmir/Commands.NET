@@ -9,7 +9,7 @@ namespace Commands
     ///     <b>This BPI of this class does not adhere semantic versioning. </b>
     ///     As edge cases are discovered in the parser logic, the parser guidelines may change, and command input might improve or degrade based on different usecases.
     /// </remarks>
-    public static partial class CommandParser
+    public static class CommandParser
     {
         const char U0022 = '"';
         const char U0020 = ' ';

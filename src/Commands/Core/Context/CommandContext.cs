@@ -3,9 +3,11 @@
 namespace Commands
 {
     /// <summary>
-    ///     Represents data about a command, as a <see cref="CommandModule"/> normally would. 
-    ///     This context is used for <see langword="static"/> and <see langword="delegate"/> commands.
+    ///     Represents data about a command, as a <see cref="CommandModule"/> normally would. This class cannot be inherited.
     /// </summary>
+    /// <remarks>
+    ///     This context is used for <see langword="static"/> and <see langword="delegate"/> commands.
+    /// </remarks>
     public class CommandContext<T>(T consumer, CommandInfo command, CommandTree tree, CommandOptions options)
         where T : CallerContext
     {
@@ -34,7 +36,7 @@ namespace Commands
         /// </summary>
         /// <param name="response">The response to send to the consumer.</param>
         /// <returns>An asynchronous <see cref="Task"/> that can be awaited to wait for the response to send, otherwise dismissed.</returns>
-        public Task Send(object response)
+        public Task Respond(object response)
             => Caller.Respond(response);
     }
 }
