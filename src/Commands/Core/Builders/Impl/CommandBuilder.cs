@@ -32,10 +32,7 @@ namespace Commands
         /// <summary>
         ///     Creates a new instance of <see cref="CommandBuilder"/>.
         /// </summary>
-        public CommandBuilder()
-        {
-
-        }
+        public CommandBuilder() { }
 
         /// <summary>
         ///     Creates a new instance of <see cref="CommandBuilder"/> with the specified name, aliases, and delegate.
@@ -46,12 +43,6 @@ namespace Commands
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="executeDelegate"/> is <see langword="null"/>, or when the aliases are <see langword="null"/>.</exception>
         public CommandBuilder(string name, string[] aliases, Delegate executeDelegate)
         {
-            if (executeDelegate == null)
-                throw new ArgumentNullException(nameof(executeDelegate));
-
-            if (aliases == null)
-                throw new ArgumentNullException(nameof(aliases));
-
             aliases = new string[] { name }
                 .Concat(aliases)
                 .Distinct()
@@ -124,17 +115,17 @@ namespace Commands
         public IComponent Build(BuildConfiguration configuration)
         {
             if (ExecuteDelegate is null)
-                throw new InvalidOperationException("The command must have a delegate to execute.");
+                throw new ArgumentNullException(nameof(ExecuteDelegate));
 
             if (!_isNested && Aliases.Length == 0)
-                throw new InvalidOperationException("The command must have at least one alias.");
+                throw BuildException.AliasAtLeastOne();
 
-            if (configuration.NamingRegex is not null)
+            if (configuration.NamingPattern is not null)
             {
                 foreach (var alias in Aliases)
                 {
-                    if (!configuration.NamingRegex.IsMatch(alias))
-                        throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(BuildConfiguration.NamingRegex)} of the {nameof(BuildConfiguration)}.");
+                    if (!configuration.NamingPattern.IsMatch(alias))
+                        throw BuildException.AliasMismatch(alias);
                 }
             }
 
@@ -154,7 +145,7 @@ namespace Commands
         /// <param name="converters">The typeconverters from which the current command constructs its argument converters.</param>
         /// <param name="nameFilter">A filter which is used to determine how the command aliases are validated.</param>
         /// <returns>A reflection-based container that holds information for a component ready to be executed or serves as a container for executable components.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when the component aliases do not match <see cref="BuildConfiguration.NamingRegex"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the component aliases do not match <see cref="BuildConfiguration.NamingPattern"/>.</exception>
         public IComponent Build(IEnumerable<TypeConverter> converters, string? nameFilter = @"^[a-z0-9_-]*$")
             => Build(new BuildConfiguration(converters, nameFilter));
     }

@@ -2,7 +2,6 @@
 using Commands.Reflection;
 using Commands.Resolvers;
 using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace Commands
 {
@@ -19,75 +18,31 @@ namespace Commands
     ///         <item>Custom naming patterns that validate naming across the whole process.</item>
     ///     </list>
     /// </remarks>
-    public sealed class CommandTreeBuilder
+    public sealed class CommandTreeBuilder : BuildConfigurationBuilder
     {
-        const string DEFAULT_REGEX = @"^[a-z0-9_-]*$";
-
         /// <summary>
         ///     Gets or sets a collection of assemblies that are to be used to discover created modules.
         /// </summary>
-        public List<Assembly> Assemblies { get; set; }
-
-        /// <summary>
-        ///     Gets or sets a collection of <see cref="TypeConverter"/>'s representing predefined <see cref="Type"/> conversion.
-        /// </summary>
-        public Dictionary<Type, TypeConverter> TypeConverters { get; set; }
+        public List<Assembly> Assemblies { get; set; } = [Assembly.GetEntryAssembly()!];
 
         /// <summary>
         ///     Gets or sets a collection of <see cref="ResultResolver"/>'s that serve as post-execution handlers.
         /// </summary>
-        public List<ResultResolver> ResultResolvers { get; set; }
+        public List<ResultResolver> ResultResolvers { get; set; } = [];
 
         /// <summary>
         ///     Gets or sets a collection of <see cref="CommandInfo"/>'s that are manually created before the registration process runs.
         /// </summary>
-        public List<IComponentBuilder> Components { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the naming convention of commands and groups being registered into the <see cref="CommandTree"/>.
-        /// </summary>
-        public Regex? NamingRegex { get; set; }
-
-        /// <summary>
-        ///     Gets or sets if registered modules should be made read-only at creation, meaning they cannot be modified at runtime.
-        /// </summary>
-        public bool SealModuleDefinitions { get; set; }
+        public List<IComponentBuilder> Components { get; set; } = [];
 
         /// <summary>
         ///     Gets or sets a filter that determines whether a created component should be yielded back to the registration process or skipped entirely, based on state provided within the component itself.
         /// </summary>
-        public Func<IComponent, bool> RegisterComponentFilter { get; set; }
-
-        /// <summary>
-        ///     Creates a new instance of <see cref="CommandTreeBuilder"/>, with default values applied.
-        /// </summary>
-        public CommandTreeBuilder()
-            : this(true)
-        {
-
-        }
-
-        internal CommandTreeBuilder(bool applyStandards)
-        {
-            if (applyStandards)
-            {
-                NamingRegex = new(DEFAULT_REGEX, RegexOptions.Compiled);
-
-                Assemblies = [Assembly.GetEntryAssembly()!];
-                TypeConverters = TypeConverter.BuildDefaults();
-            }
-            else
-            {
-                Assemblies = [];
-                TypeConverters = [];
-            }
-
-            ResultResolvers = [];
-            Components = [];
-
-            SealModuleDefinitions = false;
-            RegisterComponentFilter = _ => true;
-        }
+        /// <remarks>
+        ///     Whether this filter returns true or false has no effect on the validation of component integrity, 
+        ///     meaning that the build process will still fail if the component is not a valid command or module under its own restrictions.
+        /// </remarks>
+        public Func<IComponent, bool> RegisterComponentFilter { get; set; } = _ => true;
 
         /// <summary>
         ///     Adds a command to the <see cref="Components"/> collection.
@@ -244,59 +199,6 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Configures an action that will convert a raw argument into the target type, signified by <typeparamref name="TConvertable"/>.
-        /// </summary>
-        /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
-        /// <param name="convertAction">The action that is responsible for the conversion process.</param>
-        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
-        public CommandTreeBuilder AddTypeConverter<TConvertable>(Func<CallerContext, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
-        {
-            if (convertAction == null)
-                throw new ArgumentNullException(nameof(convertAction));
-
-            var converter = new DelegateConverter<TConvertable>(convertAction);
-
-            TypeConverters[converter.Type] = converter;
-
-            return this;
-        }
-
-        /// <summary>
-        ///     Configures an asynchronous action that will convert a raw argument into the target type, signified by <typeparamref name="TConvertable"/>.
-        /// </summary>
-        /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
-        /// <param name="convertAction">The action that is responsible for the conversion process.</param>
-        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
-        public CommandTreeBuilder AddTypeConverter<TConvertable>(Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
-        {
-            if (convertAction == null)
-                throw new ArgumentNullException(nameof(convertAction));
-
-            var converter = new AsyncDelegateConverter<TConvertable>(convertAction);
-
-            TypeConverters[converter.Type] = converter;
-
-            return this;
-        }
-
-        /// <summary>
-        ///     Adds an implementation of <see cref="TypeConverter"/> to <see cref="TypeConverters"/>.
-        /// </summary>
-        /// <typeparam name="TConverter">The implementation type of <see cref="TypeConverter"/> to add.</typeparam>
-        /// <param name="converter">The implementation of <see cref="TypeConverter"/> to add.</param>
-        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
-        public CommandTreeBuilder AddTypeConverter<TConverter>(TConverter converter)
-            where TConverter : TypeConverter
-        {
-            if (converter == null)
-                throw new ArgumentNullException(nameof(converter));
-
-            TypeConverters[converter.Type] = converter;
-
-            return this;
-        }
-
-        /// <summary>
         ///     Configures the <see cref="Assemblies"/> with an additional assembly.
         /// </summary>
         /// <param name="assembly">An assembly that should be added to <see cref="Assemblies"/>.</param>
@@ -328,8 +230,12 @@ namespace Commands
         /// <summary>
         ///     Configures the <see cref="RegisterComponentFilter"/> to filter components at registration, based on the provided predicate.
         /// </summary>
-        /// <param name="filter"></param>
-        /// <returns></returns>
+        /// <remarks>
+        ///     <b>Whether this filter returns true or false has no effect on the validation of component integrity.</b>
+        ///     This means that the build process will still fail if the component is not a valid command or module under its own restrictions.
+        /// </remarks>
+        /// <param name="filter">A predicate which determines if a component should be added to its parent component, or directly to the command tree if it is a top-level one.</param>
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
         public CommandTreeBuilder WithRegistrationFilter(Func<IComponent, bool> filter)
         {
             RegisterComponentFilter = filter;
@@ -337,12 +243,72 @@ namespace Commands
         }
 
         /// <summary>
+        ///     Configures an action that will convert a raw argument into the target type, signified by <typeparamref name="TConvertable"/>.
+        /// </summary>
+        /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
+        /// <param name="convertAction">The action that is responsible for the conversion process.</param>
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public new CommandTreeBuilder AddTypeConverter<TConvertable>(Func<CallerContext, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
+        {
+            base.AddTypeConverter<TConvertable>(convertAction);
+            return this;
+        }
+
+        /// <summary>
+        ///     Configures an asynchronous action that will convert a raw argument into the target type, signified by <typeparamref name="TConvertable"/>.
+        /// </summary>
+        /// <typeparam name="TConvertable">The type for this converter to target.</typeparam>
+        /// <param name="convertAction">The action that is responsible for the conversion process.</param>
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public new CommandTreeBuilder AddTypeConverter<TConvertable>(Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
+        {
+            base.AddTypeConverter<TConvertable>(convertAction);
+            return this;
+        }
+
+        /// <summary>
+        ///     Adds an implementation of <see cref="TypeConverter"/> to the collection of converters.
+        /// </summary>
+        /// <typeparam name="TConverter">The implementation type of <see cref="TypeConverter"/> to add.</typeparam>
+        /// <param name="converter">The implementation of <see cref="TypeConverter"/> to add.</param>
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public new CommandTreeBuilder AddTypeConverter<TConverter>(TConverter converter)
+            where TConverter : TypeConverter
+        {
+            base.AddTypeConverter(converter);
+            return this;
+        }
+
+
+        /// <summary>
+        ///     Replaces the current collection of type converters with the specified converters.
+        /// </summary>
+        /// <param name="converters">A collection of converters to replace the existing converters in the current collection.</param>
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public new CommandTreeBuilder WithTypeConverters(params IEnumerable<TypeConverter> converters)
+        {
+            base.WithTypeConverters(converters);
+            return this;
+        }
+
+        /// <summary>
+        ///     Adds a collection of <see cref="TypeConverter"/>'s to the current collection of converters, replacing any existing converters with the same <see cref="Type"/>.
+        /// </summary>
+        /// <param name="converters">A collection of converters to add or replace in the current collection.</param>
+        /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
+        public new CommandTreeBuilder AddTypeConverters(params IEnumerable<TypeConverter> converters)
+        {
+            base.AddTypeConverters(converters);
+            return this;
+        }
+
+        /// <summary>
         ///     Builds the current <see cref="CommandTreeBuilder"/> instance into a new <see cref="BuildConfiguration"/>, which is used to create a new instance of <see cref="CommandTree"/>.
         /// </summary>
         /// <returns>A new instance of <see cref="CommandTree"/> built by this builder.</returns>
-        public CommandTree Build()
+        public new CommandTree Build()
         {
-            var configuration = new BuildConfiguration(TypeConverters, NamingRegex, SealModuleDefinitions, RegisterComponentFilter);
+            var configuration = new BuildConfiguration(TypeConverters, NamingPattern, SealModuleDefinitions, RegisterComponentFilter);
 
             var components = Components.Select(x => x.Build(configuration));
 

@@ -70,9 +70,7 @@ namespace Commands.Reflection
         /// <param name="configuration">The configuration that define the command registration process.</param>
         /// <returns>An enumerable of all discovered modules.</returns>
         public static IEnumerable<ModuleInfo> GetModules(Assembly assembly, BuildConfiguration configuration)
-        {
-            return GetModules(assembly.GetTypes(), null, false, configuration);
-        }
+            => GetModules(assembly.GetTypes(), null, false, configuration);
 
         /// <summary>
         ///     Iterates through the types known in the <paramref name="type"/> and returns every discovered module.
@@ -82,9 +80,7 @@ namespace Commands.Reflection
         /// <param name="configuration">The configuration that define the command registration process.</param>
         /// <returns>An enumerable of all discovered modules.</returns>
         public static IEnumerable<ModuleInfo> GetModules(Type type, ModuleInfo? module, BuildConfiguration configuration)
-        {
-            return GetModules(type.GetNestedTypes(), module, true, configuration);
-        }
+            => GetModules(type.GetNestedTypes(), module, true, configuration);
 
         /// <summary>
         ///     Iterates through the types known in the <paramref name="types"/> and returns every discovered module.
@@ -113,7 +109,7 @@ namespace Commands.Reflection
                     if (attribute is NameAttribute names)
                     {
                         // validate aliases.
-                        names.ValidateAliases(configuration.NamingRegex);
+                        names.ValidateAliases(configuration.NamingPattern);
 
                         aliases = names.Aliases;
                         continue;
@@ -160,7 +156,7 @@ namespace Commands.Reflection
                 {
                     if (attribute is NameAttribute names)
                     {
-                        names.ValidateAliases(configuration.NamingRegex);
+                        names.ValidateAliases(configuration.NamingPattern);
 
                         aliases = names.Aliases;
                         continue;
@@ -214,9 +210,7 @@ namespace Commands.Reflection
         public static IComponent[] GetComponents(ModuleInfo module, BuildConfiguration configuration)
         {
             if (module.Type == null)
-            {
                 return [];
-            }
 
             var commands = GetCommands(module.Type, module, module.Aliases.Length > 0, configuration);
 
@@ -254,7 +248,7 @@ namespace Commands.Reflection
                     else if (elementType!.IsObject())
                         converter = ObjectTypeConverter.Instance;
                     else
-                        throw new NotSupportedException($"The inner type of a collection's generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type: {elementType}");
+                        throw BuildException.CollectionNotSupported(elementType);
                 }
 
                 return ArrayTypeConverter.GetOrCreate(converter);
@@ -273,7 +267,7 @@ namespace Commands.Reflection
                     else if (elementType.IsObject())
                         converter = ObjectTypeConverter.Instance;
                     else
-                        throw new NotSupportedException($"The inner type of a collection's generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type: {elementType}");
+                        throw BuildException.CollectionNotSupported(elementType);
                 }
 
                 if (enumType == CollectionType.List)
@@ -288,7 +282,7 @@ namespace Commands.Reflection
             }
             catch
             {
-                throw new NotSupportedException($"The collection type or inner type of the collection's generic argument is not supported for conversion. Add a TypeConverter to the ConfigurationBuilder to support this type: {type}");
+                throw BuildException.CollectionNotSupported(type);
             }
 
             return null;

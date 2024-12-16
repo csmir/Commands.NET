@@ -83,7 +83,7 @@ namespace Commands.Reflection
             var parameters = constructor.GetArguments(false, options);
 
             if (parameters.Length == 0)
-                throw new InvalidOperationException($"Complex types are expected to have at least 1 constructor parameter. Type: {Type}");
+                throw BuildException.ComplexNotSupported(Type);
 
             var (minLength, maxLength) = parameters.GetLength();
 

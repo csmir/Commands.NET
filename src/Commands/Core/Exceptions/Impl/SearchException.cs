@@ -8,13 +8,13 @@
     public sealed class SearchException(string message, Exception? innerException = null)
         : CommandException(message, innerException)
     {
-        const string COMPONENTS_NOT_FOUND = "No commands were found with the provided input.";
-        const string SEARCH_INCOMPLETE = "A module was found with provided input, but no command to target was discovered.";
+        const string COMPONENTS_NOT_FOUND = "No commands were discovered with the provided input.";
+        const string SEARCH_INCOMPLETE = "A command module was discovered, but it contained no executable targets with the provided input.";
 
         internal static SearchException ComponentsNotFound()
-            => new SearchException(COMPONENTS_NOT_FOUND);
+            => new(COMPONENTS_NOT_FOUND);
 
         internal static SearchException SearchIncomplete()
-            => new SearchException(SEARCH_INCOMPLETE);
+            => new(SEARCH_INCOMPLETE);
     }
 }

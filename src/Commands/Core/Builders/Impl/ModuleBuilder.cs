@@ -22,10 +22,7 @@ namespace Commands
         /// <summary>
         ///     Creates a new instance of <see cref="ModuleBuilder"/>
         /// </summary>
-        public ModuleBuilder()
-        {
-
-        }
+        public ModuleBuilder() { }
 
         /// <summary>
         ///     Creates a new instance of <see cref="ModuleBuilder"/> with the specified name.
@@ -33,10 +30,7 @@ namespace Commands
         /// <param name="name">The primary alias of the module.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided aliases or name are null.</exception>
         public ModuleBuilder(string name)
-            : this(name, [])
-        {
-
-        }
+            : this(name, []) { }
 
         /// <summary>
         ///     Creates a new instance of <see cref="ModuleBuilder"/> with the specified name and aliases.
@@ -186,18 +180,18 @@ namespace Commands
         /// <param name="configuration">The configuration that should be used to determine the validity of the provided module.</param>
         /// <param name="root">The root module of this (sub)module. Can be left null, but it will affect how the module is visually formatted in the debugger and by calling the ToString() override on the returned type.</param>
         /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when any of the aliases of the module to be built do not match <see cref="BuildConfiguration.NamingRegex"/>.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when any of the aliases of the module to be built do not match <see cref="BuildConfiguration.NamingPattern"/>.</exception>
         public ModuleInfo Build(BuildConfiguration configuration, ModuleInfo? root)
         {
             if (Aliases.Length == 0)
-                throw new InvalidOperationException("The module must have at least one alias.");
+                throw BuildException.AliasAtLeastOne();
 
-            if (configuration.NamingRegex is not null)
+            if (configuration.NamingPattern is not null)
             {
                 foreach (var alias in Aliases)
                 {
-                    if (!configuration.NamingRegex.IsMatch(alias))
-                        throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(BuildConfiguration.NamingRegex)} of the {nameof(BuildConfiguration)}.");
+                    if (!configuration.NamingPattern.IsMatch(alias))
+                        throw BuildException.AliasMismatch(alias);
                 }
             }
 

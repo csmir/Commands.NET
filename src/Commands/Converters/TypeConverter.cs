@@ -64,9 +64,7 @@ namespace Commands.Converters
                 throw new ArgumentNullException(nameof(exception));
 
             if (exception is ConvertException convertEx)
-            {
                 return ConvertResult.FromError(convertEx);
-            }
 
             return ConvertResult.FromError(ConvertException.ConvertFailed(Type, exception));
         }
@@ -90,13 +88,25 @@ namespace Commands.Converters
         /// <param name="value">The value converted from a raw argument into the target type of this converter.</param>
         /// <returns>A <see cref="ConvertResult"/> representing the successful evaluation.</returns>
         protected ConvertResult Success(object value)
-        {
-            return ConvertResult.FromSuccess(value);
-        }
+            => ConvertResult.FromSuccess(value);
 
-        internal static Dictionary<Type, TypeConverter> BuildDefaults()
+        /// <summary>
+        ///     Creates a dictionary of base value type converters.
+        /// </summary>
+        /// <remarks>
+        ///     The list of types that are converted by these converters are:
+        ///     <list type="bullet">
+        ///         <item>String characters, being: <see langword="char"/>.</item>
+        ///         <item>Integers variants, being: <see langword="bool"/>, <see langword="byte"/>, <see langword="sbyte"/>, <see langword="short"/>, <see langword="ushort"/>, <see langword="int"/>, <see langword="uint"/>, <see langword="long"/> and <see langword="ulong"/>.</item>
+        ///         <item>Floating point numbers, being: <see langword="float"/>, <see langword="decimal"/> and <see langword="double"/>.</item>
+        ///         <item>Commonly used structs, being: <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/> and <see cref="Guid"/>.</item>
+        ///     </list>
+        ///     <i>The converter <see cref="TimeSpan"/> does not implement the standard <see cref="TimeSpan.TryParse(string, out TimeSpan)"/>, instead having a custom implementation under <see cref="TimeSpanTypeConverter"/>.</i>
+        /// </remarks>
+        /// <returns>A new <see cref="Dictionary{TKey, TValue}"/> containing a range of <see cref="TypeConverter"/>'s for all types listed above.</returns>
+        public static Dictionary<Type, TypeConverter> GetStandardTypeConverters()
         {
-            var list = ValueTypeConverter.CreateBaseConverters();
+            var list = TryParseTypeConverter.CreateBaseConverters();
 
             list.Add(new TimeSpanTypeConverter());
 
