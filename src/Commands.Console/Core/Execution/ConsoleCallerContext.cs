@@ -4,28 +4,28 @@ using Spectre.Console.Rendering;
 namespace Commands
 {
     /// <summary>
-    ///     Represents a consumer that represents the current console window that the application is running in.
+    ///     Represents a caller that represents the current console window that the application is running in.
     /// </summary>
-    public class ConsoleConsumerBase : CallerContext
+    public class ConsoleCallerContext : CallerContext
     {
         /// <summary>
-        ///     Gets the console that the consumer should write to.
+        ///     Gets the console that the caller should write to.
         /// </summary>
         public IAnsiConsole Console { get; }
 
         /// <summary>
-        ///     Creates a new <see cref="ConsoleConsumerBase"/> with the default <see cref="AnsiConsole.Console"/>.
+        ///     Creates a new <see cref="ConsoleCallerContext"/> with the default <see cref="AnsiConsole.Console"/>.
         /// </summary>
-        public ConsoleConsumerBase()
+        public ConsoleCallerContext()
         {
             Console = AnsiConsole.Console;
         }
 
         /// <summary>
-        ///     Creates a new <see cref="ConsoleConsumerBase"/> with the specified <see cref="IAnsiConsole"/>.
+        ///     Creates a new <see cref="ConsoleCallerContext"/> with the specified <see cref="IAnsiConsole"/>.
         /// </summary>
-        /// <param name="console">The console that should be used to send messages to the consumer.</param>
-        public ConsoleConsumerBase(IAnsiConsole console)
+        /// <param name="console">The console that should be used to send messages to the caller.</param>
+        public ConsoleCallerContext(IAnsiConsole console)
         {
             Console = console;
         }

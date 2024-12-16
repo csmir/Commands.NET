@@ -1,6 +1,6 @@
 ﻿using Commands;
 
-await CLIManager.CreateDefaultBuilder()
+await CLITree.CreateDefaultBuilder()
     .AddCommand(() => "Provide CLI arguments to execute other commands!")
     .AddCommand(c => c
         .WithDelegate(() => "Hello world!")

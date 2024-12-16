@@ -6,8 +6,8 @@ namespace Commands
     ///     Represents a module that can contain commands to execute, implementing <see cref="CommandModule{TConsumer}"/> with expanded functionality for console applications.
     /// </summary>
     /// <typeparam name="TConsumer">The consumer of the command being executed.</typeparam>
-    public class ConsoleModuleBase<TConsumer> : CommandModule<TConsumer>
-        where TConsumer : ConsoleConsumerBase
+    public class ConsoleCommandModule<TConsumer> : CommandModule<TConsumer>
+        where TConsumer : ConsoleCallerContext
     {
         /// <summary>
         ///     Sends a question to the console and returns the response.

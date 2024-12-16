@@ -3,7 +3,7 @@
     /// <summary>
     ///     Represents a set of extensions for the <see cref="CommandTreeBuilder"/> class.
     /// </summary>
-    public static class CLIBuilder
+    public static class CLITreeBuilder
     {
         /// <summary>
         ///     Adds a new <see cref="Delegate"/> based command to the list of <see cref="CommandTreeBuilder.Components"/>. 
@@ -38,7 +38,7 @@
 
             var args = CommandParser.ParseKeyValueCollection(options.CommandArguments);
 
-            options.Consumer ??= new ConsoleConsumerBase();
+            options.Consumer ??= new ConsoleCallerContext();
 
             return manager.Execute(options.Consumer, args, options.CommandOptions);
         }

@@ -11,9 +11,9 @@
         public CommandOptions? CommandOptions { get; set; }
 
         /// <summary>
-        ///     Gets or sets the consumer used in this operation. If not set, a new <see cref="ConsoleConsumerBase"/> will be created.
+        ///     Gets or sets the consumer used in this operation. If not set, a new <see cref="ConsoleCallerContext"/> will be created.
         /// </summary>
-        public ConsoleConsumerBase? Consumer { get; set; }
+        public ConsoleCallerContext? Consumer { get; set; }
 
         /// <summary>
         ///     Gets or sets all the arguments passed to the command. If not set, the default command will be ran.
