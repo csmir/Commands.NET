@@ -29,7 +29,7 @@ namespace Commands
         public CancellationTokenSource CancellationSource { get; } = new();
 
         /// <inheritdoc />
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
             _lifetime.ApplicationStarted.Register(() =>
             {
@@ -47,16 +47,14 @@ namespace Commands
                 }
             });
 
-            await Task.CompletedTask;
-
             _ = RunAsync();
+
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            await Task.CompletedTask;
-        }
+        public Task StopAsync(CancellationToken cancellationToken)
+            => Task.CompletedTask;
 
         /// <summary>
         ///     Makes an attempt to pause command input entering the application flow, and returns a value indicating whether the operation was successful.
@@ -67,9 +65,7 @@ namespace Commands
             try
             {
                 foreach (var resolvers in _resolvers)
-                {
                     resolvers.ReadAvailable = false;
-                }
             }
             catch
             {
@@ -88,9 +84,7 @@ namespace Commands
             try
             {
                 foreach (var resolvers in _resolvers)
-                {
                     resolvers.ReadAvailable = true;
-                }
             }
             catch
             {
@@ -129,9 +123,7 @@ namespace Commands
                             _logger.LogWarning("Source resolver failed to succeed acquirement iteration.");
 
                             if (source.Exception != null)
-                            {
                                 throw source.Exception;
-                            }
 
                             continue;
                         }

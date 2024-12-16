@@ -19,9 +19,7 @@
             while (!ReadAvailable)
             {
                 if (retryCounter > retryLimit)
-                {
                     return false;
-                }
 
                 Task.Delay(timeout).Wait();
 
@@ -48,10 +46,9 @@
                 throw new ArgumentNullException(nameof(exception));
 
             if (exception is SourceException convertEx)
-            {
                 return SourceResult.FromError(convertEx);
-            }
-            return SourceResult.FromError(SourceException.SourceAcquirementFailed(exception));
+
+            return SourceResult.FromError(SourceException.GetSourceFailed(exception));
         }
 
         /// <summary>
@@ -75,9 +72,7 @@
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
         protected SourceResult Success<T>(T consumer, IEnumerable<object> args)
             where T : CallerContext
-        {
-            return SourceResult.FromSuccess(consumer, args);
-        }
+            => SourceResult.FromSuccess(consumer, args);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> representing a successful evaluation.
@@ -88,9 +83,7 @@
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
         protected SourceResult Success<T>(T consumer, IEnumerable<object> args, CommandOptions options)
             where T : CallerContext
-        {
-            return SourceResult.FromSuccess(consumer, args, options);
-        }
+            => SourceResult.FromSuccess(consumer, args, options);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> representing a successful evaluation.
@@ -100,9 +93,7 @@
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
         protected SourceResult Success<T>(T consumer, IEnumerable<KeyValuePair<string, object?>> args)
             where T : CallerContext
-        {
-            return SourceResult.FromSuccess(consumer, args);
-        }
+            => SourceResult.FromSuccess(consumer, args);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> representing a successful evaluation.
@@ -113,8 +104,6 @@
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
         protected SourceResult Success<T>(T consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions options)
             where T : CallerContext
-        {
-            return SourceResult.FromSuccess(consumer, args);
-        }
+            => SourceResult.FromSuccess(consumer, args, options);
     }
 }

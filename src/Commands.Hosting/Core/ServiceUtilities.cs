@@ -272,14 +272,10 @@ namespace Commands
                 if (context.Properties.TryGetValue("Commands:Commands", out var propCmd))
                 {
                     if (propCmd is List<CommandBuilder> commands)
-                    {
                         commands.Add(new(name, [], executeDelegate));
-                    }
                 }
                 else
-                {
                     context.Properties.Add("Commands:Commands", new List<CommandBuilder> { new(name, [], executeDelegate) });
-                }
             });
             return builder;
         }
@@ -301,14 +297,10 @@ namespace Commands
                 if (context.Properties.TryGetValue("Commands:Commands", out var propCmd))
                 {
                     if (propCmd is List<CommandBuilder> commands)
-                    {
                         commands.Add(new(name, aliases, executeDelegate));
-                    }
                 }
                 else
-                {
                     context.Properties.Add("Commands:Commands", new List<CommandBuilder> { new(name, aliases, executeDelegate) });
-                }
             });
             return builder;
         }
@@ -326,9 +318,7 @@ namespace Commands
             EnsureConfigured(builder);
 
             if (names.Length == 0)
-            {
                 throw new ArgumentException("At least one name must be provided.", nameof(names));
-            }
 
             var aliases = names.Length > 1 ? names[1..] : [];
 
@@ -337,14 +327,10 @@ namespace Commands
                 if (context.Properties.TryGetValue("Commands:Commands", out var propCmd))
                 {
                     if (propCmd is List<CommandBuilder> range)
-                    {
                         range.Add(new(names[0], aliases, executeDelegate));
-                    }
                 }
                 else
-                {
                     context.Properties.Add("Commands:Commands", new List<CommandBuilder> { new(names[0], aliases, executeDelegate) });
-                }
             });
 
             return builder;
@@ -365,14 +351,10 @@ namespace Commands
                 if (context.Properties.TryGetValue("Commands:Assemblies", out var propAsm))
                 {
                     if (propAsm is List<Assembly> assemblies)
-                    {
                         assemblies.Add(assembly);
-                    }
                 }
                 else
-                {
                     context.Properties.Add("Commands:Assemblies", new List<Assembly> { assembly });
-                }
             });
 
             return builder;
@@ -392,9 +374,7 @@ namespace Commands
                 if (context.Properties.TryGetValue("Commands:Assemblies", out var propAsm))
                 {
                     if (propAsm is List<Assembly> assemblies)
-                    {
                         assemblies.Add(Assembly.GetCallingAssembly());
-                    }
                 }
                 else
                 {
@@ -424,9 +404,7 @@ namespace Commands
         private static void EnsureConfigured(IHostBuilder builder)
         {
             if (builder.Properties.ContainsKey("Commands:Configured"))
-            {
                 return;
-            }
 
             builder.Properties.Add("Commands:Configured", true);
 

@@ -10,12 +10,7 @@
 
         /// <inheritdoc />
         public bool Success
-        {
-            get
-            {
-                return Exception == null;
-            }
-        }
+            => Exception == null;
 
         internal CommandOptions? Options { get; }
 
@@ -55,9 +50,7 @@
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
         public static SourceResult FromSuccess(CallerContext consumer, IEnumerable<object> args, CommandOptions? options = null)
-        {
-            return new(consumer, new ArgumentEnumerator(args), options, null);
-        }
+            => new(consumer, new ArgumentEnumerator(args), options, null);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> resembling a successful sourcing operation.
@@ -67,19 +60,14 @@
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
         public static SourceResult FromSuccess(CallerContext consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
-        {
-            options ??= new CommandOptions();
-            return new(consumer, new ArgumentEnumerator(args, options.MatchComparer), options, null);
-        }
+            => new(consumer, new ArgumentEnumerator(args, options?.MatchComparer ?? StringComparer.OrdinalIgnoreCase), options, null);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> resembling a failed sourcing operation.
         /// </summary>
         /// <returns>A new result containing information about the operation.</returns>
         public static SourceResult FromError()
-        {
-            return new(null, null, null, SourceException.SourceAcquirementFailed());
-        }
+            => new(null, null, null, SourceException.GetSourceFailed());
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> resembling a failed sourcing operation.
@@ -87,14 +75,10 @@
         /// <param name="exception">An exception describing the failed process.</param>
         /// <returns>A new result containing information about the operation.</returns>
         public static SourceResult FromError(Exception exception)
-        {
-            return new(null, null, null, SourceException.SourceAcquirementFailed(exception));
-        }
+            => new(null, null, null, SourceException.GetSourceFailed(exception));
 
         /// <inheritdoc />
         public override string ToString()
-        {
-            return $"Success = {(Exception == null ? "True" : $"False \nException = {Exception}")}";
-        }
+            => $"Success = {(Exception == null ? "True" : $"False \nException = {Exception}")}";
     }
 }

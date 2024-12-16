@@ -10,7 +10,7 @@
     {
         const string SOURCE_FAILED = "Failed to acquire source data. View inner exception for more details.";
 
-        internal static SourceException SourceAcquirementFailed(Exception? innerException = null)
+        internal static SourceException GetSourceFailed(Exception? innerException = null)
             => new(SOURCE_FAILED, innerException);
     }
 }
