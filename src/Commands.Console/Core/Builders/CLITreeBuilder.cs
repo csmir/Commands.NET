@@ -16,44 +16,47 @@
         /// <returns>The same <see cref="CommandTreeBuilder"/> for call-chaining.</returns>
         public static CommandTreeBuilder AddCommand(this CommandTreeBuilder builder, Delegate commandAction)
         {
-            builder.AddCommand("env_core", commandAction, []);
+            var coreCommandName = builder.Properties["CoreCommandName"] as string ?? "env_core";
+
+            builder.AddCommand(coreCommandName, commandAction, []);
 
             return builder;
         }
 
         /// <summary>
-        ///     Builds the underlying <see cref="CommandTree"/> and runs it with the provided <see cref="CLIOptions"/>.
+        ///     Builds the underlying <see cref="CommandTree"/> and runs it with the provided <see cref="CLIOptions{T}"/>.
         /// </summary>
         /// <param name="builder">The command builder to build into a manager.</param>
         /// <param name="options">The options that set up a single command execution.</param>
         /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
-        public static Task Run(this CommandTreeBuilder builder, CLIOptions options)
+        public static Task Run<T>(this CommandTreeBuilder builder, CLIOptions<T> options)
+            where T : ConsoleCallerContext
         {
+            var coreCommandName = builder.Properties["CoreCommandName"] as string ?? "env_core";
+
             var manager = builder.Build();
 
-            if (options.CommandArguments == null || options.CommandArguments.Length == 0)
-            {
-                options.CommandArguments = ["env_core"];
-            }
+            if (options.Arguments == null || options.Arguments.Length == 0)
+                options.Arguments = [coreCommandName];
 
-            var args = CommandParser.ParseKeyValueCollection(options.CommandArguments);
+            var args = CommandParser.ParseKeyValueCollection(options.Arguments);
 
-            options.Consumer ??= new ConsoleCallerContext();
-
-            return manager.Execute(options.Consumer, args, options.CommandOptions);
+            return manager.Execute(options.Caller, args, options.Options);
         }
 
         /// <summary>
-        ///     Builds the underlying <see cref="CommandTree"/> and runs it with the provided <see cref="CLIOptions"/>.
+        ///     Builds the underlying <see cref="CommandTree"/> and runs it with the provided <see cref="CLIOptions{T}"/>.
         /// </summary>
         /// <param name="builder">The command builder to build into a manager.</param>
+        /// <param name="caller">The caller that represents the source of this execution.</param>
         /// <param name="args">The CLI arguments that should be used to execute a command.</param>
         /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
-        public static Task Run(this CommandTreeBuilder builder, string[] args)
+        public static Task Run<T>(this CommandTreeBuilder builder, T caller, string[] args)
+            where T : ConsoleCallerContext
         {
-            var options = new CLIOptions
+            var options = new CLIOptions<T>(caller)
             {
-                CommandArguments = args
+                Arguments = args
             };
 
             return builder.Run(options);

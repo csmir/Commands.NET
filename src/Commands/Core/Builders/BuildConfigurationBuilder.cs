@@ -42,11 +42,9 @@ namespace Commands
         public Dictionary<Type, TypeConverter> TypeConverters { get; set; } = TypeConverter.GetStandardTypeConverters();
 
         /// <summary>
-        ///     Builds the current <see cref="BuildConfigurationBuilder"/> into a new instance of <see cref="BuildConfiguration"/>.
+        ///     Gets or sets a collection of properties that can be used to store additional information applied during the build process.
         /// </summary>
-        /// <returns>A newly created instance of <see cref="BuildConfiguration"/></returns>
-        public virtual BuildConfiguration Build()
-            => new(TypeConverters, NamingPattern, SealModuleDefinitions);
+        public Dictionary<string, object> Properties { get; set; } = [];
 
         /// <summary>
         ///     Configures an action that will convert a raw argument into the target type, signified by <typeparamref name="TConvertable"/>.
@@ -126,5 +124,12 @@ namespace Commands
 
             return this;
         }
+
+        /// <summary>
+        ///     Builds the current <see cref="BuildConfigurationBuilder"/> into a new instance of <see cref="BuildConfiguration"/>.
+        /// </summary>
+        /// <returns>A newly created instance of <see cref="BuildConfiguration"/></returns>
+        public BuildConfiguration Build()
+            => new(TypeConverters, Properties, NamingPattern, SealModuleDefinitions);
     }
 }

@@ -99,7 +99,7 @@ namespace Commands.Reflection
                     var parameter = parameters[i];
 
                     if (parameter.IsRemainder && i != parameters.Length - 1)
-                        throw new InvalidOperationException($"{nameof(RemainderAttribute)} can only exist on the last parameter of a command signature. Command: {FullName}");
+                        throw BuildException.RemainderNotSupported(FullName);
                 }
             }
 

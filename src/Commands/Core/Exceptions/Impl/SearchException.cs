@@ -9,7 +9,7 @@
         : CommandException(message, innerException)
     {
         const string COMPONENTS_NOT_FOUND = "No commands were discovered with the provided input.";
-        const string SEARCH_INCOMPLETE = "A command module was discovered, but it contained no executable targets with the provided input.";
+        const string SEARCH_INCOMPLETE = $"A {nameof(CommandModule)} was discovered, but it contained no executable targets with the provided input.";
 
         internal static SearchException ComponentsNotFound()
             => new(COMPONENTS_NOT_FOUND);

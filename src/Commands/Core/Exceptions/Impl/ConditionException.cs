@@ -1,6 +1,4 @@
-﻿using Commands.Conditions;
-
-namespace Commands
+﻿namespace Commands
 {
     /// <summary>
     ///     An <see cref="CommandException"/> that is thrown when a command failed precondition validation.
@@ -10,7 +8,7 @@ namespace Commands
     public sealed class ConditionException(string message, Exception? innerException = null)
         : CommandException(message, innerException)
     {
-        const string CONDITION_FAILED = "A Condition evaluation failed. View inner exception for more details.";
+        const string CONDITION_FAILED = "A condition evaluation failed. View inner exception for more details.";
 
         internal static ConditionException ConditionFailed(Exception innerException)
             => new(CONDITION_FAILED, innerException);

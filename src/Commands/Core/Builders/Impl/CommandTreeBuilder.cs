@@ -308,7 +308,7 @@ namespace Commands
         /// <returns>A new instance of <see cref="CommandTree"/> built by this builder.</returns>
         public new CommandTree Build()
         {
-            var configuration = new BuildConfiguration(TypeConverters, NamingPattern, SealModuleDefinitions, RegisterComponentFilter);
+            var configuration = new BuildConfiguration(TypeConverters, Properties, NamingPattern, SealModuleDefinitions, RegisterComponentFilter);
 
             var components = Components.Select(x => x.Build(configuration));
 

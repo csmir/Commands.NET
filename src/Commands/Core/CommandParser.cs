@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Text;
+﻿using System.Text;
 
 namespace Commands
 {
@@ -15,21 +14,6 @@ namespace Commands
         const char u0022 = '"';
         const char u0020 = ' ';
         const char u002D = '-';
-
-        /// <summary>
-        ///     This method is deprecated and will be removed in a future version. Use <see cref="ParseKeyCollection(string)"/> instead.
-        /// </summary>
-        /// <param name="toParse"></param>
-        /// <returns></returns>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [Obsolete("This function has been replaced by ParseKeyCollection(string).")]
-        public static object[] Parse(string? toParse)
-        {
-            if (string.IsNullOrWhiteSpace(toParse))
-                return [];
-
-            return ParseKeyCollection(toParse).Select(x => (object)x).ToArray();
-        }
 
         /// <summary>
         ///     Parses a <see cref="string"/> into a collection of command arguments. This collection is a key-value pair, where the key is the argument name and the value is the argument value. 

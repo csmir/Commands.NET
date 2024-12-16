@@ -115,7 +115,7 @@ namespace Commands.Reflection
                         continue;
                     }
 
-                    if (attribute is SkipAttribute doSkip)
+                    if (attribute is NoBuildAttribute doSkip)
                     {
                         skip = true;
                         break;
@@ -127,7 +127,7 @@ namespace Commands.Reflection
                     // yield a new module if all aliases are valid and it shouldn't be skipped.
                     var component = new ModuleInfo(type, module, aliases, configuration);
 
-                    if (configuration.N_ComponentRegistrationFilter?.Invoke(component) ?? true)
+                    if (configuration.ComponentRegistrationFilter?.Invoke(component) ?? true)
                         yield return component;
                 }
             }
@@ -162,7 +162,7 @@ namespace Commands.Reflection
                         continue;
                     }
 
-                    if (attribute is SkipAttribute doSkip)
+                    if (attribute is NoBuildAttribute doSkip)
                     {
                         skip = true;
                         break;
@@ -194,7 +194,7 @@ namespace Commands.Reflection
                         else
                             component = new CommandInfo(module, new InstanceInvoker(method), aliases, false, configuration);
 
-                        if (component != null && (configuration.N_ComponentRegistrationFilter?.Invoke(component) ?? true))
+                        if (component != null && (configuration.ComponentRegistrationFilter?.Invoke(component) ?? true))
                             yield return component;
                     }
                 }

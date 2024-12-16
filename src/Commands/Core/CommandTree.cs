@@ -17,7 +17,7 @@ namespace Commands
     ///     which introduces native IoC based command operations alongside the preexisting DI support.
     ///     <br/>
     ///     <br/>
-    ///     To start using this tree, call <see cref="CreateDefaultBuilder"/> and configure it using the minimal API's implemented by the <see cref="CommandTreeBuilder"/>.
+    ///     To start using this tree, call <see cref="CreateBuilder"/> and configure it using the minimal API's implemented by the <see cref="CommandTreeBuilder"/>.
     /// </remarks>
     [DebuggerDisplay("Components = {Count},nq")]
     public sealed class CommandTree : ComponentCollection
@@ -56,12 +56,15 @@ namespace Commands
         public CommandTree(BuildConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<IComponent>? runtimeComponents = null, IEnumerable<ResultResolver>? resolvers = null)
             : base(false, null)
         {
+            if (configuration.Properties is not Dictionary<string, object> properties)
+                throw new ArgumentException($"The configuration properties must be an implementation of {nameof(Dictionary<string, object>)}.", nameof(configuration));
+
             assemblies ??= [];
             runtimeComponents ??= [];
 
             if (assemblies.Any() || runtimeComponents.Any())
             {
-                configuration.N_NotifyTopLevelMutation = HierarchyRetentionHandler;
+                properties["HierarchyRetentionHandler"] = new Action<IComponent[], bool>(HierarchyRetentionHandler);
 
                 var commands = ReflectionUtilities.GetTopLevelComponents(assemblies.ToArray(), configuration)
                     .Concat(runtimeComponents)
@@ -402,7 +405,7 @@ namespace Commands
         ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="CommandTree"/>. This builder is pre-configured with default settings.
         /// </summary>
         /// <returns>A new instance of <see cref="CommandTreeBuilder"/> that builds into a new instance of the <see cref="CommandTree"/>.</returns>
-        public static CommandTreeBuilder CreateDefaultBuilder()
+        public static CommandTreeBuilder CreateBuilder()
             => new();
     }
 }

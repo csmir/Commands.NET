@@ -22,9 +22,10 @@ namespace Commands.Reflection
         /// </summary>
         public bool IsReadOnly { get; }
 
-        internal ComponentCollection(bool isReadOnly, Action<IComponent[], bool>? notifyTopLevelMutation)
+        internal ComponentCollection(bool isReadOnly, object? notifyTopLevelMutation)
         {
-            _hierarchyRetentionHandler = notifyTopLevelMutation;
+            if (notifyTopLevelMutation is Action<IComponent[], bool> notifyTopLevelMutationHandler)
+                _hierarchyRetentionHandler = notifyTopLevelMutationHandler;
 
             IsReadOnly = isReadOnly;
         }
@@ -135,6 +136,9 @@ namespace Commands.Reflection
         /// </summary>
         public void Sort()
         {
+            if (IsReadOnly)
+                throw BuildException.AccessDenied();
+
             var orderedCopy = new HashSet<IComponent>(_components.OrderByDescending(x => x.Score));
 
             Interlocked.Exchange(ref _components, orderedCopy);

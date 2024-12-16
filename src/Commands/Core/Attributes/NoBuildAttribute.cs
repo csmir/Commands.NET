@@ -4,10 +4,11 @@
     ///     An attribute that signifies that a target should <b>not</b> be considered in registration.
     /// </summary>
     /// <remarks>
-    ///     This attribute can be marked on modules, commands and module constructors.
+    ///     This attribute can be marked on implementations of <see cref="CommandModule"/>, declared commands and <see cref="CommandModule"/> constructors. 
+    ///     When marked, the target will not be considered in the registration process.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Constructor, AllowMultiple = false)]
-    public sealed class SkipAttribute : Attribute
+    public sealed class NoBuildAttribute() : Attribute
     {
 
     }

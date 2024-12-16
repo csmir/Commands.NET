@@ -3,7 +3,7 @@
 using Commands;
 using Commands.Samples;
 
-var builder = CommandTree.CreateDefaultBuilder();
+var builder = CommandTree.CreateBuilder();
 
 builder.AddResultResolver((consumer, result, services) =>
 {

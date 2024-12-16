@@ -6,31 +6,34 @@
     public static class CLITree
     {
         /// <summary>
-        ///     Runs the provided <see cref="CLIOptions"/> as a command.
+        ///     Runs the provided <see cref="CLIOptions{T}"/> as a command.
         /// </summary>
         /// <param name="tree">The <see cref="CommandTree"/> instance that should be used to run the CLI command.</param>
         /// <param name="options">The options that set up a single command execution.</param>
         /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
-        public static Task Run(this CommandTree tree, CLIOptions options)
+        public static Task Run<T>(this CommandTree tree, CLIOptions<T> options)
+            where T : ConsoleCallerContext, new()
         {
-            var args = CommandParser.ParseKeyValueCollection(options.CommandArguments);
+            var args = CommandParser.ParseKeyValueCollection(options.Arguments);
 
-            options.Consumer ??= new ConsoleCallerContext();
+            options.Caller ??= new T();
 
-            return tree.Execute(options.Consumer, args, options.CommandOptions);
+            return tree.Execute(options.Caller, args, options.Options);
         }
 
         /// <summary>
-        ///     Sets the provided <paramref name="args"/> in a <see cref="CLIOptions"/> with default settings, and runs them as a command.
+        ///     Runs the current builder with the provided caller.
         /// </summary>
         /// <param name="tree">The <see cref="CommandTree"/> instance that should be used to run the CLI command.</param>
+        /// <param name="caller">The caller that represents the source of this execution.</param>
         /// <param name="args">The CLI arguments that should be used to execute a command.</param>
         /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
-        public static Task Run(this CommandTree tree, string[] args)
+        public static Task Run<T>(this CommandTree tree, T caller, string[] args)
+            where T : ConsoleCallerContext, new()
         {
-            var options = new CLIOptions
+            var options = new CLIOptions<T>(caller)
             {
-                CommandArguments = args
+                Arguments = args
             };
 
             return tree.Run(options);
@@ -40,7 +43,13 @@
         ///     Creates a builder that is responsible for setting up all required arguments to discover and populate the <see cref="CommandTree"/>.
         /// </summary>
         /// <returns>A new <see cref="CommandTreeBuilder"/> that builds into a new instance of <see cref="CommandTree"/> based on the provided arguments.</returns>
-        public static CommandTreeBuilder CreateDefaultBuilder()
-            => new();
+        public static CommandTreeBuilder CreateBuilder()
+            => new()
+            {
+                Properties = new()
+                {
+                    ["CoreCommandName"] = "env-core"
+                }
+            };
     }
 }

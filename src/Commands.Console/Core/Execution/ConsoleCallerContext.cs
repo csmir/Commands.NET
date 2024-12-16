@@ -37,24 +37,20 @@ namespace Commands
         /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
         public override Task Respond(object response)
         {
-            if (response is IRenderable renderable)
+            switch (response)
             {
-                Console.Write(renderable);
-            }
-
-            if (response is Exception ex)
-            {
-                Console.WriteException(ex);
-            }
-
-            if (response is FormattableString formattedString)
-            {
-                Console.MarkupLineInterpolated(formattedString);
-            }
-
-            else if (response is string str)
-            {
-                Console.MarkupLine(str);
+                case IRenderable renderable:
+                    Console.Write(renderable);
+                    break;
+                case Exception ex:
+                    Console.WriteException(ex);
+                    break;
+                case FormattableString formattedString:
+                    Console.MarkupLineInterpolated(formattedString);
+                    break;
+                case string str:
+                    Console.WriteLine(str);
+                    break;
             }
 
             return Task.CompletedTask;
@@ -75,9 +71,7 @@ namespace Commands
         /// </summary>
         /// <param name="exception">The exception that should be beautified in the console.</param>
         public virtual void SendException(Exception exception)
-        {
-            Console.WriteException(exception);
-        }
+            => Console.WriteException(exception);
 
         /// <summary>
         ///     Sends a question to the console and returns the response.
@@ -88,9 +82,7 @@ namespace Commands
         /// <param name="question">The question that should be asked to the console.</param>
         /// <returns>The response to the question.</returns>
         public virtual string Ask(string question)
-        {
-            return Console.Ask<string>($"{question}");
-        }
+            => Console.Ask<string>($"{question}");
 
         /// <summary>
         ///     Asks the console to confirm a question with yes or no.
@@ -101,9 +93,7 @@ namespace Commands
         /// <param name="question">The question that should be asked to the console.</param>
         /// <returns><see langword="true"/> if the question was responded with with 'Y' or 'Yes'. <see langword="false"/> if the response is 'N', 'No' or if the sequence was escaped otherwise.</returns>
         public virtual bool Confirm(string question)
-        {
-            return Console.Confirm($"{question}");
-        }
+            => Console.Confirm($"{question}");
 
         /// <summary>
         ///     Asks the console to respond to a prompt.
@@ -114,9 +104,7 @@ namespace Commands
         /// <param name="prompt">The prompt that should be responded to by the console.</param>
         /// <returns>The result of the text prompt.</returns>
         public virtual T Prompt<T>(TextPrompt<T> prompt)
-        {
-            return Console.Prompt(prompt);
-        }
+            => Console.Prompt(prompt);
 
         /// <summary>
         ///     Asks the console to choose an item in a selection.
@@ -128,8 +116,6 @@ namespace Commands
         /// <returns>The result of the selection.</returns>
         public virtual T Select<T>(SelectionPrompt<T> prompt)
             where T : notnull
-        {
-            return Console.Prompt(prompt);
-        }
+            => Console.Prompt(prompt);
     }
 }

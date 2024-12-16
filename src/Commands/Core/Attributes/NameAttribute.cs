@@ -3,7 +3,7 @@
 namespace Commands
 {
     /// <summary>
-    ///     An attribute that defines the name of a module (<see cref="CommandModule"/>), a command and a command parameter.
+    ///     An attribute that defines the name of a module (<see cref="CommandModule"/>), a declared command or a command parameter.
     /// </summary>
     /// <remarks>
     ///     This attribute defines the name of a top-level component as well as all its members. 
@@ -52,13 +52,13 @@ namespace Commands
                     throw new ArgumentNullException(nameof(aliases));
 
                 if (arr.Contains(aliases[i]))
-                    throw new ArgumentException("Aliases must be distinct.", nameof(aliases));
+                    throw BuildException.AliasDistinct(aliases[i]);
 
                 arr[i + 1] = aliases[i];
             }
 
             if (arr.Contains(name))
-                throw new ArgumentException("Aliases must be distinct and not contain Name.", nameof(aliases));
+                throw BuildException.AliasDistinct(name);
 
             arr[0] = name;
 
@@ -74,7 +74,7 @@ namespace Commands
             foreach (var alias in Aliases)
             {
                 if (!regex.IsMatch(alias))
-                    throw new InvalidOperationException($"The alias of must match the filter provided in the {nameof(BuildConfiguration.NamingPattern)} of the {nameof(BuildConfiguration)}.");
+                    throw BuildException.AliasConvention(alias);
             }
         }
     }

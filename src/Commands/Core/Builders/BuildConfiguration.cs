@@ -9,9 +9,18 @@ namespace Commands
     /// </summary>
     public class BuildConfiguration
     {
-        // The following properties are only used when configuring the command tree.
-        internal Action<IComponent[], bool>? N_NotifyTopLevelMutation;
-        internal Func<IComponent, bool>? N_ComponentRegistrationFilter;
+        /// <summary>
+        ///     Gets a filter that is used to determine if a component should be registered. This property is only used when building declared signatures.
+        /// </summary>
+        /// <remarks>
+        ///     This filter is used to determine if a component should be registered. If the filter returns <see langword="false"/>, the component will not be registered.
+        /// </remarks>
+        public Func<IComponent, bool>? ComponentRegistrationFilter { get; }
+
+        /// <summary>
+        ///     Gets a collection of properties that are used to store additional information explicitly important during the build process.
+        /// </summary>
+        public IReadOnlyDictionary<string, object> Properties { get; }
 
         /// <summary>
         ///     Gets a collection of type converters that are used to convert arguments.
@@ -35,11 +44,12 @@ namespace Commands
         /// <param name="namingPattern">The naming pattern which should determine how aliases are verified for their validity.</param>
         /// <param name="sealModuleDefinitions">Defines if modules registered by this configuration will be read-only, making them unable to be modified.</param>
         public BuildConfiguration(IEnumerable<TypeConverter> converters, string? namingPattern = @"^[a-z0-9_-]*$", bool sealModuleDefinitions = false)
-            : this(converters.ToDictionary(x => x.Type), namingPattern is not null ? new Regex(namingPattern) : null, sealModuleDefinitions) { }
+            : this(converters.ToDictionary(x => x.Type), [], namingPattern is not null ? new Regex(namingPattern) : null, sealModuleDefinitions) { }
 
-        internal BuildConfiguration(Dictionary<Type, TypeConverter> converters, Regex? namingPattern, bool enforceReadonly, Func<IComponent, bool>? filter = null)
+        internal BuildConfiguration(Dictionary<Type, TypeConverter> converters, Dictionary<string, object> properties, Regex? namingPattern, bool enforceReadonly, Func<IComponent, bool>? filter = null)
         {
-            N_ComponentRegistrationFilter = filter;
+            Properties = properties;
+            ComponentRegistrationFilter = filter;
             SealModuleDefinitions = enforceReadonly;
             TypeConverters = converters;
             NamingPattern = namingPattern;

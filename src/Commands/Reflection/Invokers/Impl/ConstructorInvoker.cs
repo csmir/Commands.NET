@@ -41,7 +41,7 @@ namespace Commands.Reflection
 
             foreach (var ctor in ctors)
             {
-                if (ctor.GetCustomAttributes().Any(attr => attr is SkipAttribute))
+                if (ctor.GetCustomAttributes().Any(attr => attr is NoBuildAttribute))
                     continue;
 
                 return ctor;

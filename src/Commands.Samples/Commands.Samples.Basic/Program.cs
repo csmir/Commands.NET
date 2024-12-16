@@ -1,6 +1,6 @@
 ﻿using Commands;
 
-await CLITree.CreateDefaultBuilder()
+await CLITree.CreateBuilder()
     .AddCommand(() => "Provide CLI arguments to execute other commands!")
     .AddCommand(c => c
         .WithDelegate(() => "Hello world!")
@@ -8,4 +8,4 @@ await CLITree.CreateDefaultBuilder()
     .AddModule(m => m
         .AddCommand("bye-world", () => "Bye world!")
         .WithAliases("subcommands"))
-    .Run(args);
+    .Run(new ConsoleCallerContext(), args);

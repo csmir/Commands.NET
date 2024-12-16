@@ -191,7 +191,7 @@ namespace Commands
                 foreach (var alias in Aliases)
                 {
                     if (!configuration.NamingPattern.IsMatch(alias))
-                        throw BuildException.AliasMismatch(alias);
+                        throw BuildException.AliasConvention(alias);
                 }
             }
 

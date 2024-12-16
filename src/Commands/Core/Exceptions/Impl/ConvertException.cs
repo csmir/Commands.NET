@@ -1,4 +1,6 @@
-﻿namespace Commands
+﻿using Commands.Converters;
+
+namespace Commands
 {
     /// <summary>
     ///     An <see cref="CommandException"/> that is thrown when no matched command succeeded converting its arguments.
@@ -8,7 +10,7 @@
     public sealed class ConvertException(string message, Exception? innerException = null)
         : CommandException(message, innerException)
     {
-        const string CONVERTER_FAILED = "A TypeConverter failed to parse the provided value as '{0}'. View inner exception for more details.";
+        const string CONVERTER_FAILED = $"A {nameof(TypeConverter)} failed to parse the provided value as '{{0}}'. View inner exception for more details.";
         const string ARGUMENT_MISMATCH = "An argument mismatch occurred between the best target and the input value.";
 
         internal static ConvertException ConvertFailed(Type type, Exception? innerException = null)

@@ -67,7 +67,7 @@ namespace Commands.Reflection
 
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, BuildConfiguration options)
-            : base(options.SealModuleDefinitions, aliases.Length > 0 ? options.N_NotifyTopLevelMutation : null)
+            : base(options.SealModuleDefinitions, aliases.Length > 0 ? options.Properties.GetValueOrDefault("HierarchyRetentionHandler") : null)
         {
             Parent = root;
             Type = type;
