@@ -83,7 +83,7 @@ namespace Commands.Reflection
             var parameters = constructor.GetArguments(false, options);
 
             if (parameters.Length == 0)
-                throw BuildException.ComplexNotSupported(Type);
+                throw ComponentBuildException.ComplexNotSupported(Type);
 
             var (minLength, maxLength) = parameters.GetLength();
 

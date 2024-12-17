@@ -8,7 +8,7 @@ namespace Commands
     /// </summary>
     /// <param name="message">The failure message which caused the component to reject an operation.</param>
     /// <param name="innerException">An inner exception that occurred during exception; or null if none occurred.</param>
-    public class BuildException(string message, Exception? innerException = null)
+    public class ComponentBuildException(string message, Exception? innerException = null)
         : CommandException(message, innerException)
     {
         // Runtime access to sealed component collection
@@ -22,25 +22,25 @@ namespace Commands
         const string COMPLEX_NOT_SUPPORTED    = $"The type: '{{0}}' must have a public parameterized constructor with at least 1 parameter to be used as a complex argument marked by {nameof(ComplexAttribute)}.";
         const string REMAINDER_NOT_SUPPORTED  = $"{nameof(RemainderAttribute)} must be marked on the last parameter of a command. Command: '{{0}}'";
 
-        internal static BuildException AccessDenied()
+        internal static ComponentBuildException AccessDenied()
             => new(SEALED_COMPONENT_ACCESS_ERROR);
 
-        internal static BuildException AliasConvention(string alias)
+        internal static ComponentBuildException AliasConvention(string alias)
             => new(string.Format(COMPONENT_ALIAS_MISMATCH, alias));
 
-        internal static BuildException AliasAtLeastOne()
+        internal static ComponentBuildException AliasAtLeastOne()
             => new(COMPONENT_ALIASES_EMPTY);
 
-        internal static BuildException AliasDistinct(string alias)
+        internal static ComponentBuildException AliasDistinct(string alias)
             => new(string.Format(COMPONENT_ALIAS_DISTINCT, alias));
 
-        internal static BuildException CollectionNotSupported(Type type)
+        internal static ComponentBuildException CollectionNotSupported(Type type)
             => new(string.Format(COLLECTION_NOT_SUPPORTED, type.Name));
 
-        internal static BuildException ComplexNotSupported(Type type)
+        internal static ComponentBuildException ComplexNotSupported(Type type)
             => new(string.Format(COMPLEX_NOT_SUPPORTED, type.Name));
 
-        internal static BuildException RemainderNotSupported(string name)
+        internal static ComponentBuildException RemainderNotSupported(string name)
             => new(string.Format(REMAINDER_NOT_SUPPORTED, name));
     }
 }

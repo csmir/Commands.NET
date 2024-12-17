@@ -118,14 +118,14 @@ namespace Commands
                 throw new ArgumentNullException(nameof(ExecuteDelegate));
 
             if (!_isNested && Aliases.Length == 0)
-                throw BuildException.AliasAtLeastOne();
+                throw ComponentBuildException.AliasAtLeastOne();
 
             if (configuration.NamingPattern is not null)
             {
                 foreach (var alias in Aliases)
                 {
                     if (!configuration.NamingPattern.IsMatch(alias))
-                        throw BuildException.AliasConvention(alias);
+                        throw ComponentBuildException.AliasConvention(alias);
                 }
             }
 

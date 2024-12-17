@@ -248,7 +248,7 @@ namespace Commands.Reflection
                     else if (elementType!.IsObject())
                         converter = ObjectTypeConverter.Instance;
                     else
-                        throw BuildException.CollectionNotSupported(elementType);
+                        throw ComponentBuildException.CollectionNotSupported(elementType);
                 }
 
                 return ArrayTypeConverter.GetOrCreate(converter);
@@ -267,7 +267,7 @@ namespace Commands.Reflection
                     else if (elementType.IsObject())
                         converter = ObjectTypeConverter.Instance;
                     else
-                        throw BuildException.CollectionNotSupported(elementType);
+                        throw ComponentBuildException.CollectionNotSupported(elementType);
                 }
 
                 if (enumType == CollectionType.List)
@@ -282,7 +282,7 @@ namespace Commands.Reflection
             }
             catch
             {
-                throw BuildException.CollectionNotSupported(type);
+                throw ComponentBuildException.CollectionNotSupported(type);
             }
 
             return null;

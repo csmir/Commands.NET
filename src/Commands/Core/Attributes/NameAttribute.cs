@@ -52,13 +52,13 @@ namespace Commands
                     throw new ArgumentNullException(nameof(aliases));
 
                 if (arr.Contains(aliases[i]))
-                    throw BuildException.AliasDistinct(aliases[i]);
+                    throw ComponentBuildException.AliasDistinct(aliases[i]);
 
                 arr[i + 1] = aliases[i];
             }
 
             if (arr.Contains(name))
-                throw BuildException.AliasDistinct(name);
+                throw ComponentBuildException.AliasDistinct(name);
 
             arr[0] = name;
 
@@ -74,7 +74,7 @@ namespace Commands
             foreach (var alias in Aliases)
             {
                 if (!regex.IsMatch(alias))
-                    throw BuildException.AliasConvention(alias);
+                    throw ComponentBuildException.AliasConvention(alias);
             }
         }
     }

@@ -99,7 +99,7 @@ namespace Commands.Reflection
                     var parameter = parameters[i];
 
                     if (parameter.IsRemainder && i != parameters.Length - 1)
-                        throw BuildException.RemainderNotSupported(FullName);
+                        throw ComponentBuildException.RemainderNotSupported(FullName);
                 }
             }
 
