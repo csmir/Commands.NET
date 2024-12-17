@@ -1,10 +1,12 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 
 namespace Commands.Reflection
 {
     /// <summary>
     ///     An abstract implementation of a searchable concurrent collection, containing components that can be mutated and searched based on specific criteria.
     /// </summary>
+    [DebuggerDisplay("Count = {Count}")]
     public abstract class ComponentCollection : ICollection<IComponent>, IEnumerable<IComponent>
     {
         private readonly Action<IComponent[], bool>? _hierarchyRetentionHandler;

@@ -7,7 +7,7 @@ namespace Commands.Reflection
     /// <summary>
     ///     Reveals information about a command module, hosting zero-or-more commands.
     /// </summary>
-    [DebuggerDisplay("{ToString()}")]
+    [DebuggerDisplay("Count = {Count}, {ToString()}")]
     public sealed class ModuleInfo : ComponentCollection, IComponent
     {
         private readonly Guid __id = Guid.NewGuid();

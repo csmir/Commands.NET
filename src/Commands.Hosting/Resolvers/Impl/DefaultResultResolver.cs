@@ -4,7 +4,6 @@ namespace Commands.Resolvers
 {
     internal sealed class DefaultResultResolver(ILogger<DefaultResultResolver> logger) : ResultResolver
     {
-#pragma warning disable CA2254 // Template should be a static expression
         protected override ValueTask ArgumentMismatch(CallerContext consumer, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             logger.Log(LogLevel.Warning, result.ToString(true));
@@ -53,6 +52,5 @@ namespace Commands.Resolvers
 
             return base.UnhandledFailure(consumer, result, services, cancellationToken);
         }
-#pragma warning restore CA2254 // Template should be a static expression
     }
 }

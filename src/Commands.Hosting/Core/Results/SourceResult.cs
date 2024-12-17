@@ -80,5 +80,12 @@
         /// <inheritdoc />
         public override string ToString()
             => $"Success = {(Exception == null ? "True" : $"False \nException = {Exception}")}";
+
+        /// <summary>
+        ///     Turns this result into a <see cref="ValueTask{TResult}"/> for asynchronous operations.
+        /// </summary>
+        /// <param name="result">The result object to wrap in a <see cref="ValueTask{TResult}"/>.</param>
+        public static implicit operator ValueTask<SourceResult>(SourceResult result)
+            => new(result);
     }
 }

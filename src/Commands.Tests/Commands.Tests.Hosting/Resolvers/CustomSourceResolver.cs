@@ -4,7 +4,7 @@ namespace Commands.Tests
 {
     internal class CustomSourceResolver : SourceResolver
     {
-        public override ValueTask<SourceResult> Evaluate(CancellationToken cancellationToken)
+        public override ValueTask<SourceResult> Evaluate(IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Ready())
             {
@@ -15,10 +15,10 @@ namespace Commands.Tests
 
                 Console.CursorVisible = false;
 
-                return ValueTask.FromResult(Success(new CallerContext(), CommandParser.ParseKeyCollection(src)));
+                return Success(new CallerContext(), CommandParser.ParseKeyCollection(src));
             }
 
-            return ValueTask.FromResult(Error(new InvalidOperationException("The application failed to start.")));
+            return Error(new InvalidOperationException("The application failed to start."));
         }
     }
 }

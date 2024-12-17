@@ -57,7 +57,7 @@ namespace Commands
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <param name="resolveDelegate">The delegate is invoked runs when the input of a command is requested.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
-        public static IHostBuilder AddSourceResolver(this IHostBuilder builder, Func<SourceResult> resolveDelegate)
+        public static IHostBuilder AddSourceResolver(this IHostBuilder builder, Func<IServiceProvider, SourceResult> resolveDelegate)
         {
             EnsureConfigured(builder);
 
@@ -75,7 +75,7 @@ namespace Commands
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <param name="resolveDelegate">The delegate is invoked runs when the input of a command is requested.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
-        public static IHostBuilder AddSourceResolver(this IHostBuilder builder, Func<ValueTask<SourceResult>> resolveDelegate)
+        public static IHostBuilder AddSourceResolver(this IHostBuilder builder, Func<IServiceProvider, ValueTask<SourceResult>> resolveDelegate)
         {
             EnsureConfigured(builder);
 

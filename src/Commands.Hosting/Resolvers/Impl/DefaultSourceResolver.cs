@@ -2,10 +2,8 @@
 {
     internal sealed class DefaultSourceResolver : SourceResolver
     {
-        public override async ValueTask<SourceResult> Evaluate(CancellationToken cancellationToken)
+        public override ValueTask<SourceResult> Evaluate(IServiceProvider services, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
-
             if (Ready())
             {
                 Console.CursorVisible = true;

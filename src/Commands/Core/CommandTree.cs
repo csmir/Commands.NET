@@ -19,7 +19,7 @@ namespace Commands
     ///     <br/>
     ///     To start using this tree, call <see cref="CreateBuilder"/> and configure it using the minimal API's implemented by the <see cref="CommandTreeBuilder"/>.
     /// </remarks>
-    [DebuggerDisplay("Components = {Count},nq")]
+    [DebuggerDisplay("Count = {Count}")]
     public sealed class CommandTree : ComponentCollection
     {
         private readonly ResultResolver[] _resolvers;
