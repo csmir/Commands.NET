@@ -4,7 +4,7 @@ using Commands.Converters;
 namespace Commands
 {
     /// <summary>
-    ///     A set of options for handling command queries and determining the workflow in the command scope.
+    ///     A set of options for handling command queries and determining the workflow in the command scope. This class cannot be inherited.
     /// </summary>
     public sealed class CommandOptions
     {

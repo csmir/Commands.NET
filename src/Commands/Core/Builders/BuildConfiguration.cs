@@ -5,9 +5,9 @@ using System.Text.RegularExpressions;
 namespace Commands
 {
     /// <summary>
-    ///     A read-only configuration class which is used by individual components to set up their own configuration.
+    ///     A read-only configuration class which is used by individual components to set up their own configuration. This class cannot be inherited.
     /// </summary>
-    public class BuildConfiguration
+    public sealed class BuildConfiguration
     {
         /// <summary>
         ///     Gets a filter that is used to determine if a component should be registered. This property is only used when building declared signatures.

@@ -3,7 +3,7 @@
 namespace Commands
 {
     /// <summary>
-    ///     An attribute that defines the name of a module (<see cref="CommandModule"/>), a declared command or a command parameter.
+    ///     An attribute that defines the name of a module (<see cref="CommandModule"/>), a declared command or a command parameter. This class cannot be inherited.
     /// </summary>
     /// <remarks>
     ///     This attribute defines the name of a top-level component as well as all its members. 

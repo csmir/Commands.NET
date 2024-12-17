@@ -3,7 +3,7 @@
 namespace Commands
 {
     /// <summary>
-    ///     An attribute to define that a final parameter should use the remaining entries in the command query, if any.
+    ///     An attribute to define that a final parameter should use the remaining entries in the command query, if any. This class cannot be inherited.
     /// </summary>
     /// <remarks>
     ///     <b>This attribute has different behavior depending on what parameter type it is applied to:</b>

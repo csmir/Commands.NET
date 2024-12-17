@@ -15,7 +15,7 @@
 
             Command.Parent!.Add(command);
 
-            return Send("Command added.");
+            return Respond("Command added.");
         }
 
         [Name("test-delegate")]
@@ -23,7 +23,7 @@
         {
             var response = action.DynamicInvoke();
 
-            return Send(response?.ToString() ?? "null");
+            return Respond(response?.ToString() ?? "null");
         }
     }
 }

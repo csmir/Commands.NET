@@ -8,7 +8,7 @@
             var commands = Tree.GetCommands();
             foreach (var command in commands)
             {
-                Send(command.FullName);
+                Respond(command.FullName);
             }
         }
     }

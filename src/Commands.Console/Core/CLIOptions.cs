@@ -1,9 +1,9 @@
 ﻿namespace Commands
 {
     /// <summary>
-    ///     Represents the options for executing a CLI command.
+    ///     Represents the options for executing a CLI command. This class cannot be inherited.
     /// </summary>
-    public class CLIOptions<T>
+    public sealed class CLIOptions<T>
         where T : ConsoleCallerContext
     {
         /// <summary>

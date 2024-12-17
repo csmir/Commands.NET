@@ -4,7 +4,7 @@ using Commands.Reflection;
 namespace Commands
 {
     /// <summary>
-    ///     A <see cref="CommandException"/> which is thrown when a component fails to be built, modified, or accessed.
+    ///     A <see cref="CommandException"/> which is thrown when a component fails to be built, modified, or accessed. This class cannot be inherited.
     /// </summary>
     /// <param name="message">The failure message which caused the component to reject an operation.</param>
     /// <param name="innerException">An inner exception that occurred during exception; or null if none occurred.</param>

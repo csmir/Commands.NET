@@ -6,23 +6,23 @@
         [Name("command")]
         public void ByBool(bool b)
         {
-            Send("ByBool " + b);
+            Respond("ByBool " + b);
         }
 
         [Name("command")]
         public void ByInt(int i)
         {
-            Send("ByInt " + i);
+            Respond("ByInt " + i);
         }
 
         public void Default()
         {
-            Send("This is a default overload");
+            Respond("This is a default overload");
         }
 
         public void Default([Remainder] string? args = null)
         {
-            Send($"This is a default overload with args: {args}");
+            Respond($"This is a default overload with args: {args}");
         }
     }
 }

@@ -11,7 +11,7 @@
         [Name("task-empty")]
         public Task GetEmpty()
         {
-            return Send("Hello from a task command with no return value.");
+            return Respond("Hello from a task command with no return value.");
         }
     }
 }

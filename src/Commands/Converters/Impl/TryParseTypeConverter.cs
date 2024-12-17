@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Commands.Converters
 {
     /// <summary>
-    ///     A type converter that can convert a raw string value into a type with a try-parse method.
+    ///     A type converter that can convert a raw string value into a type with a try-parse method. This class cannot be inherited.
     /// </summary>
     /// <typeparam name="T">The type this converter targets.</typeparam>
     public sealed class TryParseTypeConverter<T> : TypeConverter<T>
