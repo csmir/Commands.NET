@@ -79,6 +79,15 @@ namespace Commands
         /// </returns>
         public static IEnumerable<KeyValuePair<string, object?>> ParseKeyValueCollection(params string[] toParse)
         {
+            if (toParse is null || toParse.Length is 0)
+                throw new ArgumentNullException(nameof(toParse));
+
+            if (toParse.Length is 1)
+            {
+                yield return new(toParse[0], null);
+                yield break;
+            }
+
             // Reserved for joining arguments.
             var openState = 0;
             var concatenating = false;

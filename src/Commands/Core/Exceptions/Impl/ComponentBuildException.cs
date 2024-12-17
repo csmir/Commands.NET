@@ -8,7 +8,7 @@ namespace Commands
     /// </summary>
     /// <param name="message">The failure message which caused the component to reject an operation.</param>
     /// <param name="innerException">An inner exception that occurred during exception; or null if none occurred.</param>
-    public class ComponentBuildException(string message, Exception? innerException = null)
+    public sealed class ComponentBuildException(string message, Exception? innerException = null)
         : CommandException(message, innerException)
     {
         // Runtime access to sealed component collection

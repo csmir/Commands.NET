@@ -50,67 +50,67 @@ namespace Commands.Tests
             _manager.Find(new ArgumentEnumerator(["scenario-nested", "scenario-injected"]));
         }
 
-        //[Benchmark]
+        [Benchmark]
         public async Task RunCommand()
         {
             await _manager!.Execute(new CallerContext(), ["scenario"]);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public async Task RunParametered()
         {
             await _manager!.Execute(new CallerContext(), ["scenario-parameterized", "1"]);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public async Task RunNested()
         {
             await _manager!.Execute(new CallerContext(), ["scenario-nested", "scenario-injected"]);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public async Task RunException()
         {
             await _manager!.Execute(new CallerContext(), ["scenario-exception"]);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public async Task RunTaskException()
         {
             await _manager!.Execute(new CallerContext(), ["scenario-task-exception"]);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public async Task RunExceptionThrow()
         {
             await _manager!.Execute(new CallerContext(), ["scenario-exception-throw"]);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public async Task RunTaskExceptionThrow()
         {
             await _manager!.Execute(new CallerContext(), ["scenario-task-exception-throw"]);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public async Task RunOperationMutation()
         {
             await _manager!.Execute(new CallerContext(), ["scenario-operation-mutation"]);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public async Task RunOperationTaskMutation()
         {
             await _manager!.Execute(new CallerContext(), ["scenario-task-operation-mutation"]);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public async Task RunOperationFormattable()
         {
             await _manager!.Execute(new CallerContext(), ["scenario-operation-formattable"]);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public async Task RunOperationTaskFormattable()
         {
             await _manager!.Execute(new CallerContext(), ["scenario-task-operation-formattable"]);
