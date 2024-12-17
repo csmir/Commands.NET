@@ -3,31 +3,31 @@
     public sealed class EnumerableModule : CommandModule
     {
         [Name("param-array")]
-        public void ParamArray(params string[] input)
+        public static void ParamArray(params string[] _)
         {
 
         }
 
         [Name("array")]
-        public void Array(int firstInput, [Remainder] int[] input)
+        public static void Array(int _, [Remainder] int[] __)
         {
 
         }
 
         [Name("list")]
-        public void List(string firstInput, [Remainder] List<int> input)
+        public static void List(string _, [Remainder] List<int> __)
         {
 
         }
 
         [Name("enumerable")]
-        public void Enumerable([Remainder] IEnumerable<bool> input)
+        public static void Enumerable([Remainder] IEnumerable<bool> _)
         {
 
         }
 
         [Name("collection")]
-        public void Collection(string firstInput, bool secondInput, [Remainder] ICollection<string> input)
+        public static void Collection(string _, bool __, [Remainder] ICollection<string> input)
         {
             foreach (var item in input)
             {
@@ -36,19 +36,19 @@
         }
 
         [Name("readonly-collection")]
-        public void ReadOnlyCollection([Remainder] IReadOnlyCollection<bool> input)
+        public static void ReadOnlyCollection([Remainder] IReadOnlyCollection<bool> _)
         {
 
         }
 
         [Name("set")]
-        public void Set([Remainder] ISet<int> input)
+        public static void Set([Remainder] ISet<int> _)
         {
 
         }
 
         [Name("hash-set")]
-        public void HashSet([Remainder] HashSet<long> input)
+        public static void HashSet([Remainder] HashSet<long> _)
         {
 
         }

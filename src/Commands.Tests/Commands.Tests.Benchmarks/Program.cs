@@ -7,7 +7,7 @@ namespace Commands.Tests
     [MemoryDiagnoser]
     public class Program
     {
-        private readonly CommandTree _manager;
+        private readonly CommandTree _tree;
 
         public Program()
         {
@@ -18,7 +18,7 @@ namespace Commands.Tests
                 }.Build())
                 .BuildServiceProvider();
 
-            _manager = services.GetRequiredService<CommandTree>();
+            _tree = services.GetRequiredService<CommandTree>();
         }
 
         static void Main()
@@ -26,94 +26,88 @@ namespace Commands.Tests
             BenchmarkRunner.Run<Program>();
         }
 
-        //[Benchmark]
-        public void ParseText()
-        {
-            CommandParser.ParseKeyCollection("command");
-        }
-
         [Benchmark]
         public void SearchCommand()
         {
-            _manager.Find(new ArgumentEnumerator(["scenario"]));
+            _tree.Find(new ArgumentEnumerator(["scenario"]));
         }
 
         [Benchmark]
         public void SearchParametered()
         {
-            _manager.Find(new ArgumentEnumerator(["scenario-parameterized", "1"]));
+            _tree.Find(new ArgumentEnumerator(["scenario-parameterized", "1"]));
         }
 
         [Benchmark]
         public void SearchNested()
         {
-            _manager.Find(new ArgumentEnumerator(["scenario-nested", "scenario-injected"]));
+            _tree.Find(new ArgumentEnumerator(["scenario-nested", "scenario-injected"]));
         }
 
         [Benchmark]
         public async Task RunCommand()
         {
-            await _manager!.Execute(new CallerContext(), ["scenario"]);
+            await _tree!.Execute(new CallerContext(), ["scenario"]);
         }
 
         [Benchmark]
         public async Task RunParametered()
         {
-            await _manager!.Execute(new CallerContext(), ["scenario-parameterized", "1"]);
+            await _tree!.Execute(new CallerContext(), ["scenario-parameterized", "1"]);
         }
 
         [Benchmark]
         public async Task RunNested()
         {
-            await _manager!.Execute(new CallerContext(), ["scenario-nested", "scenario-injected"]);
+            await _tree!.Execute(new CallerContext(), ["scenario-nested", "scenario-injected"]);
         }
 
         [Benchmark]
         public async Task RunException()
         {
-            await _manager!.Execute(new CallerContext(), ["scenario-exception"]);
+            await _tree!.Execute(new CallerContext(), ["scenario-exception"]);
         }
 
         [Benchmark]
         public async Task RunTaskException()
         {
-            await _manager!.Execute(new CallerContext(), ["scenario-task-exception"]);
+            await _tree!.Execute(new CallerContext(), ["scenario-task-exception"]);
         }
 
         [Benchmark]
         public async Task RunExceptionThrow()
         {
-            await _manager!.Execute(new CallerContext(), ["scenario-exception-throw"]);
+            await _tree!.Execute(new CallerContext(), ["scenario-exception-throw"]);
         }
 
         [Benchmark]
         public async Task RunTaskExceptionThrow()
         {
-            await _manager!.Execute(new CallerContext(), ["scenario-task-exception-throw"]);
+            await _tree!.Execute(new CallerContext(), ["scenario-task-exception-throw"]);
         }
 
         [Benchmark]
         public async Task RunOperationMutation()
         {
-            await _manager!.Execute(new CallerContext(), ["scenario-operation-mutation"]);
+            await _tree!.Execute(new CallerContext(), ["scenario-operation-mutation"]);
         }
 
         [Benchmark]
         public async Task RunOperationTaskMutation()
         {
-            await _manager!.Execute(new CallerContext(), ["scenario-task-operation-mutation"]);
+            await _tree!.Execute(new CallerContext(), ["scenario-task-operation-mutation"]);
         }
 
         [Benchmark]
         public async Task RunOperationFormattable()
         {
-            await _manager!.Execute(new CallerContext(), ["scenario-operation-formattable"]);
+            await _tree!.Execute(new CallerContext(), ["scenario-operation-formattable"]);
         }
 
         [Benchmark]
         public async Task RunOperationTaskFormattable()
         {
-            await _manager!.Execute(new CallerContext(), ["scenario-task-operation-formattable"]);
+            await _tree!.Execute(new CallerContext(), ["scenario-task-operation-formattable"]);
         }
     }
 }

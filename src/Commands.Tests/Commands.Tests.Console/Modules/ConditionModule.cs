@@ -5,7 +5,7 @@
         [Name("condition-or")]
         [ORCondition(true)]
         [ORCondition(false)]
-        public string ConditionOR()
+        public static string ConditionOR()
         {
             return "Success";
         }
@@ -13,7 +13,7 @@
         [Name("condition-and")]
         [ANDCondition(true)]
         [ANDCondition(false)]
-        public string ConditionAND()
+        public static string ConditionAND()
         {
             return "Success";
         }

@@ -180,7 +180,7 @@ namespace Commands.Reflection
 
                     if (method != null)
                     {
-                        var component = default(CommandInfo);
+                        CommandInfo? component;
                         if (method.IsStatic)
                         {
                             var param = method.GetParameters();
