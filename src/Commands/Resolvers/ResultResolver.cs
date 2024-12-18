@@ -1,6 +1,4 @@
-﻿using Commands.Components;
-
-namespace Commands.Resolvers
+﻿namespace Commands.Resolvers
 {
     /// <summary>
     ///     A handler for post-execution processes.
@@ -33,7 +31,7 @@ namespace Commands.Resolvers
                 case Task awaitablet:
                     await awaitablet;
 
-                    var ttype = command.Invoker.GetReturnType()!;
+                    var ttype = command.Activator.GetReturnType()!;
 
                     if (ttype.IsGenericType)
                     {
@@ -49,7 +47,7 @@ namespace Commands.Resolvers
                 case ValueTask awaitablevt:
                     await awaitablevt;
 
-                    var vttype = command.Invoker.GetReturnType()!;
+                    var vttype = command.Activator.GetReturnType()!;
 
                     if (vttype.IsGenericType)
                     {

@@ -1,8 +1,6 @@
-﻿using Commands.Conditions;
-using Commands.Conversion;
-using Commands.Components;
+﻿using Commands.Conversion;
 
-namespace Commands
+namespace Commands.Builders
 {
     /// <summary>
     ///     A base class that represents a delegate based command, before it is built into a reflection-based executable object. This class cannot be inherited.

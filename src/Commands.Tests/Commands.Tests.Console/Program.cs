@@ -3,7 +3,10 @@ using Commands.Tests;
 using Microsoft.Extensions.DependencyInjection;
 
 var tree = ComponentTree.CreateBuilder()
-    .AddTypeConverter(new CSharpScriptConverter())
+    .Configure(config =>
+    {
+        config.AddTypeConverter(new CSharpScriptConverter());
+    })
     .AddResultResolver((c, r, s) =>
     {
         if (!r.Success)

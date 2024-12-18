@@ -13,7 +13,7 @@ builder.AddResultResolver((consumer, result, services) =>
     }
 });
 
-builder.AddTypeConverter<Version>((consumer, argument, value, services) =>
+builder.Configuration.AddTypeConverter<Version>((consumer, argument, value, services) =>
 {
     if (Version.TryParse(value?.ToString(), out var version))
     {
@@ -23,7 +23,7 @@ builder.AddTypeConverter<Version>((consumer, argument, value, services) =>
     return ConvertResult.FromError(new FormatException("Invalid version format."));
 });
 
-builder.AddTypeConverter(new ReflectionTypeConverter(caseIgnore: true));
+builder.Configuration.AddTypeConverter(new ReflectionTypeConverter(caseIgnore: true));
 
 builder.AddCommand("delegate", () => "Hello World!");
 builder.AddCommand("delegate-context", (CommandContext<CustomConsumer> ctx) => $"Hello, {ctx.Caller.Name}!");

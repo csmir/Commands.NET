@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
+using Commands.Builders;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Commands.Tests

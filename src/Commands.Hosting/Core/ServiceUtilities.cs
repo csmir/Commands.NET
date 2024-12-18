@@ -1,10 +1,9 @@
-﻿using Commands.Conversion;
-using Commands.Components;
+﻿using Commands.Builders;
+using Commands.Conversion;
 using Commands.Resolvers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using System.ComponentModel;
 using System.Reflection;
 
 namespace Commands
@@ -12,7 +11,7 @@ namespace Commands
     /// <summary>
     ///     A utility class that provides extension methods for configuring services with a hosted execution sequence <see cref="ComponentTree"/>.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
     public static class ServiceUtilities
     {
         /// <summary>
@@ -172,30 +171,30 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="Conversion.TypeConverter"/> to the service collection by the specified type. If a converter of the same type is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="TypeConverter"/> to the service collection by the specified type. If a converter of the same type is already added, this add operation will be skipped.
         /// </summary>
         /// <typeparam name="TConverter"></typeparam>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <param name="scopeToExecution">Determines if the service should be scoped to the command execution. If <see langword="false"/>, the service will be added as a singleton.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
         public static IHostBuilder AddTypeConverter<TConverter>(this IHostBuilder builder, bool scopeToExecution = false)
-            where TConverter : Conversion.TypeConverter
+            where TConverter : TypeConverter
         {
             EnsureConfigured(builder);
 
             builder.ConfigureServices((context, services) =>
             {
                 if (scopeToExecution)
-                    services.TryAddScoped<Conversion.TypeConverter, TConverter>();
+                    services.TryAddScoped<TypeConverter, TConverter>();
                 else
-                    services.TryAddSingleton<Conversion.TypeConverter, TConverter>();
+                    services.TryAddSingleton<TypeConverter, TConverter>();
             });
 
             return builder;
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="Conversion.TypeConverter"/> to the service collection by the specified delegate. If a converter with the same conversion type is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="TypeConverter"/> to the service collection by the specified delegate. If a converter with the same conversion type is already added, this add operation will be skipped.
         /// </summary>
         /// <typeparam name="TConvertible"></typeparam>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
@@ -210,13 +209,13 @@ namespace Commands
             {
                 if (scopeToExecution)
                 {
-                    var descriptor = ServiceDescriptor.Scoped<Conversion.TypeConverter, DelegateConverter<TConvertible>>((services) => new DelegateConverter<TConvertible>(convertDelegate));
+                    var descriptor = ServiceDescriptor.Scoped<TypeConverter, DelegateConverter<TConvertible>>((services) => new DelegateConverter<TConvertible>(convertDelegate));
 
                     services.TryAddEnumerable(descriptor);
                 }
                 else
                 {
-                    var descriptor = ServiceDescriptor.Singleton<Conversion.TypeConverter, DelegateConverter<TConvertible>>((services) => new DelegateConverter<TConvertible>(convertDelegate));
+                    var descriptor = ServiceDescriptor.Singleton<TypeConverter, DelegateConverter<TConvertible>>((services) => new DelegateConverter<TConvertible>(convertDelegate));
 
                     services.TryAddEnumerable(descriptor);
                 }
@@ -226,7 +225,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="Conversion.TypeConverter"/> to the service collection by the specified delegate. If a converter with the same conversion type is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="TypeConverter"/> to the service collection by the specified delegate. If a converter with the same conversion type is already added, this add operation will be skipped.
         /// </summary>
         /// <typeparam name="TConvertible"></typeparam>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
@@ -241,13 +240,13 @@ namespace Commands
             {
                 if (scopeToExecution)
                 {
-                    var descriptor = ServiceDescriptor.Scoped<Conversion.TypeConverter, AsyncDelegateConverter<TConvertible>>((services) => new AsyncDelegateConverter<TConvertible>(convertDelegate));
+                    var descriptor = ServiceDescriptor.Scoped<TypeConverter, AsyncDelegateConverter<TConvertible>>((services) => new AsyncDelegateConverter<TConvertible>(convertDelegate));
 
                     services.TryAddEnumerable(descriptor);
                 }
                 else
                 {
-                    var descriptor = ServiceDescriptor.Singleton<Conversion.TypeConverter, AsyncDelegateConverter<TConvertible>>((services) => new AsyncDelegateConverter<TConvertible>(convertDelegate));
+                    var descriptor = ServiceDescriptor.Singleton<TypeConverter, AsyncDelegateConverter<TConvertible>>((services) => new AsyncDelegateConverter<TConvertible>(convertDelegate));
 
                     services.TryAddEnumerable(descriptor);
                 }
@@ -418,20 +417,18 @@ namespace Commands
                     var builder = services.GetRequiredService<ComponentTreeBuilder>();
 
                     var resolvers = services.GetServices<ResultResolver>();
-                    var converters = services.GetServices<Conversion.TypeConverter>();
+                    var converters = services.GetServices<TypeConverter>();
 
                     var assemblies = context.Properties.TryGetValue("Commands:Assemblies", out var propAsm)
                         ? propAsm as List<Assembly>
                         : [];
 
-                    var commands = context.Properties.TryGetValue("Commands:Commands", out var propCmd)
-                        ? propCmd as List<CommandBuilder>
+                    var commands = context.Properties.TryGetValue("Commands:Components", out var propCmd)
+                        ? propCmd as List<IComponentBuilder>
                         : [];
 
-                    foreach (var converter in converters)
-                    {
-                        builder.TypeConverters.Add(converter.Type, converter);
-                    }
+                    builder.Configuration.AddTypeConverters(converters);
+
 
                     builder.ResultResolvers.AddRange(resolvers);
                     builder.Assemblies.AddRange(assemblies!);

@@ -1,6 +1,4 @@
-﻿using Commands.Components;
-
-namespace Commands.Conversion
+﻿namespace Commands.Conversion
 {
     // This converter is used exclusively for enumerable conversion.
     internal sealed class ObjectTypeConverter : TypeConverter<object>

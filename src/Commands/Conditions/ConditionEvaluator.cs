@@ -1,6 +1,4 @@
-﻿using Commands.Components;
-
-namespace Commands.Conditions
+﻿namespace Commands.Conditions
 {
     /// <summary>
     ///     An evaluator that containerizes a set of conditions, determining the result of the evaluation.

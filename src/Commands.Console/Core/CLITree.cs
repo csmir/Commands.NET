@@ -1,4 +1,6 @@
-﻿namespace Commands
+﻿using Commands.Builders;
+
+namespace Commands
 {
     /// <summary>
     ///     Represents the tree for executing CLI commands.
@@ -14,7 +16,7 @@
         public static Task Run<T>(this ComponentTree tree, CLIOptions<T> options)
             where T : ConsoleCallerContext, new()
         {
-            var args = CommandParser.ParseKeyValueCollection(options.Arguments);
+            var args = ArgumentParser.ParseKeyValueCollection(options.Arguments);
 
             options.Caller ??= new T();
 
@@ -43,12 +45,15 @@
         ///     Creates a builder that is responsible for setting up all required arguments to discover and populate the <see cref="ComponentTree"/>.
         /// </summary>
         /// <returns>A new <see cref="ComponentTreeBuilder"/> that builds into a new instance of <see cref="ComponentTree"/> based on the provided arguments.</returns>
-        public static ComponentTreeBuilder CreateBuilder()
-            => new()
+        public static ITreeBuilder CreateBuilder()
+            => new ComponentTreeBuilder()
             {
-                Properties = new()
+                Configuration = new ComponentConfigurationBuilder()
                 {
-                    ["CoreCommandName"] = "env-core"
+                    Properties = new()
+                    {
+                        ["CoreCommandName"] = "env-core"
+                    }
                 }
             };
     }

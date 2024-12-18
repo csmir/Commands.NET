@@ -1,6 +1,4 @@
-﻿using Commands.Components;
-
-namespace Commands.Conversion
+﻿namespace Commands.Conversion
 {
     internal sealed class StringTypeConverter : TypeConverter<string>
     {

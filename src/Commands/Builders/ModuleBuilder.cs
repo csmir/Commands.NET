@@ -1,6 +1,4 @@
-﻿using Commands.Components;
-
-namespace Commands
+﻿namespace Commands.Builders
 {
     /// <summary>
     ///     Represents the builder of a module that can contain commands and sub-modules. This class cannot be inherited.

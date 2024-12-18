@@ -1,4 +1,6 @@
-﻿namespace Commands.Tests
+﻿using Commands.Builders;
+
+namespace Commands.Tests
 {
     public class MutationModule : CommandModule
     {

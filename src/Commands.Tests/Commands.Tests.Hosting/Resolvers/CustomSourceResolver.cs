@@ -15,7 +15,7 @@ namespace Commands.Tests
 
                 Console.CursorVisible = false;
 
-                return Success(new CallerContext(), CommandParser.ParseKeyCollection(src));
+                return Success(new CallerContext(), ArgumentParser.ParseKeyCollection(src));
             }
 
             return Error(new InvalidOperationException("The application failed to start."));

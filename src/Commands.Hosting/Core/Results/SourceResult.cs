@@ -30,12 +30,12 @@
         ///     Creates a new <see cref="SourceResult"/> resembling a successful sourcing operation.
         /// </summary>
         /// <param name="consumer">The consumer of the command.</param>
-        /// <param name="args">An unparsed command query, which will be parsed using <see cref="CommandParser.ParseKeyValueCollection(string)"/>.</param>
+        /// <param name="args">An unparsed command query, which will be parsed using <see cref="ArgumentParser.ParseKeyValueCollection(string)"/>.</param>
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
         public static SourceResult FromSuccess(CallerContext consumer, string args, CommandOptions? options = null)
         {
-            var parseResult = CommandParser.ParseKeyValueCollection(args);
+            var parseResult = ArgumentParser.ParseKeyValueCollection(args);
 
             options ??= new CommandOptions();
 
