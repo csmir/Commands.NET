@@ -5,7 +5,7 @@
         [Name("add-command")]
         public Task MutateCurrentModule(string commandName, [Remainder] Delegate executionAction)
         {
-            var configuration = new BuildConfigurationBuilder()
+            var configuration = new ComponentConfigurationBuilder()
                 .Build();
 
             var command = new CommandBuilder()

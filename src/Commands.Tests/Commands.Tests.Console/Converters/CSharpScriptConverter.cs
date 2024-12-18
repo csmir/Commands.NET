@@ -1,5 +1,5 @@
-﻿using Commands.Converters;
-using Commands.Reflection;
+﻿using Commands.Conversion;
+using Commands.Components;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 

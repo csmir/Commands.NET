@@ -1,5 +1,5 @@
 ﻿using Commands.Conditions;
-using Commands.Reflection;
+using Commands.Components;
 
 namespace Commands.Tests
 {

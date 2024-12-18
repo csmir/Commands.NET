@@ -14,11 +14,11 @@ namespace Commands
     /// <param name="logger">A logger that logs the execution process.</param>
     /// <param name="lifetime">The lifetime of the application.</param>
     public sealed class SequenceInitiator(
-        CommandTree manager, IEnumerable<SourceResolver> resolvers, IServiceProvider services, ILogger<SequenceInitiator> logger, IHostApplicationLifetime lifetime)
+        ComponentTree manager, IEnumerable<SourceResolver> resolvers, IServiceProvider services, ILogger<SequenceInitiator> logger, IHostApplicationLifetime lifetime)
         : IHostedService
     {
         private readonly ILogger<SequenceInitiator> _logger = logger;
-        private readonly CommandTree _manager = manager;
+        private readonly ComponentTree _manager = manager;
         private readonly IEnumerable<SourceResolver> _resolvers = resolvers;
         private readonly IHostApplicationLifetime _lifetime = lifetime;
         private readonly IServiceProvider _services = services;

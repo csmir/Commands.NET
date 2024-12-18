@@ -1,5 +1,5 @@
 ﻿using Commands.Conditions;
-using Commands.Converters;
+using Commands.Conversion;
 
 namespace Commands
 {

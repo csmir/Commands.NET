@@ -1,4 +1,4 @@
-﻿using Commands.Reflection;
+﻿using Commands.Components;
 using System.ComponentModel;
 
 namespace Commands.Samples

@@ -7,18 +7,18 @@ namespace Commands.Tests
     [MemoryDiagnoser]
     public class Program
     {
-        private readonly CommandTree _tree;
+        private readonly ComponentTree _tree;
 
         public Program()
         {
             var services = new ServiceCollection()
-                .AddSingleton(new CommandTreeBuilder()
+                .AddSingleton(new ComponentTreeBuilder()
                 {
 
                 }.Build())
                 .BuildServiceProvider();
 
-            _tree = services.GetRequiredService<CommandTree>();
+            _tree = services.GetRequiredService<ComponentTree>();
         }
 
         static void Main()

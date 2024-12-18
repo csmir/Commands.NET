@@ -1,7 +1,7 @@
 ﻿// Documentation of this file can be found at: https://github.com/csmir/Commands.NET/wiki/Preconditions.
 
 using Commands.Conditions;
-using Commands.Reflection;
+using Commands.Components;
 
 namespace Commands.Samples
 {

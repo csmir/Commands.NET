@@ -2,7 +2,7 @@
 using Commands.Tests;
 using Microsoft.Extensions.DependencyInjection;
 
-var tree = CommandTree.CreateBuilder()
+var tree = ComponentTree.CreateBuilder()
     .AddTypeConverter(new CSharpScriptConverter())
     .AddResultResolver((c, r, s) =>
     {
