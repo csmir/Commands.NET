@@ -6,16 +6,18 @@
 [![Download](https://img.shields.io/static/v1?style=flat&message=download%20on%20nuget&color=004880&logo=NuGet&logoColor=FFFFFF&label=)](https://nuget.org/packages/Commands.NET)
 [![Discord](https://img.shields.io/discord/1092510256384450652?style=flat)](https://discord.gg/T7hCvShAx5)
 
-Commands.NET is a robust no-nonsense command library that makes creating and processing contextual queries easy for any* interactive platform.
-It provides a modular, easy to implement pipeline for registering and executing commands, as well as a wide range of customization options to make development for various platforms as easy as possible.
+**Do more, with less. With fast, compatible and fluent integration in mind.**
 
-**This includes console-input, game-chat, social platforms like Discord, Slack, Messenger & much, much more.*
+Commands.NET aims to improve your experience integrating input from different sources* into the same, concurrent pool and treating them as triggered actions, called commands. It provides a modular, easy to implement pipeline for registering and executing commands.
+
+**Sources can range from command-line, console, chatboxes, to social platforms like Discord, Slack, Messenger & much, much more.*
 
 - [Getting Started](#getting-started)
 - [Features](#features)
 - [Additional Packages](#additional-packages)
 
-> This library is CLS Compliant, enabling its use in C#, F# and VB projects.
+> [!NOTE]
+> Commands.NET is CLS-compliant, Native AOT friendly, and built on .NET Standard 1.0
 
 ## Getting Started
 
