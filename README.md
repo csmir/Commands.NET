@@ -8,7 +8,7 @@
 
 **Do more, with less. With speed, compatibility and fluent integration in mind.**
 
-Commands.NET aims to improve your experience integrating input from different sources* into the same, concurrent pool and treating them as triggered actions, called commands. It provides a modular, easy to implement pipeline for registering and executing commands.
+Commands.NET aims to improve your experience integrating input from different sources* into the same, concurrent pool and treating them as triggered actions, called commands. It provides a modular and intuitive API for registering and executing commands.
 
 **Sources can range from command-line, console, chatboxes, to social platforms like Discord, Slack, Messenger & much, much more.*
 
