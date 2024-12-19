@@ -26,6 +26,10 @@ namespace Commands.Builders
         /// <param name="hostBuilder">The builder which implements all new instances of <see cref="IComponentTree"/>.</param>
         /// <param name="configureAction">An action that configures a newly created instance implementation of <see cref="ITreeBuilder"/>, which will be used to create a new <see cref="IComponentTree"/> for an <see cref="ISequenceInitiator"/>.</param>
         /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
+        public static IHostBuilder ConfigureCommands(this IHostBuilder hostBuilder, Action<ITreeBuilder> configureAction)
+            => ConfigureCommands(hostBuilder, (_, builder) => configureAction(builder));
+
+        /// <inheritdoc cref="ConfigureCommands(IHostBuilder, Action{ITreeBuilder})"/>
         public static IHostBuilder ConfigureCommands(this IHostBuilder hostBuilder, Action<HostBuilderContext, ITreeBuilder> configureAction)
         {
             hostBuilder.ConfigureServices((context, services) =>
