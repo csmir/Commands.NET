@@ -50,7 +50,7 @@ namespace Commands
             {
                 Configuration = new ComponentConfigurationBuilder()
                 {
-                    Properties = new()
+                    Properties = new Dictionary<string, object?>()
                     {
                         ["CoreCommandName"] = "env-core"
                     }

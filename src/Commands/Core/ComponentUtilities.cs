@@ -109,7 +109,7 @@ namespace Commands
                     if (attribute is NameAttribute names)
                     {
                         // validate aliases.
-                        names.ValidateAliases(configuration.NamingPattern);
+                        names.ValidateAliases(configuration);
 
                         aliases = names.Aliases;
                         continue;
@@ -127,12 +127,9 @@ namespace Commands
                     // yield a new module if all aliases are valid and it shouldn't be skipped.
                     var component = new ModuleInfo(type, module, aliases, configuration);
 
-                    if (configuration.Properties.TryGetValue("ComponentRegistrationFilter", out var filter) && filter is Func<IComponent, bool> componentFilter)
-                    {
-                        if (componentFilter.Invoke(component))
-                            yield return component;
-                    }
-                    else
+                    var componentFilter = configuration.GetPropertyOrDefault<Func<IComponent, bool>>("ComponentRegistrationFilter");
+                    
+                    if (componentFilter?.Invoke(component) ?? true)
                         yield return component;
                 }
             }
@@ -161,7 +158,7 @@ namespace Commands
                 {
                     if (attribute is NameAttribute names)
                     {
-                        names.ValidateAliases(configuration.NamingPattern);
+                        names.ValidateAliases(configuration);
 
                         aliases = names.Aliases;
                         continue;
@@ -199,12 +196,9 @@ namespace Commands
                         else
                             component = new CommandInfo(module, new InstanceActivator(method), aliases, false, configuration);
 
-                        if (configuration.Properties.TryGetValue("ComponentRegistrationFilter", out var filter) && filter is Func<IComponent, bool> componentFilter)
-                        {
-                            if (componentFilter.Invoke(component))
-                                yield return component;
-                        }
-                        else
+                        var componentFilter = configuration.GetPropertyOrDefault<Func<IComponent, bool>>("ComponentRegistrationFilter");
+
+                        if (componentFilter?.Invoke(component) ?? true)
                             yield return component;
                     }
                 }
@@ -241,7 +235,7 @@ namespace Commands
             if (!type.IsConvertible())
                 return null;
 
-            if (configuration.TypeConverters.TryGetValue(type, out var converter))
+            if (configuration.Parsers.TryGetValue(type, out var converter))
                 return converter;
 
             if (type.IsEnum)
@@ -251,7 +245,7 @@ namespace Commands
             {
                 var elementType = type.GetElementType();
 
-                if (!configuration.TypeConverters.TryGetValue(elementType!, out converter))
+                if (!configuration.Parsers.TryGetValue(elementType!, out converter))
                 {
                     if (elementType!.IsString())
                         converter = StringParser.Instance;
@@ -270,7 +264,7 @@ namespace Commands
 
                 var enumType = type.GetCollectionType(elementType);
 
-                if (!configuration.TypeConverters.TryGetValue(elementType, out converter))
+                if (!configuration.Parsers.TryGetValue(elementType, out converter))
                 {
                     if (elementType.IsString())
                         converter = StringParser.Instance;

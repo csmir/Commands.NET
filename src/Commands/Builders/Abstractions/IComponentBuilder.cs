@@ -15,7 +15,6 @@
         /// </summary>
         /// <param name="configuration">The configuration which sets the component up for execution.</param>
         /// <returns>A reflection-based container that holds information for a component ready to be executed or serves as a container for executable components.</returns>
-        /// <exception cref="BuildException">Thrown when the component aliases do not match <see cref="ComponentConfiguration.NamingPattern"/>.</exception>
         /// <exception cref="ArgumentNullException">Thrown when necessary values are not set.</exception>
         public IComponent Build(ComponentConfiguration configuration);
     }

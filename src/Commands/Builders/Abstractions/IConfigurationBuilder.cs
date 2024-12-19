@@ -1,5 +1,4 @@
 ﻿using Commands.Conversion;
-using System.Text.RegularExpressions;
 
 namespace Commands.Builders
 {
@@ -8,11 +7,6 @@ namespace Commands.Builders
     /// </summary>
     public interface IConfigurationBuilder
     {
-        /// <summary>
-        ///     Gets or sets the naming convention of commands and groups being registered into the <see cref="ComponentTree"/>.
-        /// </summary>
-        public Regex? NamingPattern { get; set; }
-
         /// <summary>
         ///     Gets or sets a collection of <see cref="TypeParser"/>, each containing an operation for <see cref="Type"/> parsing. Parsing of <see langword="object"/>, <see langword="string"/>, implementations of <see langword="enum"/> and implementations of <see cref="IEnumerable{T}"/> are not necessary to implement, as they are handled internally by the <see cref="ComponentTree"/>.
         /// </summary>
@@ -31,16 +25,19 @@ namespace Commands.Builders
         ///     </list>
         ///     <i>The parser for <see cref="TimeSpan"/> does not implement <see cref="TryParseParser"/>, instead having extended logic under <see cref="TimeSpanParser"/>.</i>
         /// </remarks>
-        public Dictionary<Type, TypeParser> Parsers { get; set; }
+        public IDictionary<Type, TypeParser> Parsers { get; set; }
 
         /// <summary>
         ///     Gets or sets a collection of properties that can be used to store additional information applied during the build process.
         /// </summary>
-        public Dictionary<string, object> Properties { get; set; }
+        public IDictionary<string, object?> Properties { get; set; }
 
         /// <summary>
         ///     Configures an action that will convert a raw argument into the target type, signified by <typeparamref name="TParsable"/>.
         /// </summary>
+        /// <remarks>
+        ///     An existing <see cref="TypeParser"/> -if any- implementing the same <see cref="Type"/> as <typeparamref name="TParsable"/> will be replaced by this operation.
+        /// </remarks>
         /// <typeparam name="TParsable">The type for this parser to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the parsing process.</param>
         /// <returns>The same <see cref="IConfigurationBuilder"/> for call-chaining.</returns>
@@ -49,13 +46,16 @@ namespace Commands.Builders
         /// <summary>
         ///     Configures an asynchronous action that will convert a raw argument into the target type, signified by <typeparamref name="TParsable"/>.
         /// </summary>
+        /// <remarks>
+        ///     An existing <see cref="TypeParser"/> -if any- implementing the same <see cref="Type"/> as <typeparamref name="TParsable"/> will be replaced by this operation.
+        /// </remarks>
         /// <typeparam name="TParsable">The type for this parser to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the parsing process.</param>
         /// <returns>The same <see cref="IConfigurationBuilder"/> for call-chaining.</returns>
         public IConfigurationBuilder AddParser<TParsable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction);
 
         /// <summary>
-        ///     Adds an implementation of <see cref="TypeParser"/> to <see cref="Parsers"/>.
+        ///     Adds an implementation of <see cref="TypeParser"/> to <see cref="Parsers"/>, replacing an existing parser with the same <see cref="Type"/>.
         /// </summary>
         /// <param name="parser">The implementation of <see cref="TypeParser"/> to add.</param>
         /// <returns>The same <see cref="IConfigurationBuilder"/> for call-chaining.</returns>

@@ -24,13 +24,13 @@ namespace Commands
         /// </summary>
         public bool IsReadOnly { get; }
 
-        internal ComponentCollection(object? isReadOnly, object? notifyTopLevelMutation)
-        {
-            if (notifyTopLevelMutation is Action<IComponent[], bool> notifyTopLevelMutationHandler)
-                _hierarchyRetentionHandler = notifyTopLevelMutationHandler;
+        internal ComponentCollection()
+            : this(false, null) { }
 
-            if (isReadOnly is bool isReadOnlyHandler)
-                IsReadOnly = isReadOnlyHandler;
+        internal ComponentCollection(bool? isReadOnly, Action<IComponent[], bool>? hierarchyRetentionHandler)
+        {
+            _hierarchyRetentionHandler = hierarchyRetentionHandler;
+            IsReadOnly = isReadOnly ?? false;
         }
 
         /// <summary>

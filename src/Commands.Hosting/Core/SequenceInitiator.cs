@@ -12,59 +12,44 @@ namespace Commands
     /// <param name="resolvers">A collection of registered resolvers intended to be activated.</param>
     /// <param name="services">The services that the initiator uses to create a scoped flow for the execution pipeline.</param>
     /// <param name="logger">A logger that logs the execution process.</param>
-    /// <param name="lifetime">The lifetime of the application.</param>
     public sealed class SequenceInitiator(
-        ComponentTree tree, IEnumerable<SourceResolver> resolvers, IServiceProvider services, ILogger<SequenceInitiator> logger, IHostApplicationLifetime lifetime)
-        : IHostedService
+        IComponentTree tree, IEnumerable<SourceResolver> resolvers, IServiceProvider services, ILogger<SequenceInitiator> logger)
+        : ISequenceInitiator
     {
         private readonly ILogger<SequenceInitiator> _logger = logger;
-        private readonly ComponentTree _tree = tree;
-        private readonly IEnumerable<SourceResolver> _resolvers = resolvers;
-        private readonly IHostApplicationLifetime _lifetime = lifetime;
         private readonly IServiceProvider _services = services;
 
-        /// <summary>
-        ///     Gets a token source that can cancel the parallel source loop.
-        /// </summary>
+        /// <inheritdoc />
         public CancellationTokenSource CancellationSource { get; } = new();
 
         /// <inheritdoc />
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            _lifetime.ApplicationStarted.Register(() =>
-            {
-                foreach (var resolver in _resolvers)
-                {
-                    resolver.ReadAvailable = true;
-                }
-            });
+        public IComponentTree Tree { get; } = tree;
 
-            _lifetime.ApplicationStopping.Register(() =>
-            {
-                foreach (var resolver in _resolvers)
-                {
-                    resolver.ReadAvailable = false;
-                }
-            });
+        /// <inheritdoc />
+        public IEnumerable<SourceResolver> Resolvers { get; } = resolvers;
+
+        /// <inheritdoc />
+        public void TryStart()
+        {
+            foreach (var resolver in Resolvers)
+                resolver.ReadAvailable = true;
 
             _ = RunAsync();
-
-            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
-        public Task StopAsync(CancellationToken cancellationToken)
-            => Task.CompletedTask;
+        public void TryStop()
+        {
+            foreach (var resolver in Resolvers)
+                resolver.ReadAvailable = false;
+        }
 
-        /// <summary>
-        ///     Makes an attempt to pause command input entering the application flow, and returns a value indicating whether the operation was successful.
-        /// </summary>
-        /// <returns><see langword="true"/> if all source resolvers were succesfully paused. <see langword="false"/> if one or more failed to pause.</returns>
+        /// <inheritdoc />
         public bool TryPause()
         {
             try
             {
-                foreach (var resolvers in _resolvers)
+                foreach (var resolvers in Resolvers)
                     resolvers.ReadAvailable = false;
             }
             catch
@@ -75,15 +60,12 @@ namespace Commands
             return true;
         }
 
-        /// <summary>
-        ///     Makes an attempt to unpause command input entering the application flow, and returns a value indicating whether the operation was successful.
-        /// </summary>
-        /// <returns><see langword="true"/> if all source resolvers succesfully unpaused. <see langword="false"/> if one or more failed to unpause.</returns>
+        /// <inheritdoc />
         public bool TryUnpause()
         {
             try
             {
-                foreach (var resolvers in _resolvers)
+                foreach (var resolvers in Resolvers)
                     resolvers.ReadAvailable = true;
             }
             catch
@@ -96,51 +78,49 @@ namespace Commands
 
         private Task RunAsync()
         {
-            var tasks = ActivateResolvers();
+            IEnumerable<Task> ActivateResolvers()
+            {
+                foreach (var resolver in Resolvers)
+                {
+                    var cToken = CancellationSource.Token;
 
-            return Task.WhenAll(tasks.Select(x =>
+                    yield return new Task(async () =>
+                    {
+                        while (!cToken.IsCancellationRequested)
+                        {
+                            var source = await resolver.Evaluate(_services, cToken);
+
+                            if (!source.Success)
+                            {
+                                _logger.LogWarning("Source resolver failed to succeed acquirement iteration.");
+
+                                if (source.Exception != null)
+                                    throw source.Exception;
+
+                                continue;
+                            }
+
+                            using var scope = _services.CreateAsyncScope();
+
+                            var options = source.Options ?? new();
+
+                            options.DoAsynchronousExecution = false;
+                            options.Services = scope.ServiceProvider;
+
+                            await Tree.Execute(source.Consumer!, source.Args!.Value, options); // never null if source succeeded.
+
+                            await scope.DisposeAsync();
+                        }
+                    });
+                }
+            }
+
+            return Task.WhenAll(ActivateResolvers().Select(x =>
             {
                 x.Start();
 
                 return x;
             }));
-        }
-
-        private IEnumerable<Task> ActivateResolvers()
-        {
-            foreach (var resolver in _resolvers)
-            {
-                var cToken = CancellationSource.Token;
-
-                yield return new Task(async () =>
-                {
-                    while (!cToken.IsCancellationRequested)
-                    {
-                        var source = await resolver.Evaluate(_services, cToken);
-
-                        if (!source.Success)
-                        {
-                            _logger.LogWarning("Source resolver failed to succeed acquirement iteration.");
-
-                            if (source.Exception != null)
-                                throw source.Exception;
-
-                            continue;
-                        }
-
-                        using var scope = _services.CreateAsyncScope();
-
-                        var options = source.Options ?? new();
-
-                        options.DoAsynchronousExecution = false;
-                        options.Services = scope.ServiceProvider;
-
-                        await _tree.Execute(source.Consumer!, source.Args!.Value, options); // never null if source succeeded.
-
-                        await scope.DisposeAsync();
-                    }
-                });
-            }
         }
     }
 }

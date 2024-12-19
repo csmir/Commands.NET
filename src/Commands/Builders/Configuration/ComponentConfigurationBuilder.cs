@@ -1,21 +1,15 @@
 ﻿using Commands.Conversion;
-using System.Text.RegularExpressions;
 
 namespace Commands.Builders
 {
     /// <inheritdoc cref="IConfigurationBuilder"/>
     public class ComponentConfigurationBuilder : IConfigurationBuilder
     {
-        const string DEFAULT_REGEX = @"^[a-z0-9_-]*$";
+        /// <inheritdoc />
+        public IDictionary<Type, TypeParser> Parsers { get; set; } = TypeParser.CreateDefaults();
 
         /// <inheritdoc />
-        public Regex? NamingPattern { get; set; } = new Regex(DEFAULT_REGEX, RegexOptions.Compiled);
-
-        /// <inheritdoc />
-        public Dictionary<Type, TypeParser> Parsers { get; set; } = TypeParser.CreateDefaults();
-
-        /// <inheritdoc />
-        public Dictionary<string, object> Properties { get; set; } = [];
+        public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
 
         /// <inheritdoc />
         public IConfigurationBuilder AddParser<TConvertable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
@@ -74,6 +68,6 @@ namespace Commands.Builders
 
         /// <inheritdoc />
         public ComponentConfiguration Build()
-            => new(Parsers, Properties, NamingPattern);
+            => new(Parsers, Properties);
     }
 }

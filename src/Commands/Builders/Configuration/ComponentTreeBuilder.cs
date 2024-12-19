@@ -1,28 +1,34 @@
 ﻿using Commands.Resolvers;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Commands.Builders
 {
     /// <inheritdoc cref="ITreeBuilder" />
     public sealed class ComponentTreeBuilder : ITreeBuilder
     {
+        const string DEFAULT_NAMEPATTERN = @"^[a-z0-9_-]*$";
+
         /// <inheritdoc />
         public IConfigurationBuilder Configuration { get; set; } = new ComponentConfigurationBuilder();
 
         /// <inheritdoc />
-        public List<Assembly> Assemblies { get; set; } = [Assembly.GetEntryAssembly()!];
+        public ICollection<IComponentBuilder> Components { get; set; } = [];
 
         /// <inheritdoc />
-        public List<ResultResolver> ResultResolvers { get; set; } = [];
+        public ICollection<Assembly> Assemblies { get; set; } = [Assembly.GetEntryAssembly()!];
 
         /// <inheritdoc />
-        public List<IComponentBuilder> Components { get; set; } = [];
+        public ICollection<ResultResolver> ResultResolvers { get; set; } = [];
 
         /// <inheritdoc />
         public Func<IComponent, bool> ComponentRegistrationFilter { get; set; } = _ => true;
 
         /// <inheritdoc />
-        public bool MakeModulesReadonly { get; set; }
+        public bool MakeModulesReadonly { get; set; } = false;
+
+        /// <inheritdoc />
+        public string? NamingPattern { get; set; } = DEFAULT_NAMEPATTERN;
 
         /// <inheritdoc />
         public ITreeBuilder AddCommand(CommandBuilder commandBuilder)
@@ -121,6 +127,9 @@ namespace Commands.Builders
             if (assembly == null)
                 throw new ArgumentNullException(nameof(assembly));
 
+            if (Assemblies.Contains(assembly))
+                return this;
+
             Assemblies.Add(assembly);
 
             return this;
@@ -132,7 +141,9 @@ namespace Commands.Builders
             if (assemblies == null)
                 throw new ArgumentNullException(nameof(assemblies));
 
-            Assemblies.AddRange(assemblies);
+            foreach (var assembly in assemblies)
+                AddAssembly(assembly);
+
             return this;
         }
 
@@ -159,6 +170,9 @@ namespace Commands.Builders
         {
             Configuration.Properties["ComponentRegistrationFilter"] = ComponentRegistrationFilter;
             Configuration.Properties["ReadOnlyModuleDefinitions"] = MakeModulesReadonly;
+
+            if (!string.IsNullOrEmpty(NamingPattern))
+                Configuration.Properties["NamingPattern"] = new Regex(NamingPattern);
 
             var configuration = Configuration.Build();
 

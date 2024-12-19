@@ -1,4 +1,6 @@
-﻿namespace Commands.Builders
+﻿using System.Text.RegularExpressions;
+
+namespace Commands.Builders
 {
     /// <summary>
     ///     Represents the builder of a module that can contain commands and sub-modules. This class cannot be inherited.
@@ -178,17 +180,18 @@
         /// <param name="configuration">The configuration that should be used to determine the validity of the provided module.</param>
         /// <param name="root">The root module of this (sub)module. Can be left null, but it will affect how the module is visually formatted in the debugger and by calling the ToString() override on the returned type.</param>
         /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when any of the aliases of the module to be built do not match <see cref="ComponentConfiguration.NamingPattern"/>.</exception>
         public ModuleInfo Build(ComponentConfiguration configuration, ModuleInfo? root)
         {
             if (Aliases.Length == 0)
                 throw BuildException.AliasAtLeastOne();
 
-            if (configuration.NamingPattern is not null)
+            var pattern = configuration.GetPropertyOrDefault<Regex>("NamingPattern");
+
+            if (pattern != null)
             {
                 foreach (var alias in Aliases)
                 {
-                    if (!configuration.NamingPattern.IsMatch(alias))
+                    if (!pattern.IsMatch(alias))
                         throw BuildException.AliasConvention(alias);
                 }
             }

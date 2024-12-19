@@ -66,15 +66,17 @@ namespace Commands
             Aliases = arr;
         }
 
-        internal void ValidateAliases(Regex? regex)
+        internal void ValidateAliases(ComponentConfiguration configuration)
         {
-            if (regex is null)
-                return;
+            var pattern = configuration.GetPropertyOrDefault<Regex>("NamingPattern");
 
-            foreach (var alias in Aliases)
+            if (pattern != null)
             {
-                if (!regex.IsMatch(alias))
-                    throw BuildException.AliasConvention(alias);
+                foreach (var alias in Aliases)
+                {
+                    if (!pattern.IsMatch(alias))
+                        throw BuildException.AliasConvention(alias);
+                }
             }
         }
     }

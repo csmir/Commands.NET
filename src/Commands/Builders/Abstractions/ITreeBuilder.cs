@@ -23,19 +23,19 @@ namespace Commands.Builders
         public IConfigurationBuilder Configuration { get; set; }
 
         /// <summary>
+        ///     Gets or sets a collection of <see cref="CommandInfo"/>'s that are manually created before the registration process runs.
+        /// </summary>
+        public ICollection<IComponentBuilder> Components { get; set; }
+
+        /// <summary>
         ///     Gets or sets a collection of assemblies that are to be used to discover created modules.
         /// </summary>
-        public List<Assembly> Assemblies { get; set; }
+        public ICollection<Assembly> Assemblies { get; set; }
 
         /// <summary>
         ///     Gets or sets a collection of <see cref="ResultResolver"/>'s that serve as post-execution handlers.
         /// </summary>
-        public List<ResultResolver> ResultResolvers { get; set; }
-
-        /// <summary>
-        ///     Gets or sets a collection of <see cref="CommandInfo"/>'s that are manually created before the registration process runs.
-        /// </summary>
-        public List<IComponentBuilder> Components { get; set; }
+        public ICollection<ResultResolver> ResultResolvers { get; set; }
 
         /// <summary>
         ///     Gets or sets a filter that determines whether a created component should be yielded back to the registration process or skipped entirely, based on state provided within the component itself.
@@ -50,6 +50,11 @@ namespace Commands.Builders
         ///     Gets or sets a value indicating whether modules should be made read-only after the registration process.
         /// </summary>
         public bool MakeModulesReadonly { get; set; }
+
+        /// <summary>
+        ///     Gets or sets the naming convention regular expression which implementations of <see cref="IComponent"/> must adhere to be registered into the <see cref="ComponentTree"/>.
+        /// </summary>
+        public string? NamingPattern { get; set; }
 
         /// <summary>
         ///     Adds a command to the <see cref="Components"/> collection.
@@ -138,14 +143,14 @@ namespace Commands.Builders
         public ITreeBuilder AddResultResolver(ResultResolver resolver);
 
         /// <summary>
-        ///     Configures the <see cref="Assemblies"/> with an additional assembly.
+        ///     Configures the <see cref="Assemblies"/> with an additional assembly, skipping the add operation if the assembly is already present.
         /// </summary>
         /// <param name="assembly">An assembly that should be added to <see cref="Assemblies"/>.</param>
         /// <returns>The same <see cref="ComponentTreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddAssembly(Assembly assembly);
 
         /// <summary>
-        ///     Configures the <see cref="Assemblies"/> with an additional set of assemblies.
+        ///     Configures the <see cref="Assemblies"/> with an additional set of assemblies, skipping the add operation of an assembly in the collection if it is already present.
         /// </summary>
         /// <param name="assemblies">A collection of assemblies that should be added to <see cref="Assemblies"/>.</param>
         /// <returns>The same <see cref="ComponentTreeBuilder"/> for call-chaining.</returns>

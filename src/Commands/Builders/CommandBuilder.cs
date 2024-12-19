@@ -1,4 +1,5 @@
 ﻿using Commands.Conversion;
+using System.Text.RegularExpressions;
 
 namespace Commands.Builders
 {
@@ -6,7 +7,7 @@ namespace Commands.Builders
     ///     A base class that represents a delegate based command, before it is built into a reflection-based executable object. This class cannot be inherited.
     /// </summary>
     /// <remarks>
-    ///     This class is used to configure a command before it is built into a <see cref="CommandInfo"/> object. By calling the <see cref="Build(ComponentConfiguration)"/> or <see cref="Build(IEnumerable{TypeParser}, string)"/> method, the command is built into an object that can be executed by the <see cref="ComponentTree"/>>.
+    ///     This class is used to configure a command before it is built into a <see cref="CommandInfo"/> object. By calling the <see cref="Build(ComponentConfiguration)"/> or <see cref="Build(IEnumerable{TypeParser})"/> method, the command is built into an object that can be executed by the <see cref="ComponentTree"/>>.
     /// </remarks>
     public sealed class CommandBuilder : IComponentBuilder
     {
@@ -118,11 +119,13 @@ namespace Commands.Builders
             if (!_isNested && Aliases.Length == 0)
                 throw BuildException.AliasAtLeastOne();
 
-            if (configuration.NamingPattern is not null)
+            var pattern = configuration.GetPropertyOrDefault<Regex>("NamingPattern");
+
+            if (pattern != null)
             {
                 foreach (var alias in Aliases)
                 {
-                    if (!configuration.NamingPattern.IsMatch(alias))
+                    if (!pattern.IsMatch(alias))
                         throw BuildException.AliasConvention(alias);
                 }
             }
@@ -141,10 +144,8 @@ namespace Commands.Builders
         ///     Builds a searchable component from the provided configuration.
         /// </summary>
         /// <param name="converters">The typeconverters from which the current command constructs its argument converters.</param>
-        /// <param name="nameFilter">A filter which is used to determine how the command aliases are validated.</param>
         /// <returns>A reflection-based container that holds information for a component ready to be executed or serves as a container for executable components.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when the component aliases do not match <see cref="ComponentConfiguration.NamingPattern"/>.</exception>
-        public IComponent Build(IEnumerable<TypeParser> converters, string? nameFilter = @"^[a-z0-9_-]*$")
-            => Build(new ComponentConfiguration(converters, nameFilter));
+        public IComponent Build(IEnumerable<TypeParser> converters)
+            => Build(new ComponentConfiguration(converters));
     }
 }
