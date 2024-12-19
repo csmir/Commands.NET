@@ -51,7 +51,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, ComponentTree? tree, CommandOptions options)
+        public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options)
             where T : ICallerContext
         {
             var services = new object?[Parameters.Length];

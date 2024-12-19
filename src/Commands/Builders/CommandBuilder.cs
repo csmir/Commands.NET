@@ -7,7 +7,7 @@ namespace Commands.Builders
     ///     A base class that represents a delegate based command, before it is built into a reflection-based executable object. This class cannot be inherited.
     /// </summary>
     /// <remarks>
-    ///     This class is used to configure a command before it is built into a <see cref="CommandInfo"/> object. By calling the <see cref="Build(ComponentConfiguration)"/> or <see cref="Build(IEnumerable{TypeParser})"/> method, the command is built into an object that can be executed by the <see cref="ComponentTree"/>>.
+    ///     This class is used to configure a command before it is built into a <see cref="CommandInfo"/> object. By calling the <see cref="Build(ComponentConfiguration)"/> or <see cref="Build(IEnumerable{TypeParser})"/> method, the command is built into an object that can be executed by the <see cref="IComponentTree"/>.
     /// </remarks>
     public sealed class CommandBuilder : IComponentBuilder
     {
@@ -119,7 +119,7 @@ namespace Commands.Builders
             if (!_isNested && Aliases.Length == 0)
                 throw BuildException.AliasAtLeastOne();
 
-            var pattern = configuration.GetPropertyOrDefault<Regex>("NamingPattern");
+            var pattern = configuration.GetProperty<Regex>("NamingPattern");
 
             if (pattern != null)
             {

@@ -13,8 +13,8 @@ namespace Commands
         const string CONVERTER_FAILED = $"A {nameof(TypeParser)} failed to parse the provided value as '{{0}}'. View inner exception for more details.";
         const string ARGUMENT_MISMATCH = "An argument mismatch occurred between the best target and the input value.";
 
-        internal static ConvertException ConvertFailed(Type type, Exception? innerException = null)
-            => new(string.Format(CONVERTER_FAILED, type.Name), innerException);
+        internal static ConvertException ConvertFailed(Type? type, Exception? innerException = null)
+            => new(string.Format(CONVERTER_FAILED, type?.Name ?? "Unknown"), innerException);
 
         internal static ConvertException ArgumentMismatch()
             => new(ARGUMENT_MISMATCH);

@@ -3,24 +3,23 @@ using Commands.Tests;
 using Microsoft.Extensions.DependencyInjection;
 
 var tree = ComponentTree.CreateBuilder()
-    .Configure(config =>
+    .ConfigureComponents(c =>
     {
-        config.AddParser(new CSharpScriptParser());
+        c.AddParser(new CSharpScriptParser());
     })
-    .AddResultResolver((c, r, s) =>
+    .AddResultHandler((c, r, s) =>
     {
-        if (!r.Success)
-            Console.WriteLine(r);
+        c.Respond(r);
     })
-    .AddModule(module =>
+    .AddModule(m =>
     {
-        module.WithAliases("level1");
-        module.AddCommand("a", () => Console.WriteLine("Test"));
-        module.AddModule(submodule =>
+        m.WithAliases("level1");
+        m.AddCommand("a", () => Console.WriteLine("Test"));
+        m.AddModule(s =>
         {
-            submodule.WithAliases("level2");
-            submodule.AddCommand("b", () => Console.WriteLine("Test"));
-            submodule.AddCommand(() => Console.WriteLine("Test"));
+            s.WithAliases("level2");
+            s.AddCommand("b", () => Console.WriteLine("Test"));
+            s.AddCommand(() => Console.WriteLine("Test"));
         });
     })
     .AddCommand("j", () => Console.WriteLine("Test"))

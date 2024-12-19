@@ -1,6 +1,5 @@
 ﻿using Commands.Builders;
 using Commands.Conditions;
-using Commands.Resolvers;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -18,10 +17,10 @@ namespace Commands
     [DebuggerDisplay("Count = {Count}")]
     public sealed class ComponentTree : ComponentCollection, IComponentTree
     {
-        private readonly ResultResolver[] _resolvers;
+        private readonly ResultHandler[] _handlers;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="ComponentTree"/> class, using the provided <paramref name="configuration"/> to build the command tree.
+        ///     Creates a new instance of <see cref="ComponentTree"/>, using the provided <paramref name="configuration"/> to build the command tree.
         /// </summary>
         /// <remarks>
         ///     This constructor searches for all components that inherit <see cref="CommandModule"/> in the provided assemblies.
@@ -32,7 +31,7 @@ namespace Commands
             : this(configuration, assemblies, null, null) { }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="ComponentTree"/> class, using the provided <paramref name="configuration"/> to build the command tree.
+        ///     Creates a new instance of <see cref="ComponentTree"/>, using the provided <paramref name="configuration"/> to build the command tree.
         /// </summary>
         /// <remarks>
         ///     This constructor implements a collection of <see cref="IComponent"/> components that are passed to the tree.
@@ -43,13 +42,13 @@ namespace Commands
             : this(configuration, null, components, null) { }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="ComponentTree"/> class, using the provided <paramref name="configuration"/> to build the command tree.
+        ///     Creates a new instance of <see cref="ComponentTree"/>, using the provided <paramref name="configuration"/> to build the command tree.
         /// </summary>
         /// <param name="configuration">The configuration by which all reflected components should be configured.</param>
         /// <param name="assemblies">An optional collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="CommandModule"/>.</param>
         /// <param name="runtimeComponents">Delegate-based components that should be passed to the tree at runtime.</param>
         /// <param name="resolvers">An optional collection of handlers of command results.</param>
-        public ComponentTree(ComponentConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<IComponent>? runtimeComponents = null, IEnumerable<ResultResolver>? resolvers = null)
+        public ComponentTree(ComponentConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<IComponent>? runtimeComponents = null, IEnumerable<ResultHandler>? resolvers = null)
             : base()
         {
             assemblies ??= [];
@@ -66,7 +65,7 @@ namespace Commands
                 PushDangerous(commands);
             }
 
-            _resolvers = resolvers?.ToArray() ?? [];
+            _handlers = resolvers?.ToArray() ?? [];
         }
 
         /// <inheritdoc />
@@ -194,14 +193,12 @@ namespace Commands
 
                 var value = command.Activator.Invoke(caller, command, arguments, this, options);
 
-                await EvaluateInvocationResult(caller, command, value, options);
-
                 var afterInvocationConditions = await EvaluateConditions(caller, command, ConditionTrigger.AfterInvocation, options);
 
                 if (!afterInvocationConditions.Success)
                     return afterInvocationConditions;
 
-                return InvokeResult.FromSuccess(command);
+                return InvokeResult.FromSuccess(command, value);
             }
             catch (Exception exception)
             {
@@ -229,7 +226,7 @@ namespace Commands
             if (command.MaxLength > args.Length && command.MinLength <= args.Length)
                 return await ConvertArguments(caller, command.Arguments, args, options);
 
-            return [ConvertResult.FromError()];
+            return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
         }
 
         private async ValueTask<ConvertResult[]> ConvertArguments(
@@ -336,18 +333,11 @@ namespace Commands
             return ConditionResult.FromSuccess(trigger);
         }
 
-        private async ValueTask EvaluateInvocationResult(
-            ICallerContext caller, CommandInfo command, object? value, CommandOptions options)
-        {
-            foreach (var resolver in _resolvers)
-                await resolver.EvaluateResponse(caller, command, value, options.Services, options.CancellationToken);
-        }
-
         private async ValueTask FinalizeInvocation(
             ICallerContext caller, IExecuteResult result, CommandOptions options)
         {
-            foreach (var resolver in _resolvers)
-                await resolver.EvaluateResult(caller, result, options.Services, options.CancellationToken);
+            foreach (var resolver in _handlers)
+                await resolver.HandleResult(caller, result, options.Services, options.CancellationToken);
         }
 
         #endregion

@@ -19,7 +19,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, ComponentTree? tree, CommandOptions options)
+        public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options)
             where T : ICallerContext
         {
             var module = command!.Parent?.Activator?.Invoke(caller, command, args, tree, options) as CommandModule;

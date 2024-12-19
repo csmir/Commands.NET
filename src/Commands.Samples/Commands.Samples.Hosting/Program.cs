@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 await Host.CreateDefaultBuilder(args)
     .ConfigureCommands(configure =>
     {
-        configure.AddSourceResolver((services) =>
+        configure.AddSourceProvider((services) =>
         {
             Console.CursorVisible = true;
             Console.Write("> ");
@@ -17,24 +17,21 @@ await Host.CreateDefaultBuilder(args)
             if (string.IsNullOrWhiteSpace(input))
                 return SourceResult.FromError();
 
-            var context = new HostedContext();
+            var context = new HostedCallerContext();
 
             return SourceResult.FromSuccess(context, input);
         });
 
-        configure.AddResultResolver((context, result, services) =>
+        configure.AddResultHandler((context, result, services) =>
         {
-            if (!result.Success)
+            switch (result)
             {
-                switch (result)
-                {
-                    case InvokeResult invokeResult:
-                        Console.WriteLine(invokeResult.Exception);
-                        break;
-                    case SearchResult searchResult:
-                        Console.WriteLine("Invalid command.");
-                        break;
-                }
+                case InvokeResult invokeResult:
+                    context.Respond(result.Exception);
+                    break;
+                case SearchResult searchResult:
+                    context.Respond("Invalid command.");
+                    break;
             }
         });
     })

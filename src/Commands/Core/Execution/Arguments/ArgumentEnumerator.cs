@@ -4,7 +4,7 @@ namespace Commands
 {
     /// <summary>
     ///     Contains a set of arguments for the command pipeline. This class is not intended to be implemented by end-users. 
-    ///     By using either <see cref="ComponentTree.Execute{T}(T, IEnumerable{KeyValuePair{string, object?}}, CommandOptions?)"/> or <see cref="ComponentTree.Execute{T}(T, IEnumerable{object?}, CommandOptions?)"/> you can use named or unnamed command entry.
+    ///     By using either <see cref="IComponentTree.Execute{T}(T, IEnumerable{KeyValuePair{string, object?}}, CommandOptions?)"/> or <see cref="IComponentTree.Execute{T}(T, IEnumerable{object?}, CommandOptions?)"/> you can use named or unnamed command entry.
     /// </summary>
     /// <remarks>
     ///     Searching for commands supports only unnamed arguments. Named arguments are used for command parameter population.

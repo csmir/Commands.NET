@@ -1,5 +1,4 @@
-﻿using Commands.Resolvers;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Commands.Builders
@@ -19,7 +18,7 @@ namespace Commands.Builders
         public ICollection<Assembly> Assemblies { get; set; } = [Assembly.GetEntryAssembly()!];
 
         /// <inheritdoc />
-        public ICollection<ResultResolver> ResultResolvers { get; set; } = [];
+        public ICollection<ResultHandler> Handlers { get; set; } = [];
 
         /// <inheritdoc />
         public Func<IComponent, bool> ComponentRegistrationFilter { get; set; } = _ => true;
@@ -89,12 +88,12 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder AddResultResolver(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction)
+        public ITreeBuilder AddResultHandler(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction)
         {
             if (resultAction == null)
                 throw new ArgumentNullException(nameof(resultAction));
 
-            ResultResolvers.Add(new DelegateResolver(resultAction));
+            Handlers.Add(new DelegateResultHandler(resultAction));
 
             return this;
         }
@@ -105,18 +104,18 @@ namespace Commands.Builders
             if (resultAction == null)
                 throw new ArgumentNullException(nameof(resultAction));
 
-            ResultResolvers.Add(new AsyncDelegateResolver(resultAction));
+            Handlers.Add(new AsyncDelegateResultHandler(resultAction));
 
             return this;
         }
 
         /// <inheritdoc />
-        public ITreeBuilder AddResultResolver(ResultResolver resolver)
+        public ITreeBuilder AddResultResolver(ResultHandler resolver)
         {
             if (resolver == null)
                 throw new ArgumentNullException(nameof(resolver));
 
-            ResultResolvers.Add(resolver);
+            Handlers.Add(resolver);
 
             return this;
         }
@@ -156,7 +155,7 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder Configure(Action<IConfigurationBuilder> configure)
+        public ITreeBuilder ConfigureComponents(Action<IConfigurationBuilder> configure)
         {
             Configuration ??= new ComponentConfigurationBuilder();
 
@@ -166,10 +165,13 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ComponentTree Build()
+        public IComponentTree Build()
         {
             Configuration.Properties["ComponentRegistrationFilter"] = ComponentRegistrationFilter;
-            Configuration.Properties["ReadOnlyModuleDefinitions"] = MakeModulesReadonly;
+
+            // Set property with null value, when a key is set but no value is provided.
+            if (MakeModulesReadonly)
+                Configuration.Properties["ReadOnlyModuleDefinitions"] = null;
 
             if (!string.IsNullOrEmpty(NamingPattern))
                 Configuration.Properties["NamingPattern"] = new Regex(NamingPattern);
@@ -180,7 +182,7 @@ namespace Commands.Builders
 
             return new ComponentTree(configuration,
                 assemblies: Assemblies,
-                resolvers: ResultResolvers,
+                resolvers: Handlers,
                 runtimeComponents: components);
         }
     }

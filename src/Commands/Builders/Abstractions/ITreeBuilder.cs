@@ -1,24 +1,23 @@
-﻿using Commands.Resolvers;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Commands.Builders
 {
     /// <summary>
-    ///     A configuration builder determining the build process for modules and commands in a <see cref="ComponentTree"/>. This class cannot be inherited.
+    ///     A configuration builder determining the build process for modules and commands in an <see cref="IComponentTree"/>. This class cannot be inherited.
     /// </summary>
     /// <remarks>
     ///     This builder is able to configure the following:
     ///     <list type="number">
     ///         <item>Defining assemblies through which will be searched to discover modules and commands.</item>
     ///         <item>Defining custom commands that do not appear in the assemblies.</item>
-    ///         <item>Registering implementations of <see cref="ResultResolver"/> which define custom result handling.</item>
+    ///         <item>Registering implementations of <see cref="ResultHandler"/> which define custom result handling.</item>
     ///         <item>Configuring settings for creation of modules and commands.</item>
     ///     </list>
     /// </remarks>
     public interface ITreeBuilder
     {
         /// <summary>
-        ///     Gets or sets the configuration builder for the <see cref="ComponentTree"/>.
+        ///     Gets or sets the component configuration builder for the <see cref="IComponentTree"/>.
         /// </summary>
         public IConfigurationBuilder Configuration { get; set; }
 
@@ -33,9 +32,9 @@ namespace Commands.Builders
         public ICollection<Assembly> Assemblies { get; set; }
 
         /// <summary>
-        ///     Gets or sets a collection of <see cref="ResultResolver"/>'s that serve as post-execution handlers.
+        ///     Gets or sets a collection of <see cref="ResultHandler"/> that serves as post-execution handlers.
         /// </summary>
-        public ICollection<ResultResolver> ResultResolvers { get; set; }
+        public ICollection<ResultHandler> Handlers { get; set; }
 
         /// <summary>
         ///     Gets or sets a filter that determines whether a created component should be yielded back to the registration process or skipped entirely, based on state provided within the component itself.
@@ -52,14 +51,14 @@ namespace Commands.Builders
         public bool MakeModulesReadonly { get; set; }
 
         /// <summary>
-        ///     Gets or sets the naming convention regular expression which implementations of <see cref="IComponent"/> must adhere to be registered into the <see cref="ComponentTree"/>.
+        ///     Gets or sets the naming convention regular expression which implementations of <see cref="IComponent"/> must adhere to be registered into the <see cref="IComponentTree"/>.
         /// </summary>
         public string? NamingPattern { get; set; }
 
         /// <summary>
         ///     Adds a command to the <see cref="Components"/> collection.
         /// </summary>
-        /// <param name="commandBuilder">The builder instance to add to the collection, which will be built into a <see cref="CommandInfo"/> instance that can be executed by the <see cref="ComponentTree"/>.</param>
+        /// <param name="commandBuilder">The builder instance to add to the collection, which will be built into a <see cref="CommandInfo"/> instance that can be executed by the <see cref="IComponentTree"/>.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddCommand(CommandBuilder commandBuilder);
 
@@ -99,7 +98,7 @@ namespace Commands.Builders
         /// <summary>
         ///     Adds a module to the <see cref="Components"/> collection.
         /// </summary>
-        /// <param name="moduleBuilder">The builder instance to add to the collection, which will be built into a <see cref="ModuleInfo"/> instance that can contain commands to be executed by the <see cref="ComponentTree"/>.</param>
+        /// <param name="moduleBuilder">The builder instance to add to the collection, which will be built into a <see cref="ModuleInfo"/> instance that can contain commands to be executed by the <see cref="IComponentTree"/>.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddModule(ModuleBuilder moduleBuilder);
 
@@ -114,46 +113,44 @@ namespace Commands.Builders
         public ITreeBuilder AddModule(Action<ModuleBuilder> configureModule);
 
         /// <summary>
-        ///     Configures an action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
+        ///     Configures an action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/>. 
         /// </summary>
         /// <remarks>
-        ///     The <see cref="IExecuteResult"/> revealed by this action contains data about command success. 
-        ///     Check <see cref="IExecuteResult.Success"/> to determine whether or not the command ran successfully.
+        ///     To handle both failed and successful results, use <see cref="AddResultResolver(ResultHandler)"/> with an implementation of <see cref="ResultHandler"/>.
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddResultResolver(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction);
+        public ITreeBuilder AddResultHandler(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction);
 
         /// <summary>
-        ///     Configures an asynchronous action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
+        ///     Configures an asynchronous action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/>. 
         /// </summary>
         /// <remarks>
-        ///     The <see cref="IExecuteResult"/> revealed by this action contains data about command success. 
-        ///     Check <see cref="IExecuteResult.Success"/> to determine whether or not the command ran successfully.
+        ///     To handle both failed and successful results, use <see cref="AddResultResolver(ResultHandler)"/> with an implementation of <see cref="ResultHandler"/>.
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddResultResolver(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction);
 
         /// <summary>
-        ///     Adds an implementation of <see cref="ResultResolver"/> to <see cref="ResultResolvers"/>.
+        ///     Adds an implementation of <see cref="ResultHandler"/> to <see cref="Handlers"/>.
         /// </summary>
-        /// <param name="resolver">The implementation of <see cref="ResultResolver"/> to add.</param>
+        /// <param name="resolver">The implementation of <see cref="ResultHandler"/> to add.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddResultResolver(ResultResolver resolver);
+        public ITreeBuilder AddResultResolver(ResultHandler resolver);
 
         /// <summary>
         ///     Configures the <see cref="Assemblies"/> with an additional assembly, skipping the add operation if the assembly is already present.
         /// </summary>
         /// <param name="assembly">An assembly that should be added to <see cref="Assemblies"/>.</param>
-        /// <returns>The same <see cref="ComponentTreeBuilder"/> for call-chaining.</returns>
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddAssembly(Assembly assembly);
 
         /// <summary>
         ///     Configures the <see cref="Assemblies"/> with an additional set of assemblies, skipping the add operation of an assembly in the collection if it is already present.
         /// </summary>
         /// <param name="assemblies">A collection of assemblies that should be added to <see cref="Assemblies"/>.</param>
-        /// <returns>The same <see cref="ComponentTreeBuilder"/> for call-chaining.</returns>
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddAssemblies(params Assembly[] assemblies);
 
         /// <summary>
@@ -164,20 +161,20 @@ namespace Commands.Builders
         ///     This means that the build process will still fail if the component is not a valid command or module under its own restrictions.
         /// </remarks>
         /// <param name="filter">A predicate which determines if a component should be added to its parent component, or directly to the command tree if it is a top-level one.</param>
-        /// <returns>The same <see cref="ComponentTreeBuilder"/> for call-chaining.</returns>
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder WithRegistrationFilter(Func<IComponent, bool> filter);
 
         /// <summary>
         ///     Configures the <see cref="Configuration"/> property with modified values through the <paramref name="configure"/> action.
         /// </summary>
         /// <param name="configure">An action that runs over the configuration to create .</param>
-        /// <returns>The same <see cref="ComponentTreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder Configure(Action<IConfigurationBuilder> configure);
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
+        public ITreeBuilder ConfigureComponents(Action<IConfigurationBuilder> configure);
 
         /// <summary>
-        ///     Builds the current <see cref="ITreeBuilder"/> instance into a new <see cref="ComponentTree"/>.
+        ///     Builds the current <see cref="ITreeBuilder"/> instance into a new <see cref="IComponentTree"/>.
         /// </summary>
-        /// <returns>A new instance of <see cref="ComponentTree"/> built by this builder.</returns>
-        public ComponentTree Build();
+        /// <returns>A new instance of <see cref="IComponentTree"/> built by this builder.</returns>
+        public IComponentTree Build();
     }
 }

@@ -1,10 +1,7 @@
-﻿using Commands.Resolvers;
-using Microsoft.Extensions.Hosting;
-
-namespace Commands
+﻿namespace Commands
 {
     /// <summary>
-    ///     A generator for command execution scopes, listening to data within the provided collection of <see cref="SourceResolver"/> to run a new command.
+    ///     A generator for command execution scopes, listening to data within the provided collection of <see cref="SourceProvider"/> to run a new command.
     /// </summary>
     public interface ISequenceInitiator
     {
@@ -21,7 +18,7 @@ namespace Commands
         /// <summary>
         ///     Gets a collection of source resolvers that are used to listen for command input.
         /// </summary>
-        public IEnumerable<SourceResolver> Resolvers { get; }
+        public IEnumerable<SourceProvider> Resolvers { get; }
 
         /// <summary>
         ///     Makes an attempt to start command input entering the application flow.

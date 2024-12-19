@@ -67,8 +67,8 @@ namespace Commands
 
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, ComponentConfiguration configuration)
-            : base(configuration.GetPropertyOrDefault<bool>("ReadOnlyModuleDefinitions"), aliases.Length == 0 
-                ? configuration.GetPropertyOrDefault<Action<IComponent[], bool>>("HierarchyRetentionHandler") 
+            : base(configuration.HasProperty("ReadOnlyModuleDefinitions"), aliases.Length == 0
+                ? configuration.GetProperty<Action<IComponent[], bool>>("HierarchyRetentionHandler")
                 : null)
         {
             Parent = root;

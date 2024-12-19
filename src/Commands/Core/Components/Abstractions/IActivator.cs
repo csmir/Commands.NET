@@ -21,7 +21,7 @@ namespace Commands
         /// <param name="tree">The command manager responsible for executing the current pipeline.</param>
         /// <param name="options">The options that determine the execution pattern of this invoker.</param>
         /// <returns>The result of the invocation. This result is <see langword="null"/> if the method signature returns void.</returns>
-        public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, ComponentTree? tree, CommandOptions options)
+        public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options)
             where T : ICallerContext;
 
         /// <summary>

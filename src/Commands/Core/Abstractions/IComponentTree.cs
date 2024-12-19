@@ -1,4 +1,5 @@
 ﻿using Commands.Builders;
+using Commands.Core.Abstractions;
 
 namespace Commands
 {
@@ -9,7 +10,7 @@ namespace Commands
     /// <remarks>
     ///     To start using this tree, call <see cref="ComponentTree.CreateBuilder"/> and configure it using the fluent API's implemented by the <see cref="ITreeBuilder"/>.
     /// </remarks>
-    public interface IComponentTree
+    public interface IComponentTree : IComponentCollection
     {
         /// <summary>
         ///     Attempts to execute a command based on the provided <paramref name="args"/>.
@@ -34,10 +35,7 @@ namespace Commands
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
             T caller, IEnumerable<object> args, CommandOptions? options = null)
-            where T : ICallerContext
-        {
-            return Execute(caller, new ArgumentEnumerator(args), options ?? new CommandOptions());
-        }
+            where T : ICallerContext;
 
         /// <summary>
         ///     Attempts to execute a command based on the provided <paramref name="args"/>.

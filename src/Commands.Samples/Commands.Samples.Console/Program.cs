@@ -5,25 +5,20 @@ using Commands.Samples;
 
 var builder = ComponentTree.CreateBuilder();
 
-builder.AddResultResolver((consumer, result, services) =>
-{
-    if (!result.Success)
-    {
-        consumer.Respond(result);
-    }
-});
-
-builder.Configuration.AddParser<Version>((consumer, argument, value, services) =>
+builder.Configuration.AddParser<Version>((caller, argument, value, services) =>
 {
     if (Version.TryParse(value?.ToString(), out var version))
-    {
         return ConvertResult.FromSuccess(version);
-    }
 
     return ConvertResult.FromError(new FormatException("Invalid version format."));
 });
 
 builder.Configuration.AddParser(new LiteralTypeParser(caseIgnore: true));
+
+builder.AddResultHandler((caller, result, services) =>
+{
+    caller.Respond(result);
+});
 
 builder.AddCommand("delegate", () => "Hello World!");
 builder.AddCommand("delegate-context", (CommandContext<CustomCaller> ctx) => $"Hello, {ctx.Caller.Name}!");

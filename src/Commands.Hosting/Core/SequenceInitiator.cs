@@ -1,19 +1,17 @@
-﻿using Commands.Resolvers;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Commands
 {
     /// <summary>
-    ///     A generator for command execution scopes, listening to data within the provided <see cref="SourceResolver"/>[] <paramref name="resolvers"/> to run a new command. This class cannot be inherited.
+    ///     A generator for command execution scopes, listening to data within the provided <see cref="SourceProvider"/>[] <paramref name="resolvers"/> to run a new command. This class cannot be inherited.
     /// </summary>
     /// <param name="tree">The tree used to run the command query.</param>
     /// <param name="resolvers">A collection of registered resolvers intended to be activated.</param>
     /// <param name="services">The services that the initiator uses to create a scoped flow for the execution pipeline.</param>
     /// <param name="logger">A logger that logs the execution process.</param>
     public sealed class SequenceInitiator(
-        IComponentTree tree, IEnumerable<SourceResolver> resolvers, IServiceProvider services, ILogger<SequenceInitiator> logger)
+        IComponentTree tree, IEnumerable<SourceProvider> resolvers, IServiceProvider services, ILogger<SequenceInitiator> logger)
         : ISequenceInitiator
     {
         private readonly ILogger<SequenceInitiator> _logger = logger;
@@ -26,7 +24,7 @@ namespace Commands
         public IComponentTree Tree { get; } = tree;
 
         /// <inheritdoc />
-        public IEnumerable<SourceResolver> Resolvers { get; } = resolvers;
+        public IEnumerable<SourceProvider> Resolvers { get; } = resolvers;
 
         /// <inheritdoc />
         public void TryStart()

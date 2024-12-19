@@ -49,7 +49,7 @@ namespace Commands
         ///     Gets if the component is runtime built, meaning it was created dynamically through the fluent API.
         /// </summary>
         /// <remarks>
-        ///     Runtime components are delegate-based. They are not bound to a specific type, and are only structurally defined through the <see cref="ComponentTree"/>.
+        ///     Runtime components are delegate-based. They are not bound to a specific type, and are only structurally defined through the <see cref="IComponentTree"/>.
         /// </remarks>
         public bool IsRuntimeComponent { get; }
 

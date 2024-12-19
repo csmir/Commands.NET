@@ -1,9 +1,9 @@
-﻿namespace Commands.Resolvers
+﻿namespace Commands
 {
     /// <summary>
     ///     A handler for pre-execution processes.
     /// </summary>
-    public abstract class SourceResolver
+    public abstract class SourceProvider
     {
         internal bool ReadAvailable { get; set; }
 

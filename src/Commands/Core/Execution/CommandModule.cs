@@ -39,7 +39,7 @@
     ///     Modules do not have state, they are instantiated and populated before a command runs and immediately disposed when it finishes.
     /// </summary>
     /// <remarks>
-    ///      All derived types must be passed to the <see cref="ComponentTree"/> to be discoverable and automatically registered during creation.
+    ///      All derived types must be passed to the <see cref="IComponentTree"/> to be discoverable and automatically registered during creation.
     /// </remarks>
     public abstract class CommandModule
     {
@@ -57,7 +57,7 @@
         /// <summary>
         ///     Gets the command manager that is responsible for the current command pipeline.
         /// </summary>
-        public ComponentTree Tree { get; internal set; }
+        public IComponentTree Tree { get; internal set; }
 #pragma warning restore CS8618
 
         /// <summary>

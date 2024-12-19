@@ -1,6 +1,5 @@
 ﻿using Commands.Builders;
 using Commands.Conversion;
-using System.Text.RegularExpressions;
 
 namespace Commands
 {
@@ -43,14 +42,23 @@ namespace Commands
         /// <summary>
         ///     Gets a property from the <see cref="Properties"/> collection, or returns the default value if the property does not exist.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="key"></param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
-        public T? GetPropertyOrDefault<T>(string key, T? defaultValue = default)
+        /// <typeparam name="T">The type with which the value returned from <see cref="Properties"/> should be compatible, and cast to.</typeparam>
+        /// <param name="key">The key under which the properties should have a value.</param>
+        /// <param name="defaultValue">A fallback value if <see cref="Properties"/> contains no value for the provided key, or if the value cannot be cast to <typeparamref name="T"/>.</param>
+        /// <returns>The value returned by <paramref name="key"/> if it exists and can be cast to <typeparamref name="T"/>; Otherwise <paramref name="defaultValue"/>.</returns>
+        public T? GetProperty<T>(string key, T? defaultValue = default)
             => Properties.TryGetValue(key, out var value) && value is T tValue ? tValue : defaultValue;
 
-        // Represents an internal method to set a property in the configuration after build for internal use.
+        /// <summary>
+        ///     Determines whether a property with the specified key exists in the <see cref="Properties"/> collection.
+        /// </summary>
+        /// <param name="key">The key under which the properties should have a value.</param>
+        /// <returns><see langword="true"/> if <see cref="Properties"/> contains a property with the specified key; Otherwise <see langword="false"/>.</returns>
+        public bool HasProperty(string key)
+            => Properties.ContainsKey(key);
+
+        // Used for internals only.
+        // Represents a method to set a property in the configuration after build.
         internal void SetProperty(string key, object? value)
         {
             if (Properties is Dictionary<string, object?> dictionary)
@@ -62,7 +70,7 @@ namespace Commands
         /// <summary>
         ///     Creates a new instance of <see cref="ComponentConfigurationBuilder"/>, which can be built into an instance of <see cref="ComponentConfiguration"/>.
         /// </summary>
-        /// <returns>A build model with a fluent API to configure how components should be registered within or at creation of the <see cref="ComponentTree"/>.</returns>
+        /// <returns>A build model with a fluent API to configure how components should be registered within or at creation of the <see cref="IComponentTree"/>.</returns>
         public static IConfigurationBuilder CreateBuilder()
             => new ComponentConfigurationBuilder();
     }

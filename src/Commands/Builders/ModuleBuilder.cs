@@ -69,7 +69,7 @@ namespace Commands.Builders
         /// <summary>
         ///     Adds a command to the <see cref="Components"/> collection.
         /// </summary>
-        /// <param name="commandBuilder">The builder instance to add to the collection, which will be built into a <see cref="CommandInfo"/> instance that can be executed by the <see cref="ComponentTree"/>.</param>
+        /// <param name="commandBuilder">The builder instance to add to the collection, which will be built into a <see cref="CommandInfo"/> instance that can be executed by the <see cref="IComponentTree"/>.</param>
         /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided builder is <see langword="null"/>.</exception>
         public ModuleBuilder AddCommand(CommandBuilder commandBuilder)
@@ -147,7 +147,7 @@ namespace Commands.Builders
         /// <summary>
         ///     Adds a module to the <see cref="Components"/> collection.
         /// </summary>
-        /// <param name="moduleBuilder">The builder instance to add to the collection, which will be built into a <see cref="ModuleInfo"/> instance that can contain commands to be executed by the <see cref="ComponentTree"/>.</param>
+        /// <param name="moduleBuilder">The builder instance to add to the collection, which will be built into a <see cref="ModuleInfo"/> instance that can contain commands to be executed by the <see cref="IComponentTree"/>.</param>
         /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the provided builder is <see langword="null"/>.</exception>
         public ModuleBuilder AddModule(ModuleBuilder moduleBuilder)
@@ -185,7 +185,7 @@ namespace Commands.Builders
             if (Aliases.Length == 0)
                 throw BuildException.AliasAtLeastOne();
 
-            var pattern = configuration.GetPropertyOrDefault<Regex>("NamingPattern");
+            var pattern = configuration.GetProperty<Regex>("NamingPattern");
 
             if (pattern != null)
             {

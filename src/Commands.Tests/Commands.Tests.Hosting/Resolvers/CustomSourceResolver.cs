@@ -1,8 +1,6 @@
-﻿using Commands.Resolvers;
-
-namespace Commands.Tests
+﻿namespace Commands.Tests
 {
-    internal class CustomSourceResolver : SourceResolver
+    internal class CustomSourceResolver : SourceProvider
     {
         public override ValueTask<SourceResult> Evaluate(IServiceProvider services, CancellationToken cancellationToken)
         {

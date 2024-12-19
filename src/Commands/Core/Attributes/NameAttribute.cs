@@ -68,7 +68,7 @@ namespace Commands
 
         internal void ValidateAliases(ComponentConfiguration configuration)
         {
-            var pattern = configuration.GetPropertyOrDefault<Regex>("NamingPattern");
+            var pattern = configuration.GetProperty<Regex>("NamingPattern");
 
             if (pattern != null)
             {

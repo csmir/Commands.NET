@@ -3,18 +3,18 @@
 namespace Commands.Conversion
 {
     /// <inheritdoc />
-    /// <typeparam name="T">The type this <see cref="TypeParser{T}"/> should convert into.</typeparam>
+    /// <typeparam name="T">The type this <see cref="TypeParser{T}"/> should parse into.</typeparam>
     public abstract class TypeParser<T> : TypeParser
     {
         /// <summary>
-        ///     Gets the type that should be converted to.
+        ///     Gets the type that should be parsed to.
         /// </summary>
         public override Type Type { get; } = typeof(T);
 
         /// <summary>
         ///     Creates a new <see cref="ConvertResult"/> representing a successful evaluation.
         /// </summary>
-        /// <param name="value">The value converted from a raw argument into the target type of this converter.</param>
+        /// <param name="value">The value parsed from a raw argument into the target type of this parser.</param>
         /// <returns>A <see cref="ConvertResult"/> representing the successful evaluation.</returns>
         public virtual ConvertResult Success(T value)
         {
@@ -26,28 +26,28 @@ namespace Commands.Conversion
     }
 
     /// <summary>
-    ///     An abstract type that can be implemented to create custom type conversion from a command query argument.
+    ///     An abstract type that can be implemented to create custom type parsing from a command query argument.
     /// </summary>
     /// <remarks>
-    ///     To register converters for the <see cref="ComponentTree"/> to use, add them to the <see cref="ComponentConfigurationBuilder.Parsers"/> collection.
+    ///     To register converters for the <see cref="IComponentTree"/> to use, add them to the <see cref="IConfigurationBuilder.Parsers"/> collection.
     /// </remarks>
     public abstract class TypeParser
     {
         /// <summary>
-        ///     Gets the type that should be converted to. This value determines what command arguments will use this converter.
+        ///     Gets the type that should be parsed to. This value determines what command arguments will use this parser.
         /// </summary>
         /// <remarks>
-        ///     It is important to ensure this converter actually returns the specified type in <see cref="Success(object)"/>. If this is not the case, a critical exception will occur in runtime when the command is attempted to be executed.
+        ///     It is important to ensure this parser actually returns the specified type in <see cref="Success(object)"/>. If this is not the case, a critical exception will occur in runtime when the command is attempted to be executed.
         /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
-        ///     Evaluates the known data about the argument to be converted into, as well as the raw value it should convert into a valid invocation parameter.
+        ///     Evaluates the known data about the argument to be parsed into, as well as the raw value it should parse into a valid invocation parameter.
         /// </summary>
         /// <param name="caller">Context of the current execution.</param>
         /// <param name="services">The provider used to register modules and inject services.</param>
         /// <param name="argument">Information about the invocation argument this evaluation converts for.</param>
-        /// <param name="value">The raw command query argument to convert.</param>
+        /// <param name="value">The raw command query argument to parse.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
         public abstract ValueTask<ConvertResult> Parse(
@@ -85,7 +85,7 @@ namespace Commands.Conversion
         /// <summary>
         ///     Creates a new <see cref="ConvertResult"/> representing a successful evaluation.
         /// </summary>
-        /// <param name="value">The value converted from a raw argument into the target type of this converter.</param>
+        /// <param name="value">The value parsed from a raw argument into the target type of this parser.</param>
         /// <returns>A <see cref="ConvertResult"/> representing the successful evaluation.</returns>
         protected ConvertResult Success(object value)
             => ConvertResult.FromSuccess(value);
@@ -94,14 +94,14 @@ namespace Commands.Conversion
         ///     Creates a dictionary of base value type converters.
         /// </summary>
         /// <remarks>
-        ///     The list of types that are converted by these converters are:
+        ///     The list of types that are parsed by these converters are:
         ///     <list type="bullet">
         ///         <item>String characters, being: <see langword="char"/>.</item>
         ///         <item>Integers variants, being: <see langword="bool"/>, <see langword="byte"/>, <see langword="sbyte"/>, <see langword="short"/>, <see langword="ushort"/>, <see langword="int"/>, <see langword="uint"/>, <see langword="long"/> and <see langword="ulong"/>.</item>
         ///         <item>Floating point numbers, being: <see langword="float"/>, <see langword="decimal"/> and <see langword="double"/>.</item>
         ///         <item>Commonly used structs, being: <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/> and <see cref="Guid"/>.</item>
         ///     </list>
-        ///     <i>The converter <see cref="TimeSpan"/> does not implement the standard <see cref="TimeSpan.TryParse(string, out TimeSpan)"/>, instead having a custom implementation under <see cref="TimeSpanParser"/>.</i>
+        ///     <i>The parser <see cref="TimeSpan"/> does not implement the standard <see cref="TimeSpan.TryParse(string, out TimeSpan)"/>, instead having a custom implementation under <see cref="TimeSpanParser"/>.</i>
         /// </remarks>
         /// <returns>A new <see cref="Dictionary{TKey, TValue}"/> containing a range of <see cref="TypeParser"/>'s for all types listed above.</returns>
         public static Dictionary<Type, TypeParser> CreateDefaults()

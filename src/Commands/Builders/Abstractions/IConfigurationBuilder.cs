@@ -8,7 +8,7 @@ namespace Commands.Builders
     public interface IConfigurationBuilder
     {
         /// <summary>
-        ///     Gets or sets a collection of <see cref="TypeParser"/>, each containing an operation for <see cref="Type"/> parsing. Parsing of <see langword="object"/>, <see langword="string"/>, implementations of <see langword="enum"/> and implementations of <see cref="IEnumerable{T}"/> are not necessary to implement, as they are handled internally by the <see cref="ComponentTree"/>.
+        ///     Gets or sets a collection of <see cref="TypeParser"/>, each containing an operation for <see cref="Type"/> parsing. Parsing of <see langword="object"/>, <see langword="string"/>, implementations of <see langword="enum"/> and implementations of <see cref="IEnumerable{T}"/> are not necessary to implement, as they are handled internally by the <see cref="IComponentTree"/>.
         /// </summary>
         /// <remarks>
         ///     This collection is set by default to the value of <see cref="TypeParser.CreateDefaults"/>. 

@@ -6,7 +6,7 @@
     /// <remarks>
     ///     This context is used for <see langword="static"/> and <see langword="delegate"/> commands.
     /// </remarks>
-    public class CommandContext<T>(T consumer, CommandInfo command, ComponentTree tree, CommandOptions options)
+    public class CommandContext<T>(T consumer, CommandInfo command, IComponentTree tree, CommandOptions options)
         where T : ICallerContext
     {
         /// <summary>
@@ -27,7 +27,7 @@
         /// <summary>
         ///     Gets the command manager responsible for executing the current pipeline.
         /// </summary>
-        public ComponentTree Tree { get; } = tree;
+        public IComponentTree Tree { get; } = tree;
 
         /// <summary>
         ///     Sends a response to the consumer of the command.

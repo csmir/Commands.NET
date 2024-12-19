@@ -1,67 +1,43 @@
-﻿using System.Collections;
-using System.Diagnostics;
+﻿using Commands.Core.Abstractions;
+using System.Collections;
 
 namespace Commands
 {
-    /// <summary>
-    ///     An abstract implementation of a searchable concurrent collection, containing components that can be mutated and searched based on specific criteria.
-    /// </summary>
-    [DebuggerDisplay("Count = {Count}")]
-    public abstract class ComponentCollection : ICollection<IComponent>, IEnumerable<IComponent>
+    /// <inheritdoc cref="IComponentCollection"/>
+    public abstract class ComponentCollection : IComponentCollection
     {
         private readonly Action<IComponent[], bool>? _hierarchyRetentionHandler;
 
         private HashSet<IComponent> _components = [];
 
-        /// <summary>
-        ///     Gets the count of components in the current collection.
-        /// </summary>
+        /// <inheritdoc />
         public int Count
             => _components.Count;
 
-        /// <summary>
-        ///     Gets if the collection has been marked as readonly when created.
-        /// </summary>
+        /// <inheritdoc />
         public bool IsReadOnly { get; }
 
         internal ComponentCollection()
             : this(false, null) { }
 
-        internal ComponentCollection(bool? isReadOnly, Action<IComponent[], bool>? hierarchyRetentionHandler)
+        internal ComponentCollection(bool isReadOnly, Action<IComponent[], bool>? hierarchyRetentionHandler)
         {
             _hierarchyRetentionHandler = hierarchyRetentionHandler;
-            IsReadOnly = isReadOnly ?? false;
+            IsReadOnly = isReadOnly;
         }
 
-        /// <summary>
-        ///     Searches recursively through this and all subcollections for components that match the provided arguments.
-        /// </summary>
-        /// <param name="args">The arguments to base the search operation on.</param>
-        /// <returns>A lazily evaluated enumerable containing the discovered commands of this operation.</returns>
+        /// <inheritdoc />
         public abstract IEnumerable<SearchResult> Find(ArgumentEnumerator args);
 
-        /// <summary>
-        ///     Returns if the current collection contains the provided component.
-        /// </summary>
-        /// <param name="component">The component of which the equality is compared with the available components in the collection.</param>
-        /// <returns><see langword="true"/> if the component is found; otherwise, <see langword="false"/>.</returns>
+        /// <inheritdoc />
         public bool Contains(IComponent component)
             => _components.Contains(component);
 
-        /// <summary>
-        ///     Filters all components in the current collection that are of <see cref="CommandInfo"/>.
-        /// </summary>
-        /// <param name="browseNestedComponents">Defines if all subcomponents of this collection should also be scanned and return their commands.</param>
-        /// <returns>A lazily evaluated enumerable containing the discovered commands in this operation.</returns>
+        /// <inheritdoc />
         public IEnumerable<IComponent> GetCommands(bool browseNestedComponents = true)
             => GetCommands(_ => true, browseNestedComponents);
 
-        /// <summary>
-        ///     Filters all components in the current collection that are of <see cref="CommandInfo"/>, matching the provided predicate.
-        /// </summary>
-        /// <param name="predicate">The filter predicate to retrieve commands with.</param>
-        /// <param name="browseNestedComponents">Defines if all subcomponents of this collection should also be scanned and return their commands.</param>
-        /// <returns>A lazily evaluated enumerable containing the discovered commands in this operation.</returns>
+        /// <inheritdoc />
         public IEnumerable<IComponent> GetCommands(Predicate<CommandInfo> predicate, bool browseNestedComponents = true)
         {
             if (!browseNestedComponents)
@@ -81,20 +57,11 @@ namespace Commands
             return discovered;
         }
 
-        /// <summary>
-        ///     Filters all components in the current collection that are of <see cref="ModuleInfo"/>.
-        /// </summary>
-        /// <param name="browseNestedComponents">Defines if all subcomponents of this collection should also be scanned and return their modules.</param>
-        /// <returns>A lazily evaluated enumerable containing the discovered modules in this operation.</returns>
+        /// <inheritdoc />
         public IEnumerable<IComponent> GetModules(bool browseNestedComponents = true)
             => GetModules(_ => true, browseNestedComponents);
 
-        /// <summary>
-        ///     Filters all components in the current collection that are of <see cref="ModuleInfo"/>, matching the provided predicate.
-        /// </summary>
-        /// <param name="predicate">The filter predicate to retrieve modules with.</param>
-        /// <param name="browseNestedComponents">Defines if all subcomponents of this collection should also be scanned and return their modules.</param>    
-        /// <returns>A lazily evaluated enumerable containing the discovered modules in this operation.</returns>
+        /// <inheritdoc />
         public IEnumerable<IComponent> GetModules(Predicate<ModuleInfo> predicate, bool browseNestedComponents = true)
         {
             if (!browseNestedComponents)
@@ -116,10 +83,7 @@ namespace Commands
             return discovered;
         }
 
-        /// <summary>
-        ///     Retrieves the count of all subcomponents in the current collection of components, including their own subcomponents. The result is the amount of commands and modules available in this collection.
-        /// </summary>
-        /// <returns>A recursive sum of all components available to the current collection.</returns>
+        /// <inheritdoc />
         public int CountAll()
         {
             var sum = 0;
@@ -134,9 +98,7 @@ namespace Commands
             return sum;
         }
 
-        /// <summary>
-        ///     Sorts the components in the current collection based on their score.
-        /// </summary>
+        /// <inheritdoc />
         public void Sort()
         {
             if (IsReadOnly)
@@ -147,21 +109,11 @@ namespace Commands
             Interlocked.Exchange(ref _components, orderedCopy);
         }
 
-        /// <summary>
-        ///     Adds a component to the current collection.
-        /// </summary>
-        /// <param name="component">The component to be added to the module.</param>
-        /// <returns><see langword="true"/> if the component was added; otherwise, <see langword="false"/>.</returns>
-        /// <exception cref="BuildException">Thrown when a collection is marked as read-only.</exception>
+        /// <inheritdoc />
         public bool Add(IComponent component)
             => AddRange(component) > 0;
 
-        /// <summary>
-        ///     Adds all provided components to the current collection.
-        /// </summary>
-        /// <param name="components">The components to be added to the collection.</param>
-        /// <returns>The number of added components, being 0 if no records were added.</returns>
-        /// <exception cref="BuildException">Thrown when a collection is marked as read-only.</exception>
+        /// <inheritdoc />
         public int AddRange(params IComponent[] components)
         {
             if (IsReadOnly)
@@ -187,21 +139,11 @@ namespace Commands
             return hasChanged;
         }
 
-        /// <summary>
-        ///     Removes a component from the current collection if it exists.
-        /// </summary>
-        /// <param name="component">The component to be removed from the collection.</param>
-        /// <returns><see langword="true"/> if the component was removed; otherwise, <see langword="false"/>.</returns>
-        /// <exception cref="BuildException">Thrown when the collection is marked as read-only.</exception>
+        /// <inheritdoc />
         public bool Remove(IComponent component)
             => RemoveRange(component) > 0;
 
-        /// <summary>
-        ///     Removes all provided components from the current collection.
-        /// </summary>
-        /// <param name="components">The components to be removed from the collection.</param>
-        /// <returns>The number of removed components, being 0 if no commands were removed.</returns>
-        /// <exception cref="BuildException">Thrown when the collection is marked as read-only.</exception>
+        /// <inheritdoc />
         public int RemoveRange(params IComponent[] components)
         {
             if (IsReadOnly)
@@ -223,10 +165,7 @@ namespace Commands
             return removed;
         }
 
-        /// <summary>
-        ///     Removes all components from the current collection.
-        /// </summary>
-        /// <exception cref="BuildException">Thrown when the collection is marked as read-only.</exception>
+        /// <inheritdoc />
         public void Clear()
         {
             if (IsReadOnly)
@@ -235,14 +174,7 @@ namespace Commands
             Interlocked.Exchange(ref _components, []);
         }
 
-        /// <summary>
-        ///     Copies the components of the current collection to an array, starting at the provided index.
-        /// </summary>
-        /// <remarks>
-        ///     Because this collection is not indexed, the components are copied in the order they were sorted in the collection, by default, the <see cref="IComponent.Score"/> of the components.
-        /// </remarks>
-        /// <param name="array">The array to which this collection should be copied.</param>
-        /// <param name="arrayIndex">The index from which to start copying the current collection into the provided array.</param>
+        /// <inheritdoc />
         public void CopyTo(IComponent[] array, int arrayIndex)
             => _components.CopyTo(array, arrayIndex);
 

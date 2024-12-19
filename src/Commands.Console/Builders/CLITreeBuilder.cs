@@ -24,7 +24,7 @@
         }
 
         /// <summary>
-        ///     Builds the underlying <see cref="ComponentTree"/> and runs it with the provided <see cref="CLIOptions{T}"/>.
+        ///     Builds the underlying <see cref="IComponentTree"/> and runs it with the provided <see cref="CLIOptions{T}"/>.
         /// </summary>
         /// <param name="builder">The command builder to build into a manager.</param>
         /// <param name="options">The options that set up a single command execution.</param>
@@ -45,7 +45,7 @@
         }
 
         /// <summary>
-        ///     Builds the underlying <see cref="ComponentTree"/> and runs it with the provided <see cref="CLIOptions{T}"/>.
+        ///     Builds the underlying <see cref="IComponentTree"/> and runs it with the provided <see cref="CLIOptions{T}"/>.
         /// </summary>
         /// <param name="builder">The command builder to build into a manager.</param>
         /// <param name="caller">The caller that represents the source of this execution.</param>

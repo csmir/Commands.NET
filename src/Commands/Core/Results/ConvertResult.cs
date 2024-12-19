@@ -50,7 +50,7 @@ namespace Commands
         /// </summary>
         /// <returns></returns>
         public static ConvertResult FromError()
-            => new(ConvertException.ArgumentMismatch(), null);
+            => new(ConvertException.ConvertFailed(null), null);
 
         /// <inheritdoc />
         public override string ToString()
