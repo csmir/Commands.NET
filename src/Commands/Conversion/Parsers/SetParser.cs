@@ -1,10 +1,10 @@
 ﻿namespace Commands.Conversion
 {
-    internal sealed class SetTypeConverter<T>(TypeConverter underlyingConverter) : TypeConverter<T>, ICollectionConverter
+    internal sealed class SetParser<T>(TypeParser underlyingConverter) : TypeParser<T>, ICollectionConverter
     {
         public CollectionType CollectionType { get; } = CollectionType.Set;
 
-        public override async ValueTask<ConvertResult> Evaluate(CallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask<ConvertResult> Parse(CallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (value is not object[] array)
                 return Error($"The provided value is not an array. Expected: '{Type.Name}', got: '{value}'. At: '{argument.Name}'");
@@ -13,7 +13,7 @@
 
             foreach (var item in array)
             {
-                var result = await underlyingConverter.Evaluate(consumer, argument, item, services, cancellationToken);
+                var result = await underlyingConverter.Parse(consumer, argument, item, services, cancellationToken);
 
                 if (!result.Success)
                     return Error($"Failed to convert an array element. Expected: '{underlyingConverter.Type.Name}', got: '{item}'. At: '{argument.Name}'");
@@ -25,16 +25,16 @@
         }
     }
 
-    internal static class SetTypeConverter
+    internal static class SetParser
     {
-        private static readonly Dictionary<Type, TypeConverter> _converters = [];
+        private static readonly Dictionary<Type, TypeParser> _converters = [];
 
-        public static TypeConverter GetOrCreate(TypeConverter underlyingConverter)
+        public static TypeParser GetOrCreate(TypeParser underlyingConverter)
         {
             if (_converters.TryGetValue(underlyingConverter.Type, out var converter))
                 return converter;
 
-            converter = (TypeConverter)Activator.CreateInstance(typeof(SetTypeConverter<>).MakeGenericType(underlyingConverter.Type), underlyingConverter)!;
+            converter = (TypeParser)Activator.CreateInstance(typeof(SetParser<>).MakeGenericType(underlyingConverter.Type), underlyingConverter)!;
 
             _converters.Add(underlyingConverter.Type, converter);
 

@@ -30,7 +30,7 @@ namespace Commands
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
-        public TypeConverter? Converter { get; } = null;
+        public TypeParser? Converter { get; } = null;
 
         /// <inheritdoc />
         public bool IsCollection

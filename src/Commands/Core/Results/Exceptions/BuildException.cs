@@ -18,7 +18,7 @@ namespace Commands
         const string COMPONENT_ALIAS_MISMATCH = $"The component alias '{{0}}' does not match the provided naming pattern in the {nameof(ComponentConfiguration)}.";
         const string COMPONENT_ALIASES_EMPTY = $"The component must have one or more aliases specified at creation. Consider using {nameof(NameAttribute)} for declared signatures or provide aliases to the {nameof(IComponentBuilder)} used to create this component.";
         const string COMPONENT_ALIAS_DISTINCT = $"The component alias '{{0}}' already exists on the same component. Components must have only distinctly unique aliases.";
-        const string COLLECTION_NOT_SUPPORTED = $"A collection or the element type of said collection is not supported for conversion. Add a {nameof(TypeConverter)} to the {nameof(ComponentTreeBuilder)} or {nameof(ComponentConfigurationBuilder)} to support this type: '{{0}}'";
+        const string COLLECTION_NOT_SUPPORTED = $"A collection or the element type of said collection is not supported for conversion. Add a {nameof(TypeParser)} to the {nameof(ComponentTreeBuilder)} or {nameof(ComponentConfigurationBuilder)} to support this type: '{{0}}'";
         const string COMPLEX_NOT_SUPPORTED = $"The type: '{{0}}' must have a public parameterized constructor with at least 1 parameter to be used as a complex argument marked by {nameof(ComplexAttribute)}.";
         const string REMAINDER_NOT_SUPPORTED = $"{nameof(RemainderAttribute)} must be marked on the last parameter of a command. Command: '{{0}}'";
 

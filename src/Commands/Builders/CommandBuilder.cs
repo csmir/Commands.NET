@@ -6,7 +6,7 @@ namespace Commands.Builders
     ///     A base class that represents a delegate based command, before it is built into a reflection-based executable object. This class cannot be inherited.
     /// </summary>
     /// <remarks>
-    ///     This class is used to configure a command before it is built into a <see cref="CommandInfo"/> object. By calling the <see cref="Build(ComponentConfiguration)"/> or <see cref="Build(IEnumerable{TypeConverter}, string)"/> method, the command is built into an object that can be executed by the <see cref="ComponentTree"/>>.
+    ///     This class is used to configure a command before it is built into a <see cref="CommandInfo"/> object. By calling the <see cref="Build(ComponentConfiguration)"/> or <see cref="Build(IEnumerable{TypeParser}, string)"/> method, the command is built into an object that can be executed by the <see cref="ComponentTree"/>>.
     /// </remarks>
     public sealed class CommandBuilder : IComponentBuilder
     {
@@ -144,7 +144,7 @@ namespace Commands.Builders
         /// <param name="nameFilter">A filter which is used to determine how the command aliases are validated.</param>
         /// <returns>A reflection-based container that holds information for a component ready to be executed or serves as a container for executable components.</returns>
         /// <exception cref="InvalidOperationException">Thrown when the component aliases do not match <see cref="ComponentConfiguration.NamingPattern"/>.</exception>
-        public IComponent Build(IEnumerable<TypeConverter> converters, string? nameFilter = @"^[a-z0-9_-]*$")
+        public IComponent Build(IEnumerable<TypeParser> converters, string? nameFilter = @"^[a-z0-9_-]*$")
             => Build(new ComponentConfiguration(converters, nameFilter));
     }
 }

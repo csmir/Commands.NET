@@ -41,7 +41,7 @@ namespace Commands
         public int MaxLength { get; }
 
         /// <inheritdoc />
-        public TypeConverter? Converter { get; } = null;
+        public TypeParser? Converter { get; } = null;
 
         /// <inheritdoc />
         public bool IsCollection

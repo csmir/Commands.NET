@@ -2,12 +2,12 @@
 
 namespace Commands.Conversion
 {
-    internal sealed partial class TimeSpanTypeConverter : TypeConverter<TimeSpan>
+    internal sealed partial class TimeSpanParser : TypeParser<TimeSpan>
     {
         private readonly IReadOnlyDictionary<string, Func<string, TimeSpan>> _callback;
         private readonly Regex _regex = new(@"(\d*)\s*([a-zA-Z]*)\s*(?:and|,)?\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public TimeSpanTypeConverter()
+        public TimeSpanParser()
         {
             _callback = new Dictionary<string, Func<string, TimeSpan>>
             {
@@ -33,7 +33,7 @@ namespace Commands.Conversion
             };
         }
 
-        public override async ValueTask<ConvertResult> Evaluate(
+        public override async ValueTask<ConvertResult> Parse(
             CallerContext consumer, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             await Task.CompletedTask;

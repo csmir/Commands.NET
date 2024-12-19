@@ -12,68 +12,68 @@ namespace Commands.Builders
         public Regex? NamingPattern { get; set; } = new Regex(DEFAULT_REGEX, RegexOptions.Compiled);
 
         /// <inheritdoc />
-        public Dictionary<Type, TypeConverter> TypeConverters { get; set; } = TypeConverter.GetStandardTypeConverters();
+        public Dictionary<Type, TypeParser> Parsers { get; set; } = TypeParser.CreateDefaults();
 
         /// <inheritdoc />
-        public Dictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, object> Properties { get; set; } = [];
 
         /// <inheritdoc />
-        public IConfigurationBuilder AddTypeConverter<TConvertable>(Func<CallerContext, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
+        public IConfigurationBuilder AddParser<TConvertable>(Func<CallerContext, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
         {
             if (convertAction == null)
                 throw new ArgumentNullException(nameof(convertAction));
 
             var converter = new DelegateConverter<TConvertable>(convertAction);
 
-            TypeConverters[converter.Type] = converter;
+            Parsers[converter.Type] = converter;
 
             return this;
         }
 
         /// <inheritdoc />
-        public IConfigurationBuilder AddTypeConverter<TConvertable>(Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
+        public IConfigurationBuilder AddParser<TConvertable>(Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
         {
             if (convertAction == null)
                 throw new ArgumentNullException(nameof(convertAction));
 
             var converter = new AsyncDelegateConverter<TConvertable>(convertAction);
 
-            TypeConverters[converter.Type] = converter;
+            Parsers[converter.Type] = converter;
 
             return this;
         }
 
         /// <inheritdoc />
-        public IConfigurationBuilder AddTypeConverter(TypeConverter converter)
+        public IConfigurationBuilder AddParser(TypeParser converter)
         {
             if (converter == null)
                 throw new ArgumentNullException(nameof(converter));
 
-            TypeConverters[converter.Type] = converter;
+            Parsers[converter.Type] = converter;
 
             return this;
         }
 
         /// <inheritdoc />
-        public IConfigurationBuilder WithTypeConverters(params IEnumerable<TypeConverter> converters)
+        public IConfigurationBuilder WithParsers(params IEnumerable<TypeParser> converters)
         {
-            TypeConverters = converters
+            Parsers = converters
                 .ToDictionary(x => x.Type, x => x);
 
             return this;
         }
 
         /// <inheritdoc />
-        public IConfigurationBuilder AddTypeConverters(params IEnumerable<TypeConverter> converters)
+        public IConfigurationBuilder AddParsers(params IEnumerable<TypeParser> converters)
         {
             foreach (var converter in converters)
-                TypeConverters[converter.Type] = converter;
+                Parsers[converter.Type] = converter;
 
             return this;
         }
 
         /// <inheritdoc />
         public ComponentConfiguration Build()
-            => new(TypeConverters, Properties, NamingPattern);
+            => new(Parsers, Properties, NamingPattern);
     }
 }

@@ -235,8 +235,8 @@ namespace Commands
         /// </summary>
         /// <param name="type">The type to get or create a converter for.</param>
         /// <param name="configuration">The configuration which serves as a base from which new converters are </param>
-        /// <returns>An instance of <see cref="TypeConverter"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object, which does not need to be converted.</returns>
-        public static Conversion.TypeConverter? GetTypeConverter(Type type, ComponentConfiguration configuration)
+        /// <returns>An instance of <see cref="TypeParser"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object, which does not need to be converted.</returns>
+        public static Conversion.TypeParser? GetTypeConverter(Type type, ComponentConfiguration configuration)
         {
             if (!type.IsConvertible())
                 return null;
@@ -245,7 +245,7 @@ namespace Commands
                 return converter;
 
             if (type.IsEnum)
-                return EnumTypeReader.GetOrCreate(type);
+                return EnumParser.GetOrCreate(type);
 
             if (type.IsArray)
             {
@@ -254,14 +254,14 @@ namespace Commands
                 if (!configuration.TypeConverters.TryGetValue(elementType!, out converter))
                 {
                     if (elementType!.IsString())
-                        converter = StringTypeConverter.Instance;
+                        converter = StringParser.Instance;
                     else if (elementType!.IsObject())
-                        converter = ObjectTypeConverter.Instance;
+                        converter = ObjectParser.Instance;
                     else
                         throw BuildException.CollectionNotSupported(elementType);
                 }
 
-                return ArrayTypeConverter.GetOrCreate(converter);
+                return ArrayParser.GetOrCreate(converter);
             }
 
             try
@@ -273,21 +273,21 @@ namespace Commands
                 if (!configuration.TypeConverters.TryGetValue(elementType, out converter))
                 {
                     if (elementType.IsString())
-                        converter = StringTypeConverter.Instance;
+                        converter = StringParser.Instance;
                     else if (elementType.IsObject())
-                        converter = ObjectTypeConverter.Instance;
+                        converter = ObjectParser.Instance;
                     else
                         throw BuildException.CollectionNotSupported(elementType);
                 }
 
                 if (enumType == CollectionType.List)
                 {
-                    return ListTypeConverter.GetOrCreate(converter);
+                    return ListParser.GetOrCreate(converter);
                 }
 
                 if (enumType == CollectionType.Set)
                 {
-                    return SetTypeConverter.GetOrCreate(converter);
+                    return SetParser.GetOrCreate(converter);
                 }
             }
             catch

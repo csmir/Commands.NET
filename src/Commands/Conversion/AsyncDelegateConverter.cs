@@ -10,12 +10,12 @@ namespace Commands.Conversion
     [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class AsyncDelegateConverter<T>(
         Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> func)
-        : TypeConverter<T>
+        : TypeParser<T>
     {
         private readonly Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> _func = func;
 
         /// <inheritdoc />
-        public override ValueTask<ConvertResult> Evaluate(CallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> Parse(CallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             return _func(consumer, argument, value, services);
         }

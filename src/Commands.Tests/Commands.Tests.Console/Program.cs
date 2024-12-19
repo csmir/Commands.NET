@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 var tree = ComponentTree.CreateBuilder()
     .Configure(config =>
     {
-        config.AddTypeConverter(new CSharpScriptConverter());
+        config.AddParser(new CSharpScriptParser());
     })
     .AddResultResolver((c, r, s) =>
     {

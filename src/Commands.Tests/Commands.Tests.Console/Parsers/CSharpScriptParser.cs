@@ -4,9 +4,9 @@ using Microsoft.CodeAnalysis.Scripting;
 
 namespace Commands.Tests
 {
-    public class CSharpScriptConverter : TypeConverter<Delegate>
+    public class CSharpScriptParser : TypeParser<Delegate>
     {
-        public override async ValueTask<ConvertResult> Evaluate(CallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask<ConvertResult> Parse(CallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (value is string script)
             {

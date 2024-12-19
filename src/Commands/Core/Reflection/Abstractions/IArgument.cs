@@ -23,6 +23,6 @@ namespace Commands
         /// <remarks>
         ///     Will be <see langword="null"/> if <see cref="Type"/> is <see cref="string"/>, <see cref="object"/>, or if this argument is <see cref="ComplexArgumentInfo"/>.
         /// </remarks>
-        public TypeConverter? Converter { get; }
+        public TypeParser? Converter { get; }
     }
 }

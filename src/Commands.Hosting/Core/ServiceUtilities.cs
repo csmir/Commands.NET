@@ -171,30 +171,30 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="TypeConverter"/> to the service collection by the specified type. If a converter of the same type is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="TypeParser"/> to the service collection by the specified type. If a converter of the same type is already added, this add operation will be skipped.
         /// </summary>
         /// <typeparam name="TConverter"></typeparam>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
         /// <param name="scopeToExecution">Determines if the service should be scoped to the command execution. If <see langword="false"/>, the service will be added as a singleton.</param>
         /// <returns>The same instance of <see cref="IHostBuilder"/> for chaining.</returns>
         public static IHostBuilder AddTypeConverter<TConverter>(this IHostBuilder builder, bool scopeToExecution = false)
-            where TConverter : TypeConverter
+            where TConverter : TypeParser
         {
             EnsureConfigured(builder);
 
             builder.ConfigureServices((context, services) =>
             {
                 if (scopeToExecution)
-                    services.TryAddScoped<TypeConverter, TConverter>();
+                    services.TryAddScoped<TypeParser, TConverter>();
                 else
-                    services.TryAddSingleton<TypeConverter, TConverter>();
+                    services.TryAddSingleton<TypeParser, TConverter>();
             });
 
             return builder;
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="TypeConverter"/> to the service collection by the specified delegate. If a converter with the same conversion type is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="TypeParser"/> to the service collection by the specified delegate. If a converter with the same conversion type is already added, this add operation will be skipped.
         /// </summary>
         /// <typeparam name="TConvertible"></typeparam>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
@@ -209,13 +209,13 @@ namespace Commands
             {
                 if (scopeToExecution)
                 {
-                    var descriptor = ServiceDescriptor.Scoped<TypeConverter, DelegateConverter<TConvertible>>((services) => new DelegateConverter<TConvertible>(convertDelegate));
+                    var descriptor = ServiceDescriptor.Scoped<TypeParser, DelegateConverter<TConvertible>>((services) => new DelegateConverter<TConvertible>(convertDelegate));
 
                     services.TryAddEnumerable(descriptor);
                 }
                 else
                 {
-                    var descriptor = ServiceDescriptor.Singleton<TypeConverter, DelegateConverter<TConvertible>>((services) => new DelegateConverter<TConvertible>(convertDelegate));
+                    var descriptor = ServiceDescriptor.Singleton<TypeParser, DelegateConverter<TConvertible>>((services) => new DelegateConverter<TConvertible>(convertDelegate));
 
                     services.TryAddEnumerable(descriptor);
                 }
@@ -225,7 +225,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Tries to add a <see cref="TypeConverter"/> to the service collection by the specified delegate. If a converter with the same conversion type is already added, this add operation will be skipped.
+        ///     Tries to add a <see cref="TypeParser"/> to the service collection by the specified delegate. If a converter with the same conversion type is already added, this add operation will be skipped.
         /// </summary>
         /// <typeparam name="TConvertible"></typeparam>
         /// <param name="builder">The builder that configures the underlying <see cref="IServiceProvider"/>.</param>
@@ -240,13 +240,13 @@ namespace Commands
             {
                 if (scopeToExecution)
                 {
-                    var descriptor = ServiceDescriptor.Scoped<TypeConverter, AsyncDelegateConverter<TConvertible>>((services) => new AsyncDelegateConverter<TConvertible>(convertDelegate));
+                    var descriptor = ServiceDescriptor.Scoped<TypeParser, AsyncDelegateConverter<TConvertible>>((services) => new AsyncDelegateConverter<TConvertible>(convertDelegate));
 
                     services.TryAddEnumerable(descriptor);
                 }
                 else
                 {
-                    var descriptor = ServiceDescriptor.Singleton<TypeConverter, AsyncDelegateConverter<TConvertible>>((services) => new AsyncDelegateConverter<TConvertible>(convertDelegate));
+                    var descriptor = ServiceDescriptor.Singleton<TypeParser, AsyncDelegateConverter<TConvertible>>((services) => new AsyncDelegateConverter<TConvertible>(convertDelegate));
 
                     services.TryAddEnumerable(descriptor);
                 }
@@ -417,7 +417,7 @@ namespace Commands
                     var builder = services.GetRequiredService<ComponentTreeBuilder>();
 
                     var resolvers = services.GetServices<ResultResolver>();
-                    var converters = services.GetServices<TypeConverter>();
+                    var converters = services.GetServices<TypeParser>();
 
                     var assemblies = context.Properties.TryGetValue("Commands:Assemblies", out var propAsm)
                         ? propAsm as List<Assembly>
@@ -427,7 +427,7 @@ namespace Commands
                         ? propCmd as List<IComponentBuilder>
                         : [];
 
-                    builder.Configuration.AddTypeConverters(converters);
+                    builder.Configuration.AddParsers(converters);
 
 
                     builder.ResultResolvers.AddRange(resolvers);

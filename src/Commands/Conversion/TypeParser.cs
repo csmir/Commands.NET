@@ -3,8 +3,8 @@
 namespace Commands.Conversion
 {
     /// <inheritdoc />
-    /// <typeparam name="T">The type this <see cref="TypeConverter{T}"/> should convert into.</typeparam>
-    public abstract class TypeConverter<T> : TypeConverter
+    /// <typeparam name="T">The type this <see cref="TypeParser{T}"/> should convert into.</typeparam>
+    public abstract class TypeParser<T> : TypeParser
     {
         /// <summary>
         ///     Gets the type that should be converted to.
@@ -29,9 +29,9 @@ namespace Commands.Conversion
     ///     An abstract type that can be implemented to create custom type conversion from a command query argument.
     /// </summary>
     /// <remarks>
-    ///     To register converters for the <see cref="ComponentTree"/> to use, add them to the <see cref="ComponentConfigurationBuilder.TypeConverters"/> collection.
+    ///     To register converters for the <see cref="ComponentTree"/> to use, add them to the <see cref="ComponentConfigurationBuilder.Parsers"/> collection.
     /// </remarks>
-    public abstract class TypeConverter
+    public abstract class TypeParser
     {
         /// <summary>
         ///     Gets the type that should be converted to. This value determines what command arguments will use this converter.
@@ -44,14 +44,14 @@ namespace Commands.Conversion
         /// <summary>
         ///     Evaluates the known data about the argument to be converted into, as well as the raw value it should convert into a valid invocation parameter.
         /// </summary>
-        /// <param name="consumer">Context of the current execution.</param>
+        /// <param name="caller">Context of the current execution.</param>
         /// <param name="services">The provider used to register modules and inject services.</param>
         /// <param name="argument">Information about the invocation argument this evaluation converts for.</param>
         /// <param name="value">The raw command query argument to convert.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
-        public abstract ValueTask<ConvertResult> Evaluate(
-            CallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken);
+        public abstract ValueTask<ConvertResult> Parse(
+            CallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Creates a new <see cref="ConvertResult"/> representing a failed evaluation.
@@ -101,14 +101,14 @@ namespace Commands.Conversion
         ///         <item>Floating point numbers, being: <see langword="float"/>, <see langword="decimal"/> and <see langword="double"/>.</item>
         ///         <item>Commonly used structs, being: <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/> and <see cref="Guid"/>.</item>
         ///     </list>
-        ///     <i>The converter <see cref="TimeSpan"/> does not implement the standard <see cref="TimeSpan.TryParse(string, out TimeSpan)"/>, instead having a custom implementation under <see cref="TimeSpanTypeConverter"/>.</i>
+        ///     <i>The converter <see cref="TimeSpan"/> does not implement the standard <see cref="TimeSpan.TryParse(string, out TimeSpan)"/>, instead having a custom implementation under <see cref="TimeSpanParser"/>.</i>
         /// </remarks>
-        /// <returns>A new <see cref="Dictionary{TKey, TValue}"/> containing a range of <see cref="TypeConverter"/>'s for all types listed above.</returns>
-        public static Dictionary<Type, TypeConverter> GetStandardTypeConverters()
+        /// <returns>A new <see cref="Dictionary{TKey, TValue}"/> containing a range of <see cref="TypeParser"/>'s for all types listed above.</returns>
+        public static Dictionary<Type, TypeParser> CreateDefaults()
         {
-            var list = TryParseTypeConverter.CreateBaseConverters();
+            var list = TryParseParser.CreateBaseConverters();
 
-            list.Add(new TimeSpanTypeConverter());
+            list.Add(new TimeSpanParser());
 
             return list.ToDictionary(x => x.Type, x => x);
         }

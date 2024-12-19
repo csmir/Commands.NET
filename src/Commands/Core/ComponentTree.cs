@@ -279,7 +279,7 @@ namespace Commands
                 if (argument.Type.IsObject())
                     return ConvertResult.FromSuccess(value);
 
-                return argument.Converter!.Evaluate(caller, argument, value, options.Services, options.CancellationToken);
+                return argument.Converter!.Parse(caller, argument, value, options.Services, options.CancellationToken);
             }
 
             options.CancellationToken.ThrowIfCancellationRequested();

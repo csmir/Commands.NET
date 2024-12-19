@@ -6,21 +6,21 @@ namespace Commands.Conversion
     ///     A type converter that can convert a raw string value into a type with a try-parse method. This class cannot be inherited.
     /// </summary>
     /// <typeparam name="T">The type this converter targets.</typeparam>
-    public sealed class TryParseTypeConverter<T> : TypeConverter<T>
+    public sealed class TryParseParser<T> : TypeParser<T>
     {
         private readonly ParseDelegate _parser;
 
         /// <summary>
-        ///     Creates a new instance of the <see cref="TryParseTypeConverter{T}" /> class, with the specified parsing delegate. This delegate is a try-parse method of the target type.
+        ///     Creates a new instance of the <see cref="TryParseParser{T}" /> class, with the specified parsing delegate. This delegate is a try-parse method of the target type.
         /// </summary>
         /// <param name="parser">The delegate to parse a nullable <see langword="string"/> to <typeparamref name="T"/>.</param>
-        public TryParseTypeConverter(ParseDelegate parser)
+        public TryParseParser(ParseDelegate parser)
         {
             _parser = parser;
         }
 
         /// <inheritdoc />
-        public override async ValueTask<ConvertResult> Evaluate(
+        public override async ValueTask<ConvertResult> Parse(
             CallerContext consumer, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
@@ -40,43 +40,43 @@ namespace Commands.Conversion
         public delegate bool ParseDelegate(string? str, [NotNullWhen(true)] out T value);
     }
 
-    internal static class TryParseTypeConverter
+    internal static class TryParseParser
     {
-        public static List<TypeConverter> CreateBaseConverters()
+        public static List<TypeParser> CreateBaseConverters()
             => [
                 // char
-                new TryParseTypeConverter<char>(char.TryParse),
+                new TryParseParser<char>(char.TryParse),
 
                 // bit / boolean
-                new TryParseTypeConverter<bool>(bool.TryParse),
+                new TryParseParser<bool>(bool.TryParse),
 
                 // 8 bit int
-                new TryParseTypeConverter<byte>(byte.TryParse),
-                new TryParseTypeConverter<sbyte>(sbyte.TryParse),
+                new TryParseParser<byte>(byte.TryParse),
+                new TryParseParser<sbyte>(sbyte.TryParse),
 
                 // 16 bit int
-                new TryParseTypeConverter<short>(short.TryParse),
-                new TryParseTypeConverter<ushort>(ushort.TryParse),
+                new TryParseParser<short>(short.TryParse),
+                new TryParseParser<ushort>(ushort.TryParse),
 
                 // 32 bit int
-                new TryParseTypeConverter<int>(int.TryParse),
-                new TryParseTypeConverter<uint>(uint.TryParse),
+                new TryParseParser<int>(int.TryParse),
+                new TryParseParser<uint>(uint.TryParse),
 
                 // 64 bit int
-                new TryParseTypeConverter<long>(long.TryParse),
-                new TryParseTypeConverter<ulong>(ulong.TryParse),
+                new TryParseParser<long>(long.TryParse),
+                new TryParseParser<ulong>(ulong.TryParse),
 
                 // floating point int
-                new TryParseTypeConverter<float>(float.TryParse),
-                new TryParseTypeConverter<double>(double.TryParse),
-                new TryParseTypeConverter<decimal>(decimal.TryParse),
+                new TryParseParser<float>(float.TryParse),
+                new TryParseParser<double>(double.TryParse),
+                new TryParseParser<decimal>(decimal.TryParse),
 
                 // time
-                new TryParseTypeConverter<DateTime>(DateTime.TryParse),
-                new TryParseTypeConverter<DateTimeOffset>(DateTimeOffset.TryParse),
+                new TryParseParser<DateTime>(DateTime.TryParse),
+                new TryParseParser<DateTimeOffset>(DateTimeOffset.TryParse),
 
                 // guid
-                new TryParseTypeConverter<Guid>(Guid.TryParse),
+                new TryParseParser<Guid>(Guid.TryParse),
             ];
     }
 }

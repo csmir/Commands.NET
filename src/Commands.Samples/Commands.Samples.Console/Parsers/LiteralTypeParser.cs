@@ -4,11 +4,11 @@ using Commands.Conversion;
 
 namespace Commands.Samples
 {
-    public class ReflectionTypeConverter(bool caseIgnore) : TypeConverter<Type>
+    public class LiteralTypeParser(bool caseIgnore) : TypeParser<Type>
     {
         private readonly bool _caseIgnore = caseIgnore;
 
-        public override ValueTask<ConvertResult> Evaluate(CallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> Parse(CallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             try
             {
