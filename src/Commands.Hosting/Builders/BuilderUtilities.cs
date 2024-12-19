@@ -38,7 +38,7 @@ namespace Commands.Builders
                 {
                     var tree = treeBuilder.Build();
 
-                    if (!(treeBuilder.Configuration.Properties.TryGetValue("Commands:SourceResolvers", out var srcResolvers) && srcResolvers is IEnumerable<SourceResolver> resolvers))
+                    if (!(treeBuilder.Configuration.Properties.TryGetValue("Commands:SourceResolvers", out var srcResolvers) && srcResolvers is List<SourceResolver> resolvers))
                         resolvers = [];
 
                     var logger = provider.GetRequiredService<ILogger<SequenceInitiator>>();
@@ -55,6 +55,66 @@ namespace Commands.Builders
             });
 
             return hostBuilder;
+        }
+
+        /// <summary>
+        ///     Adds a source resolver to the <see cref="ITreeBuilder"/> configuration. This resolver will be used to source data for the command execution.
+        /// </summary>
+        /// <remarks>
+        ///     This action will be wrapped in a new instance of <see cref="DelegateSourceResolver"/>, and adds it to the <see cref="ITreeBuilder"/> configuration.
+        /// </remarks>
+        /// <param name="builder">The builder which is used to create new instances of <see cref="IComponentTree"/>.</param>
+        /// <param name="sourcingAction">The action which should return a <see cref="SourceResult"/> representing a failed or succeeded retrieved command query.</param>
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
+        public static ITreeBuilder AddSourceResolver(this ITreeBuilder builder, Func<IServiceProvider, SourceResult> sourcingAction)
+        {
+            if (!(builder.Configuration.Properties.TryGetValue("Commands:SourceResolvers", out var srcResolvers) && srcResolvers is List<SourceResolver> resolvers))
+                resolvers = [];
+
+            resolvers.Add(new DelegateSourceResolver(sourcingAction));
+
+            builder.Configuration.Properties["Commands:SourceResolvers"] = resolvers;
+
+            return builder;
+        }
+
+        /// <summary>
+        ///     Adds a source resolver to the <see cref="ITreeBuilder"/> configuration. This resolver will be used to source data for the command execution.
+        /// </summary>
+        /// <remarks>
+        ///     This action will be wrapped in a new instance of <see cref="AsyncDelegateSourceResolver"/>, and adds it to the <see cref="ITreeBuilder"/> configuration.
+        /// </remarks>
+        /// <param name="builder">The builder which is used to create new instances of <see cref="IComponentTree"/>.</param>
+        /// <param name="sourcingAction">The action which should return a <see cref="SourceResult"/> representing a failed or succeeded retrieved command query.</param>
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
+        public static ITreeBuilder AddSourceResolver(this ITreeBuilder builder, Func<IServiceProvider, ValueTask<SourceResult>> sourcingAction)
+        {
+            if (!(builder.Configuration.Properties.TryGetValue("Commands:SourceResolvers", out var srcResolvers) && srcResolvers is List<SourceResolver> resolvers))
+                resolvers = [];
+
+            resolvers.Add(new AsyncDelegateSourceResolver(sourcingAction));
+
+            builder.Configuration.Properties["Commands:SourceResolvers"] = resolvers;
+
+            return builder;
+        }
+
+        /// <summary>
+        ///     Adds a source resolver to the <see cref="ITreeBuilder"/> configuration. This resolver will be used to source data for the command execution.
+        /// </summary>
+        /// <param name="builder">The builder which is used to create new instances of <see cref="IComponentTree"/>.</param>
+        /// <param name="resolver">The resolver which should return a <see cref="SourceResult"/> representing a failed or succeeded retrieved command query.</param>
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
+        public static ITreeBuilder AddSourceResolver(this ITreeBuilder builder, SourceResolver resolver)
+        {
+            if (!(builder.Configuration.Properties.TryGetValue("Commands:SourceResolvers", out var srcResolvers) && srcResolvers is List<SourceResolver> resolvers))
+                resolvers = [];
+
+            resolvers.Add(resolver);
+
+            builder.Configuration.Properties["Commands:SourceResolvers"] = resolvers;
+
+            return builder;
         }
     }
 }
