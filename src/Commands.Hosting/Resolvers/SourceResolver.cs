@@ -69,43 +69,43 @@
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> representing a successful evaluation.
         /// </summary>
-        /// <param name="consumer">The consumer of the scope created for the execution of this source.</param>
+        /// <param name="caller">The caller of the scope created for the execution of this source.</param>
         /// <param name="args">The arguments to be used to run a command.</param>
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
-        protected SourceResult Success<T>(T consumer, IEnumerable<object> args)
-            where T : CallerContext
-            => SourceResult.FromSuccess(consumer, args);
+        protected SourceResult Success<T>(T caller, IEnumerable<object> args)
+            where T : ICallerContext
+            => SourceResult.FromSuccess(caller, args);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> representing a successful evaluation.
         /// </summary>
-        /// <param name="consumer">The consumer of the scope created for the execution of this source.</param>
+        /// <param name="caller">The caller of the scope created for the execution of this source.</param>
         /// <param name="args">The arguments to be used to run a command.</param>
         /// <param name="options">The options used to configure command execution.</param>
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
-        protected SourceResult Success<T>(T consumer, IEnumerable<object> args, CommandOptions options)
-            where T : CallerContext
-            => SourceResult.FromSuccess(consumer, args, options);
+        protected SourceResult Success<T>(T caller, IEnumerable<object> args, CommandOptions options)
+            where T : ICallerContext
+            => SourceResult.FromSuccess(caller, args, options);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> representing a successful evaluation.
         /// </summary>
-        /// <param name="consumer">The consumer of the scope created for the execution of this source.</param>
+        /// <param name="caller">The caller of the scope created for the execution of this source.</param>
         /// <param name="args">The arguments to be used to run a command.</param>
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
-        protected SourceResult Success<T>(T consumer, IEnumerable<KeyValuePair<string, object?>> args)
-            where T : CallerContext
-            => SourceResult.FromSuccess(consumer, args);
+        protected SourceResult Success<T>(T caller, IEnumerable<KeyValuePair<string, object?>> args)
+            where T : ICallerContext
+            => SourceResult.FromSuccess(caller, args);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> representing a successful evaluation.
         /// </summary>
-        /// <param name="consumer">The consumer of the scope created for the execution of this source.</param>
+        /// <param name="caller">The caller of the scope created for the execution of this source.</param>
         /// <param name="args">The arguments to be used to run a command.</param>
         /// <param name="options">The options used to configure command execution.</param>
         /// <returns>A <see cref="SourceResult"/> representing the successful evaluation.</returns>
-        protected SourceResult Success<T>(T consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions options)
-            where T : CallerContext
-            => SourceResult.FromSuccess(consumer, args, options);
+        protected SourceResult Success<T>(T caller, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions options)
+            where T : ICallerContext
+            => SourceResult.FromSuccess(caller, args, options);
     }
 }

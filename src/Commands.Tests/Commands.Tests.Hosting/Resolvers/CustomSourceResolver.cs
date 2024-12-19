@@ -20,5 +20,15 @@ namespace Commands.Tests
 
             return Error(new InvalidOperationException("The application failed to start."));
         }
+
+        public class CallerContext : ICallerContext
+        {
+            public Task Respond(object? response)
+            {
+                Console.WriteLine(response);
+
+                return Task.CompletedTask;
+            }
+        }
     }
 }

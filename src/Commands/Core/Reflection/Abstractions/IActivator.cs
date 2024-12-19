@@ -22,7 +22,7 @@ namespace Commands
         /// <param name="options">The options that determine the execution pattern of this invoker.</param>
         /// <returns>The result of the invocation. This result is <see langword="null"/> if the method signature returns void.</returns>
         public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, ComponentTree? tree, CommandOptions options)
-            where T : CallerContext;
+            where T : ICallerContext;
 
         /// <summary>
         ///     Gets the return type of the target, if it is a method. If it is a constructor, it will return null.

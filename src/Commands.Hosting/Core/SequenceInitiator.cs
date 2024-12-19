@@ -8,17 +8,17 @@ namespace Commands
     /// <summary>
     ///     A generator for command execution scopes, listening to data within the provided <see cref="SourceResolver"/>[] <paramref name="resolvers"/> to run a new command. This class cannot be inherited.
     /// </summary>
-    /// <param name="manager">The manager used to run the command query.</param>
+    /// <param name="tree">The tree used to run the command query.</param>
     /// <param name="resolvers">A collection of registered resolvers intended to be activated.</param>
     /// <param name="services">The services that the initiator uses to create a scoped flow for the execution pipeline.</param>
     /// <param name="logger">A logger that logs the execution process.</param>
     /// <param name="lifetime">The lifetime of the application.</param>
     public sealed class SequenceInitiator(
-        ComponentTree manager, IEnumerable<SourceResolver> resolvers, IServiceProvider services, ILogger<SequenceInitiator> logger, IHostApplicationLifetime lifetime)
+        ComponentTree tree, IEnumerable<SourceResolver> resolvers, IServiceProvider services, ILogger<SequenceInitiator> logger, IHostApplicationLifetime lifetime)
         : IHostedService
     {
         private readonly ILogger<SequenceInitiator> _logger = logger;
-        private readonly ComponentTree _manager = manager;
+        private readonly ComponentTree _tree = tree;
         private readonly IEnumerable<SourceResolver> _resolvers = resolvers;
         private readonly IHostApplicationLifetime _lifetime = lifetime;
         private readonly IServiceProvider _services = services;
@@ -135,7 +135,7 @@ namespace Commands
                         options.DoAsynchronousExecution = false;
                         options.Services = scope.ServiceProvider;
 
-                        await _manager.Execute(source.Consumer!, source.Args!.Value, options); // never null if source succeeded.
+                        await _tree.Execute(source.Consumer!, source.Args!.Value, options); // never null if source succeeded.
 
                         await scope.DisposeAsync();
                     }

@@ -44,7 +44,7 @@ namespace Commands.Builders
         /// <typeparam name="TParsable">The type for this parser to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the parsing process.</param>
         /// <returns>The same <see cref="IConfigurationBuilder"/> for call-chaining.</returns>
-        public IConfigurationBuilder AddParser<TParsable>(Func<CallerContext, IArgument, object?, IServiceProvider, ConvertResult> convertAction);
+        public IConfigurationBuilder AddParser<TParsable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ConvertResult> convertAction);
 
         /// <summary>
         ///     Configures an asynchronous action that will convert a raw argument into the target type, signified by <typeparamref name="TParsable"/>.
@@ -52,7 +52,7 @@ namespace Commands.Builders
         /// <typeparam name="TParsable">The type for this parser to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the parsing process.</param>
         /// <returns>The same <see cref="IConfigurationBuilder"/> for call-chaining.</returns>
-        public IConfigurationBuilder AddParser<TParsable>(Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction);
+        public IConfigurationBuilder AddParser<TParsable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction);
 
         /// <summary>
         ///     Adds an implementation of <see cref="TypeParser"/> to <see cref="Parsers"/>.

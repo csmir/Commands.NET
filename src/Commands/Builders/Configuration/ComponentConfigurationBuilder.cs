@@ -18,7 +18,7 @@ namespace Commands.Builders
         public Dictionary<string, object> Properties { get; set; } = [];
 
         /// <inheritdoc />
-        public IConfigurationBuilder AddParser<TConvertable>(Func<CallerContext, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
+        public IConfigurationBuilder AddParser<TConvertable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
         {
             if (convertAction == null)
                 throw new ArgumentNullException(nameof(convertAction));
@@ -31,7 +31,7 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public IConfigurationBuilder AddParser<TConvertable>(Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
+        public IConfigurationBuilder AddParser<TConvertable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
         {
             if (convertAction == null)
                 throw new ArgumentNullException(nameof(convertAction));

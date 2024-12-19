@@ -9,15 +9,15 @@ namespace Commands.Conversion
     /// <param name="func">The delegate that is invoked when the conversion is requested.</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class AsyncDelegateConverter<T>(
-        Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> func)
+        Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> func)
         : TypeParser<T>
     {
-        private readonly Func<CallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> _func = func;
+        private readonly Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> _func = func;
 
         /// <inheritdoc />
-        public override ValueTask<ConvertResult> Parse(CallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
-            return _func(consumer, argument, value, services);
+            return _func(caller, argument, value, services);
         }
     }
 }

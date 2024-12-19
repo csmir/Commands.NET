@@ -34,7 +34,7 @@ namespace Commands.Conversion
         }
 
         public override async ValueTask<ConvertResult> Parse(
-            CallerContext consumer, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             await Task.CompletedTask;
 

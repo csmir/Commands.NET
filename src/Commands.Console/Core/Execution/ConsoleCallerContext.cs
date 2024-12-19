@@ -6,7 +6,7 @@ namespace Commands
     /// <summary>
     ///     Represents a caller that represents the current console window that the application is running in.
     /// </summary>
-    public class ConsoleCallerContext : CallerContext
+    public class ConsoleCallerContext : ICallerContext
     {
         /// <summary>
         ///     Gets the console that the caller should write to.
@@ -35,7 +35,7 @@ namespace Commands
         /// </summary>
         /// <param name="response">The message that should be sent in response to the console.</param>
         /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
-        public override Task Respond(object response)
+        public Task Respond(object? response)
         {
             switch (response)
             {

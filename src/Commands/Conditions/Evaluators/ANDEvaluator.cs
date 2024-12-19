@@ -6,7 +6,7 @@
     public sealed class ANDEvaluator : ConditionEvaluator
     {
         /// <inheritdoc />
-        public override async ValueTask<ConditionResult> Evaluate(CallerContext consumer, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask<ConditionResult> Evaluate(ICallerContext consumer, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
         {
             foreach (var condition in Conditions)
             {

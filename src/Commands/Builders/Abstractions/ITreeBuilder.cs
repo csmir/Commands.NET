@@ -117,7 +117,7 @@ namespace Commands.Builders
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddResultResolver(Action<CallerContext, IExecuteResult, IServiceProvider> resultAction);
+        public ITreeBuilder AddResultResolver(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction);
 
         /// <summary>
         ///     Configures an asynchronous action that runs when a command publishes its result. This action runs after all pipeline actions have been resolved.
@@ -128,7 +128,7 @@ namespace Commands.Builders
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddResultResolver(Func<CallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction);
+        public ITreeBuilder AddResultResolver(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction);
 
         /// <summary>
         ///     Adds an implementation of <see cref="ResultResolver"/> to <see cref="ResultResolvers"/>.

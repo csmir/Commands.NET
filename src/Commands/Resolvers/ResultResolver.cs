@@ -19,7 +19,7 @@
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         public virtual async ValueTask EvaluateResponse(
-            CallerContext caller, CommandInfo command, object? value, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, CommandInfo command, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -77,7 +77,7 @@
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         public virtual ValueTask EvaluateResult(
-            CallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -115,7 +115,7 @@
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         protected virtual ValueTask CommandNotFound(
-            CallerContext caller, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
             => default;
 
         /// <summary>
@@ -126,7 +126,7 @@
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         protected virtual ValueTask SearchIncomplete(
-            CallerContext caller, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
             => default;
 
         /// <summary>
@@ -137,7 +137,7 @@
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         protected virtual ValueTask ArgumentMismatch(
-            CallerContext caller, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
             => default;
 
         /// <summary>
@@ -148,7 +148,7 @@
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         protected virtual ValueTask ConversionFailed(
-            CallerContext caller, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
             => default;
 
         /// <summary>
@@ -159,7 +159,7 @@
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         protected virtual ValueTask ConditionUnmet(
-            CallerContext caller, ConditionResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, ConditionResult result, IServiceProvider services, CancellationToken cancellationToken)
             => default;
 
         /// <summary>
@@ -170,7 +170,7 @@
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         protected virtual ValueTask InvocationFailed(
-            CallerContext caller, InvokeResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, InvokeResult result, IServiceProvider services, CancellationToken cancellationToken)
             => default;
 
         /// <summary>
@@ -181,7 +181,7 @@
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         protected virtual ValueTask UnhandledFailure(
-            CallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
             => default;
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Commands.Tests
 {
-    public sealed class AsyncModule : CommandModule<CallerContext>
+    public sealed class AsyncModule : CommandModule
     {
         [Name("async")]
         public async Task Async(bool delay)

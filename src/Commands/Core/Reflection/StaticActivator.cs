@@ -22,7 +22,7 @@ namespace Commands
 
         /// <inheritdoc />
         public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, ComponentTree? tree, CommandOptions options)
-            where T : CallerContext
+            where T : ICallerContext
         {
             if (_withContext)
             {

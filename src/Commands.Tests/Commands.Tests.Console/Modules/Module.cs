@@ -1,10 +1,10 @@
 ﻿namespace Commands.Tests
 {
     [Name("command")]
-    public class Module : CommandModule<CallerContext>
+    public class Module : CommandModule
     {
         [Name("nested")]
-        public class NestedModule : CommandModule<CallerContext>
+        public class NestedModule : CommandModule
         {
             [Name("complex")]
             public void Complex([Complex] ComplexType complex)

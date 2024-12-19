@@ -1,11 +1,11 @@
 ﻿namespace Commands
 {
     /// <summary>
-    ///     Represents a <see cref="CommandModule"/> that implements an implementation-friendly accessor to the <see cref="CallerContext"/>.
+    ///     Represents a <see cref="CommandModule"/> that implements an implementation-friendly accessor to the <see cref="ICallerContext"/>.
     /// </summary>
-    /// <typeparam name="T">The implementation of <see cref="CallerContext"/> known during command pipeline execution.</typeparam>
+    /// <typeparam name="T">The implementation of <see cref="ICallerContext"/> known during command pipeline execution.</typeparam>
     public abstract class CommandModule<T> : CommandModule
-        where T : CallerContext
+        where T : ICallerContext
     {
         private T? _consumer;
 
@@ -13,7 +13,7 @@
         ///     Gets the consumer for the command currently in scope.
         /// </summary>
         /// <remarks>
-        ///     Throws if the <see cref="CallerContext"/> provided in this scope does not match <typeparamref name="T"/>.
+        ///     Throws if the <see cref="ICallerContext"/> provided in this scope does not match <typeparamref name="T"/>.
         /// </remarks>
         /// <exception cref="InvalidOperationException">Thrown when <typeparamref name="T"/> does not match with the provided</exception>
         public new T Caller
@@ -47,7 +47,7 @@
         ///     Gets the consumer for the command currently in scope.
         /// </summary>
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
-        public CallerContext Caller { get; internal set; }
+        public ICallerContext Caller { get; internal set; }
 
         /// <summary>
         ///     Gets the reflection information about the command currently in scope.

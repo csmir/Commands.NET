@@ -1,6 +1,6 @@
 ﻿namespace Commands.Samples
 {
-    public sealed class Module : CommandModule<CallerContext>
+    public sealed class Module : CommandModule
     {
         [Name("help")]
         public void Help()

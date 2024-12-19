@@ -102,7 +102,7 @@ namespace Commands
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
             T caller, string args, CommandOptions? options = null)
-            where T : CallerContext
+            where T : ICallerContext
         {
             if (string.IsNullOrWhiteSpace(args))
                 throw new ArgumentNullException(nameof(args));
@@ -122,7 +122,7 @@ namespace Commands
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
             T caller, IEnumerable<object> args, CommandOptions? options = null)
-            where T : CallerContext
+            where T : ICallerContext
         {
             return Execute(caller, new ArgumentEnumerator(args), options ?? new CommandOptions());
         }
@@ -136,7 +136,7 @@ namespace Commands
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
             T caller, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
-            where T : CallerContext
+            where T : ICallerContext
         {
             options ??= new CommandOptions();
 
@@ -152,7 +152,7 @@ namespace Commands
         /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
         public Task Execute<T>(
             T caller, ArgumentEnumerator args, CommandOptions options)
-            where T : CallerContext
+            where T : ICallerContext
         {
             var task = StartAsynchronousPipeline(caller, args, options);
 
@@ -166,7 +166,7 @@ namespace Commands
 
         private async Task StartAsynchronousPipeline<T>(
             T caller, ArgumentEnumerator args, CommandOptions options)
-            where T : CallerContext
+            where T : ICallerContext
         {
             IExecuteResult? result = null;
 
@@ -194,7 +194,7 @@ namespace Commands
 
         private async ValueTask<IExecuteResult> InvokeCommand<T>(
             T caller, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
-            where T : CallerContext
+            where T : ICallerContext
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -241,7 +241,7 @@ namespace Commands
 
         private async ValueTask<ConvertResult[]> ConvertCommand<T>(
             T caller, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
-            where T : CallerContext
+            where T : ICallerContext
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -263,9 +263,9 @@ namespace Commands
         }
 
         private async ValueTask<ConvertResult[]> ConvertArguments(
-            CallerContext caller, IArgument[] arguments, ArgumentEnumerator args, CommandOptions options)
+            ICallerContext caller, IArgument[] arguments, ArgumentEnumerator args, CommandOptions options)
         {
-            static ValueTask<ConvertResult> Convert(IArgument argument, CallerContext caller, object? value, bool isArray, CommandOptions options)
+            static ValueTask<ConvertResult> Convert(IArgument argument, ICallerContext caller, object? value, bool isArray, CommandOptions options)
             {
                 if (argument.IsNullable && value is null or "null")
                     return ConvertResult.FromSuccess(null);
@@ -347,7 +347,7 @@ namespace Commands
 
         private async ValueTask<ConditionResult> EvaluateConditions<T>(
             T caller, CommandInfo command, ConditionTrigger trigger, CommandOptions options)
-            where T : CallerContext
+            where T : ICallerContext
         {
             if (!options.SkipConditions)
             {
@@ -367,14 +367,14 @@ namespace Commands
         }
 
         private async ValueTask EvaluateInvocationResult(
-            CallerContext caller, CommandInfo command, object? value, CommandOptions options)
+            ICallerContext caller, CommandInfo command, object? value, CommandOptions options)
         {
             foreach (var resolver in _resolvers)
                 await resolver.EvaluateResponse(caller, command, value, options.Services, options.CancellationToken);
         }
 
         private async ValueTask FinalizeInvocation(
-            CallerContext caller, IExecuteResult result, CommandOptions options)
+            ICallerContext caller, IExecuteResult result, CommandOptions options)
         {
             foreach (var resolver in _resolvers)
                 await resolver.EvaluateResult(caller, result, options.Services, options.CancellationToken);

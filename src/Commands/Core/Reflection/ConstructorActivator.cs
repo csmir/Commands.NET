@@ -52,7 +52,7 @@ namespace Commands
 
         /// <inheritdoc />
         public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, ComponentTree? tree, CommandOptions options)
-            where T : CallerContext
+            where T : ICallerContext
         {
             var services = new object?[Parameters.Length];
             for (int i = 0; i < Parameters.Length; i++)

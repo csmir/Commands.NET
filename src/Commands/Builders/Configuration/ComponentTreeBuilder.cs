@@ -83,7 +83,7 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder AddResultResolver(Action<CallerContext, IExecuteResult, IServiceProvider> resultAction)
+        public ITreeBuilder AddResultResolver(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction)
         {
             if (resultAction == null)
                 throw new ArgumentNullException(nameof(resultAction));
@@ -94,7 +94,7 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder AddResultResolver(Func<CallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction)
+        public ITreeBuilder AddResultResolver(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction)
         {
             if (resultAction == null)
                 throw new ArgumentNullException(nameof(resultAction));

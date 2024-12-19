@@ -39,7 +39,7 @@ while (true)
 
     using var scope = provider.CreateAsyncScope();
 
-    await tree.Execute(new CallerContext(), Console.ReadLine()!, new()
+    await tree.Execute(new CustomCaller(), Console.ReadLine()!, new()
     {
         Services = scope.ServiceProvider
     });

@@ -4,7 +4,7 @@
     {
         public CollectionType CollectionType { get; } = CollectionType.Set;
 
-        public override async ValueTask<ConvertResult> Parse(CallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (value is not object[] array)
                 return Error($"The provided value is not an array. Expected: '{Type.Name}', got: '{value}'. At: '{argument.Name}'");
@@ -13,7 +13,7 @@
 
             foreach (var item in array)
             {
-                var result = await underlyingConverter.Parse(consumer, argument, item, services, cancellationToken);
+                var result = await underlyingConverter.Parse(caller, argument, item, services, cancellationToken);
 
                 if (!result.Success)
                     return Error($"Failed to convert an array element. Expected: '{underlyingConverter.Type.Name}', got: '{item}'. At: '{argument.Name}'");

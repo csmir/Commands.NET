@@ -7,7 +7,7 @@
     ///     This context is used for <see langword="static"/> and <see langword="delegate"/> commands.
     /// </remarks>
     public class CommandContext<T>(T consumer, CommandInfo command, ComponentTree tree, CommandOptions options)
-        where T : CallerContext
+        where T : ICallerContext
     {
         /// <summary>
         ///     Gets the consumer of the command currently in scope.

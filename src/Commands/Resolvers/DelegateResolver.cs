@@ -8,16 +8,16 @@ namespace Commands.Resolvers
     /// <param name="action">The action to be invoked when receiving a result.</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class DelegateResolver(
-        Action<CallerContext, IExecuteResult, IServiceProvider> action)
+        Action<ICallerContext, IExecuteResult, IServiceProvider> action)
         : ResultResolver
     {
-        private readonly Action<CallerContext, IExecuteResult, IServiceProvider> _action = action;
+        private readonly Action<ICallerContext, IExecuteResult, IServiceProvider> _action = action;
 
         /// <inheritdoc />
         public override ValueTask EvaluateResult(
-            CallerContext consumer, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            _action(consumer, result, services);
+            _action(caller, result, services);
 
             return default;
         }

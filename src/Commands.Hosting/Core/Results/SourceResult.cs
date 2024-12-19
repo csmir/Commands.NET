@@ -14,11 +14,11 @@
 
         internal CommandOptions? Options { get; }
 
-        internal CallerContext? Consumer { get; }
+        internal ICallerContext? Consumer { get; }
 
         internal ArgumentEnumerator? Args { get; }
 
-        private SourceResult(CallerContext? consumer, ArgumentEnumerator? args, CommandOptions? options, Exception? exception)
+        private SourceResult(ICallerContext? consumer, ArgumentEnumerator? args, CommandOptions? options, Exception? exception)
         {
             Options = options;
             Consumer = consumer;
@@ -29,38 +29,38 @@
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> resembling a successful sourcing operation.
         /// </summary>
-        /// <param name="consumer">The consumer of the command.</param>
+        /// <param name="caller">The caller of the command.</param>
         /// <param name="args">An unparsed command query, which will be parsed using <see cref="ArgumentParser.ParseKeyValueCollection(string)"/>.</param>
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
-        public static SourceResult FromSuccess(CallerContext consumer, string args, CommandOptions? options = null)
+        public static SourceResult FromSuccess(ICallerContext caller, string args, CommandOptions? options = null)
         {
             var parseResult = ArgumentParser.ParseKeyValueCollection(args);
 
             options ??= new CommandOptions();
 
-            return new(consumer, new ArgumentEnumerator(parseResult, options.MatchComparer), options, null);
+            return new(caller, new ArgumentEnumerator(parseResult, options.MatchComparer), options, null);
         }
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> resembling a successful sourcing operation.
         /// </summary>
-        /// <param name="consumer">The consumer of the command.</param>
+        /// <param name="caller">The caller of the command.</param>
         /// <param name="args">A parsed command query.</param>
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
-        public static SourceResult FromSuccess(CallerContext consumer, IEnumerable<object> args, CommandOptions? options = null)
-            => new(consumer, new ArgumentEnumerator(args), options, null);
+        public static SourceResult FromSuccess(ICallerContext caller, IEnumerable<object> args, CommandOptions? options = null)
+            => new(caller, new ArgumentEnumerator(args), options, null);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> resembling a successful sourcing operation.
         /// </summary>
-        /// <param name="consumer">The consumer of the command.</param>
+        /// <param name="caller">The caller of the command.</param>
         /// <param name="args">A parsed command query.</param>
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
-        public static SourceResult FromSuccess(CallerContext consumer, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
-            => new(consumer, new ArgumentEnumerator(args, options?.MatchComparer ?? StringComparer.OrdinalIgnoreCase), options, null);
+        public static SourceResult FromSuccess(ICallerContext caller, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
+            => new(caller, new ArgumentEnumerator(args, options?.MatchComparer ?? StringComparer.OrdinalIgnoreCase), options, null);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> resembling a failed sourcing operation.

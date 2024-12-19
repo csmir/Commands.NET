@@ -8,16 +8,16 @@ namespace Commands.Resolvers
     /// <param name="action">The action to be invoked when receiving a result.</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class AsyncDelegateResolver(
-        Func<CallerContext, IExecuteResult, IServiceProvider, ValueTask> action)
+        Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> action)
         : ResultResolver
     {
-        private readonly Func<CallerContext, IExecuteResult, IServiceProvider, ValueTask> _action = action;
+        private readonly Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> _action = action;
 
         /// <inheritdoc />
         public override async ValueTask EvaluateResult(
-            CallerContext consumer, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            await _action(consumer, result, services);
+            await _action(caller, result, services);
         }
     }
 }
