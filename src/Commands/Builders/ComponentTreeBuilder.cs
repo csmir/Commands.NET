@@ -6,8 +6,6 @@ namespace Commands.Builders
     /// <inheritdoc cref="ITreeBuilder" />
     public sealed class ComponentTreeBuilder : ITreeBuilder
     {
-        const string DEFAULT_NAMEPATTERN = @"^[a-z0-9_-]*$";
-
         /// <inheritdoc />
         public IConfigurationBuilder Configuration { get; set; } = new ComponentConfigurationBuilder();
 
@@ -18,16 +16,25 @@ namespace Commands.Builders
         public ICollection<ResultHandler> Handlers { get; set; } = [];
 
         /// <inheritdoc />
+        /// <remarks>
+        ///     This collection is set initially to <see cref="Assembly.GetExportedTypes"/> of the entry assembly. If the entry assembly is <see langword="null"/>, this property is set to an empty array.
+        /// </remarks>
         public ICollection<Type> Types { get; set; } = Assembly.GetEntryAssembly()?.GetTypes() ?? [];
 
         /// <inheritdoc />
         public Func<IComponent, bool> ComponentRegistrationFilter { get; set; } = _ => true;
 
         /// <inheritdoc />
+        /// <remarks>
+        ///     This property is set to <see langword="false"/> by default. If set to <see langword="true"/>, all modules in <see cref="Components"/> and <see cref="Types"/> be set to read-only after the build process.
+        /// </remarks>
         public bool MakeModulesReadonly { get; set; } = false;
 
         /// <inheritdoc />
-        public string? NamingPattern { get; set; } = DEFAULT_NAMEPATTERN;
+        /// <remarks>
+        ///     This property is set to <c>@"^[a-z0-9_-]*$"</c> by default.
+        /// </remarks>
+        public string? NamingPattern { get; set; } = @"^[a-z0-9_-]*$";
 
         /// <inheritdoc />
         public ITreeBuilder AddCommand(CommandBuilder commandBuilder)
@@ -59,7 +66,7 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params IEnumerable<string> aliases)
+        public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params string[] aliases)
         {
             var commandBuilder = new CommandBuilder(name, aliases, executionDelegate);
 
@@ -88,12 +95,12 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder AddModule(Type type)
+        public ITreeBuilder AddModule(Type moduleType)
         {
-            if (Types.Contains(type))
+            if (Types.Contains(moduleType))
                 return this;
 
-            Types.Add(type);
+            Types.Add(moduleType);
 
             return this;
         }

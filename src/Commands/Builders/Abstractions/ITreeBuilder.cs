@@ -93,7 +93,7 @@ namespace Commands.Builders
         /// <param name="executionDelegate">The delegate to execute when the provided name of this object is discovered in a search operation.</param>
         /// <param name="aliases">The aliases of the component, excluding the name.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params IEnumerable<string> aliases);
+        public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params string[] aliases);
 
         /// <summary>
         ///     Adds a module to the <see cref="Components"/> collection.
@@ -111,6 +111,27 @@ namespace Commands.Builders
         /// <param name="configureModule">An action that extends the fluent API of this type to configure the module.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddModule(Action<ModuleBuilder> configureModule);
+
+        /// <summary>
+        ///     Adds a module to the <see cref="Types"/> collection. This method will skip the add operation if the type is already present.
+        /// </summary>
+        /// <remarks>
+        ///     Validations are performed during <see cref="Build"/> to ensure that the type is a valid module type: A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>; If not, it will be skipped during the registration process.
+        /// </remarks>
+        /// <param name="moduleType">A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>.</param>
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
+        public ITreeBuilder AddModule(Type moduleType);
+
+        /// <summary>
+        ///     Adds a module to the <see cref="Types"/> collection. This method will skip the add operation if the type is already present.
+        /// </summary>
+        /// <remarks>
+        ///     Validations are performed during <see cref="Build"/> to ensure that the type is a valid module type: A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>; If not, it will be skipped during the registration process.
+        /// </remarks>
+        /// <typeparam name="T">A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>.</typeparam>
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
+        public ITreeBuilder AddModule<T>()
+            where T : CommandModule;
 
         /// <summary>
         ///     Configures an action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/>. 

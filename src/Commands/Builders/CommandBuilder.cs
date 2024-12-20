@@ -45,7 +45,7 @@ namespace Commands.Builders
             var joined = new string[] { name }
                 .Concat(aliases)
                 .Distinct()
-                .ToList();
+                .ToArray();
 
             Aliases = joined;
             ExecuteDelegate = executeDelegate;
