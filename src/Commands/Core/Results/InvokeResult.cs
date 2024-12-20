@@ -6,20 +6,15 @@ namespace Commands
     ///     The result of an invocation operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public readonly struct InvokeResult : IExecuteResult
+    public readonly struct InvokeResult : IValueResult
     {
         /// <summary>
         ///     Gets the command responsible for the invocation.
         /// </summary>
         public CommandInfo Command { get; }
 
-        /// <summary>
-        ///     Gets the result of command execution, being the returned value by the executed method.
-        /// </summary>
-        /// <remarks>
-        ///     This property will be <see langword="null"/> when the executed method returns <see langword="void"/> or <see langword="null"/>. Any other returned value will be represented as a non-null value.
-        /// </remarks>
-        public object? Result { get; }
+        /// <inheritdoc />
+        public object? Value { get; }
 
         /// <inheritdoc />
         public Exception? Exception { get; }
@@ -28,10 +23,10 @@ namespace Commands
         public bool Success
             => Exception == null;
 
-        private InvokeResult(CommandInfo command, object? result, Exception? exception)
+        private InvokeResult(CommandInfo command, object? value, Exception? exception)
         {
             Command = command;
-            Result = result;
+            Value = value;
 
             Exception = exception;
         }
@@ -40,10 +35,10 @@ namespace Commands
         ///     Creates a new <see cref="InvokeResult"/> resembling a successful invocation operation.
         /// </summary>
         /// <param name="command">The command that was invoked.</param>
-        /// <param name="result">The result of command execution, being the returned value by the executed method.</param>
+        /// <param name="value">The result of command execution, being the returned value by the executed method.</param>
         /// <returns>A new result containing information about the operation.</returns>
-        public static InvokeResult FromSuccess(CommandInfo command, object? result)
-            => new(command, result, null);
+        public static InvokeResult FromSuccess(CommandInfo command, object? value)
+            => new(command, value, null);
 
         /// <summary>
         ///     Creates a new <see cref="InvokeResult"/> resembling a failed invocation operation.

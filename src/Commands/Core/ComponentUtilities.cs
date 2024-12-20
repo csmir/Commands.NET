@@ -230,7 +230,7 @@ namespace Commands
         /// <param name="type">The type to get or create a converter for.</param>
         /// <param name="configuration">The configuration which serves as a base from which new converters are </param>
         /// <returns>An instance of <see cref="TypeParser"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object, which does not need to be converted.</returns>
-        public static Conversion.TypeParser? GetTypeConverter(Type type, ComponentConfiguration configuration)
+        public static TypeParser? GetTypeConverter(Type type, ComponentConfiguration configuration)
         {
             if (!type.IsConvertible())
                 return null;

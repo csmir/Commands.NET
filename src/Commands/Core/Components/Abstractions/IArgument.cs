@@ -18,11 +18,21 @@ namespace Commands
         public bool IsCollection { get; }
 
         /// <summary>
-        ///     Gets the converter for this argument.
+        ///     Gets the parser for this argument.
         /// </summary>
         /// <remarks>
         ///     Will be <see langword="null"/> if <see cref="Type"/> is <see cref="string"/>, <see cref="object"/>, or if this argument is <see cref="ComplexArgumentInfo"/>.
         /// </remarks>
-        public TypeParser? Converter { get; }
+        public TypeParser? Parser { get; }
+
+        /// <summary>
+        ///     Attempts to convert the provided value to the target type of this argument.
+        /// </summary>
+        /// <param name="caller">The caller of the current execution.</param>
+        /// <param name="value">The value which the <see cref="Parser"/> should parse.</param>
+        /// <param name="services">The provider used to register modules and inject services.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <returns>An awaitable <see cref="ValueTask{ConvertResult}"/> holding the result of the convert operation.</returns>
+        public ValueTask<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken);
     }
 }

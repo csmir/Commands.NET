@@ -6,19 +6,17 @@ namespace Commands
     ///     The result of a convert operation within the command execution pipeline.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public readonly struct ConvertResult : IExecuteResult
+    public readonly struct ConvertResult : IValueResult
     {
+        /// <inheritdoc />
+        public object? Value { get; }
+
         /// <inheritdoc />
         public Exception? Exception { get; }
 
         /// <inheritdoc />
         public bool Success
             => Exception == null;
-
-        /// <summary>
-        ///    The value of the conversion operation.
-        /// </summary>
-        public object? Value { get; }
 
         private ConvertResult(Exception? exception, object? value)
         {

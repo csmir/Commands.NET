@@ -167,7 +167,7 @@ namespace Commands
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            var beforeConvertConditions = await EvaluateConditions(caller, command, ConditionTrigger.BeforeConversion, options);
+            var beforeConvertConditions = await CheckConditions(caller, command, ConditionTrigger.BeforeConversion, options);
 
             if (!beforeConvertConditions.Success)
                 return beforeConvertConditions;
@@ -186,14 +186,14 @@ namespace Commands
 
             try
             {
-                var beforeInvocationConditions = await EvaluateConditions(caller, command, ConditionTrigger.BeforeInvocation, options);
+                var beforeInvocationConditions = await CheckConditions(caller, command, ConditionTrigger.BeforeInvocation, options);
 
                 if (!beforeInvocationConditions.Success)
                     return beforeInvocationConditions;
 
                 var value = command.Activator.Invoke(caller, command, arguments, this, options);
 
-                var afterInvocationConditions = await EvaluateConditions(caller, command, ConditionTrigger.AfterInvocation, options);
+                var afterInvocationConditions = await CheckConditions(caller, command, ConditionTrigger.AfterInvocation, options);
 
                 if (!afterInvocationConditions.Success)
                     return afterInvocationConditions;
@@ -218,66 +218,44 @@ namespace Commands
                 return [];
 
             if (command.MaxLength == args.Length)
-                return await ConvertArguments(caller, command.Arguments, args, options);
+                return await ParseArguments(caller, command.Arguments, args, options);
 
             if (command.MaxLength <= args.Length && command.HasRemainder)
-                return await ConvertArguments(caller, command.Arguments, args, options);
+                return await ParseArguments(caller, command.Arguments, args, options);
 
             if (command.MaxLength > args.Length && command.MinLength <= args.Length)
-                return await ConvertArguments(caller, command.Arguments, args, options);
+                return await ParseArguments(caller, command.Arguments, args, options);
 
             return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
         }
 
-        private async ValueTask<ConvertResult[]> ConvertArguments(
+        private async ValueTask<ConvertResult[]> ParseArguments(
             ICallerContext caller, IArgument[] arguments, ArgumentEnumerator args, CommandOptions options)
         {
-            static ValueTask<ConvertResult> Convert(IArgument argument, ICallerContext caller, object? value, bool isArray, CommandOptions options)
-            {
-                if (argument.IsNullable && value is null or "null")
-                    return ConvertResult.FromSuccess(null);
-
-                if (value is null)
-                    return ConvertResult.FromError(new ArgumentNullException(argument.Name));
-
-                if (argument.Type.IsString())
-                    return ConvertResult.FromSuccess(value?.ToString());
-
-                if (argument.Type.IsObject())
-                    return ConvertResult.FromSuccess(value);
-
-                return argument.Converter!.Parse(caller, argument, value, options.Services, options.CancellationToken);
-            }
-
             options.CancellationToken.ThrowIfCancellationRequested();
 
             var results = new ConvertResult[arguments.Length];
 
-            // loop all arguments.
             for (int i = 0; i < arguments.Length; i++)
             {
                 var argument = arguments[i];
 
-                // parse remainder.
                 if (argument.IsRemainder)
                 {
-                    results[i] = await Convert(argument, caller, argument.IsCollection ? args.TakeRemaining() : args.JoinRemaining(options.RemainderSeparator), true, options);
+                    results[i] = await argument.Parse(caller, argument.IsCollection ? args.TakeRemaining() : args.JoinRemaining(options.RemainderSeparator), options.Services, options.CancellationToken);
 
-                    // End of the line, as remainder is always the last argument.
                     break;
                 }
 
-                // parse complex argument.
                 if (argument is ComplexArgumentInfo complexArgument)
                 {
-                    var result = await ConvertArguments(caller, complexArgument.Arguments, args, options);
+                    var result = await ParseArguments(caller, complexArgument.Arguments, args, options);
 
                     if (result.All(x => x.Success))
                     {
                         try
                         {
-                            var instance = complexArgument.Activator.Invoke(caller, null, result.Select(x => x.Value).ToArray(), null, options);
-                            results[i] = ConvertResult.FromSuccess(instance);
+                            results[i] = ConvertResult.FromSuccess(complexArgument.Activator.Invoke(caller, null, result.Select(x => x.Value).ToArray(), null, options));
                         }
                         catch (Exception ex)
                         {
@@ -286,23 +264,24 @@ namespace Commands
 
                         continue;
                     }
-
+                    
                     if (complexArgument.IsOptional)
                         results[i] = ConvertResult.FromSuccess(Type.Missing);
 
-                    // continue looking for more args
                     continue;
                 }
 
                 if (args.TryNext(argument.Name!, out var value))
                 {
-                    results[i] = await Convert(argument, caller, value, false, options);
+                    results[i] = await argument.Parse(caller, value, options.Services, options.CancellationToken);
+
                     continue;
                 }
 
                 if (argument.IsOptional)
                 {
                     results[i] = ConvertResult.FromSuccess(Type.Missing);
+
                     continue;
                 }
 
@@ -312,7 +291,7 @@ namespace Commands
             return results;
         }
 
-        private async ValueTask<ConditionResult> EvaluateConditions<T>(
+        private async ValueTask<ConditionResult> CheckConditions<T>(
             T caller, CommandInfo command, ConditionTrigger trigger, CommandOptions options)
             where T : ICallerContext
         {

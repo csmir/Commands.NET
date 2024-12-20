@@ -23,6 +23,7 @@ namespace Commands
 
         private ConditionResult(ConditionTrigger trigger, Exception? exception)
         {
+            Trigger = trigger;
             Exception = exception;
         }
 

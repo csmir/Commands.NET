@@ -102,7 +102,7 @@ namespace Commands
         public void Sort()
         {
             if (IsReadOnly)
-                throw BuildException.AccessDenied();
+                throw new UnauthorizedAccessException("This collection has been marked as read-only and cannot be mutated.");
 
             var orderedCopy = new HashSet<IComponent>(_components.OrderByDescending(x => x.Score));
 
@@ -117,7 +117,7 @@ namespace Commands
         public int AddRange(params IComponent[] components)
         {
             if (IsReadOnly)
-                throw BuildException.AccessDenied();
+                throw new UnauthorizedAccessException("This collection has been marked as read-only and cannot be mutated.");
 
             var hasChanged = 0;
 
@@ -147,7 +147,7 @@ namespace Commands
         public int RemoveRange(params IComponent[] components)
         {
             if (IsReadOnly)
-                throw BuildException.AccessDenied();
+                throw new UnauthorizedAccessException("This collection has been marked as read-only and cannot be mutated.");
 
             var copy = new HashSet<IComponent>(_components);
             var removed = 0;
@@ -166,10 +166,11 @@ namespace Commands
         }
 
         /// <inheritdoc />
+        /// <exception cref="UnauthorizedAccessException">Thrown when the collection is marked as read-only.</exception>
         public void Clear()
         {
             if (IsReadOnly)
-                throw BuildException.AccessDenied();
+                throw new UnauthorizedAccessException("This collection has been marked as read-only and cannot be mutated.");
 
             Interlocked.Exchange(ref _components, []);
         }

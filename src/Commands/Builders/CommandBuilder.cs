@@ -16,12 +16,12 @@ namespace Commands.Builders
         private static readonly Type c_type = typeof(CommandContext<>);
 
         /// <inheritdoc />
-        public string[] Aliases { get; set; } = [];
+        public ICollection<string> Aliases { get; set; } = [];
 
         /// <summary>
         ///     Gets the conditions necessary for the command to execute.
         /// </summary>
-        public List<IExecuteCondition> Conditions { get; set; } = [];
+        public ICollection<IExecuteCondition> Conditions { get; set; } = [];
 
         /// <summary>
         ///     Gets the delegate that is executed when the command is invoked.
@@ -40,14 +40,14 @@ namespace Commands.Builders
         /// <param name="aliases">The aliases of the command, excluding the name.</param>
         /// <param name="executeDelegate">The delegate used to execute the command.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="executeDelegate"/> is <see langword="null"/>, or when the aliases are <see langword="null"/>.</exception>
-        public CommandBuilder(string name, string[] aliases, Delegate executeDelegate)
+        public CommandBuilder(string name, IEnumerable<string> aliases, Delegate executeDelegate)
         {
-            aliases = new string[] { name }
+            var joined = new string[] { name }
                 .Concat(aliases)
                 .Distinct()
-                .ToArray();
+                .ToList();
 
-            Aliases = aliases;
+            Aliases = joined;
             ExecuteDelegate = executeDelegate;
 
             Conditions = [];
@@ -116,7 +116,7 @@ namespace Commands.Builders
             if (ExecuteDelegate is null)
                 throw new ArgumentNullException(nameof(ExecuteDelegate));
 
-            if (!_isNested && Aliases.Length == 0)
+            if (!_isNested && Aliases.Count == 0)
                 throw BuildException.AliasAtLeastOne();
 
             var pattern = configuration.GetProperty<Regex>("NamingPattern");
@@ -137,7 +137,7 @@ namespace Commands.Builders
             if (param.Length > 0 && param[0].ParameterType.IsGenericType && param[0].ParameterType.GetGenericTypeDefinition() == c_type)
                 hasContext = true;
 
-            return new CommandInfo(new DelegateActivator(ExecuteDelegate.Method, ExecuteDelegate.Target, hasContext), [.. Conditions], Aliases, hasContext, configuration);
+            return new CommandInfo(new DelegateActivator(ExecuteDelegate.Method, ExecuteDelegate.Target, hasContext), [.. Conditions], [.. Aliases], hasContext, configuration);
         }
 
         /// <summary>

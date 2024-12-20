@@ -55,6 +55,7 @@ namespace Commands.Core.Abstractions
         /// <summary>
         ///     Sorts the components in the current collection based on their score.
         /// </summary>
+        /// <exception cref="UnauthorizedAccessException">Thrown when the collection is marked as read-only.</exception>
         public void Sort();
 
         /// <summary>
@@ -62,15 +63,15 @@ namespace Commands.Core.Abstractions
         /// </summary>
         /// <param name="components">The components to be added to the collection.</param>
         /// <returns>The number of added components, being 0 if no records were added.</returns>
-        /// <exception cref="BuildException">Thrown when a collection is marked as read-only.</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown when the collection is marked as read-only.</exception>
         public int AddRange(params IComponent[] components);
 
         /// <summary>
         ///     Removes a component from the current collection if it exists.
         /// </summary>
         /// <param name="component">The component to be removed from the collection.</param>
-        /// <returns><see langword="true"/> if the component was removed; otherwise, <see langword="false"/>.</returns>
-        /// <exception cref="BuildException">Thrown when the collection is marked as read-only.</exception>
+        /// <returns><see langword="true"/> if the component was removed; Otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="UnauthorizedAccessException">Thrown when the collection is marked as read-only.</exception>
         public new bool Remove(IComponent component);
 
         /// <summary>
@@ -78,15 +79,15 @@ namespace Commands.Core.Abstractions
         /// </summary>
         /// <param name="components">The components to be removed from the collection.</param>
         /// <returns>The number of removed components, being 0 if no commands were removed.</returns>
-        /// <exception cref="BuildException">Thrown when the collection is marked as read-only.</exception>
+        /// <exception cref="UnauthorizedAccessException">Thrown when the collection is marked as read-only.</exception>
         public int RemoveRange(params IComponent[] components);
 
         /// <summary>
         ///     Adds a component to the current collection.
         /// </summary>
         /// <param name="component">The component to be added to the module.</param>
-        /// <returns><see langword="true"/> if the component was added; otherwise, <see langword="false"/>.</returns>
-        /// <exception cref="BuildException">Thrown when a collection is marked as read-only.</exception>
+        /// <returns><see langword="true"/> if the component was added; Otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="UnauthorizedAccessException">Thrown when the collection is marked as read-only.</exception>
         public new bool Add(IComponent component);
     }
 }

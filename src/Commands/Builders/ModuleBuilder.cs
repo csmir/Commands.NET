@@ -12,12 +12,12 @@ namespace Commands.Builders
     public sealed class ModuleBuilder : IComponentBuilder
     {
         /// <inheritdoc />
-        public string[] Aliases { get; set; } = [];
+        public ICollection<string> Aliases { get; set; } = [];
 
         /// <summary>
         ///     Gets or sets a collection of components that are added to the module. This collection is used to build the module into a <see cref="ModuleInfo"/> object.
         /// </summary>
-        public List<IComponentBuilder> Components { get; set; } = [];
+        public ICollection<IComponentBuilder> Components { get; set; } = [];
 
         /// <summary>
         ///     Creates a new instance of <see cref="ModuleBuilder"/>
@@ -38,7 +38,7 @@ namespace Commands.Builders
         /// <param name="name">The primary alias of the module.</param>
         /// <param name="aliases">All remaining aliases of the module.</param>
         /// <exception cref="ArgumentNullException">Thrown when the provided aliases or name are null.</exception>
-        public ModuleBuilder(string name, string[] aliases)
+        public ModuleBuilder(string name, IEnumerable<string> aliases)
         {
             if (aliases == null)
                 throw new ArgumentNullException(nameof(aliases));
@@ -46,12 +46,12 @@ namespace Commands.Builders
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name));
 
-            aliases = new string[] { name }
+            var joined = new string[] { name }
                 .Concat(aliases)
                 .Distinct()
-                .ToArray();
+                .ToList();
 
-            Aliases = aliases;
+            Aliases = joined;
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace Commands.Builders
         /// <returns>The same <see cref="ModuleBuilder"/> for call-chaining.</returns>
         public ModuleInfo Build(ComponentConfiguration configuration, ModuleInfo? root)
         {
-            if (Aliases.Length == 0)
+            if (Aliases.Count == 0)
                 throw BuildException.AliasAtLeastOne();
 
             var pattern = configuration.GetProperty<Regex>("NamingPattern");
@@ -196,7 +196,7 @@ namespace Commands.Builders
                 }
             }
 
-            var moduleInfo = new ModuleInfo(root, Aliases);
+            var moduleInfo = new ModuleInfo(root, [.. Aliases]);
 
             foreach (var component in Components)
             {

@@ -30,11 +30,11 @@ namespace Commands
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
-        public TypeParser? Converter { get; } = null;
+        public TypeParser? Parser { get; } = null;
 
         /// <inheritdoc />
         public bool IsCollection
-            => Converter is ICollectionConverter;
+            => Parser is ICollectionConverter;
 
         internal ArgumentInfo(
             ParameterInfo parameterInfo, string? name, ComponentConfiguration options)
@@ -65,7 +65,7 @@ namespace Commands
 
             var converter = ComponentUtilities.GetTypeConverter(Type, options);
 
-            Converter = converter;
+            Parser = converter;
             ExposedType = parameterInfo.ParameterType;
             Attributes = attributes.ToArray();
 
@@ -89,10 +89,28 @@ namespace Commands
             if (IsNullable)
                 score -= 0.25f;
 
-            if (Converter != null)
+            if (Parser != null)
                 score += 0.5f;
 
             return score;
+        }
+
+        /// <inheritdoc />
+        public ValueTask<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        {
+            if (IsNullable && value is null or "null")
+                return ConvertResult.FromSuccess(null);
+
+            if (value is null)
+                return ConvertResult.FromError(new ArgumentNullException(Name));
+
+            if (Type.IsString())
+                return ConvertResult.FromSuccess(value?.ToString());
+
+            if (Type.IsObject())
+                return ConvertResult.FromSuccess(value);
+
+            return Parser!.Parse(caller, this, value, services, cancellationToken);
         }
 
         /// <inheritdoc />

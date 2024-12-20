@@ -61,6 +61,7 @@ namespace Commands.Conversion
         protected ConvertResult Error(Exception exception)
         {
             if (exception == null)
+                
                 throw new ArgumentNullException(nameof(exception));
 
             if (exception is ConvertException convertEx)

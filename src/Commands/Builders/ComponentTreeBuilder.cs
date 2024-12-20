@@ -59,7 +59,7 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params string[] aliases)
+        public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params IEnumerable<string> aliases)
         {
             var commandBuilder = new CommandBuilder(name, aliases, executionDelegate);
 

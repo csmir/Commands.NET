@@ -41,7 +41,7 @@ namespace Commands
         public int MaxLength { get; }
 
         /// <inheritdoc />
-        public TypeParser? Converter { get; } = null;
+        public TypeParser? Parser { get; } = null;
 
         /// <inheritdoc />
         public bool IsCollection
@@ -118,6 +118,10 @@ namespace Commands
 
             return score;
         }
+
+        /// <inheritdoc />
+        public ValueTask<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
+            => throw new NotSupportedException("Complex arguments do not support parsing.");
 
         /// <inheritdoc />
         public int CompareTo(object obj)

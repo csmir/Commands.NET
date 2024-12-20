@@ -23,11 +23,12 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (result is IValueResult valueResult && valueResult.Success)
+                return HandleSuccess(caller, valueResult, services, cancellationToken);
+
             switch (result)
             {
                 case InvokeResult invoke:
-                    if (invoke.Success) // When invocation is successful, handle the invoke result as value result and respond to the caller.
-                        return HandleSuccess(caller, invoke, services, cancellationToken);
                     return HandleInvocationFailed(caller, invoke, services, cancellationToken);
                 case SearchResult search:
                     if (search.Component != null)
@@ -56,49 +57,52 @@
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
         protected async virtual ValueTask HandleSuccess(
-            ICallerContext caller, InvokeResult result, IServiceProvider services, CancellationToken cancellationToken)
+            ICallerContext caller, IValueResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
-            switch (result.Result)
+            if (result is InvokeResult invokeResult)
             {
-                case null: // (void)
-                    break;
+                switch (invokeResult.Value)
+                {
+                    case null: // (void)
+                        break;
 
-                case Task awaitablet:
-                    await awaitablet;
+                    case Task awaitablet:
+                        await awaitablet;
 
-                    var ttype = result.Command.Activator.GetReturnType()!;
+                        var ttype = invokeResult.Command.Activator.GetReturnType()!;
 
-                    if (ttype.IsGenericType)
-                    {
-                        _taskResultPropertyCallers[0] ??= ttype.GetProperty("Result").GetValue;
+                        if (ttype.IsGenericType)
+                        {
+                            _taskResultPropertyCallers[0] ??= ttype.GetProperty("Result").GetValue;
 
-                        var taskResult = _taskResultPropertyCallers[0](awaitablet);
+                            var taskResult = _taskResultPropertyCallers[0](awaitablet);
 
-                        if (taskResult != null)
-                            await caller.Respond(taskResult);
-                    }
-                    break;
+                            if (taskResult != null)
+                                await caller.Respond(taskResult);
+                        }
+                        break;
 
-                case ValueTask awaitablevt:
-                    await awaitablevt;
+                    case ValueTask awaitablevt:
+                        await awaitablevt;
 
-                    var vttype = result.Command.Activator.GetReturnType()!;
+                        var vttype = invokeResult.Command.Activator.GetReturnType()!;
 
-                    if (vttype.IsGenericType)
-                    {
-                        _taskResultPropertyCallers[1] ??= vttype.GetProperty("Result").GetValue;
+                        if (vttype.IsGenericType)
+                        {
+                            _taskResultPropertyCallers[1] ??= vttype.GetProperty("Result").GetValue;
 
-                        var taskResult = _taskResultPropertyCallers[1](awaitablevt);
+                            var taskResult = _taskResultPropertyCallers[1](awaitablevt);
 
-                        if (taskResult != null)
-                            await caller.Respond(taskResult);
-                    }
-                    break;
+                            if (taskResult != null)
+                                await caller.Respond(taskResult);
+                        }
+                        break;
 
-                case object obj:
-                    if (obj != null)
-                        await caller.Respond(obj);
-                    break;
+                    case object obj:
+                        if (obj != null)
+                            await caller.Respond(obj);
+                        break;
+                }
             }
         }
 

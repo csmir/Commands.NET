@@ -93,7 +93,7 @@ namespace Commands.Builders
         /// <param name="executionDelegate">The delegate to execute when the provided name of this object is discovered in a search operation.</param>
         /// <param name="aliases">The aliases of the component, excluding the name.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params string[] aliases);
+        public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params IEnumerable<string> aliases);
 
         /// <summary>
         ///     Adds a module to the <see cref="Components"/> collection.

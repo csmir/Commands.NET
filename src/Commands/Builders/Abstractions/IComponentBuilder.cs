@@ -8,7 +8,7 @@
         /// <summary>
         ///     Gets all aliases of the command, including its name. This is used to identify the command in the command execution pipeline.
         /// </summary>
-        public string[] Aliases { get; }
+        public ICollection<string> Aliases { get; }
 
         /// <summary>
         ///     Builds a searchable component from the provided configuration.
