@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Commands.Core.Abstractions
+﻿namespace Commands
 {
     /// <summary>
     ///     Represents a concurrent collection of components that can be searched and filtered based on their type.
@@ -55,7 +51,6 @@ namespace Commands.Core.Abstractions
         /// <summary>
         ///     Sorts the components in the current collection based on their score.
         /// </summary>
-        /// <exception cref="UnauthorizedAccessException">Thrown when the collection is marked as read-only.</exception>
         public void Sort();
 
         /// <summary>
@@ -63,7 +58,6 @@ namespace Commands.Core.Abstractions
         /// </summary>
         /// <param name="components">The components to be added to the collection.</param>
         /// <returns>The number of added components, being 0 if no records were added.</returns>
-        /// <exception cref="UnauthorizedAccessException">Thrown when the collection is marked as read-only.</exception>
         public int AddRange(params IComponent[] components);
 
         /// <summary>
@@ -71,7 +65,6 @@ namespace Commands.Core.Abstractions
         /// </summary>
         /// <param name="component">The component to be removed from the collection.</param>
         /// <returns><see langword="true"/> if the component was removed; Otherwise, <see langword="false"/>.</returns>
-        /// <exception cref="UnauthorizedAccessException">Thrown when the collection is marked as read-only.</exception>
         public new bool Remove(IComponent component);
 
         /// <summary>
@@ -79,7 +72,6 @@ namespace Commands.Core.Abstractions
         /// </summary>
         /// <param name="components">The components to be removed from the collection.</param>
         /// <returns>The number of removed components, being 0 if no commands were removed.</returns>
-        /// <exception cref="UnauthorizedAccessException">Thrown when the collection is marked as read-only.</exception>
         public int RemoveRange(params IComponent[] components);
 
         /// <summary>
@@ -87,7 +79,6 @@ namespace Commands.Core.Abstractions
         /// </summary>
         /// <param name="component">The component to be added to the module.</param>
         /// <returns><see langword="true"/> if the component was added; Otherwise, <see langword="false"/>.</returns>
-        /// <exception cref="UnauthorizedAccessException">Thrown when the collection is marked as read-only.</exception>
         public new bool Add(IComponent component);
     }
 }

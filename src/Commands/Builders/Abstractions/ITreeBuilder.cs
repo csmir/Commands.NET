@@ -27,14 +27,14 @@ namespace Commands.Builders
         public ICollection<IComponentBuilder> Components { get; set; }
 
         /// <summary>
-        ///     Gets or sets a collection of assemblies that are to be used to discover created modules.
-        /// </summary>
-        public ICollection<Assembly> Assemblies { get; set; }
-
-        /// <summary>
         ///     Gets or sets a collection of <see cref="ResultHandler"/> that serves as post-execution handlers.
         /// </summary>
         public ICollection<ResultHandler> Handlers { get; set; }
+
+        /// <summary>
+        ///     Gets or sets a collection of types that are to be used to discover created modules.
+        /// </summary>
+        public ICollection<Type> Types { get; set; }
 
         /// <summary>
         ///     Gets or sets a filter that determines whether a created component should be yielded back to the registration process or skipped entirely, based on state provided within the component itself.
@@ -116,40 +116,62 @@ namespace Commands.Builders
         ///     Configures an action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/>. 
         /// </summary>
         /// <remarks>
-        ///     To handle both failed and successful results, use <see cref="AddResultResolver(ResultHandler)"/> with an implementation of <see cref="ResultHandler"/>.
+        ///     To handle both failed and successful results, use <see cref="AddResultHandler(ResultHandler)"/> with an implementation of <see cref="ResultHandler"/> or <see cref="ResultHandler{T}"/>.
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddResultHandler(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction);
 
         /// <summary>
-        ///     Configures an asynchronous action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/>. 
+        ///     Configures an asynchronous action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/> and the <see cref="ICallerContext"/> matches <typeparamref name="T"/>. 
         /// </summary>
         /// <remarks>
-        ///     To handle both failed and successful results, use <see cref="AddResultResolver(ResultHandler)"/> with an implementation of <see cref="ResultHandler"/>.
+        ///     To handle both failed and successful results, use <see cref="AddResultHandler(ResultHandler)"/> with an implementation of <see cref="ResultHandler"/> or <see cref="ResultHandler{T}"/>.
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddResultResolver(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction);
+        public ITreeBuilder AddResultHandler<T>(Action<T, IExecuteResult, IServiceProvider> resultAction)
+            where T : class, ICallerContext;
+
+        /// <summary>
+        ///     Configures an asynchronous action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/>. 
+        /// </summary>
+        /// <remarks>
+        ///     To handle both failed and successful results, use <see cref="AddResultHandler(ResultHandler)"/> with an implementation of <see cref="ResultHandler"/> or <see cref="ResultHandler{T}"/>.
+        /// </remarks>
+        /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
+        public ITreeBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction);
+
+        /// <summary>
+        ///     Configures an asynchronous action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/> and the <see cref="ICallerContext"/> matches <typeparamref name="T"/>. 
+        /// </summary>
+        /// <remarks>
+        ///     To handle both failed and successful results, use <see cref="AddResultHandler(ResultHandler)"/> with an implementation of <see cref="ResultHandler"/> or <see cref="ResultHandler{T}"/>.
+        /// </remarks>
+        /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
+        public ITreeBuilder AddResultHandler<T>(Func<T, IExecuteResult, IServiceProvider, ValueTask> resultAction)
+            where T : class, ICallerContext;
 
         /// <summary>
         ///     Adds an implementation of <see cref="ResultHandler"/> to <see cref="Handlers"/>.
         /// </summary>
         /// <param name="resolver">The implementation of <see cref="ResultHandler"/> to add.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddResultResolver(ResultHandler resolver);
+        public ITreeBuilder AddResultHandler(ResultHandler resolver);
 
         /// <summary>
-        ///     Configures the <see cref="Assemblies"/> with an additional assembly, skipping the add operation if the assembly is already present.
+        ///     Configures the <see cref="Types"/> with an additional assembly, skipping the add operation if the assembly is already present.
         /// </summary>
-        /// <param name="assembly">An assembly that should be added to <see cref="Assemblies"/>.</param>
+        /// <param name="assembly">An assembly that should be added to <see cref="Types"/>.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddAssembly(Assembly assembly);
 
         /// <summary>
-        ///     Configures the <see cref="Assemblies"/> with an additional set of assemblies, skipping the add operation of an assembly in the collection if it is already present.
+        ///     Configures the <see cref="Types"/> with an additional set of assemblies, skipping the add operation of an assembly in the collection if it is already present.
         /// </summary>
-        /// <param name="assemblies">A collection of assemblies that should be added to <see cref="Assemblies"/>.</param>
+        /// <param name="assemblies">A collection of assemblies that should be added to <see cref="Types"/>.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddAssemblies(params Assembly[] assemblies);
 

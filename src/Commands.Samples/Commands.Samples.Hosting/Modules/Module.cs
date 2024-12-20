@@ -5,12 +5,8 @@
         [Name("help")]
         public void Help()
         {
-            var commands = Tree.GetCommands();
-
-            foreach (var command in commands)
-            {
-                Respond(command.FullName ?? "Unnamed command.");
-            }
+            foreach (var command in Tree.GetCommands())
+                Respond(command);
         }
     }
 }

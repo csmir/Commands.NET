@@ -86,7 +86,7 @@ namespace Commands
                     {
                         while (!cToken.IsCancellationRequested)
                         {
-                            var source = await resolver.Evaluate(_services, cToken);
+                            var source = await resolver.Wait(_services, cToken);
 
                             if (!source.Success)
                             {

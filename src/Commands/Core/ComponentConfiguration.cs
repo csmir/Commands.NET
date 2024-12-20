@@ -57,16 +57,6 @@ namespace Commands
         public bool HasProperty(string key)
             => Properties.ContainsKey(key);
 
-        // Used for internals only.
-        // Represents a method to set a property in the configuration after build.
-        internal void SetProperty(string key, object? value)
-        {
-            if (Properties is Dictionary<string, object?> dictionary)
-                dictionary[key] = value;
-            else
-                throw new InvalidOperationException($"The configuration properties must be an implementation of {nameof(Dictionary<string, object?>)}.");
-        }
-
         /// <summary>
         ///     Creates a new instance of <see cref="ComponentConfigurationBuilder"/>, which can be built into an instance of <see cref="ComponentConfiguration"/>.
         /// </summary>

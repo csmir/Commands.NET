@@ -17,7 +17,7 @@ Commands.NET aims to improve your experience integrating input from different so
 - [Additional Packages](#additional-packages)
 
 > [!NOTE]
-> Commands.NET is CLS-compliant, Native AOT friendly, and built on .NET Standard 2.1
+> Commands.NET is CLS-compliant and built on .NET Standard 2.1. 
 
 ## Getting Started
 

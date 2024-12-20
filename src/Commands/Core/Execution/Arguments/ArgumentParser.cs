@@ -42,10 +42,10 @@ namespace Commands
         /// <returns>
         ///     A collection of key-value pairs as command arguments.
         /// </returns>
-        public static IEnumerable<KeyValuePair<string, object?>> ParseKeyValueCollection(string toParse)
+        public static IEnumerable<KeyValuePair<string, object?>> ParseKeyValueCollection(string? toParse)
         {
             if (string.IsNullOrWhiteSpace(toParse))
-                throw new ArgumentNullException(nameof(toParse));
+                return [];
 
             return ParseKeyValueCollection(toParse.TrimEnd().Split());
         }
@@ -80,7 +80,7 @@ namespace Commands
         public static IEnumerable<KeyValuePair<string, object?>> ParseKeyValueCollection(params string[] toParse)
         {
             if (toParse is null || toParse.Length is 0)
-                throw new ArgumentNullException(nameof(toParse));
+                yield break;
 
             if (toParse.Length is 1)
             {
@@ -220,11 +220,11 @@ namespace Commands
         /// <returns>
         ///     A collection of command arguments.
         /// </returns>
-        public static IEnumerable<string> ParseKeyCollection(string toParse)
+        public static IEnumerable<string> ParseKeyCollection(string? toParse)
         {
             // return empty range on empty object.
             if (string.IsNullOrWhiteSpace(toParse))
-                throw new ArgumentNullException(nameof(toParse));
+                return [];
 
             var arr = Array.Empty<string>();
             var sb = new StringBuilder(0, toParse.Length);

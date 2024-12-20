@@ -5,7 +5,7 @@ namespace Commands
     /// <summary>
     ///     Reveals information about a conditional component, needing validation in order to become part of execution.
     /// </summary>
-    public interface IComponent : IScoreable, IEquatable<IComponent>
+    public interface IComponent : IScorable, IEquatable<IComponent>
     {
         /// <summary>
         ///     Gets the full name of the component, including the names of its parent components.

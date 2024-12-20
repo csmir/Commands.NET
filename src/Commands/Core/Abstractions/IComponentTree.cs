@@ -1,5 +1,4 @@
 ﻿using Commands.Builders;
-using Commands.Core.Abstractions;
 
 namespace Commands
 {
@@ -8,7 +7,7 @@ namespace Commands
     ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
     /// </summary>
     /// <remarks>
-    ///     To start using this tree, call <see cref="ComponentTree.CreateBuilder"/> and configure it using the fluent API's implemented by the <see cref="ITreeBuilder"/>.
+    ///     To start using this tree, call <see cref="ComponentTree.CreateBuilder"/> and configure it using the fluent API's implemented by <see cref="ITreeBuilder"/>.
     /// </remarks>
     public interface IComponentTree : IComponentCollection
     {

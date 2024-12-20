@@ -8,7 +8,7 @@ namespace Commands
     ///     Reveals information about a type with a defined complex constructor.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public class ComplexArgumentInfo : IArgument, IArgumentCollection
+    public class ComplexArgumentInfo : IArgument, IArgumentBucket
     {
         /// <inheritdoc />
         public IActivator Activator { get; }
@@ -84,10 +84,7 @@ namespace Commands
             if (parameters.Length == 0)
                 throw BuildException.ComplexNotSupported(Type);
 
-            var (minLength, maxLength) = parameters.GetLength();
-
-            MinLength = minLength;
-            MaxLength = maxLength;
+            (MinLength, MaxLength) = parameters.GetLength();
 
             Arguments = parameters;
 
@@ -125,7 +122,7 @@ namespace Commands
 
         /// <inheritdoc />
         public int CompareTo(object obj)
-            => obj is IScoreable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
+            => obj is IScorable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
         /// <inheritdoc />
         public override string ToString()

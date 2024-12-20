@@ -5,7 +5,7 @@ namespace Commands
     /// <summary>
     ///     Reveals information about an invocation argument of a command or any complex member.
     /// </summary>
-    public interface IArgument : IScoreable, IParameter
+    public interface IArgument : IScorable, IParameter
     {
         /// <summary>
         ///     Gets if this argument is the query remainder or not.

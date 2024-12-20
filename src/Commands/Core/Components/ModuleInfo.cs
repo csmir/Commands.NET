@@ -67,9 +67,7 @@ namespace Commands
 
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, ComponentConfiguration configuration)
-            : base(configuration.HasProperty("ReadOnlyModuleDefinitions"), aliases.Length == 0
-                ? configuration.GetProperty<Action<IComponent[], bool>>("HierarchyRetentionHandler")
-                : null)
+            : base(configuration.HasProperty("ReadOnlyModuleDefinitions"))
         {
             Parent = root;
             Type = type;
@@ -86,12 +84,12 @@ namespace Commands
 
             Activator = new ConstructorActivator(type);
 
-            PushDangerous(ComponentUtilities.GetComponents(this, configuration).OrderByDescending(x => x.Score));
+            Push(ComponentUtilities.GetComponents(this, configuration).OrderByDescending(x => x.Score));
         }
 
         internal ModuleInfo(
             ModuleInfo? root, string[] aliases)
-            : base(false, null)
+            : base(false)
         {
             Parent = root;
 
@@ -122,7 +120,7 @@ namespace Commands
 
         /// <inheritdoc />
         public int CompareTo(object obj)
-            => obj is IScoreable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
+            => obj is IScorable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
         /// <inheritdoc />
         public bool Equals(IComponent other)

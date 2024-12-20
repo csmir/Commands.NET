@@ -9,20 +9,28 @@ await Host.CreateDefaultBuilder(args)
     {
         configure.AddSourceProvider((services) =>
         {
+            // Format a nice prompt in convention with Microsoft.Extensions.Logging, which will print app startup messages in a similar format.
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.Write("cin");
+            Console.ResetColor();
+            Console.WriteLine(":  Commands.Samples.DelegateSourceProvider");
+            Console.Write("      ");
+
             Console.CursorVisible = true;
-            Console.Write("> ");
 
             var input = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(input))
                 return SourceResult.FromError();
 
-            var context = new HostedCallerContext();
+            var context = new HostedCallerContext()
+            {
+                Input = input
+            };
 
             return SourceResult.FromSuccess(context, input);
         });
-
-        configure.AddResultHandler((context, result, services) =>
+        configure.AddResultHandler<HostedCallerContext>((context, result, services) =>
         {
             switch (result)
             {

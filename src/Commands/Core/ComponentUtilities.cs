@@ -5,7 +5,7 @@ using System.Reflection;
 namespace Commands
 {
     /// <summary>
-    ///     A class that exposes reflection emit utilities for command and module registration.
+    ///     A helper class that exposes utilities for command and module registration.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class ComponentUtilities
@@ -18,69 +18,6 @@ namespace Commands
 
         private static readonly Type l_type = typeof(List<>);
         private static readonly Type h_type = typeof(HashSet<>);
-
-        /// <summary>
-        ///     Iterates through all assemblies and creates a top-level enumerable with all discovered members that can be directly searched for.
-        /// </summary>
-        /// <param name="assemblies">The assemblies to iterate through for command discovery.</param>
-        /// <param name="configuration">The configuration that define the command registration process.</param>
-        /// <returns>A top-level enumerable of all discovered components which can be searched.</returns>
-        public static IEnumerable<IComponent> GetTopLevelComponents(Assembly[] assemblies, ComponentConfiguration configuration)
-        {
-            var modules = GetTopLevelModules(assemblies, configuration);
-
-            // run through components to discovery queryability
-            foreach (var module in modules)
-            {
-                // if module is searchable, it can serve as a top level component.
-                if (module.IsSearchable)
-                    yield return module;
-                // if this is not the case, its subcomponents will be added as top level components.
-                else
-                {
-                    foreach (var subComponent in module)
-                        yield return subComponent;
-                }
-            }
-        }
-
-        /// <summary>
-        ///     Iterates through all provided assemblies and creates an enumerable of all discovered top-level modules.
-        /// </summary>
-        /// <param name="assemblies">The assemblies to iterate through for command discovery.</param>
-        /// <param name="configuration">The configuration that define the command registration process.</param>
-        /// <returns>A top-level enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetTopLevelModules(Assembly[] assemblies, ComponentConfiguration configuration)
-        {
-            var copy = assemblies.ToArray();
-
-            var arr = new IEnumerable<ModuleInfo>[copy.Length];
-
-            // run through all defined assemblies.
-            for (int i = 0; i < copy.Length; i++)
-                arr[i] = GetModules(copy[i], configuration);
-
-            return arr.SelectMany(x => x);
-        }
-
-        /// <summary>
-        ///     Iterates through the types known in the <paramref name="assembly"/> and returns every discovered module.
-        /// </summary>
-        /// <param name="assembly">The assembly who'se types should be iterated to discover new modules.</param>
-        /// <param name="configuration">The configuration that define the command registration process.</param>
-        /// <returns>An enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetModules(Assembly assembly, ComponentConfiguration configuration)
-            => GetModules(assembly.GetTypes(), null, false, configuration);
-
-        /// <summary>
-        ///     Iterates through the types known in the <paramref name="type"/> and returns every discovered module.
-        /// </summary>
-        /// <param name="type">The types who'se subtypes should be iterated to discover new modules.</param>
-        /// <param name="module">The root module of this iteration, if any.</param>
-        /// <param name="configuration">The configuration that define the command registration process.</param>
-        /// <returns>An enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetModules(Type type, ModuleInfo? module, ComponentConfiguration configuration)
-            => GetModules(type.GetNestedTypes(), module, true, configuration);
 
         /// <summary>
         ///     Iterates through the types known in the <paramref name="types"/> and returns every discovered module.
@@ -211,7 +148,7 @@ namespace Commands
         /// <param name="module">The module who'se members should be iterated.</param>
         /// <param name="configuration">The configuration that define the command registration process.</param>
         /// <returns>An array of all discovered components.</returns>
-        public static IComponent[] GetComponents(ModuleInfo module, ComponentConfiguration configuration)
+        public static IEnumerable<IComponent> GetComponents(ModuleInfo module, ComponentConfiguration configuration)
         {
             if (module.Type == null)
                 return [];
@@ -220,8 +157,7 @@ namespace Commands
 
             var modules = GetModules(module.Type.GetNestedTypes(), module, true, configuration);
 
-            return commands.Concat(modules)
-                .ToArray();
+            return commands.Concat(modules);
         }
 
         /// <summary>
@@ -230,7 +166,7 @@ namespace Commands
         /// <param name="type">The type to get or create a converter for.</param>
         /// <param name="configuration">The configuration which serves as a base from which new converters are </param>
         /// <returns>An instance of <see cref="TypeParser"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object, which does not need to be converted.</returns>
-        public static TypeParser? GetTypeConverter(Type type, ComponentConfiguration configuration)
+        public static TypeParser? GetParser(Type type, ComponentConfiguration configuration)
         {
             if (!type.IsConvertible())
                 return null;
@@ -275,14 +211,10 @@ namespace Commands
                 }
 
                 if (enumType == CollectionType.List)
-                {
                     return ListParser.GetOrCreate(converter);
-                }
 
                 if (enumType == CollectionType.Set)
-                {
                     return SetParser.GetOrCreate(converter);
-                }
             }
             catch
             {
@@ -298,26 +230,25 @@ namespace Commands
         /// <typeparam name="T">The attribute type to filter by.</typeparam>
         /// <param name="component">The component that should be searched for the attribute.</param>
         /// <returns>An attribute of the type <typeparamref name="T"/> if it exists, otherwise <see langword="null"/>.</returns>
-        public static T? GetAttribute<T>(this IScoreable component)
+        public static T? GetAttribute<T>(this IScorable component)
             where T : Attribute
-        {
-            return component.Attributes.GetAttribute<T>();
-        }
+            => component.Attributes.GetAttribute<T>();
+
+        internal static T? GetAttribute<T>(this IEnumerable<Attribute> attributes)
+            where T : Attribute
+            => attributes.OfType<T>().FirstOrDefault();
+
+        internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
+            => provider.GetCustomAttributes(inherit).OfType<Attribute>();
 
         internal static bool IsString(this Type type)
-        {
-            return type.GUID == s_type.GUID;
-        }
+            => type.GUID == s_type.GUID;
 
         internal static bool IsObject(this Type type)
-        {
-            return type.GUID == o_type.GUID;
-        }
+            => type.GUID == o_type.GUID;
 
         internal static bool IsConvertible(this Type type)
-        {
-            return type.GUID != o_type.GUID && type.GUID != s_type.GUID;
-        }
+            => type.GUID != o_type.GUID && type.GUID != s_type.GUID;
 
         internal static CollectionType GetCollectionType(this Type type, Type? elementType = null)
         {
@@ -369,13 +300,6 @@ namespace Commands
 
             return arr;
         }
-
-        internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
-            => provider.GetCustomAttributes(inherit).OfType<Attribute>();
-
-        internal static T? GetAttribute<T>(this IEnumerable<Attribute> attributes)
-            where T : Attribute
-            => attributes.OfType<T>().FirstOrDefault();
 
         internal static bool ContainsAttribute<T>(this IEnumerable<Attribute> attributes, bool allowMultipleMatches)
         {

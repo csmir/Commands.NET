@@ -63,7 +63,7 @@ namespace Commands
             else
                 IsRemainder = false;
 
-            var converter = ComponentUtilities.GetTypeConverter(Type, options);
+            var converter = ComponentUtilities.GetParser(Type, options);
 
             Parser = converter;
             ExposedType = parameterInfo.ParameterType;
@@ -115,7 +115,7 @@ namespace Commands
 
         /// <inheritdoc />
         public int CompareTo(object obj)
-            => obj is IScoreable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
+            => obj is IScorable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
         /// <inheritdoc />
         public override string ToString()

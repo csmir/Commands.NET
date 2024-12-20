@@ -1,69 +1,36 @@
 ﻿using Commands.Builders;
 using Commands.Conditions;
 using System.Diagnostics;
-using System.Reflection;
 
 [assembly: CLSCompliant(true)]
 
 namespace Commands
 {
-    /// <summary>
-    ///     The root type serving as a basis for all operations and functionality as provided by Commands.NET. This class cannot be inherited.
-    ///     To learn more about use of this type and other features of Commands.NET, check out the README on GitHub: <see href="https://github.com/csmir/Commands.NET"/>
-    /// </summary>
-    /// <remarks>
-    ///     To start using this tree, call <see cref="CreateBuilder"/> and configure it using the minimal API's implemented by the <see cref="ComponentTreeBuilder"/>.
-    /// </remarks>
+    /// <inheritdoc cref="IComponentTree"/>
     [DebuggerDisplay("Count = {Count}")]
     public sealed class ComponentTree : ComponentCollection, IComponentTree
     {
         private readonly ResultHandler[] _handlers;
 
-        /// <summary>
-        ///     Creates a new instance of <see cref="ComponentTree"/>, using the provided <paramref name="configuration"/> to build the command tree.
-        /// </summary>
-        /// <remarks>
-        ///     This constructor searches for all components that inherit <see cref="CommandModule"/> in the provided assemblies.
-        /// </remarks>
-        /// <param name="configuration">The configuration by which all reflected components should be configured.</param>
-        /// <param name="assemblies">A collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="CommandModule"/>.</param>
-        public ComponentTree(ComponentConfiguration configuration, params IEnumerable<Assembly> assemblies)
-            : this(configuration, assemblies, null, null) { }
-
-        /// <summary>
-        ///     Creates a new instance of <see cref="ComponentTree"/>, using the provided <paramref name="configuration"/> to build the command tree.
-        /// </summary>
-        /// <remarks>
-        ///     This constructor implements a collection of <see cref="IComponent"/> components that are passed to the tree.
-        /// </remarks>
-        /// <param name="configuration"></param>
-        /// <param name="components"></param>
-        public ComponentTree(ComponentConfiguration configuration, params IEnumerable<IComponent> components)
-            : this(configuration, null, components, null) { }
-
-        /// <summary>
-        ///     Creates a new instance of <see cref="ComponentTree"/>, using the provided <paramref name="configuration"/> to build the command tree.
-        /// </summary>
-        /// <param name="configuration">The configuration by which all reflected components should be configured.</param>
-        /// <param name="assemblies">An optional collection of assemblies through which a lookup will be executed to construct all components that inherit <see cref="CommandModule"/>.</param>
-        /// <param name="runtimeComponents">Delegate-based components that should be passed to the tree at runtime.</param>
-        /// <param name="resolvers">An optional collection of handlers of command results.</param>
-        public ComponentTree(ComponentConfiguration configuration, IEnumerable<Assembly>? assemblies = null, IEnumerable<IComponent>? runtimeComponents = null, IEnumerable<ResultHandler>? resolvers = null)
-            : base()
+        internal ComponentTree(IEnumerable<IComponent> components, IEnumerable<ResultHandler> resolvers)
+            : base(false)
         {
-            assemblies ??= [];
-            runtimeComponents ??= [];
+            var topLevelComponents = new List<IComponent>();
 
-            if (assemblies.Any() || runtimeComponents.Any())
+            foreach (var component in components)
             {
-                configuration.SetProperty("HierarchyRetentionHandler", new Action<IComponent[], bool>(HierarchyRetentionHandler));
+                if (component.IsSearchable)
+                    topLevelComponents.Add(component);
 
-                var commands = ComponentUtilities.GetTopLevelComponents(assemblies.ToArray(), configuration)
-                    .Concat(runtimeComponents)
-                    .OrderByDescending(command => command.Score);
+                if (component is ComponentCollection collection)
+                {
+                    collection.Bind(this);
 
-                PushDangerous(commands);
+                    topLevelComponents.AddRange(collection);
+                }
             }
+
+            Push(topLevelComponents.OrderByDescending(x => x.Score));
 
             _handlers = resolvers?.ToArray() ?? [];
         }
@@ -93,20 +60,13 @@ namespace Commands
         public Task Execute<T>(
             T caller, string args, CommandOptions? options = null)
             where T : ICallerContext
-        {
-            if (string.IsNullOrWhiteSpace(args))
-                throw new ArgumentNullException(nameof(args));
-
-            return Execute(caller, ArgumentParser.ParseKeyValueCollection(args), options);
-        }
+            => Execute(caller, ArgumentParser.ParseKeyValueCollection(args), options);
 
         /// <inheritdoc />
         public Task Execute<T>(
             T caller, IEnumerable<object> args, CommandOptions? options = null)
             where T : ICallerContext
-        {
-            return Execute(caller, new ArgumentEnumerator(args), options ?? new CommandOptions());
-        }
+            => Execute(caller, new ArgumentEnumerator(args), options ?? new CommandOptions());
 
         /// <inheritdoc />
         public Task Execute<T>(
@@ -320,21 +280,6 @@ namespace Commands
         }
 
         #endregion
-
-        // This method is called when a top-level commands' module receives a mutation which prompts a re-sort of the hierarchy.
-        private void HierarchyRetentionHandler(IComponent[] newComponents, bool removing = false)
-        {
-            if (removing)
-                RemoveRange(newComponents);
-            else
-            {
-                AddRange(newComponents);
-
-                // Only re-sort if the new components are being added.
-                // It is unnecessary to re-sort if they are being removed, as the hierarchy will be re-sorted on the next addition.
-                Sort();
-            }
-        }
 
         /// <summary>
         ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="ComponentTree"/>. This builder is pre-configured with default settings.

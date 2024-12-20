@@ -1,6 +1,35 @@
 ﻿namespace Commands
 {
     /// <summary>
+    ///     A handler for post-execution processes bound to specific types of <see cref="ICallerContext"/>. This generic handler filters results based on the caller type.
+    /// </summary>
+    /// <remarks>
+    ///     Implementing this type allows you to treat result data and scope finalization of all commands executed by the provided <see cref="ICallerContext"/>, regardless on whether the command execution succeeded or not.
+    /// </remarks>
+    /// <typeparam name="T"></typeparam>
+    public abstract class ResultHandler<T> : ResultHandler
+        where T : class, ICallerContext
+    {
+        /// <inheritdoc cref="ResultHandler.HandleResult(ICallerContext, IExecuteResult, IServiceProvider, CancellationToken)"/>.
+        /// <remarks>
+        ///     This method is only executed when the provided <paramref name="caller"/> is of type <typeparamref name="T"/>.
+        /// </remarks>
+        public virtual ValueTask HandleResult(T caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+            => base.HandleResult(caller, result, services, cancellationToken);
+
+        /// <inheritdoc />
+        public override ValueTask HandleResult(
+            ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+        {
+            if (caller is T typedCaller)
+                return HandleResult(typedCaller, result, services, cancellationToken);
+
+            // If the caller is not of type T, return default, not handling the result.
+            return default;
+        }
+    }
+
+    /// <summary>
     ///     A handler for post-execution processes.
     /// </summary>
     /// <remarks>

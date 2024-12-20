@@ -3,7 +3,7 @@
     /// <summary>
     ///     Reveals a name and potential attributes of a component necessary for execution.
     /// </summary>
-    public interface IScoreable : IComparable
+    public interface IScorable : IComparable
     {
         /// <summary>
         ///     Gets the name of the component.

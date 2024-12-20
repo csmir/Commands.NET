@@ -7,7 +7,7 @@ namespace Commands
     ///     Reveals information about a command.
     /// </summary>
     [DebuggerDisplay("{ToString()}")]
-    public sealed class CommandInfo : IComponent, IArgumentCollection
+    public sealed class CommandInfo : IComponent, IArgumentBucket
     {
         private readonly Guid __id = Guid.NewGuid();
 
@@ -88,7 +88,7 @@ namespace Commands
 
             var parameters = invoker.Target.GetArguments(hasContext, options);
 
-            var (minLength, maxLength) = parameters.GetLength();
+            (MinLength, MaxLength) = parameters.GetLength();
 
             Aliases = aliases;
 
@@ -114,9 +114,6 @@ namespace Commands
 
             Arguments = parameters;
             HasRemainder = parameters.Any(x => x.IsRemainder);
-
-            MinLength = minLength;
-            MaxLength = maxLength;
         }
 
         /// <inheritdoc />
@@ -134,7 +131,7 @@ namespace Commands
 
         /// <inheritdoc />
         public int CompareTo(object obj)
-            => obj is IScoreable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
+            => obj is IScorable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
         /// <inheritdoc />
         public bool Equals(IComponent other)

@@ -15,10 +15,10 @@ namespace Commands.Builders
         public ICollection<IComponentBuilder> Components { get; set; } = [];
 
         /// <inheritdoc />
-        public ICollection<Assembly> Assemblies { get; set; } = [Assembly.GetEntryAssembly()!];
+        public ICollection<ResultHandler> Handlers { get; set; } = [];
 
         /// <inheritdoc />
-        public ICollection<ResultHandler> Handlers { get; set; } = [];
+        public ICollection<Type> Types { get; set; } = Assembly.GetEntryAssembly()?.GetTypes() ?? [];
 
         /// <inheritdoc />
         public Func<IComponent, bool> ComponentRegistrationFilter { get; set; } = _ => true;
@@ -88,6 +88,22 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
+        public ITreeBuilder AddModule(Type type)
+        {
+            if (Types.Contains(type))
+                return this;
+
+            Types.Add(type);
+
+            return this;
+        }
+
+        /// <inheritdoc />
+        public ITreeBuilder AddModule<T>()
+            where T : CommandModule
+            => AddModule(typeof(T));
+
+        /// <inheritdoc />
         public ITreeBuilder AddResultHandler(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction)
         {
             if (resultAction == null)
@@ -99,7 +115,19 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder AddResultResolver(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction)
+        public ITreeBuilder AddResultHandler<T>(Action<T, IExecuteResult, IServiceProvider> resultAction)
+            where T : class, ICallerContext
+        {
+            if (resultAction == null)
+                throw new ArgumentNullException(nameof(resultAction));
+
+            Handlers.Add(new DelegateResultHandler<T>(resultAction));
+
+            return this;
+        }
+
+        /// <inheritdoc />
+        public ITreeBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction)
         {
             if (resultAction == null)
                 throw new ArgumentNullException(nameof(resultAction));
@@ -110,7 +138,19 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder AddResultResolver(ResultHandler resolver)
+        public ITreeBuilder AddResultHandler<T>(Func<T, IExecuteResult, IServiceProvider, ValueTask> resultAction)
+            where T : class, ICallerContext
+        {
+            if (resultAction == null)
+                throw new ArgumentNullException(nameof(resultAction));
+
+            Handlers.Add(new AsyncDelegateResultHandler<T>(resultAction));
+
+            return this;
+        }
+
+        /// <inheritdoc />
+        public ITreeBuilder AddResultHandler(ResultHandler resolver)
         {
             if (resolver == null)
                 throw new ArgumentNullException(nameof(resolver));
@@ -126,10 +166,10 @@ namespace Commands.Builders
             if (assembly == null)
                 throw new ArgumentNullException(nameof(assembly));
 
-            if (Assemblies.Contains(assembly))
-                return this;
+            var unwrappedAssembly = assembly.GetTypes();
 
-            Assemblies.Add(assembly);
+            foreach (var type in unwrappedAssembly)
+                AddModule(type);
 
             return this;
         }
@@ -178,12 +218,10 @@ namespace Commands.Builders
 
             var configuration = Configuration.Build();
 
-            var components = Components.Select(x => x.Build(configuration));
+            var components = ComponentUtilities.GetModules(Types, null, false, configuration)
+                .Concat(Components.Select(x => x.Build(configuration)));
 
-            return new ComponentTree(configuration,
-                assemblies: Assemblies,
-                resolvers: Handlers,
-                runtimeComponents: components);
+            return new ComponentTree(components, Handlers);
         }
     }
 }

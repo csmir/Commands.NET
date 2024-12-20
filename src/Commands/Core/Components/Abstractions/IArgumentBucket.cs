@@ -3,7 +3,7 @@
     /// <summary>
     ///     Reveals information about a bucket that contains zero-or-more arguments to resolve.
     /// </summary>
-    public interface IArgumentCollection
+    public interface IArgumentBucket
     {
         /// <summary>
         ///     Gets the activator for this bucket.

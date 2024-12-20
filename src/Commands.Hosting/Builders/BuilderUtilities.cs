@@ -49,6 +49,8 @@ namespace Commands.Builders
                     return new SequenceInitiator(tree, providers, provider, logger);
                 });
 
+                services.Add(initiatorDescriptor);
+
                 if (!context.Properties.ContainsKey("Commands:InitiatorConfigured"))
                 {
                     services.AddHostedService<InitiatorHostService>();

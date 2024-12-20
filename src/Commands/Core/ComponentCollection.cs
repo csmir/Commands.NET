@@ -1,12 +1,13 @@
-﻿using Commands.Core.Abstractions;
-using System.Collections;
+﻿using System.Collections;
+using System.Diagnostics;
 
 namespace Commands
 {
     /// <inheritdoc cref="IComponentCollection"/>
+    [DebuggerDisplay("Count = {Count}")]
     public abstract class ComponentCollection : IComponentCollection
     {
-        private readonly Action<IComponent[], bool>? _hierarchyRetentionHandler;
+        private Action<IComponent[], bool>? _mutateParent;
 
         private HashSet<IComponent> _components = [];
 
@@ -17,14 +18,8 @@ namespace Commands
         /// <inheritdoc />
         public bool IsReadOnly { get; }
 
-        internal ComponentCollection()
-            : this(false, null) { }
-
-        internal ComponentCollection(bool isReadOnly, Action<IComponent[], bool>? hierarchyRetentionHandler)
-        {
-            _hierarchyRetentionHandler = hierarchyRetentionHandler;
-            IsReadOnly = isReadOnly;
-        }
+        internal ComponentCollection(bool isReadOnly)
+            => IsReadOnly = isReadOnly;
 
         /// <inheritdoc />
         public abstract IEnumerable<SearchResult> Find(ArgumentEnumerator args);
@@ -99,10 +94,10 @@ namespace Commands
         }
 
         /// <inheritdoc />
+        /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
         public void Sort()
         {
-            if (IsReadOnly)
-                throw new UnauthorizedAccessException("This collection has been marked as read-only and cannot be mutated.");
+            ThrowIfLocked();
 
             var orderedCopy = new HashSet<IComponent>(_components.OrderByDescending(x => x.Score));
 
@@ -110,26 +105,27 @@ namespace Commands
         }
 
         /// <inheritdoc />
+        /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
         public bool Add(IComponent component)
             => AddRange(component) > 0;
 
         /// <inheritdoc />
+        /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
         public int AddRange(params IComponent[] components)
         {
-            if (IsReadOnly)
-                throw new UnauthorizedAccessException("This collection has been marked as read-only and cannot be mutated.");
+            ThrowIfLocked();
 
             var hasChanged = 0;
 
             var copy = new HashSet<IComponent>(_components);
 
             foreach (var component in components)
-                hasChanged += (copy.Add(component) ? 1 : 0);
+                hasChanged += copy.Add(component) ? 1 : 0;
 
             if (hasChanged > 0)
             {
                 // Notify the top-level collection that a mutation has occurred. This will add, and resort the components.
-                _hierarchyRetentionHandler?.Invoke(components, false);
+                _mutateParent?.Invoke(components, false);
 
                 var orderedCopy = new HashSet<IComponent>(copy.OrderByDescending(x => x.Score));
 
@@ -140,24 +136,25 @@ namespace Commands
         }
 
         /// <inheritdoc />
+        /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
         public bool Remove(IComponent component)
             => RemoveRange(component) > 0;
 
         /// <inheritdoc />
+        /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
         public int RemoveRange(params IComponent[] components)
         {
-            if (IsReadOnly)
-                throw new UnauthorizedAccessException("This collection has been marked as read-only and cannot be mutated.");
+            ThrowIfLocked();
 
             var copy = new HashSet<IComponent>(_components);
             var removed = 0;
 
             foreach (var component in components)
-                removed += (copy.Remove(component) ? 1 : 0);
+                removed += copy.Remove(component) ? 1 : 0;
 
             if (removed > 0)
             {
-                _hierarchyRetentionHandler?.Invoke(components, true);
+                _mutateParent?.Invoke(components, true);
 
                 Interlocked.Exchange(ref _components, copy);
             }
@@ -166,11 +163,10 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        /// <exception cref="UnauthorizedAccessException">Thrown when the collection is marked as read-only.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
         public void Clear()
         {
-            if (IsReadOnly)
-                throw new UnauthorizedAccessException("This collection has been marked as read-only and cannot be mutated.");
+            ThrowIfLocked();
 
             Interlocked.Exchange(ref _components, []);
         }
@@ -183,9 +179,30 @@ namespace Commands
         public IEnumerator<IComponent> GetEnumerator()
             => _components.GetEnumerator();
 
-        // This method is used to push components into the collection without any validation. This is used for internal operations.
-        internal void PushDangerous(IEnumerable<IComponent> components)
+        internal void Bind(ComponentCollection collection)
+            => _mutateParent = collection.MutateFromChild;
+
+        internal void Push(IEnumerable<IComponent> components)
             => _components = [.. components];
+
+        // Mutates the parent collection from the child collection, if bind is called by the parent collection.
+        private void MutateFromChild(IComponent[] components, bool removing)
+        {
+            if (removing)
+                RemoveRange(components);
+            else
+            {
+                AddRange(components);
+                Sort();
+            }
+        }
+
+        // Throws an exception if the collection is marked as read-only.
+        private void ThrowIfLocked()
+        {
+            if (IsReadOnly)
+                throw new InvalidOperationException("This collection has been marked as read-only and cannot be mutated.");
+        }
 
         void ICollection<IComponent>.Add(IComponent item)
             => Add(item);
