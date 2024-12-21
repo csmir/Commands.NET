@@ -98,19 +98,21 @@ namespace Commands
         /// <inheritdoc />
         public ValueTask<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
-            if (IsNullable && value is null or "null")
-                return ConvertResult.FromSuccess(null);
+            if (value is string str)
+                return ConvertResult.FromSuccess(str);
 
-            if (value is null)
-                return ConvertResult.FromError(new ArgumentNullException(Name));
+            if (value is null or "null")
+            {
+                if (IsNullable)
+                    return ConvertResult.FromSuccess(null);
 
-            if (Type.IsString())
-                return ConvertResult.FromSuccess(value?.ToString());
+                return ConvertResult.FromError(new ArgumentNullException(nameof(value), "A null (or \"null\") value was attempted to be provided to a non-nullable command parameter."));
+            }
 
-            if (Type.IsObject())
-                return ConvertResult.FromSuccess(value);
+            if (Parser != null)
+                return Parser.Parse(caller, this, value, services, cancellationToken);
 
-            return Parser!.Parse(caller, this, value, services, cancellationToken);
+            return ConvertResult.FromSuccess(value);
         }
 
         /// <inheritdoc />

@@ -10,15 +10,6 @@ namespace Commands
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static class ComponentUtilities
     {
-        private static readonly Type m_type = typeof(CommandModule);
-        private static readonly Type c_type = typeof(CommandContext<>);
-
-        private static readonly Type o_type = typeof(object);
-        private static readonly Type s_type = typeof(string);
-
-        private static readonly Type l_type = typeof(List<>);
-        private static readonly Type h_type = typeof(HashSet<>);
-
         /// <summary>
         ///     Iterates through the types known in the <paramref name="types"/> and returns every discovered module.
         /// </summary>
@@ -34,7 +25,7 @@ namespace Commands
                 if (!withNested && type.IsNested)
                     continue;
 
-                if (!m_type.IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
+                if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
                     continue;
 
                 var aliases = Array.Empty<string>();
@@ -125,7 +116,7 @@ namespace Commands
                             var param = method.GetParameters();
 
                             var hasContext = false;
-                            if (param.Length > 0 && param[0].ParameterType.IsGenericType && param[0].ParameterType.GetGenericTypeDefinition() == c_type)
+                            if (param.Length > 0 && param[0].ParameterType.IsGenericType && param[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>))
                                 hasContext = true;
 
                             component = new CommandInfo(module, new StaticActivator(method, hasContext), aliases, hasContext, configuration);
@@ -168,7 +159,22 @@ namespace Commands
         /// <returns>An instance of <see cref="TypeParser"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object, which does not need to be converted.</returns>
         public static TypeParser? GetParser(Type type, ComponentConfiguration configuration)
         {
-            if (!type.IsConvertible())
+            TypeParser GetParser(Type elementType)
+            {
+                if (!configuration.Parsers.TryGetValue(elementType!, out var parser))
+                {
+                    if (elementType == typeof(string))
+                        parser = StringParser.Instance;
+                    else if (elementType == typeof(object))
+                        parser = ObjectParser.Instance;
+                    else
+                        throw BuildException.CollectionNotSupported(elementType);
+                }
+
+                return parser;
+            }
+
+            if (type == typeof(string) || type == typeof(object))
                 return null;
 
             if (configuration.Parsers.TryGetValue(type, out var converter))
@@ -178,37 +184,15 @@ namespace Commands
                 return EnumParser.GetOrCreate(type);
 
             if (type.IsArray)
-            {
-                var elementType = type.GetElementType();
-
-                if (!configuration.Parsers.TryGetValue(elementType!, out converter))
-                {
-                    if (elementType!.IsString())
-                        converter = StringParser.Instance;
-                    else if (elementType!.IsObject())
-                        converter = ObjectParser.Instance;
-                    else
-                        throw BuildException.CollectionNotSupported(elementType);
-                }
-
-                return ArrayParser.GetOrCreate(converter);
-            }
+                return ArrayParser.GetOrCreate(GetParser(type.GetElementType()));
 
             try
             {
                 var elementType = type.GetGenericArguments()[0];
 
-                var enumType = type.GetCollectionType(elementType);
+                converter = GetParser(elementType);
 
-                if (!configuration.Parsers.TryGetValue(elementType, out converter))
-                {
-                    if (elementType.IsString())
-                        converter = StringParser.Instance;
-                    else if (elementType.IsObject())
-                        converter = ObjectParser.Instance;
-                    else
-                        throw BuildException.CollectionNotSupported(elementType);
-                }
+                var enumType = type.GetCollectionType(elementType);
 
                 if (enumType == CollectionType.List)
                     return ListParser.GetOrCreate(converter);
@@ -241,26 +225,14 @@ namespace Commands
         internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
             => provider.GetCustomAttributes(inherit).OfType<Attribute>();
 
-        internal static bool IsString(this Type type)
-            => type.GUID == s_type.GUID;
-
-        internal static bool IsObject(this Type type)
-            => type.GUID == o_type.GUID;
-
-        internal static bool IsConvertible(this Type type)
-            => type.GUID != o_type.GUID && type.GUID != s_type.GUID;
-
         internal static CollectionType GetCollectionType(this Type type, Type? elementType = null)
         {
-            if (type.IsArray)
-                return CollectionType.Array;
-
             if (elementType != null)
             {
-                if (type.IsAssignableFrom(l_type.MakeGenericType(elementType)))
+                if (type.IsAssignableFrom(typeof(List<>).MakeGenericType(elementType)))
                     return CollectionType.List;
 
-                if (type.IsAssignableFrom(h_type.MakeGenericType(elementType)))
+                if (type.IsAssignableFrom(typeof(HashSet<>).MakeGenericType(elementType)))
                     return CollectionType.Set;
             }
 

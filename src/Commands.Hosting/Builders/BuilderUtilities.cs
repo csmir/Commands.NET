@@ -17,7 +17,7 @@ namespace Commands.Builders
         /// </summary>
         /// <remarks>
         ///     This operation will not inject new instances of <see cref="IComponentTree"/> into the host's <see cref="IServiceProvider"/>.
-        ///     Instead, it will immediately set new instances in the parameters of isolated <see cref="ISequenceInitiator"/>, 
+        ///     Instead, it will immediately set these instances in the parameters of isolated <see cref="ISequenceInitiator"/>, 
         ///     which are control services that manage the execution of commands sourced from a collection of configured <see cref="SourceProvider"/> implementations.
         ///     A hosted service, being <see cref="InitiatorHostService"/>, will be added to the host to manage the lifecycle -bound to <see cref="IHostApplicationLifetime"/>- of the <see cref="ISequenceInitiator"/> collection which contains configured <see cref="IComponentTree"/> implementations. 
         ///     This collection's size is equal to the number of times this method was called before the host is started.
