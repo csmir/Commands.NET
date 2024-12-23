@@ -30,7 +30,7 @@ namespace Commands
         /// </summary>
         /// <param name="name">The target name.</param>
         public NameAttribute(string name)
-            : this(name, [])
+            : this([name])
         {
 
         }
@@ -38,32 +38,14 @@ namespace Commands
         /// <summary>
         ///     Creates a new <see cref="NameAttribute"/> with defined name and aliases.
         /// </summary>
-        /// <param name="name">The name of the target.</param>
         /// <param name="aliases">The target's aliases. Aliases are not considered for parameter names.</param>
-        public NameAttribute(string name, params string[] aliases)
+        public NameAttribute(params string[] aliases)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentNullException(nameof(name));
+            if (aliases == null || aliases.Length == 0)
+                throw BuildException.AliasAtLeastOne();
 
-            var arr = new string[aliases.Length + 1];
-            for (int i = 0; i < aliases.Length; i++)
-            {
-                if (string.IsNullOrWhiteSpace(aliases[i]))
-                    throw new ArgumentNullException(nameof(aliases));
-
-                if (arr.Contains(aliases[i]))
-                    throw BuildException.AliasDistinct(aliases[i]);
-
-                arr[i + 1] = aliases[i];
-            }
-
-            if (arr.Contains(name))
-                throw BuildException.AliasDistinct(name);
-
-            arr[0] = name;
-
-            Name = name;
-            Aliases = arr;
+            Aliases = aliases;
+            Name = aliases[0];
         }
 
         internal void ValidateAliases(ComponentConfiguration configuration)

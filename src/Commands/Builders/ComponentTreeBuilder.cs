@@ -225,7 +225,7 @@ namespace Commands.Builders
 
             var configuration = Configuration.Build();
 
-            var components = ComponentUtilities.GetModules(Types, null, false, configuration)
+            var components = configuration.GetModules(Types)
                 .Concat(Components.Select(x => x.Build(configuration)));
 
             return new ComponentTree(components, Handlers);

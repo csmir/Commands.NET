@@ -37,7 +37,7 @@ namespace Commands
             => Parser is ICollectionConverter;
 
         internal ArgumentInfo(
-            ParameterInfo parameterInfo, string? name, ComponentConfiguration options)
+            ParameterInfo parameterInfo, string? name, ComponentConfiguration configuration)
         {
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);
@@ -63,7 +63,7 @@ namespace Commands
             else
                 IsRemainder = false;
 
-            var converter = ComponentUtilities.GetParser(Type, options);
+            var converter = configuration.GetParser(Type);
 
             Parser = converter;
             ExposedType = parameterInfo.ParameterType;

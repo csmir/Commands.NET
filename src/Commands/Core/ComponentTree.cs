@@ -12,7 +12,12 @@ namespace Commands
     {
         private readonly ResultHandler[] _handlers;
 
-        internal ComponentTree(IEnumerable<IComponent> components, IEnumerable<ResultHandler> resolvers)
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ComponentTree"/> class, which serves as a container for executing commands and modules.
+        /// </summary>
+        /// <param name="components">A collection of executable components that can be executed by calling <see cref="Execute{T}(T, string, CommandOptions?)"/> or any overload of the same method.</param>
+        /// <param name="handlers">A collection of <see cref="ResultHandler"/> implementations that handle results returned by the handler.</param>
+        public ComponentTree(IEnumerable<IComponent> components, params ResultHandler[] handlers)
             : base(false)
         {
             var topLevelComponents = new List<IComponent>();
@@ -32,7 +37,7 @@ namespace Commands
 
             Push(topLevelComponents.OrderByDescending(x => x.Score));
 
-            _handlers = resolvers?.ToArray() ?? [];
+            _handlers = handlers;
         }
 
         /// <inheritdoc />

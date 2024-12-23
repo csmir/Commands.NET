@@ -11,14 +11,113 @@ namespace Commands
     public static class ComponentUtilities
     {
         /// <summary>
-        ///     Iterates through the types known in the <paramref name="types"/> and returns every discovered module.
+        ///     Iterates through the types known in the <paramref name="types"/> and returns every discovered top-level module.
         /// </summary>
-        /// <param name="types">The types that should be iterated to discover new modules.</param>
-        /// <param name="module">The root module of this iteration, if any.</param>
-        /// <param name="withNested">Determines if the iteration should include nested types.</param>
+        /// <param name="configuration">The configuration that defines the command registration process.</param>
+        /// <param name="types">The types that should be searched to discover new modules.</param>
+        /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> containing all discovered modules in the provided <paramref name="types"/>.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static IEnumerable<ModuleInfo> GetModules(this ComponentConfiguration configuration, params IEnumerable<Type> types)
+        {
+            if (types == null)
+                throw new ArgumentNullException(nameof(types));
+
+            if (configuration == null)
+                throw new ArgumentNullException(nameof(configuration));
+
+            return configuration.GetModules(types, null, false);
+        }
+
+        /// <summary>
+        ///     Iterates through all members of the <paramref name="parent"/> and returns every discovered component.
+        /// </summary>
         /// <param name="configuration">The configuration that define the command registration process.</param>
-        /// <returns>An enumerable of all discovered modules.</returns>
-        public static IEnumerable<ModuleInfo> GetModules(IEnumerable<Type> types, ModuleInfo? module, bool withNested, ComponentConfiguration configuration)
+        /// <param name="parent">The module who'se members should be iterated.</param>
+        /// <returns>An array of all discovered components.</returns>
+        public static IEnumerable<IComponent> GetComponents(this ComponentConfiguration configuration, ModuleInfo parent)
+        {
+            if (parent.Type == null)
+                return [];
+
+            var commands = configuration.GetCommands(parent.Type, parent, parent.Aliases.Length > 0);
+
+            var modules = configuration.GetModules(parent.Type.GetNestedTypes(), parent, true);
+
+            return commands.Concat(modules);
+        }
+
+        /// <summary>
+        ///     Returns the parser for the specified <paramref name="type"/> if it needs to be parsed. Otherwise, returns <see langword="null"/>.
+        /// </summary>
+        /// <param name="configuration">The configuration that define the command registration process.</param>
+        /// <param name="type">The type to get or create a parser for.</param>
+        /// <returns>An instance of <see cref="TypeParser"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object and no custom converter is defined, which do not need to be converted.</returns>
+        public static TypeParser? GetParser(this ComponentConfiguration configuration, Type type)
+        {
+            TypeParser GetParser(Type elementType)
+            {
+                if (!configuration.Parsers.TryGetValue(elementType!, out var parser))
+                {
+                    if (elementType.IsEnum)
+                        return EnumParser.GetOrCreate(elementType);
+
+                    // csmir: Chosen not to support nested collections as this is a whole different level of complexity for both parsing and validation.
+
+                    throw BuildException.CollectionNotSupported(elementType);
+                }
+
+                return parser;
+            }
+
+            if (configuration.Parsers.TryGetValue(type, out var converter))
+                return converter;
+
+            if (type.IsEnum)
+                return EnumParser.GetOrCreate(type);
+
+            if (type.IsArray)
+                return ArrayParser.GetOrCreate(GetParser(type.GetElementType()));
+
+            try
+            {
+                var elementType = type.GetGenericArguments()[0];
+
+                converter = GetParser(elementType);
+
+                var enumType = type.GetCollectionType(elementType);
+
+                if (enumType == CollectionType.List)
+                    return ListParser.GetOrCreate(converter);
+
+                if (enumType == CollectionType.Set)
+                    return SetParser.GetOrCreate(converter);
+            }
+            catch
+            {
+                throw BuildException.CollectionNotSupported(type);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        ///     Gets the first attribute of the specified type set on this component, if it exists.
+        /// </summary>
+        /// <typeparam name="T">The attribute type to filter by.</typeparam>
+        /// <param name="component">The component that should be searched for the attribute.</param>
+        /// <returns>An attribute of the type <typeparamref name="T"/> if it exists; Otherwise <see langword="null"/>.</returns>
+        public static T? GetAttribute<T>(this IScorable component)
+            where T : Attribute
+            => component.Attributes.GetAttribute<T>();
+
+        internal static T? GetAttribute<T>(this IEnumerable<Attribute> attributes)
+            where T : Attribute
+            => attributes.OfType<T>().FirstOrDefault();
+
+        internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
+            => provider.GetCustomAttributes(inherit).OfType<Attribute>();
+
+        internal static IEnumerable<ModuleInfo> GetModules(this ComponentConfiguration configuration, IEnumerable<Type> types, ModuleInfo? parent, bool withNested)
         {
             foreach (var type in types)
             {
@@ -53,7 +152,7 @@ namespace Commands
                 if (!skip)
                 {
                     // yield a new module if all aliases are valid and it shouldn't be skipped.
-                    var component = new ModuleInfo(type, module, aliases, configuration);
+                    var component = new ModuleInfo(type, parent, aliases, configuration);
 
                     var componentFilter = configuration.GetProperty<Func<IComponent, bool>>("ComponentRegistrationFilter");
 
@@ -63,15 +162,7 @@ namespace Commands
             }
         }
 
-        /// <summary>
-        ///     Iterates through all methods of the <paramref name="type"/> and returns every discovered command.
-        /// </summary>
-        /// <param name="type">The type who'se methods should be iterated through to discover commands.</param>
-        /// <param name="module">The root module of the commands that should be registered.</param>
-        /// <param name="withDefaults">Determines if the root module has any defaults to take into consideration.</param>
-        /// <param name="configuration">The configuration that define the command registration process.</param>
-        /// <returns>An enumerable of all discovered commands.</returns>
-        public static IEnumerable<IComponent> GetCommands(Type type, ModuleInfo? module, bool withDefaults, ComponentConfiguration configuration)
+        internal static IEnumerable<IComponent> GetCommands(this ComponentConfiguration configuration, Type type, ModuleInfo? parent, bool withDefaults)
         {
             // run through all type methods.
 
@@ -119,10 +210,10 @@ namespace Commands
                             if (param.Length > 0 && param[0].ParameterType.IsGenericType && param[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>))
                                 hasContext = true;
 
-                            component = new CommandInfo(module, new StaticActivator(method, hasContext), aliases, hasContext, configuration);
+                            component = new CommandInfo(parent, new StaticActivator(method, hasContext), aliases, hasContext, configuration);
                         }
                         else
-                            component = new CommandInfo(module, new InstanceActivator(method), aliases, false, configuration);
+                            component = new CommandInfo(parent, new InstanceActivator(method), aliases, false, configuration);
 
                         var componentFilter = configuration.GetProperty<Func<IComponent, bool>>("ComponentRegistrationFilter");
 
@@ -132,98 +223,6 @@ namespace Commands
                 }
             }
         }
-
-        /// <summary>
-        ///     Iterates through all members of the <paramref name="module"/> and returns every discovered component.
-        /// </summary>
-        /// <param name="module">The module who'se members should be iterated.</param>
-        /// <param name="configuration">The configuration that define the command registration process.</param>
-        /// <returns>An array of all discovered components.</returns>
-        public static IEnumerable<IComponent> GetComponents(ModuleInfo module, ComponentConfiguration configuration)
-        {
-            if (module.Type == null)
-                return [];
-
-            var commands = GetCommands(module.Type, module, module.Aliases.Length > 0, configuration);
-
-            var modules = GetModules(module.Type.GetNestedTypes(), module, true, configuration);
-
-            return commands.Concat(modules);
-        }
-
-        /// <summary>
-        ///     Returns the type converter for the specified <paramref name="type"/> if it needs to be parsed. Otherwise, returns <see langword="null"/>.
-        /// </summary>
-        /// <param name="type">The type to get or create a converter for.</param>
-        /// <param name="configuration">The configuration which serves as a base from which new converters are </param>
-        /// <returns>An instance of <see cref="TypeParser"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object, which does not need to be converted.</returns>
-        public static TypeParser? GetParser(Type type, ComponentConfiguration configuration)
-        {
-            TypeParser GetParser(Type elementType)
-            {
-                if (!configuration.Parsers.TryGetValue(elementType!, out var parser))
-                {
-                    if (elementType == typeof(string))
-                        parser = StringParser.Instance;
-                    else if (elementType == typeof(object))
-                        parser = ObjectParser.Instance;
-                    else
-                        throw BuildException.CollectionNotSupported(elementType);
-                }
-
-                return parser;
-            }
-
-            if (type == typeof(string) || type == typeof(object))
-                return null;
-
-            if (configuration.Parsers.TryGetValue(type, out var converter))
-                return converter;
-
-            if (type.IsEnum)
-                return EnumParser.GetOrCreate(type);
-
-            if (type.IsArray)
-                return ArrayParser.GetOrCreate(GetParser(type.GetElementType()));
-
-            try
-            {
-                var elementType = type.GetGenericArguments()[0];
-
-                converter = GetParser(elementType);
-
-                var enumType = type.GetCollectionType(elementType);
-
-                if (enumType == CollectionType.List)
-                    return ListParser.GetOrCreate(converter);
-
-                if (enumType == CollectionType.Set)
-                    return SetParser.GetOrCreate(converter);
-            }
-            catch
-            {
-                throw BuildException.CollectionNotSupported(type);
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        ///     Gets the first attribute of the specified type set on this command, if it exists.
-        /// </summary>
-        /// <typeparam name="T">The attribute type to filter by.</typeparam>
-        /// <param name="component">The component that should be searched for the attribute.</param>
-        /// <returns>An attribute of the type <typeparamref name="T"/> if it exists, otherwise <see langword="null"/>.</returns>
-        public static T? GetAttribute<T>(this IScorable component)
-            where T : Attribute
-            => component.Attributes.GetAttribute<T>();
-
-        internal static T? GetAttribute<T>(this IEnumerable<Attribute> attributes)
-            where T : Attribute
-            => attributes.OfType<T>().FirstOrDefault();
-
-        internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
-            => provider.GetCustomAttributes(inherit).OfType<Attribute>();
 
         internal static CollectionType GetCollectionType(this Type type, Type? elementType = null)
         {

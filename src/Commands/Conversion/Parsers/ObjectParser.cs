@@ -9,7 +9,7 @@
         {
             await Task.CompletedTask;
 
-            return Success(value!);
+            return Success(value);
         }
     }
 }

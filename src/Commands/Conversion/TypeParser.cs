@@ -16,7 +16,7 @@ namespace Commands.Conversion
         /// </summary>
         /// <param name="value">The value parsed from a raw argument into the target type of this parser.</param>
         /// <returns>A <see cref="ConvertResult"/> representing the successful evaluation.</returns>
-        public virtual ConvertResult Success(T value)
+        public virtual ConvertResult Success(T? value)
         {
             if (value == null)
                 throw new ArgumentNullException(nameof(value));
@@ -88,7 +88,7 @@ namespace Commands.Conversion
         /// </summary>
         /// <param name="value">The value parsed from a raw argument into the target type of this parser.</param>
         /// <returns>A <see cref="ConvertResult"/> representing the successful evaluation.</returns>
-        protected ConvertResult Success(object value)
+        protected ConvertResult Success(object? value)
             => ConvertResult.FromSuccess(value);
 
         /// <summary>
@@ -97,21 +97,23 @@ namespace Commands.Conversion
         /// <remarks>
         ///     The list of types that are parsed by these converters are:
         ///     <list type="bullet">
-        ///         <item>String characters, being: <see langword="char"/>.</item>
+        ///         <item>Core types, being: <see langword="object"/>, <see langword="string"/> and its element type; <see langword="char"/>.</item>
         ///         <item>Integers variants, being: <see langword="bool"/>, <see langword="byte"/>, <see langword="sbyte"/>, <see langword="short"/>, <see langword="ushort"/>, <see langword="int"/>, <see langword="uint"/>, <see langword="long"/> and <see langword="ulong"/>.</item>
         ///         <item>Floating point numbers, being: <see langword="float"/>, <see langword="decimal"/> and <see langword="double"/>.</item>
         ///         <item>Commonly used structs, being: <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/> and <see cref="Guid"/>.</item>
         ///     </list>
         ///     <i>The parser <see cref="TimeSpan"/> does not implement the standard <see cref="TimeSpan.TryParse(string, out TimeSpan)"/>, instead having a custom implementation under <see cref="TimeSpanParser"/>.</i>
         /// </remarks>
-        /// <returns>A new <see cref="Dictionary{TKey, TValue}"/> containing a range of <see cref="TypeParser"/>'s for all types listed above.</returns>
-        public static Dictionary<Type, TypeParser> CreateDefaults()
+        /// <returns>An <see cref="IEnumerable{T}"/> containing a range of <see cref="TypeParser"/>'s for all types listed above.</returns>
+        public static IEnumerable<TypeParser> CreateDefaults()
         {
             var list = TryParseParser.CreateBaseConverters();
 
             list.Add(new TimeSpanParser());
+            list.Add(ObjectParser.Instance);
+            list.Add(StringParser.Instance);
 
-            return list.ToDictionary(x => x.Type, x => x);
+            return list;
         }
     }
 }

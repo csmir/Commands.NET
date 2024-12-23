@@ -19,6 +19,15 @@ namespace Commands
         public IReadOnlyDictionary<Type, TypeParser> Parsers { get; }
 
         /// <summary>
+        ///     Creates a new instance of <see cref="ComponentConfiguration"/> with the default parsers and naming pattern.
+        /// </summary>
+        /// <remarks>
+        ///     This constructor initializes the <see cref="Parsers"/> collection with the default parsers for the most common types, using <see cref="TypeParser.CreateDefaults"/>.
+        /// </remarks>
+        public ComponentConfiguration()
+            : this(TypeParser.CreateDefaults()) { }
+
+        /// <summary>
         ///     Creates a new instance of <see cref="ComponentConfiguration"/> with the specified parsers and naming pattern.
         /// </summary>
         /// <param name="parsers">The range of parsers to match to command arguments.</param>
