@@ -68,14 +68,6 @@ namespace Commands
             => Properties.TryGetValue(key, out var value) && value is T tValue ? tValue : defaultValue;
 
         /// <summary>
-        ///     Determines whether a property with the specified key exists in the <see cref="Properties"/> collection.
-        /// </summary>
-        /// <param name="key">The key under which the properties should have a value.</param>
-        /// <returns><see langword="true"/> if <see cref="Properties"/> contains a property with the specified key; Otherwise <see langword="false"/>.</returns>
-        public bool HasProperty(object key)
-            => Properties.ContainsKey(key);
-
-        /// <summary>
         ///     Creates a new instance of <see cref="ComponentConfigurationBuilder"/>, which can be built into an instance of <see cref="ComponentConfiguration"/>.
         /// </summary>
         /// <returns>A build model with a fluent API to configure how components should be registered within or at creation of the <see cref="IComponentTree"/>.</returns>

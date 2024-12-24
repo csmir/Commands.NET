@@ -192,10 +192,7 @@ namespace Commands.Builders
         public IComponentTree Build()
         {
             Configuration.Properties[ConfigurationPropertyDefinitions.ComponentRegistrationExpression] = ComponentRegistrationFilter;
-
-            // Set property with null value, when a key is set but no value is provided.
-            if (MakeModulesReadonly)
-                Configuration.Properties[ConfigurationPropertyDefinitions.MakeModulesReadonly] = null;
+            Configuration.Properties[ConfigurationPropertyDefinitions.MakeModulesReadonly] = MakeModulesReadonly;
 
             if (!string.IsNullOrEmpty(NamingPattern))
                 Configuration.Properties[ConfigurationPropertyDefinitions.NameValidationExpression] = new Regex(NamingPattern);
