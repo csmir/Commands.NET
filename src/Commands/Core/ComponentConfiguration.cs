@@ -20,7 +20,7 @@ namespace Commands
         /// <summary>
         ///     Gets a collection of properties that are used to store additional information explicitly important during the build process.
         /// </summary>
-        public IReadOnlyDictionary<string, object?> Properties { get; }
+        public IReadOnlyDictionary<object, object> Properties { get; }
 
         /// <summary>
         ///     Gets a collection of parsers that are used to convert arguments.
@@ -42,7 +42,7 @@ namespace Commands
         /// <param name="parsers">The range of parsers to match to command arguments.</param>
         public ComponentConfiguration(IEnumerable<TypeParser> parsers)
         {
-            Properties = new Dictionary<string, object?>();
+            Properties = new Dictionary<object, object>();
             Parsers = parsers.ToDictionary(x => x.Type, x => x);
         }
 
@@ -51,7 +51,7 @@ namespace Commands
         /// </summary>
         /// <param name="parsers">The range of parsers to match to command arguments.</param>
         /// <param name="properties">The properties that are used to store additional information explicitly important during the build process.</param>
-        public ComponentConfiguration(IEnumerable<KeyValuePair<Type, TypeParser>> parsers, IEnumerable<KeyValuePair<string, object?>> properties)
+        public ComponentConfiguration(IEnumerable<KeyValuePair<Type, TypeParser>> parsers, IEnumerable<KeyValuePair<object, object>> properties)
         {
             Properties = properties.ToDictionary(x => x.Key, x => x.Value);
             Parsers = parsers.ToDictionary(x => x.Key, x => x.Value);
@@ -64,7 +64,7 @@ namespace Commands
         /// <param name="key">The key under which the properties should have a value.</param>
         /// <param name="defaultValue">A fallback value if <see cref="Properties"/> contains no value for the provided key, or if the value cannot be cast to <typeparamref name="T"/>.</param>
         /// <returns>The value returned by <paramref name="key"/> if it exists and can be cast to <typeparamref name="T"/>; Otherwise <paramref name="defaultValue"/>.</returns>
-        public T? GetProperty<T>(string key, T? defaultValue = default)
+        public T? GetProperty<T>(object key, T? defaultValue = default)
             => Properties.TryGetValue(key, out var value) && value is T tValue ? tValue : defaultValue;
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Commands
         /// </summary>
         /// <param name="key">The key under which the properties should have a value.</param>
         /// <returns><see langword="true"/> if <see cref="Properties"/> contains a property with the specified key; Otherwise <see langword="false"/>.</returns>
-        public bool HasProperty(string key)
+        public bool HasProperty(object key)
             => Properties.ContainsKey(key);
 
         /// <summary>

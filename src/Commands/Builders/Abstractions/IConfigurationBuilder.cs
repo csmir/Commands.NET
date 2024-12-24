@@ -30,7 +30,7 @@ namespace Commands.Builders
         /// <summary>
         ///     Gets or sets a collection of properties that can be used to store additional information applied during the build process.
         /// </summary>
-        public IDictionary<string, object?> Properties { get; set; }
+        public IDictionary<object, object> Properties { get; set; }
 
         /// <summary>
         ///     Configures an action that will convert a raw argument into the target type, signified by <typeparamref name="TParsable"/>.

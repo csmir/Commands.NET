@@ -14,7 +14,7 @@ namespace Commands.Builders
         public IDictionary<Type, TypeParser> Parsers { get; set; } = TypeParser.CreateDefaults().ToDictionary(x => x.Type, x => x);
 
         /// <inheritdoc />
-        public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
+        public IDictionary<object, object> Properties { get; set; } = new Dictionary<object, object>();
 
         /// <inheritdoc />
         public IConfigurationBuilder AddParser<TConvertable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)

@@ -50,7 +50,7 @@ namespace Commands
             {
                 Configuration = new ComponentConfigurationBuilder()
                 {
-                    Properties = new Dictionary<string, object?>()
+                    Properties = new Dictionary<object, object>()
                     {
                         [ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName] = "env-core"
                     }
