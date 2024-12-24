@@ -11,19 +11,31 @@ namespace Commands
     public static class ComponentUtilities
     {
         /// <summary>
-        ///     Iterates through the types known in the <paramref name="types"/> and returns every discovered top-level module.
+        ///     Browses through the types known in the provided <paramref name="assemblies"/> and returns every discovered top-level module.
+        /// </summary>
+        /// <param name="configuration">The configuration that defines the command registration process.</param>
+        /// <param name="assemblies">The assemblies that should be searched to discover new modules.</param>
+        /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> containing all discovered modules in the provided <paramref name="assemblies"/>.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static IEnumerable<ModuleInfo> GetComponents(this ComponentConfiguration configuration, params Assembly[] assemblies)
+        {
+            if (assemblies == null)
+                throw new ArgumentNullException(nameof(assemblies));
+
+            return configuration.GetComponents(assemblies.SelectMany(x => x.GetTypes()).ToArray());
+        }
+
+        /// <summary>
+        ///     Browses through the types known in the <paramref name="types"/> and returns every discovered top-level module.
         /// </summary>
         /// <param name="configuration">The configuration that defines the command registration process.</param>
         /// <param name="types">The types that should be searched to discover new modules.</param>
         /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> containing all discovered modules in the provided <paramref name="types"/>.</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static IEnumerable<ModuleInfo> GetModules(this ComponentConfiguration configuration, params IEnumerable<Type> types)
+        public static IEnumerable<ModuleInfo> GetComponents(this ComponentConfiguration configuration, params Type[] types)
         {
             if (types == null)
                 throw new ArgumentNullException(nameof(types));
-
-            if (configuration == null)
-                throw new ArgumentNullException(nameof(configuration));
 
             return configuration.GetModules(types, null, false);
         }
@@ -34,8 +46,11 @@ namespace Commands
         /// <param name="configuration">The configuration that define the command registration process.</param>
         /// <param name="parent">The module who'se members should be iterated.</param>
         /// <returns>An array of all discovered components.</returns>
-        public static IEnumerable<IComponent> GetComponents(this ComponentConfiguration configuration, ModuleInfo parent)
+        public static IEnumerable<IComponent> GetNestedComponents(this ComponentConfiguration configuration, ModuleInfo parent)
         {
+            if (parent == null)
+                throw new ArgumentNullException(nameof(parent));
+
             if (parent.Type == null)
                 return [];
 
@@ -54,6 +69,9 @@ namespace Commands
         /// <returns>An instance of <see cref="TypeParser"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object and no custom converter is defined, which do not need to be converted.</returns>
         public static TypeParser? GetParser(this ComponentConfiguration configuration, Type type)
         {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
             TypeParser GetParser(Type elementType)
             {
                 if (!configuration.Parsers.TryGetValue(elementType!, out var parser))

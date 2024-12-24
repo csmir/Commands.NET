@@ -84,7 +84,7 @@ namespace Commands
 
             Activator = new ConstructorActivator(type);
 
-            Push(configuration.GetComponents(this).OrderByDescending(x => x.Score));
+            Push(configuration.GetNestedComponents(this).OrderByDescending(x => x.Score));
         }
 
         internal ModuleInfo(

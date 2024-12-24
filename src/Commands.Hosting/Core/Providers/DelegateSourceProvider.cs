@@ -1,12 +1,9 @@
-﻿using System.ComponentModel;
-
-namespace Commands
+﻿namespace Commands
 {
     /// <summary>
     ///     Represents a source resolver that invokes a delegate when the source is requested. This class cannot be inherited.
     /// </summary>
-    /// <param name="func">The delegate representing this operation.</param>
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    /// <param name="func">The delegate representing this source operation.</param>
     public sealed class DelegateSourceProvider(
         Func<IServiceProvider, SourceResult> func) : SourceProvider
     {

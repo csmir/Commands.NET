@@ -4,7 +4,7 @@ using System.ComponentModel;
 namespace Commands
 {
     /// <summary>
-    ///     A condition that is evaluated before or after a command is executed.
+    ///     A condition that is evaluated whenever it is triggered according to a value of <see cref="ConditionTrigger"/>.
     /// </summary>
     public interface IExecuteCondition
     {

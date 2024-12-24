@@ -2,6 +2,7 @@
 using Commands.Conversion;
 using Commands.Tests;
 using Microsoft.Extensions.DependencyInjection;
+using Spectre.Console;
 
 //var tree = ComponentTree.CreateBuilder()
 //    .ConfigureComponents(c =>
@@ -26,41 +27,25 @@ using Microsoft.Extensions.DependencyInjection;
 //    .AddCommand("j", () => Console.WriteLine("Test"))
 //    .Build();
 
-var configuration = new ComponentConfiguration(TypeParser.CreateDefaults());
+var configuration = new ComponentConfiguration();
 
-var components = configuration.GetModules(typeof(Program).Assembly.GetExportedTypes());
+var handler = new DelegateResultHandler((c, r, s) => c.Respond(r));
+var asyncHandler = new AsyncDelegateResultHandler(async (c, r, s) => await c.Respond(r));
+var handlerOnlyWhenContextIs = new DelegateResultHandler<CustomCaller>((c, r, s) => c.Respond(r));
 
-var handler = new DelegateResultHandler((c, r, s) =>
-{
-    c.Respond(r);
-});
+var tree = new ComponentTree(components: configuration.GetComponents(typeof(Program).Assembly), handler, asyncHandler, handlerOnlyWhenContextIs);
 
-var asyncHandler = new AsyncDelegateResultHandler(async (c, r, s) =>
-{
-    await c.Respond(r);
-});
-
-var handlerOnlyWhenContextIs = new DelegateResultHandler<CustomCaller>((c, r, s) =>
-{
-    c.Respond(r);
-});
-
-var tree = new ComponentTree(components, handler, asyncHandler, handlerOnlyWhenContextIs);
-
-var services = new ServiceCollection();
-
-services.AddSingleton(tree);
-
-var provider = services.BuildServiceProvider();
+var services = new ServiceCollection()
+    .AddSingleton(tree)
+    .BuildServiceProvider();
 
 while (true)
 {
-    Console.CursorVisible = true;
-    Console.Write("> ");
+    var input = AnsiConsole.Prompt(new TextPrompt<string>("Enter a command").PromptStyle("info"));
 
-    using var scope = provider.CreateAsyncScope();
+    using var scope = services.CreateAsyncScope();
 
-    await tree.Execute(new CustomCaller(), Console.ReadLine()!, new()
+    await tree.Execute(new CustomCaller(), input, new()
     {
         Services = scope.ServiceProvider
     });

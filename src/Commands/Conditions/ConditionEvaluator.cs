@@ -1,7 +1,7 @@
 ﻿namespace Commands.Conditions
 {
     /// <summary>
-    ///     An evaluator that containerizes a set of conditions, determining the result of the evaluation.
+    ///     An evaluator that contains a set of conditions grouped by their name, evaluator type and trigger. This evaluator determines if the contained set of conditions is met.
     /// </summary>
     public abstract class ConditionEvaluator
     {
@@ -16,11 +16,11 @@
         public IExecuteCondition[] Conditions { get; set; } = [];
 
         /// <summary>
-        ///     Evaluates the known data about a command at the pre or post stage in execution, in order to determine if command execution can succeed or not.
+        ///     Determines if the contained set of conditions is met.
         /// </summary>
-        /// <param name="caller">The caller of the current execution.</param>
-        /// <param name="command">The command currently being executed.</param>
-        /// <param name="trigger">The trigger that determines when the condition is evaluated.</param>
+        /// <param name="caller">The caller of the current scope.</param>
+        /// <param name="command">The command currently being targetted for execution.</param>
+        /// <param name="trigger">The trigger that determines when the condition is evaluated, being 1 or more points in the execution pipeline.</param>
         /// <param name="services">The provider used to register modules and inject services.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>

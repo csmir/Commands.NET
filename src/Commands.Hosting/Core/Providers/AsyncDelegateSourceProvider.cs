@@ -1,12 +1,9 @@
-﻿using System.ComponentModel;
-
-namespace Commands
+﻿namespace Commands
 {
     /// <summary>
     ///     Represents a source resolver that invokes a delegate when the source is requested. This class cannot be inherited.
     /// </summary>
-    /// <param name="func">The asynchronous delegate representing this operation.</param>
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    /// <param name="func">The asynchronous delegate representing this source operation.</param>
     public sealed class AsyncDelegateSourceProvider(
         Func<IServiceProvider, ValueTask<SourceResult>> func) : SourceProvider
     {

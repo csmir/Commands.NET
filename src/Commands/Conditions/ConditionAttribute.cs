@@ -3,7 +3,7 @@
 namespace Commands.Conditions
 {
     /// <summary>
-    ///     An attribute that defines that a check should succeed before a command can be executed, implementing <see cref="ConditionAttribute{T}"/> with an <see cref="ANDEvaluator"/>. 
+    ///     An attribute that contains an evaluation method called when marked on top of a command signature, implementing <see cref="ConditionAttribute{T}"/> with an <see cref="ANDEvaluator"/>. 
     ///     For use of other evaluators, use <see cref="ConditionAttribute{T}"/>.
     /// </summary>
     /// <remarks>
@@ -16,10 +16,10 @@ namespace Commands.Conditions
     }
 
     /// <summary>
-    ///     An attribute that defines that a check should succeed before a command can be executed.
+    ///     An attribute that contains an evaluation method called when marked on top of a command signature.
     /// </summary>
     /// <remarks>
-    ///     The <see cref="Evaluate(ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, CancellationToken)"/> method is responsible for doing this check. 
+    ///     The <see cref="Evaluate(ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, CancellationToken)"/> method is responsible for doing this evaluation. 
     ///     Custom implementations of <see cref="ConditionAttribute{T}"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     ///     If multiple commands are found during matching, multiple sequences of preconditions will be ran to find a match that succeeds.
     /// </remarks>
@@ -29,7 +29,7 @@ namespace Commands.Conditions
         where T : ConditionEvaluator, new()
     {
         /// <inheritdoc />
-        public ConditionTrigger Trigger { get; set; } = ConditionTrigger.BeforeInvocation;
+        public virtual ConditionTrigger Trigger { get; } = ConditionTrigger.BeforeInvoke;
 
         /// <inheritdoc />
         /// <remarks>

@@ -6,7 +6,7 @@ namespace Commands.Builders
     public class ComponentConfigurationBuilder : IConfigurationBuilder
     {
         /// <inheritdoc />
-        public IDictionary<Type, TypeParser> Parsers { get; set; } = TypeParser.CreateDefaults();
+        public IDictionary<Type, TypeParser> Parsers { get; set; } = TypeParser.CreateDefaults().ToDictionary(x => x.Type, x => x);
 
         /// <inheritdoc />
         public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
@@ -17,7 +17,7 @@ namespace Commands.Builders
             if (convertAction == null)
                 throw new ArgumentNullException(nameof(convertAction));
 
-            var converter = new DelegateConverter<TConvertable>(convertAction);
+            var converter = new DelegateParser<TConvertable>(convertAction);
 
             Parsers[converter.Type] = converter;
 
@@ -30,7 +30,7 @@ namespace Commands.Builders
             if (convertAction == null)
                 throw new ArgumentNullException(nameof(convertAction));
 
-            var converter = new AsyncDelegateConverter<TConvertable>(convertAction);
+            var converter = new AsyncDelegateParser<TConvertable>(convertAction);
 
             Parsers[converter.Type] = converter;
 

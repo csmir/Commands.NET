@@ -1,4 +1,5 @@
-﻿using Commands.Conversion;
+﻿using Commands.Conditions;
+using Commands.Conversion;
 using System.Text.RegularExpressions;
 
 namespace Commands.Builders
@@ -21,12 +22,12 @@ namespace Commands.Builders
         /// <summary>
         ///     Gets the conditions necessary for the command to execute.
         /// </summary>
-        public ICollection<IExecuteCondition> Conditions { get; set; } = [];
+        public ICollection<IConditionBuilder> Conditions { get; set; } = [];
 
         /// <summary>
         ///     Gets the delegate that is executed when the command is invoked.
         /// </summary>
-        public Delegate ExecuteDelegate { get; set; } = default!;
+        public Delegate Delegate { get; set; } = default!;
 
         /// <summary>
         ///     Creates a new instance of <see cref="CommandBuilder"/>.
@@ -48,7 +49,7 @@ namespace Commands.Builders
                 .ToArray();
 
             Aliases = joined;
-            ExecuteDelegate = executeDelegate;
+            Delegate = executeDelegate;
 
             Conditions = [];
         }
@@ -56,7 +57,7 @@ namespace Commands.Builders
         internal CommandBuilder(Delegate executeDelegate)
             : this(true)
         {
-            ExecuteDelegate = executeDelegate;
+            Delegate = executeDelegate;
         }
 
         internal CommandBuilder(bool isNested)
@@ -83,7 +84,7 @@ namespace Commands.Builders
         /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
         public CommandBuilder WithDelegate(Delegate executionDelegate)
         {
-            ExecuteDelegate = executionDelegate;
+            Delegate = executionDelegate;
 
             return this;
         }
@@ -93,7 +94,7 @@ namespace Commands.Builders
         /// </summary>
         /// <param name="conditions">The conditions to add to the command execution flow.</param>
         /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
-        public CommandBuilder WithConditions(params IExecuteCondition[] conditions)
+        public CommandBuilder WithConditions(params IConditionBuilder[] conditions)
         {
             Conditions = [.. conditions];
             return this;
@@ -104,17 +105,36 @@ namespace Commands.Builders
         /// </summary>
         /// <param name="condition">The condition to add to the command execution flow.</param>
         /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
-        public CommandBuilder AddCondition(IExecuteCondition condition)
+        public CommandBuilder AddCondition(IConditionBuilder condition)
         {
             Conditions.Add(condition);
             return this;
         }
 
+        /// <summary>
+        ///     Adds a condition to the command. Conditions are used to determine if the command can be executed.
+        /// </summary>
+        /// <remarks>
+        ///     This overload creates a new instance of the specified condition type and configures it using the provided <paramref name="configureCondition"/> delegate.
+        /// </remarks>
+        /// <typeparam name="T">The evaluator type which should evaluate the condition alongside others of the same kind.</typeparam>
+        /// <param name="configureCondition">A configuration delegate that should configure the condition builder.</param>
+        /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+        public CommandBuilder AddCondition<T>(Action<IConditionBuilder> configureCondition)
+            where T : ConditionEvaluator, new()
+        {
+            var condition = new ConditionBuilder<T>();
+
+            configureCondition(condition);
+
+            return AddCondition(condition);
+        }
+
         /// <inheritdoc />
         public IComponent Build(ComponentConfiguration configuration)
         {
-            if (ExecuteDelegate is null)
-                throw new ArgumentNullException(nameof(ExecuteDelegate));
+            if (Delegate is null)
+                throw new ArgumentNullException(nameof(Delegate));
 
             if (!_isNested && Aliases.Count == 0)
                 throw BuildException.AliasAtLeastOne();
@@ -130,14 +150,16 @@ namespace Commands.Builders
                 }
             }
 
-            var param = ExecuteDelegate.Method.GetParameters();
+            var param = Delegate.Method.GetParameters();
 
             var hasContext = false;
 
             if (param.Length > 0 && param[0].ParameterType.IsGenericType && param[0].ParameterType.GetGenericTypeDefinition() == c_type)
                 hasContext = true;
 
-            return new CommandInfo(new DelegateActivator(ExecuteDelegate.Method, ExecuteDelegate.Target, hasContext), [.. Conditions], [.. Aliases], hasContext, configuration);
+            var conditions = Conditions.Select(x => x.Build()).ToArray();
+
+            return new CommandInfo(new DelegateActivator(Delegate.Method, Delegate.Target, hasContext), conditions, [.. Aliases], hasContext, configuration);
         }
 
         /// <summary>
