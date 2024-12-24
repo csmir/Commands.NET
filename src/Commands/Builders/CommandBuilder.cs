@@ -27,7 +27,7 @@ namespace Commands.Builders
         /// <summary>
         ///     Gets the delegate that is executed when the command is invoked.
         /// </summary>
-        public Delegate Delegate { get; set; } = default!;
+        public Delegate Handler { get; set; } = default!;
 
         /// <summary>
         ///     Creates a new instance of <see cref="CommandBuilder"/>.
@@ -49,7 +49,7 @@ namespace Commands.Builders
                 .ToArray();
 
             Aliases = joined;
-            Delegate = executeDelegate;
+            Handler = executeDelegate;
 
             Conditions = [];
         }
@@ -57,7 +57,7 @@ namespace Commands.Builders
         internal CommandBuilder(Delegate executeDelegate)
             : this(true)
         {
-            Delegate = executeDelegate;
+            Handler = executeDelegate;
         }
 
         internal CommandBuilder(bool isNested)
@@ -80,11 +80,11 @@ namespace Commands.Builders
         /// <summary>
         ///     Replaces the current delegate with the specified delegate. The delegate is executed when the command is invoked.
         /// </summary>
-        /// <param name="executionDelegate">The delegate to be executed when the command is invoked.</param>
+        /// <param name="executionHandler">The delegate to be executed when the command is invoked.</param>
         /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
-        public CommandBuilder WithDelegate(Delegate executionDelegate)
+        public CommandBuilder WithHandler(Delegate executionHandler)
         {
-            Delegate = executionDelegate;
+            Handler = executionHandler;
 
             return this;
         }
@@ -131,15 +131,17 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public IComponent Build(ComponentConfiguration configuration)
+        public IComponent Build(ComponentConfiguration? configuration = null)
         {
-            if (Delegate is null)
-                throw new ArgumentNullException(nameof(Delegate));
+            if (Handler is null)
+                throw new ArgumentNullException(nameof(Handler));
 
             if (!_isNested && Aliases.Count == 0)
                 throw BuildException.AliasAtLeastOne();
 
-            var pattern = configuration.GetProperty<Regex>("NamingPattern");
+            configuration ??= ComponentConfiguration.Default;
+
+            var pattern = configuration.GetProperty<Regex>(ConfigurationPropertyDefinitions.NameValidationExpression);
 
             if (pattern != null)
             {
@@ -150,7 +152,7 @@ namespace Commands.Builders
                 }
             }
 
-            var param = Delegate.Method.GetParameters();
+            var param = Handler.Method.GetParameters();
 
             var hasContext = false;
 
@@ -159,7 +161,7 @@ namespace Commands.Builders
 
             var conditions = Conditions.Select(x => x.Build()).ToArray();
 
-            return new CommandInfo(new DelegateActivator(Delegate.Method, Delegate.Target, hasContext), conditions, [.. Aliases], hasContext, configuration);
+            return new CommandInfo(new DelegateActivator(Handler.Method, Handler.Target, hasContext), conditions, [.. Aliases], hasContext, configuration);
         }
 
         /// <summary>

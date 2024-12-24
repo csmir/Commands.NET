@@ -44,6 +44,9 @@ namespace Commands
         public TypeParser? Parser { get; } = null;
 
         /// <inheritdoc />
+        public int Position { get; }
+
+        /// <inheritdoc />
         public bool IsCollection
             => false;
 
@@ -71,6 +74,8 @@ namespace Commands
                 IsNullable = false;
                 Type = parameterInfo.ParameterType;
             }
+
+            Position = parameterInfo.Position;
 
             if (parameterInfo.IsOptional)
                 IsOptional = true;

@@ -172,7 +172,7 @@ namespace Commands
                     // yield a new module if all aliases are valid and it shouldn't be skipped.
                     var component = new ModuleInfo(type, parent, aliases, configuration);
 
-                    var componentFilter = configuration.GetProperty<Func<IComponent, bool>>("ComponentRegistrationFilter");
+                    var componentFilter = configuration.GetProperty<Func<IComponent, bool>>(ConfigurationPropertyDefinitions.ComponentRegistrationExpression);
 
                     if (componentFilter?.Invoke(component) ?? true)
                         yield return component;
@@ -233,7 +233,7 @@ namespace Commands
                         else
                             component = new CommandInfo(parent, new InstanceActivator(method), aliases, false, configuration);
 
-                        var componentFilter = configuration.GetProperty<Func<IComponent, bool>>("ComponentRegistrationFilter");
+                        var componentFilter = configuration.GetProperty<Func<IComponent, bool>>(ConfigurationPropertyDefinitions.ComponentRegistrationExpression);
 
                         if (componentFilter?.Invoke(component) ?? true)
                             yield return component;

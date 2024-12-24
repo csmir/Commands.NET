@@ -17,18 +17,14 @@ namespace Commands
         ///     Creates a new <see cref="ConsoleCallerContext"/> with the default <see cref="AnsiConsole.Console"/>.
         /// </summary>
         public ConsoleCallerContext()
-        {
-            Console = AnsiConsole.Console;
-        }
+            => Console = AnsiConsole.Console;
 
         /// <summary>
         ///     Creates a new <see cref="ConsoleCallerContext"/> with the specified <see cref="IAnsiConsole"/>.
         /// </summary>
         /// <param name="console">The console that should be used to send messages to the caller.</param>
         public ConsoleCallerContext(IAnsiConsole console)
-        {
-            Console = console;
-        }
+            => Console = console;
 
         /// <summary>
         ///     Sends a message to the console.

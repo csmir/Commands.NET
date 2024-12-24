@@ -12,7 +12,7 @@ namespace Commands.Tests
 
             var command = new CommandBuilder()
                 .WithAliases(commandName)
-                .WithDelegate(executionAction)
+                .WithHandler(executionAction)
                 .Build(configuration);
 
             Command.Parent!.Add(command);

@@ -185,7 +185,7 @@ namespace Commands.Builders
             if (Aliases.Count == 0)
                 throw BuildException.AliasAtLeastOne();
 
-            var pattern = configuration.GetProperty<Regex>("NamingPattern");
+            var pattern = configuration.GetProperty<Regex>(ConfigurationPropertyDefinitions.NameValidationExpression);
 
             if (pattern != null)
             {
@@ -218,7 +218,7 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public IComponent Build(ComponentConfiguration configuration)
-            => Build(configuration, null);
+        public IComponent Build(ComponentConfiguration? configuration = null)
+            => Build(configuration ?? ComponentConfiguration.Default, null);
     }
 }

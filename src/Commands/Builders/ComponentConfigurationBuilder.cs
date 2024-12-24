@@ -5,6 +5,11 @@ namespace Commands.Builders
     /// <inheritdoc cref="IConfigurationBuilder"/>
     public class ComponentConfigurationBuilder : IConfigurationBuilder
     {
+        /// <summary>
+        ///     Gets the configuration builder that is used as a fallback when no configuration is provided. This builder is built every time <see cref="ComponentConfiguration.Default"/> is called.
+        /// </summary>
+        public static IConfigurationBuilder Default { get; } = new ComponentConfigurationBuilder();
+
         /// <inheritdoc />
         public IDictionary<Type, TypeParser> Parsers { get; set; } = TypeParser.CreateDefaults().ToDictionary(x => x.Type, x => x);
 
@@ -12,25 +17,12 @@ namespace Commands.Builders
         public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
 
         /// <inheritdoc />
-        public IConfigurationBuilder AddParser<TConvertable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ConvertResult> convertAction)
-        {
-            if (convertAction == null)
-                throw new ArgumentNullException(nameof(convertAction));
-
-            var converter = new DelegateParser<TConvertable>(convertAction);
-
-            Parsers[converter.Type] = converter;
-
-            return this;
-        }
-
-        /// <inheritdoc />
         public IConfigurationBuilder AddParser<TConvertable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
         {
             if (convertAction == null)
                 throw new ArgumentNullException(nameof(convertAction));
 
-            var converter = new AsyncDelegateParser<TConvertable>(convertAction);
+            var converter = new DelegateParser<TConvertable>(convertAction);
 
             Parsers[converter.Type] = converter;
 

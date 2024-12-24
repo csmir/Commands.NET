@@ -10,7 +10,7 @@ namespace Commands.Builders
         public ConditionTrigger Trigger { get; set; }
 
         /// <inheritdoc />
-        public Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> Delegate { get; set; }
+        public Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> Handler { get; set; }
 
         /// <summary>
         ///     Creates a new instance of <see cref="ConditionBuilder{T}"/> with default values, to be confugured using the fluent API.
@@ -18,7 +18,7 @@ namespace Commands.Builders
         public ConditionBuilder()
         {
             Trigger = ConditionTrigger.BeforeInvoke;
-            Delegate = default!;
+            Handler = default!;
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Commands.Builders
         public ConditionBuilder(ConditionTrigger trigger, Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> func)
         {
             Trigger = trigger;
-            Delegate = func;
+            Handler = func;
         }
 
         /// <inheritdoc />
@@ -40,19 +40,19 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public IConditionBuilder WithDelegate(Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> func)
+        public IConditionBuilder WithHandler(Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> func)
         {
-            Delegate = func;
+            Handler = func;
             return this;
         }
 
         /// <inheritdoc />
         public IExecuteCondition Build()
         {
-            if (Delegate is null)
-                throw new ArgumentNullException(nameof(Delegate));
+            if (Handler is null)
+                throw new ArgumentNullException(nameof(Handler));
 
-            return new DelegateCondition<T>(Trigger, Delegate);
+            return new DelegateCondition<T>(Trigger, Handler);
         }
     }
 }

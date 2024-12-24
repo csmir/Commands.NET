@@ -134,27 +134,6 @@ namespace Commands.Builders
             where T : CommandModule;
 
         /// <summary>
-        ///     Configures an action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/>. 
-        /// </summary>
-        /// <remarks>
-        ///     To handle both failed and successful results, use <see cref="AddResultHandler(ResultHandler)"/> with an implementation of <see cref="ResultHandler"/> or <see cref="ResultHandler{T}"/>.
-        /// </remarks>
-        /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
-        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddResultHandler(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction);
-
-        /// <summary>
-        ///     Configures an asynchronous action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/> and the <see cref="ICallerContext"/> matches <typeparamref name="T"/>. 
-        /// </summary>
-        /// <remarks>
-        ///     To handle both failed and successful results, use <see cref="AddResultHandler(ResultHandler)"/> with an implementation of <see cref="ResultHandler"/> or <see cref="ResultHandler{T}"/>.
-        /// </remarks>
-        /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
-        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddResultHandler<T>(Action<T, IExecuteResult, IServiceProvider> resultAction)
-            where T : class, ICallerContext;
-
-        /// <summary>
         ///     Configures an asynchronous action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/>. 
         /// </summary>
         /// <remarks>

@@ -41,7 +41,7 @@ namespace Commands.Builders
                 {
                     var tree = treeBuilder.Build();
 
-                    if (!(treeBuilder.Configuration.Properties.TryGetValue("SourceProviders", out var srcProviders) && srcProviders is List<SourceProvider> providers))
+                    if (!(treeBuilder.Configuration.Properties.TryGetValue(HostingConfigurationPropertyDefinitions.SourceResolverCollection, out var srcProviders) && srcProviders is List<SourceProvider> providers))
                         providers = [];
 
                     var logger = provider.GetRequiredService<ILogger<SequenceInitiator>>();
@@ -71,35 +71,14 @@ namespace Commands.Builders
         /// <param name="builder">The builder which is used to create new instances of <see cref="IComponentTree"/>.</param>
         /// <param name="sourcingAction">The action which should return a <see cref="SourceResult"/> representing a failed or succeeded retrieved command query.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public static ITreeBuilder AddSourceProvider(this ITreeBuilder builder, Func<IServiceProvider, SourceResult> sourcingAction)
+        public static ITreeBuilder AddSourceProvider(this ITreeBuilder builder, Func<IServiceProvider, ValueTask<SourceResult>> sourcingAction)
         {
-            if (!(builder.Configuration.Properties.TryGetValue("SourceProviders", out var srcProviders) && srcProviders is List<SourceProvider> providers))
+            if (!(builder.Configuration.Properties.TryGetValue(HostingConfigurationPropertyDefinitions.SourceResolverCollection, out var srcProviders) && srcProviders is List<SourceProvider> providers))
                 providers = [];
 
             providers.Add(new DelegateSourceProvider(sourcingAction));
 
-            builder.Configuration.Properties["SourceProviders"] = providers;
-
-            return builder;
-        }
-
-        /// <summary>
-        ///     Adds a source provider to the <see cref="ITreeBuilder"/> configuration. This provider will be used to source data for the command execution.
-        /// </summary>
-        /// <remarks>
-        ///     This action will be wrapped in a new instance of <see cref="AsyncDelegateSourceProvider"/>, and adds it to the <see cref="ITreeBuilder"/> configuration.
-        /// </remarks>
-        /// <param name="builder">The builder which is used to create new instances of <see cref="IComponentTree"/>.</param>
-        /// <param name="sourcingAction">The action which should return a <see cref="SourceResult"/> representing a failed or succeeded retrieved command query.</param>
-        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public static ITreeBuilder AddSourceProvider(this ITreeBuilder builder, Func<IServiceProvider, ValueTask<SourceResult>> sourcingAction)
-        {
-            if (!(builder.Configuration.Properties.TryGetValue("SourceProviders", out var srcProviders) && srcProviders is List<SourceProvider> providers))
-                providers = [];
-
-            providers.Add(new AsyncDelegateSourceProvider(sourcingAction));
-
-            builder.Configuration.Properties["SourceProviders"] = providers;
+            builder.Configuration.Properties[HostingConfigurationPropertyDefinitions.SourceResolverCollection] = providers;
 
             return builder;
         }
@@ -112,12 +91,12 @@ namespace Commands.Builders
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public static ITreeBuilder AddSourceProvider(this ITreeBuilder builder, SourceProvider provider)
         {
-            if (!(builder.Configuration.Properties.TryGetValue("SourceProviders", out var srcProviders) && srcProviders is List<SourceProvider> providers))
+            if (!(builder.Configuration.Properties.TryGetValue(HostingConfigurationPropertyDefinitions.SourceResolverCollection, out var srcProviders) && srcProviders is List<SourceProvider> providers))
                 providers = [];
 
             providers.Add(provider);
 
-            builder.Configuration.Properties["SourceProviders"] = providers;
+            builder.Configuration.Properties[HostingConfigurationPropertyDefinitions.SourceResolverCollection] = providers;
 
             return builder;
         }

@@ -52,7 +52,7 @@ namespace Commands
                 {
                     Properties = new Dictionary<string, object?>()
                     {
-                        ["CoreCommandName"] = "env-core"
+                        [ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName] = "env-core"
                     }
                 }
             };

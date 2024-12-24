@@ -9,6 +9,15 @@ namespace Commands
     public sealed class ComponentConfiguration
     {
         /// <summary>
+        ///     Gets a default configuration that can be used as a fallback when no configuration is provided.
+        /// </summary>
+        /// <remarks>
+        ///     When this property is accessed, a new instance of <see cref="ComponentConfiguration"/> is built using the <see cref="ComponentConfigurationBuilder.Default"/> builder.
+        /// </remarks>
+        public static ComponentConfiguration Default
+            => ComponentConfigurationBuilder.Default.Build();
+
+        /// <summary>
         ///     Gets a collection of properties that are used to store additional information explicitly important during the build process.
         /// </summary>
         public IReadOnlyDictionary<string, object?> Properties { get; }

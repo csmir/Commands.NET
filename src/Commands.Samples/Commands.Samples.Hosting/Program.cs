@@ -41,6 +41,8 @@ await Host.CreateDefaultBuilder(args)
                     context.Respond("Invalid command.");
                     break;
             }
+
+            return ValueTask.CompletedTask;
         });
     })
     .ConfigureLogging(configure =>

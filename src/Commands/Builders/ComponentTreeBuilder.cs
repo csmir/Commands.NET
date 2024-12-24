@@ -111,35 +111,12 @@ namespace Commands.Builders
             => AddModule(typeof(T));
 
         /// <inheritdoc />
-        public ITreeBuilder AddResultHandler(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction)
-        {
-            if (resultAction == null)
-                throw new ArgumentNullException(nameof(resultAction));
-
-            Handlers.Add(new DelegateResultHandler(resultAction));
-
-            return this;
-        }
-
-        /// <inheritdoc />
-        public ITreeBuilder AddResultHandler<T>(Action<T, IExecuteResult, IServiceProvider> resultAction)
-            where T : class, ICallerContext
-        {
-            if (resultAction == null)
-                throw new ArgumentNullException(nameof(resultAction));
-
-            Handlers.Add(new DelegateResultHandler<T>(resultAction));
-
-            return this;
-        }
-
-        /// <inheritdoc />
         public ITreeBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction)
         {
             if (resultAction == null)
                 throw new ArgumentNullException(nameof(resultAction));
 
-            Handlers.Add(new AsyncDelegateResultHandler(resultAction));
+            Handlers.Add(new DelegateResultHandler(resultAction));
 
             return this;
         }
@@ -151,7 +128,7 @@ namespace Commands.Builders
             if (resultAction == null)
                 throw new ArgumentNullException(nameof(resultAction));
 
-            Handlers.Add(new AsyncDelegateResultHandler<T>(resultAction));
+            Handlers.Add(new DelegateResultHandler<T>(resultAction));
 
             return this;
         }
@@ -214,14 +191,14 @@ namespace Commands.Builders
         /// <inheritdoc />
         public IComponentTree Build()
         {
-            Configuration.Properties["ComponentRegistrationFilter"] = ComponentRegistrationFilter;
+            Configuration.Properties[ConfigurationPropertyDefinitions.ComponentRegistrationExpression] = ComponentRegistrationFilter;
 
             // Set property with null value, when a key is set but no value is provided.
             if (MakeModulesReadonly)
-                Configuration.Properties["ReadOnlyModuleDefinitions"] = null;
+                Configuration.Properties[ConfigurationPropertyDefinitions.MakeModulesReadonly] = null;
 
             if (!string.IsNullOrEmpty(NamingPattern))
-                Configuration.Properties["NamingPattern"] = new Regex(NamingPattern);
+                Configuration.Properties[ConfigurationPropertyDefinitions.NameValidationExpression] = new Regex(NamingPattern);
 
             var configuration = Configuration.Build();
 

@@ -8,6 +8,14 @@ namespace Commands
     public interface IArgument : IScorable, IParameter
     {
         /// <summary>
+        ///     Gets the position of this argument in the command's parameter list.
+        /// </summary>
+        /// <remarks>
+        ///     This value is zero-based.
+        /// </remarks>
+        public int Position { get; }
+
+        /// <summary>
         ///     Gets if this argument is the query remainder or not.
         /// </summary>
         public bool IsRemainder { get; }

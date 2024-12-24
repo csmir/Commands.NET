@@ -67,7 +67,7 @@ namespace Commands
 
         internal ModuleInfo(
             Type type, ModuleInfo? root, string[] aliases, ComponentConfiguration configuration)
-            : base(configuration.HasProperty("ReadOnlyModuleDefinitions"))
+            : base(configuration.GetProperty(ConfigurationPropertyDefinitions.MakeModulesReadonly, false))
         {
             Parent = root;
             Type = type;

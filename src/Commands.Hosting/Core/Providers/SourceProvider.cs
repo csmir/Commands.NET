@@ -1,7 +1,7 @@
 ﻿namespace Commands
 {
     /// <summary>
-    ///     A handler for pre-execution processes.
+    ///     A provider that waits to receive input from an external source and prompts command invocation with the received terms.
     /// </summary>
     public abstract class SourceProvider
     {

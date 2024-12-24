@@ -1,13 +1,11 @@
-﻿using System.ComponentModel;
-
-namespace Commands
+﻿namespace Commands
 {
     /// <summary>
     ///     Represents a resolver that invokes a delegate when a result is encountered from a command implementing <typeparamref name="T"/>. This class cannot be inherited.
     /// </summary>
-    /// <param name="action">The action to be invoked when receiving a result.</param>
+    /// <param name="func">The action to be invoked when receiving a result.</param>
     public sealed class DelegateResultHandler<T>(
-        Action<T, IExecuteResult, IServiceProvider> action)
+        Func<T, IExecuteResult, IServiceProvider, ValueTask> func)
         : ResultHandler<T>
         where T : class, ICallerContext
     {
@@ -17,32 +15,29 @@ namespace Commands
             if (result.Success && result is InvokeResult invoke)
                 return HandleSuccess(caller, invoke, services, cancellationToken);
 
-            action(caller, result, services);
-
-            return default;
+            return func(caller, result, services);
         }
     }
 
     /// <summary>
     ///     Represents a resolver that invokes a delegate when a result is encountered. This class cannot be inherited.
     /// </summary>
-    /// <param name="action">The action to be invoked when receiving a result.</param>
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    /// <param name="func">The action to be invoked when receiving a result.</param>
     public sealed class DelegateResultHandler(
-        Action<ICallerContext, IExecuteResult, IServiceProvider> action)
+        Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> func)
         : ResultHandler
     {
+        private readonly Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> _action = func;
+
         /// <inheritdoc />
-        public override ValueTask HandleResult(
+        public override async ValueTask HandleResult(
             ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             // If the result is successful and is an invocation result, we can handle it as a successful command.
             if (result.Success && result is InvokeResult invoke)
-                return HandleSuccess(caller, invoke, services, cancellationToken);
+                await HandleSuccess(caller, invoke, services, cancellationToken);
 
-            action(caller, result, services);
-
-            return default;
+            await _action(caller, result, services);
         }
     }
 }

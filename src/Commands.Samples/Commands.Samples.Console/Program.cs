@@ -18,6 +18,8 @@ builder.Configuration.AddParser(new LiteralTypeParser(caseIgnore: true));
 builder.AddResultHandler((caller, result, services) =>
 {
     caller.Respond(result);
+
+    return ValueTask.CompletedTask;
 });
 
 builder.AddCommand("delegate", () => "Hello World!");

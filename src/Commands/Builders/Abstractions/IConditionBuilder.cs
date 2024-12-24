@@ -15,7 +15,7 @@ namespace Commands.Builders
         /// <summary>
         ///     Gets or sets the condition that is evaluated before the command is executed.
         /// </summary>
-        public Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> Delegate { get; set; }
+        public Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> Handler { get; set; }
 
         /// <summary>
         ///     Sets the trigger that represents when the condition should be evaluated during the execution process.
@@ -27,9 +27,9 @@ namespace Commands.Builders
         /// <summary>
         ///     Sets the delegate that is executed when the trigger declares that this condition will be evaluated.
         /// </summary>
-        /// <param name="func">A delegate that contains logic to be executed when called by the execution pipeline.</param>
+        /// <param name="executionHandler">A delegate that contains logic to be executed when called by the execution pipeline.</param>
         /// <returns>The same <see cref="IConditionBuilder"/> for call-chaining.</returns>
-        public IConditionBuilder WithDelegate(Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> func);
+        public IConditionBuilder WithHandler(Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> executionHandler);
 
         /// <summary>
         ///     Builds an execution condition from the provided configuration.

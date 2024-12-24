@@ -6,29 +6,17 @@ namespace Commands.Conversion
     ///     A type converter that can convert a raw string value into a type with a try-parse method. This class cannot be inherited.
     /// </summary>
     /// <typeparam name="T">The type this converter targets.</typeparam>
-    public sealed class TryParseParser<T> : TypeParser<T>
+    /// <param name="parser">The delegate to parse a nullable <see langword="string"/> to <typeparamref name="T"/>.</param>
+    public sealed class TryParseParser<T>(TryParseParser<T>.ParseDelegate parser) : TypeParser<T>
     {
-        private readonly ParseDelegate _parser;
-
-        /// <summary>
-        ///     Creates a new instance of the <see cref="TryParseParser{T}" /> class, with the specified parsing delegate. This delegate is a try-parse method of the target type.
-        /// </summary>
-        /// <param name="parser">The delegate to parse a nullable <see langword="string"/> to <typeparamref name="T"/>.</param>
-        public TryParseParser(ParseDelegate parser)
-        {
-            _parser = parser;
-        }
-
         /// <inheritdoc />
-        public override async ValueTask<ConvertResult> Parse(
-            ICallerContext caller, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> Parse(
+            ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
-
-            if (_parser(value?.ToString(), out var result))
+            if ((value is string str && parser(str, out var result)) || parser(value?.ToString(), out result))
                 return Success(result);
 
-            return Error($"The provided value does not match the expected type. Expected {typeof(T).Name}, got {value}. At: '{parameter.Name}'");
+            return Error($"The provided value does not match the expected type. Expected {typeof(T).Name}. Got {value}. At: '{argument.Name}'");
         }
 
         /// <summary>
