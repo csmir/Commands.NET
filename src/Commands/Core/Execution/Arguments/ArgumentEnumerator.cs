@@ -69,7 +69,7 @@ namespace Commands
         ///     If an unnamed argument is found, it will be returned and the currently observed index will be incremented to return the next unnamed argument on the next try.
         /// </summary>
         /// <remarks>
-        ///     This method compares the parameter name to the named arguments known to the set at the point of execution and determines the result based on the <see cref="StringComparer"/> set in <see cref="CommandOptions.MatchComparer"/>.
+        ///     This method compares the parameter name to the named arguments known to the set at the point of execution and determines the result based on the <see cref="StringComparer"/> set in <see cref="CommandOptions.Comparer"/>.
         /// </remarks>
         /// <param name="parameterName">The name of the command parameter that this set attempts to match to.</param>
         /// <param name="value">The value returned when an item is discovered in the set.</param>

@@ -15,7 +15,7 @@ namespace Commands
         const char U0020 = ' ';
         const char U002D = '-';
 
-        #if NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER
         /// <summary>
         ///     Parses a <see cref="string"/> into a collection of command arguments. This collection is a key-value pair, where the key is the argument name and the value is the argument value. 
         ///     When arguments have no value, the name is the value instead.

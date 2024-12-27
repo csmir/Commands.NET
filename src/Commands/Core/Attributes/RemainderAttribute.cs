@@ -17,6 +17,6 @@ namespace Commands
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
     public sealed class RemainderAttribute : Attribute
     {
-
+        
     }
 }

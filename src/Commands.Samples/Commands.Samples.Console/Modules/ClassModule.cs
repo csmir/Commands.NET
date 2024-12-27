@@ -8,7 +8,7 @@
             return "Hello from a class command!";
         }
 
-        [NoBuild]
+        [Ignore]
         public void NotACommand()
         {
 

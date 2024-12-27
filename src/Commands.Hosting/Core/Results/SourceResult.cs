@@ -38,7 +38,7 @@
             options ??= new CommandOptions();
 
 #if NET8_0_OR_GREATER
-            return new(caller, new ArgumentEnumerator(ArgumentParser.ParseKeyValueCollection(args), options.MatchComparer), options, null);
+            return new(caller, new ArgumentEnumerator(ArgumentParser.ParseKeyValueCollection(args), options.Comparer), options, null);
 #else
             return new(caller, new ArgumentEnumerator(ArgumentParser.ParseKeyCollection(args)), options, null);
 #endif
@@ -62,7 +62,7 @@
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
         public static SourceResult FromSuccess(ICallerContext caller, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
-            => new(caller, new ArgumentEnumerator(args, options?.MatchComparer ?? StringComparer.OrdinalIgnoreCase), options, null);
+            => new(caller, new ArgumentEnumerator(args, options?.Comparer ?? StringComparer.OrdinalIgnoreCase), options, null);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> resembling a failed sourcing operation.

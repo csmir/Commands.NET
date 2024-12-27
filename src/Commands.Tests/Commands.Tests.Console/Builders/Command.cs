@@ -13,11 +13,11 @@ namespace Commands.Tests
             var calculateModule = new ModuleBuilder()
                 .WithAliases("calculate");
 
-            var lengthCondition = new ConditionBuilder<ANDEvaluator>()
-                .WithHandler((ctx, cmd, trigger, services) => ctx is CustomCaller cctx && cctx.ArgumentCount <= 10
+            var lengthCondition = new ConditionBuilder<ANDEvaluator, CustomCaller>()
+                .WithHandler((ctx, cmd, trigger, services) => ctx.ArgumentCount <= 10
                     ? ConditionResult.FromSuccess()
                     : ConditionResult.FromError("The input is too long."))
-                .WithTriggers(ConditionTrigger.BeforeParse);
+                .WithTriggers(ConditionTrigger.Parsing);
 
             var sumCommand = new CommandBuilder()
                 .WithHandler((CommandContext<CustomCaller> ctx, int num1, int op2) => $"{num1} + {op2} = {num1 + op2}!")

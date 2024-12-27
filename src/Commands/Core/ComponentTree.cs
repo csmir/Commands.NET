@@ -82,7 +82,7 @@ namespace Commands
         {
             options ??= new CommandOptions();
 
-            return Execute(caller, new ArgumentEnumerator(args, options.MatchComparer), options);
+            return Execute(caller, new ArgumentEnumerator(args, options.Comparer), options);
         }
 
         /// <inheritdoc />
@@ -134,7 +134,7 @@ namespace Commands
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            var beforeConvertConditions = await CheckConditions(caller, command, ConditionTrigger.BeforeParse, options);
+            var beforeConvertConditions = await CheckConditions(caller, command, ConditionTrigger.Parsing, options);
 
             if (!beforeConvertConditions.Success)
                 return beforeConvertConditions;
@@ -153,17 +153,12 @@ namespace Commands
 
             try
             {
-                var beforeInvocationConditions = await CheckConditions(caller, command, ConditionTrigger.BeforeInvoke, options);
+                var beforeInvocationConditions = await CheckConditions(caller, command, ConditionTrigger.Execution, options);
 
                 if (!beforeInvocationConditions.Success)
                     return beforeInvocationConditions;
 
                 var value = command.Activator.Invoke(caller, command, arguments, this, options);
-
-                var afterInvocationConditions = await CheckConditions(caller, command, ConditionTrigger.BeforeResult, options);
-
-                if (!afterInvocationConditions.Success)
-                    return afterInvocationConditions;
 
                 return InvokeResult.FromSuccess(command, value);
             }

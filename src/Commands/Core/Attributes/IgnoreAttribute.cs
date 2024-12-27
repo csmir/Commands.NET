@@ -8,7 +8,7 @@
     ///     When marked, the target will not be considered in the registration process.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Constructor, AllowMultiple = false)]
-    public sealed class NoBuildAttribute() : Attribute
+    public sealed class IgnoreAttribute() : Attribute
     {
 
     }

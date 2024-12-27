@@ -61,26 +61,17 @@ namespace Commands
         /// <summary>
         ///     Gets or sets whether the defined <see cref="ConditionAttribute{T}"/>'s for this execution should be ran.
         /// </summary>
-        /// <remarks>
-        ///     Default: <see langword="false"/>
-        /// </remarks>
         public bool SkipConditions { get; set; } = false;
 
         /// <summary>
         ///     Gets or sets the separator used to join remaining arguments in a command.
         /// </summary>
-        /// <remarks>
-        ///     Default: <c>' '</c> (whitespace)
-        /// </remarks>
         public char RemainderSeparator { get; set; } = ' ';
 
         /// <summary>
         ///     Gets or sets the comparer used to match command names and named arguments.
         /// </summary>
-        /// <remarks>
-        ///     Default: <see cref="StringComparer.OrdinalIgnoreCase"/>
-        /// </remarks>
-        public StringComparer MatchComparer { get; set; } = StringComparer.OrdinalIgnoreCase;
+        public StringComparer Comparer { get; set; } = StringComparer.OrdinalIgnoreCase;
 
         /// <inheritdoc cref="IServiceProvider" />
         /// <remarks>

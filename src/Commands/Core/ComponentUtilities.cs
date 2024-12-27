@@ -160,7 +160,7 @@ namespace Commands
                         continue;
                     }
 
-                    if (attribute is NoBuildAttribute doSkip)
+                    if (attribute is IgnoreAttribute doSkip)
                     {
                         skip = true;
                         break;
@@ -201,7 +201,7 @@ namespace Commands
                         continue;
                     }
 
-                    if (attribute is NoBuildAttribute doSkip)
+                    if (attribute is IgnoreAttribute doSkip)
                     {
                         skip = true;
                         break;

@@ -1,14 +1,15 @@
 ﻿using Commands;
-using Commands.Builders;
 using Commands.Tests;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 
-ComponentConfigurationBuilder.Default.AddParser(new CSharpScriptParser());
-
-var resultHandler = new DelegateResultHandler(async (c, r, s) => await c.Respond(r));
-
-var tree = new ComponentTree(ComponentConfiguration.Default.GetComponents(typeof(Program).Assembly), resultHandler);
+var tree = ComponentTree.CreateBuilder()
+    .ConfigureComponents(configure =>
+    {
+        configure.AddParser(new CSharpScriptParser());
+    })
+    .AddResultHandler(async (c, r, s) => await c.Respond(r))
+    .Build();
 
 var services = new ServiceCollection()
     .AddSingleton(tree)

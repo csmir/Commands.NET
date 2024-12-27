@@ -41,7 +41,7 @@ namespace Commands
 
             foreach (var ctor in ctors)
             {
-                if (ctor.GetCustomAttributes().Any(attr => attr is NoBuildAttribute))
+                if (ctor.GetCustomAttributes().Any(attr => attr is IgnoreAttribute))
                     continue;
 
                 return ctor;

@@ -16,6 +16,38 @@ namespace Commands.Conditions
     }
 
     /// <summary>
+    ///     An attribute that contains an evaluation method called when marked on top of a command signature, implementing <see cref="ConditionAttribute{T}"/> and adding validation the implementing <see cref="ICallerContext"/> to be an instance of <typeparamref name="TContext"/>.
+    /// </summary>
+    /// <remarks>
+    ///     Custom implementations of <see cref="ConditionAttribute{T, T}"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
+    /// </remarks>
+    /// <typeparam name="TEval">The type of evaluator that will be used to determine the result of the evaluation.</typeparam>
+    /// <typeparam name="TContext">The implementation of <see cref="ICallerContext"/> that this operation should match in order to validate the condition.</typeparam>
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
+    public abstract class ConditionAttribute<TEval, TContext> : ConditionAttribute<TEval>
+        where TEval : ConditionEvaluator, new()
+        where TContext : ICallerContext
+    {
+        /// <inheritdoc />
+        public override ValueTask<ConditionResult> Evaluate(
+            ICallerContext context, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
+        {
+            if (context is TContext caller)
+                return Evaluate(caller, command, trigger, services, cancellationToken);
+
+            return Error($"The provided {nameof(ICallerContext)} is not of the expected type: {typeof(TContext).Name}.");
+        }
+
+
+        /// <inheritdoc cref="Evaluate(ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, CancellationToken)" />
+        /// <remarks>
+        ///     Evaluates the condition for the given context, command, trigger, services and cancellation token. This evaluation only succeeds if the provided <see cref="ICallerContext"/> is an instance of <typeparamref name="TContext"/>.
+        /// </remarks>
+        public abstract ValueTask<ConditionResult> Evaluate(
+            TContext context, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken);
+    }
+
+    /// <summary>
     ///     An attribute that contains an evaluation method called when marked on top of a command signature.
     /// </summary>
     /// <remarks>
@@ -23,13 +55,13 @@ namespace Commands.Conditions
     ///     Custom implementations of <see cref="ConditionAttribute{T}"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
     ///     If multiple commands are found during matching, multiple sequences of preconditions will be ran to find a match that succeeds.
     /// </remarks>
-    /// <typeparam name="T">The type of evaluator that will be used to determine the result of the evaluation.</typeparam>
+    /// <typeparam name="TEval">The type of evaluator that will be used to determine the result of the evaluation.</typeparam>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
-    public abstract class ConditionAttribute<T>() : Attribute, IExecuteCondition
-        where T : ConditionEvaluator, new()
+    public abstract class ConditionAttribute<TEval>() : Attribute, IExecuteCondition
+        where TEval : ConditionEvaluator, new()
     {
         /// <inheritdoc />
-        public virtual ConditionTrigger Trigger { get; } = ConditionTrigger.BeforeInvoke;
+        public virtual ConditionTrigger Trigger { get; } = ConditionTrigger.Execution;
 
         /// <inheritdoc />
         /// <remarks>
@@ -41,12 +73,12 @@ namespace Commands.Conditions
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public ConditionEvaluator GetEvaluator()
-            => new T() { Trigger = Trigger };
+            => new TEval() { Trigger = Trigger };
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public virtual string GetGroupId()
-            => $"{GetType().Name}:{typeof(T).Name}:{Trigger}";
+            => $"{GetType().Name}:{typeof(TEval).Name}:{Trigger}";
 
         /// <summary>
         ///     Creates a new <see cref="ConditionResult"/> representing a failed evaluation.

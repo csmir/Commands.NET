@@ -27,6 +27,5 @@ namespace Commands
         /// <inheritdoc />
         public Task StopAsync(CancellationToken cancellationToken)
             => Task.CompletedTask;
-
     }
 }

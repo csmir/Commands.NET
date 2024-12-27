@@ -112,18 +112,50 @@ namespace Commands.Builders
         }
 
         /// <summary>
+        ///     Adds a condition to the command, which must succeed alongside other conditions with the same trigger created by this overload. Conditions are used to determine if the command can be executed.
+        /// </summary>
+        /// <remarks>
+        ///     This overload creates a new instance of the specified condition type and configures it using the provided <paramref name="configureCondition"/> delegate.
+        /// </remarks>
+        /// <param name="configureCondition">A configuration delegate that should configure the condition builder.</param>
+        /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+        public CommandBuilder AddCondition(Action<ConditionBuilder<ANDEvaluator, ICallerContext>> configureCondition)
+            => AddCondition<ANDEvaluator, ICallerContext>(configureCondition);
+
+        /// <summary>
         ///     Adds a condition to the command. Conditions are used to determine if the command can be executed.
         /// </summary>
         /// <remarks>
         ///     This overload creates a new instance of the specified condition type and configures it using the provided <paramref name="configureCondition"/> delegate.
         /// </remarks>
-        /// <typeparam name="T">The evaluator type which should evaluate the condition alongside others of the same kind.</typeparam>
+        /// <typeparam name="TEval">The evaluator type which should evaluate the condition alongside others of the same kind.</typeparam>
         /// <param name="configureCondition">A configuration delegate that should configure the condition builder.</param>
         /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
-        public CommandBuilder AddCondition<T>(Action<IConditionBuilder> configureCondition)
-            where T : ConditionEvaluator, new()
+        public CommandBuilder AddCondition<TEval>(Action<ConditionBuilder<TEval, ICallerContext>> configureCondition)
+            where TEval : ConditionEvaluator, new()
         {
-            var condition = new ConditionBuilder<T>();
+            var condition = new ConditionBuilder<TEval, ICallerContext>();
+
+            configureCondition(condition);
+
+            return AddCondition(condition);
+        }
+
+        /// <summary>
+        ///     Adds a condition bound to the specified <typeparamref name="TContext"/> to the command. Conditions are used to determine if the command can be executed.
+        /// </summary>
+        /// <remarks>
+        ///     This overload creates a new instance of the specified condition type and configures it using the provided <paramref name="configureCondition"/> delegate.
+        /// </remarks>
+        /// <typeparam name="TEval">The evaluator type which should evaluate the condition alongside others of the same kind.</typeparam>
+        /// <typeparam name="TContext">The context type which this condition must receive in order to succeed.</typeparam>
+        /// <param name="configureCondition">A configuration delegate that should configure the condition builder.</param>
+        /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+        public CommandBuilder AddCondition<TEval, TContext>(Action<ConditionBuilder<TEval, TContext>> configureCondition)
+            where TEval : ConditionEvaluator, new()
+            where TContext : ICallerContext
+        {
+            var condition = new ConditionBuilder<TEval, TContext>();
 
             configureCondition(condition);
 
