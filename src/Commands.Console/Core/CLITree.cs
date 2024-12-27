@@ -1,4 +1,5 @@
 ﻿using Commands.Builders;
+using Commands.Conversion;
 
 namespace Commands
 {
@@ -46,15 +47,17 @@ namespace Commands
         /// </summary>
         /// <returns>A new <see cref="ComponentTreeBuilder"/> that builds into a new instance of <see cref="IComponentTree"/> based on the provided arguments.</returns>
         public static ITreeBuilder CreateBuilder()
-            => new ComponentTreeBuilder()
+        {
+            var configuration = new ComponentConfigurationBuilder();
+
+            configuration.Properties[ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName] = "env-core";
+
+            configuration.AddParser(new ColorTypeParser());
+
+            return new ComponentTreeBuilder()
             {
-                Configuration = new ComponentConfigurationBuilder()
-                {
-                    Properties = new Dictionary<object, object>()
-                    {
-                        [ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName] = "env-core"
-                    }
-                }
+                Configuration = configuration
             };
+        }
     }
 }
