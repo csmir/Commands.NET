@@ -4,12 +4,12 @@ namespace Commands.Tests
 {
     public class ANDConditionAttribute(bool pass) : ConditionAttribute<ANDEvaluator>
     {
-        public override ValueTask<ConditionResult> Evaluate(ICallerContext consumer, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
+        public override Task<ConditionResult> Evaluate(ICallerContext consumer, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (pass)
-                return ValueTask.FromResult(Success());
+                return Success();
 
-            return ValueTask.FromResult(Error("The condition failed."));
+            return Error("The condition failed.");
         }
     }
 }

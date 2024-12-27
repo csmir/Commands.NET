@@ -6,7 +6,7 @@
     public sealed class OREvaluator : ConditionEvaluator
     {
         /// <inheritdoc />
-        public override async ValueTask<ConditionResult> Evaluate(ICallerContext consumer, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
+        public override async Task<ConditionResult> Evaluate(ICallerContext consumer, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
         {
             var lastFailure = default(ConditionResult);
 

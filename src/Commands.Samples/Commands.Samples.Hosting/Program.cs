@@ -42,7 +42,7 @@ await Host.CreateDefaultBuilder(args)
                     break;
             }
 
-            return ValueTask.CompletedTask;
+            return Task.CompletedTask;
         });
     })
     .ConfigureLogging(configure =>

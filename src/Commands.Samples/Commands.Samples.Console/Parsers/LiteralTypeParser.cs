@@ -8,7 +8,7 @@ namespace Commands.Samples
     {
         private readonly bool _caseIgnore = caseIgnore;
 
-        public override ValueTask<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override Task<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             try
             {
@@ -19,14 +19,14 @@ namespace Commands.Samples
 
                 if (typeSrc == null)
                 {
-                    return ValueTask.FromResult(Error($"A type with name '{value}' was not found."));
+                    return Error($"A type with name '{value}' was not found.");
                 }
 
-                return ValueTask.FromResult(Success(typeSrc));
+                return Success(typeSrc);
             }
             catch (Exception ex)
             {
-                return ValueTask.FromResult(Error(ex));
+                return Error(ex);
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Commands
 {
@@ -36,15 +37,15 @@ namespace Commands
 
             var unnamedFill = new List<string>();
 
-            foreach (var (key, value) in args)
+            foreach (var kvp in args)
             {
-                if (key == null)
-                    throw new ArgumentNullException(nameof(key), "The key of an argument KeyValuePair cannot be null.");
+                if (kvp.Key == null)
+                    throw new ArgumentNullException(nameof(args), "One of the keys in the provided collection is null.");
 
-                if (value == null)
-                    unnamedFill.Add(key);
+                if (kvp.Value == null)
+                    unnamedFill.Add(kvp.Key);
                 else
-                    _namedArgs[key] = value;
+                    _namedArgs[kvp.Key] = kvp.Value;
             }
 
             _unnamedArgs = [.. unnamedFill];
@@ -92,7 +93,11 @@ namespace Commands
         /// <param name="searchHeight">The next incrementation that the search operation should attempt to match in the command set.</param>
         /// <param name="value">The value returned when an item is discovered in the set.</param>
         /// <returns><see langword="true"/> when an item was discovered in the set, otherwise <see langword="false"/>.</returns>
+#if NET8_0_OR_GREATER
         public readonly bool TryNext(int searchHeight, [NotNullWhen(true)] out string? value)
+#else
+        public readonly bool TryNext(int searchHeight, out string? value)
+#endif
         {
             if (searchHeight < _unnamedArgs.Length && _unnamedArgs[searchHeight] is string str)
             {
@@ -119,14 +124,32 @@ namespace Commands
         /// </summary>
         /// <returns>A joined string containing all remaining arguments in this enumerator.</returns>
         public readonly string JoinRemaining(char separator = U0020)
+#if NET8_0_OR_GREATER
             => string.Join(separator, _unnamedArgs[_indexUnnamed..]);
+#else
+        {
+            var sb = new StringBuilder();
+            for (var i = _indexUnnamed; i < _unnamedArgs.Length; i++)
+            {
+                sb.Append(_unnamedArgs[i]);
+                if (i < _unnamedArgs.Length - 1)
+                    sb.Append(separator);
+            }
+
+            return sb.ToString();
+        }
+#endif
 
         /// <summary>
         ///     Takes the remaining unnamed arguments in the set into an array which is used by Collector arguments.
         /// </summary>
         /// <returns>An array of objects that represent the remaining arguments of this enumerator.</returns>
         public readonly object[] TakeRemaining()
+#if NET8_0_OR_GREATER
             => _unnamedArgs[_indexUnnamed..];
+#else
+            => _unnamedArgs.Skip(_indexUnnamed).ToArray();
+#endif
 
         /// <summary>
         ///     Implicitly converts an array of objects into an <see cref="ArgumentEnumerator"/> instance.
@@ -147,6 +170,10 @@ namespace Commands
         /// </summary>
         /// <param name="args">The string to parse, and then create a new <see cref="ArgumentEnumerator"/> from.</param>
         public static implicit operator ArgumentEnumerator(string args)
+#if NET8_0_OR_GREATER
             => new(ArgumentParser.ParseKeyValueCollection(args), StringComparer.OrdinalIgnoreCase);
+#else
+            => new(ArgumentParser.ParseKeyCollection(args));
+#endif
     }
 }

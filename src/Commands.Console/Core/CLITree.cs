@@ -17,7 +17,11 @@ namespace Commands
         public static Task Run<T>(this IComponentTree tree, CLIOptions<T> options)
             where T : ConsoleCallerContext, new()
         {
+#if NET8_0_OR_GREATER
             var args = ArgumentParser.ParseKeyValueCollection(options.Arguments);
+#else
+            var args = ArgumentParser.ParseKeyCollection(string.Join(" ", options.Arguments));
+#endif
 
             options.Caller ??= new T();
 

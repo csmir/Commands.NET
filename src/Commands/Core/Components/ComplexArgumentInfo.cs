@@ -98,7 +98,7 @@ namespace Commands
             ExposedType = parameterInfo.ParameterType;
 
             if (!string.IsNullOrEmpty(name))
-                Name = name;
+                Name = name!;
             else
                 Name = parameterInfo.Name ?? "";
 
@@ -122,11 +122,11 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public ValueTask<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public Task<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
             => throw new NotSupportedException("Complex arguments do not support parsing.");
 
         /// <inheritdoc />
-        public int CompareTo(object obj)
+        public int CompareTo(object? obj)
             => obj is IScorable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
         /// <inheritdoc />

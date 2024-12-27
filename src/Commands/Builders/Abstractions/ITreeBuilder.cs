@@ -141,7 +141,7 @@ namespace Commands.Builders
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction);
+        public ITreeBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, Task> resultAction);
 
         /// <summary>
         ///     Configures an asynchronous action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/> and the <see cref="ICallerContext"/> matches <typeparamref name="T"/>. 
@@ -151,7 +151,7 @@ namespace Commands.Builders
         /// </remarks>
         /// <param name="resultAction">The action resembling a post-execution action based on the command result.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddResultHandler<T>(Func<T, IExecuteResult, IServiceProvider, ValueTask> resultAction)
+        public ITreeBuilder AddResultHandler<T>(Func<T, IExecuteResult, IServiceProvider, Task> resultAction)
             where T : class, ICallerContext;
 
         /// <summary>

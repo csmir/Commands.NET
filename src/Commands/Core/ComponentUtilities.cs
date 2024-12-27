@@ -94,7 +94,7 @@ namespace Commands
                 return EnumParser.GetOrCreate(type);
 
             if (type.IsArray)
-                return ArrayParser.GetOrCreate(GetParser(type.GetElementType()));
+                return ArrayParser.GetOrCreate(GetParser(type.GetElementType()!));
 
             try
             {

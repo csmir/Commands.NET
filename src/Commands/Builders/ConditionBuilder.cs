@@ -10,7 +10,7 @@ namespace Commands.Builders
         public ConditionTrigger Trigger { get; set; }
 
         /// <inheritdoc />
-        public Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> Handler { get; set; }
+        public Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, Task<ConditionResult>> Handler { get; set; }
 
         /// <summary>
         ///     Creates a new instance of <see cref="ConditionBuilder{T}"/> with default values, to be confugured using the fluent API.
@@ -26,7 +26,7 @@ namespace Commands.Builders
         /// </summary>
         /// <param name="trigger">A set of flags which determines when in the execution pipeline the condition should be evaluated.</param>
         /// <param name="func">A delegate that is called when the provided triggers determine that it should be evaluated.</param>
-        public ConditionBuilder(ConditionTrigger trigger, Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> func)
+        public ConditionBuilder(ConditionTrigger trigger, Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, Task<ConditionResult>> func)
         {
             Trigger = trigger;
             Handler = func;
@@ -40,7 +40,7 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public IConditionBuilder WithHandler(Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> func)
+        public IConditionBuilder WithHandler(Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, Task<ConditionResult>> func)
         {
             Handler = func;
             return this;

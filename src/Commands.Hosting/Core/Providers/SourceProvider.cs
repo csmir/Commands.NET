@@ -35,7 +35,7 @@
         /// <param name="services">The top level service provider, which can be used to retrieve or append available services. Upon returning this operation as success, a scope of the provider will be made for the rest of the execution chain.</param>
         /// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> containing the consumer, query and options for the command to be executed.</returns>
-        public abstract ValueTask<SourceResult> Wait(IServiceProvider services, CancellationToken cancellationToken);
+        public abstract Task<SourceResult> Receive(IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Creates a new <see cref="SourceResult"/> representing a failed evaluation.

@@ -35,7 +35,7 @@ namespace Commands.Conditions
         /// <remarks>
         ///     Make use of <see cref="Error(Exception)"/> or <see cref="Error(string)"/> and <see cref="Success"/> to safely create the intended result.
         /// </remarks>
-        public abstract ValueTask<ConditionResult> Evaluate(
+        public abstract Task<ConditionResult> Evaluate(
             ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <inheritdoc />

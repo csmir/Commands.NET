@@ -75,7 +75,7 @@ namespace Commands
             Attributes = attributes.ToArray();
 
             if (!string.IsNullOrEmpty(name))
-                Name = name;
+                Name = name!;
             else
                 Name = parameterInfo.Name ?? "";
         }
@@ -101,7 +101,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public ValueTask<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public Task<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Type.IsInstanceOfType(value))
                 return ConvertResult.FromSuccess(value);
@@ -118,7 +118,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public int CompareTo(object obj)
+        public int CompareTo(object? obj)
             => obj is IScorable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
         /// <inheritdoc />

@@ -8,7 +8,7 @@ namespace Commands.Samples
     {
         public PlatformID Platform { get; } = platform;
 
-        public override ValueTask<ConditionResult> Evaluate(ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
+        public override Task<ConditionResult> Evaluate(ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Environment.OSVersion.Platform == Platform)
                 return Success();

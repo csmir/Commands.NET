@@ -130,11 +130,11 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public int CompareTo(object obj)
+        public int CompareTo(object? obj)
             => obj is IScorable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
         /// <inheritdoc />
-        public bool Equals(IComponent other)
+        public bool Equals(IComponent? other)
             => other is CommandInfo info && info.__id == __id;
 
         /// <inheritdoc />
@@ -147,7 +147,7 @@ namespace Commands
             => $"{(withModuleInfo ? $"{Parent}." : "")}{Activator.Target.Name}{(Name != null ? $"['{Name}']" : "")}({string.Join<IArgument>(", ", Arguments)})";
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
             => obj is CommandInfo info && info.__id == __id;
 
         /// <inheritdoc />

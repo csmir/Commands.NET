@@ -23,8 +23,8 @@
         /// <param name="trigger">The trigger that determines when the condition is evaluated, being 1 or more points in the execution pipeline.</param>
         /// <param name="services">The provider used to register modules and inject services.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
-        public abstract ValueTask<ConditionResult> Evaluate(
+        /// <returns>An awaitable <see cref="Task"/> that contains the result of the evaluation.</returns>
+        public abstract Task<ConditionResult> Evaluate(
             ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken);
 
         internal static IEnumerable<ConditionEvaluator> CreateEvaluators(IEnumerable<IExecuteCondition> conditions)

@@ -2,7 +2,7 @@
 {
     internal class CustomSourceResolver : SourceProvider
     {
-        public override ValueTask<SourceResult> Wait(IServiceProvider services, CancellationToken cancellationToken)
+        public override Task<SourceResult> Receive(IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Ready())
             {

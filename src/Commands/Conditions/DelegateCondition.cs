@@ -8,7 +8,7 @@ namespace Commands.Conditions
     /// <param name="trigger">A set of flags that determines when this condition should be evaluated.</param>
     /// <param name="func">A delegate that is executed when the trigger declares that this condition will be evaluated.</param>
     public sealed class DelegateCondition<T>(
-        ConditionTrigger trigger, Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> func)
+        ConditionTrigger trigger, Func<ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, Task<ConditionResult>> func)
         : IExecuteCondition
         where T : ConditionEvaluator, new()
     {
@@ -16,7 +16,7 @@ namespace Commands.Conditions
         public ConditionTrigger Trigger { get; } = trigger;
 
         /// <inheritdoc />
-        public ValueTask<ConditionResult> Evaluate(ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
+        public Task<ConditionResult> Evaluate(ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
             => func(caller, command, trigger, services);
 
         /// <inheritdoc />

@@ -15,6 +15,7 @@ namespace Commands
         const char U0020 = ' ';
         const char U002D = '-';
 
+        #if NET8_0_OR_GREATER
         /// <summary>
         ///     Parses a <see cref="string"/> into a collection of command arguments. This collection is a key-value pair, where the key is the argument name and the value is the argument value. 
         ///     When arguments have no value, the name is the value instead.
@@ -189,7 +190,7 @@ namespace Commands
             }
 
             // If concatenation is still filled on escaping the sequence, add as last argument.
-            if (concatenation.Any())
+            if (concatenation.Count == 0)
             {
                 if (name is null)
                     yield return new(string.Join(U0020, concatenation), null);
@@ -197,6 +198,7 @@ namespace Commands
                     yield return new(name, string.Join(U0020, concatenation));
             }
         }
+#endif
 
         /// <summary>
         ///     Parses a <see cref="string"/> into a collection of command arguments.
@@ -227,7 +229,7 @@ namespace Commands
                 return [];
 
             var arr = Array.Empty<string>();
-            var sb = new StringBuilder(0, toParse.Length);
+            var sb = new StringBuilder(0, toParse!.Length);
             var quoted = false;
 
             // adds SB content to array & resets.

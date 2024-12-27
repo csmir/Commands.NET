@@ -30,16 +30,18 @@
         ///     Creates a new <see cref="SourceResult"/> resembling a successful sourcing operation.
         /// </summary>
         /// <param name="caller">The caller of the command.</param>
-        /// <param name="args">An unparsed command query, which will be parsed using <see cref="ArgumentParser.ParseKeyValueCollection(string)"/>.</param>
+        /// <param name="args">An unparsed command query, which will be parsed using the <see cref="ArgumentParser"/>.</param>
         /// <param name="options">A set of options that determine logic in the command execution.</param>
         /// <returns>A new result containing information about the operation.</returns>
         public static SourceResult FromSuccess(ICallerContext caller, string args, CommandOptions? options = null)
         {
-            var parseResult = ArgumentParser.ParseKeyValueCollection(args);
-
             options ??= new CommandOptions();
 
-            return new(caller, new ArgumentEnumerator(parseResult, options.MatchComparer), options, null);
+#if NET8_0_OR_GREATER
+            return new(caller, new ArgumentEnumerator(ArgumentParser.ParseKeyValueCollection(args), options.MatchComparer), options, null);
+#else
+            return new(caller, new ArgumentEnumerator(ArgumentParser.ParseKeyCollection(args)), options, null);
+#endif
         }
 
         /// <summary>
@@ -85,7 +87,7 @@
         ///     Turns this result into a <see cref="ValueTask{TResult}"/> for asynchronous operations.
         /// </summary>
         /// <param name="result">The result object to wrap in a <see cref="ValueTask{TResult}"/>.</param>
-        public static implicit operator ValueTask<SourceResult>(SourceResult result)
-            => new(result);
+        public static implicit operator Task<SourceResult>(SourceResult result)
+            => Task.FromResult(result);
     }
 }

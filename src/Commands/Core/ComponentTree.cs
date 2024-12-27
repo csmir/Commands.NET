@@ -2,8 +2,6 @@
 using Commands.Conditions;
 using System.Diagnostics;
 
-[assembly: CLSCompliant(true)]
-
 namespace Commands
 {
     /// <inheritdoc cref="IComponentTree"/>
@@ -65,7 +63,11 @@ namespace Commands
         public Task Execute<T>(
             T caller, string args, CommandOptions? options = null)
             where T : ICallerContext
+#if NET8_0_OR_GREATER
             => Execute(caller, ArgumentParser.ParseKeyValueCollection(args), options);
+#else
+            => Execute(caller, ArgumentParser.ParseKeyCollection(args), options);
+#endif
 
         /// <inheritdoc />
         public Task Execute<T>(
@@ -126,7 +128,7 @@ namespace Commands
             await FinalizeInvocation(caller, result, options);
         }
 
-        private async ValueTask<IExecuteResult> InvokeCommand<T>(
+        private async Task<IExecuteResult> InvokeCommand<T>(
             T caller, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
             where T : ICallerContext
         {
@@ -171,7 +173,7 @@ namespace Commands
             }
         }
 
-        private async ValueTask<ConvertResult[]> ConvertCommand<T>(
+        private async Task<ConvertResult[]> ConvertCommand<T>(
             T caller, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
             where T : ICallerContext
         {
@@ -194,7 +196,7 @@ namespace Commands
             return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
         }
 
-        private async ValueTask<ConvertResult[]> ParseArguments(
+        private async Task<ConvertResult[]> ParseArguments(
             ICallerContext caller, IArgument[] arguments, ArgumentEnumerator args, CommandOptions options)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
@@ -256,7 +258,7 @@ namespace Commands
             return results;
         }
 
-        private async ValueTask<ConditionResult> CheckConditions<T>(
+        private async Task<ConditionResult> CheckConditions<T>(
             T caller, CommandInfo command, ConditionTrigger trigger, CommandOptions options)
             where T : ICallerContext
         {
@@ -277,14 +279,14 @@ namespace Commands
             return ConditionResult.FromSuccess(trigger);
         }
 
-        private async ValueTask FinalizeInvocation(
+        private async Task FinalizeInvocation(
             ICallerContext caller, IExecuteResult result, CommandOptions options)
         {
             foreach (var resolver in _handlers)
                 await resolver.HandleResult(caller, result, options.Services, options.CancellationToken);
         }
 
-        #endregion
+#endregion
 
         /// <summary>
         ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="ComponentTree"/>. This builder is pre-configured with default settings.

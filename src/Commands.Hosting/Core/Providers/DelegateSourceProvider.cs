@@ -5,15 +5,14 @@
     /// </summary>
     /// <param name="func">The asynchronous delegate representing this source operation.</param>
     public sealed class DelegateSourceProvider(
-        Func<IServiceProvider, ValueTask<SourceResult>> func) : SourceProvider
+        Func<IServiceProvider, Task<SourceResult>> func) : SourceProvider
     {
-        private readonly Func<IServiceProvider, ValueTask<SourceResult>> _func = func;
-
         /// <inheritdoc/>
-        public override ValueTask<SourceResult> Wait(IServiceProvider services, CancellationToken cancellationToken)
+        public override Task<SourceResult> Receive(IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Ready())
-                return _func(services);
+                return func(services);
+
             return Error("The source is not ready to be resolved.");
         }
     }

@@ -41,7 +41,11 @@
             if (options.Arguments == null || options.Arguments.Length == 0)
                 options.Arguments = [coreCommandName];
 
+#if NET8_0_OR_GREATER
             var args = ArgumentParser.ParseKeyValueCollection(options.Arguments);
+#else
+            var args = ArgumentParser.ParseKeyCollection(string.Join(" ", options.Arguments));
+#endif
 
             return manager.Execute(options.Caller, args, options.Options);
         }

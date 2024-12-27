@@ -17,7 +17,7 @@ namespace Commands.Builders
         public IDictionary<object, object> Properties { get; set; } = new Dictionary<object, object>();
 
         /// <inheritdoc />
-        public IConfigurationBuilder AddParser<TConvertable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
+        public IConfigurationBuilder AddParser<TConvertable>(Func<ICallerContext, IArgument, object?, IServiceProvider, Task<ConvertResult>> convertAction)
         {
             if (convertAction == null)
                 throw new ArgumentNullException(nameof(convertAction));

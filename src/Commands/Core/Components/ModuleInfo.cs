@@ -1,5 +1,4 @@
 ﻿using Commands.Conditions;
-using System.Buffers;
 using System.Diagnostics;
 
 namespace Commands
@@ -119,11 +118,11 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public int CompareTo(object obj)
+        public int CompareTo(object? obj)
             => obj is IScorable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
         /// <inheritdoc />
-        public bool Equals(IComponent other)
+        public bool Equals(IComponent? other)
             => other is ModuleInfo info && info.__id == __id;
 
         /// <inheritdoc />
@@ -158,7 +157,7 @@ namespace Commands
             => $"{(Parent != null ? $"{Parent}." : "")}{(Name != null ? $"{Type?.Name}['{Name}']" : $"{Type?.Name}")}";
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
             => obj is ModuleInfo info && info.__id == __id;
 
         /// <inheritdoc />

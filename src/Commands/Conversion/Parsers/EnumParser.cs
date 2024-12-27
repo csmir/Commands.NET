@@ -6,15 +6,19 @@
 
         public override Type Type { get; } = targetEnumType;
 
-        public override async ValueTask<ConvertResult> Parse(
+        public override Task<ConvertResult> Parse(
             ICallerContext caller, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
+            try
+            {
+                var @out = Enum.Parse(Type, value?.ToString() ?? string.Empty, true);
 
-            if (Enum.TryParse(Type, value?.ToString(), true, out var result))
-                return Success(result!);
-
-            return Error($"The provided value is not a part the enum specified. Expected: '{Type.Name}', got: '{value}'. At: '{parameter.Name}'");
+                return Success(@out);
+            }
+            catch (ArgumentException)
+            {
+                return Error($"The provided value is not a part the enum specified. Expected: '{Type.Name}', got: '{value}'. At: '{parameter.Name}'");
+            }
         }
 
         internal static EnumParser GetOrCreate(Type type)
