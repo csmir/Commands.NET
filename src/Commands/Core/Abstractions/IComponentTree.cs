@@ -17,8 +17,8 @@ namespace Commands
         /// <param name="caller">A command caller that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">An unparsed input that is expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
-        public Task Execute<T>(
+        /// <returns>An awaitable <see cref="ValueTask"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
+        public ValueTask Execute<T>(
             T caller, string args, CommandOptions? options = null)
             where T : ICallerContext;
 
@@ -31,8 +31,8 @@ namespace Commands
         /// <param name="caller">A command caller that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
-        public Task Execute<T>(
+        /// <returns>An awaitable <see cref="ValueTask"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
+        public ValueTask Execute<T>(
             T caller, IEnumerable<object> args, CommandOptions? options = null)
             where T : ICallerContext;
 
@@ -42,8 +42,8 @@ namespace Commands
         /// <param name="caller">A command caller that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
-        public Task Execute<T>(
+        /// <returns>An awaitable <see cref="ValueTask"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
+        public ValueTask Execute<T>(
             T caller, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
             where T : ICallerContext;
 
@@ -53,8 +53,8 @@ namespace Commands
         /// <param name="caller">A command caller that persist for the duration of the execution pipeline, serving as a metadata container.</param>
         /// <param name="args">A parsed set of arguments that are expected to discover, populate and invoke a target command.</param>
         /// <param name="options">A collection of options that determines pipeline logic.</param>
-        /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
-        public Task Execute<T>(
+        /// <returns>An awaitable <see cref="ValueTask"/> hosting the state of execution. This task should be awaited, even if <see cref="CommandOptions.DoAsynchronousExecution"/> is set to <see langword="true"/>.</returns>
+        public ValueTask Execute<T>(
             T caller, ArgumentEnumerator args, CommandOptions options)
             where T : ICallerContext;
     }

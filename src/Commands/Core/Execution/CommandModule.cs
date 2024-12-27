@@ -64,7 +64,7 @@
         ///     Sends a response to the consumer.
         /// </summary>
         /// <param name="response">The response to send to the consumer.</param>
-        /// <returns>An asynchronous <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
+        /// <returns>An asynchronous <see cref="ValueTask"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
         public Task Respond(object response)
         {
             return Caller.Respond(response);

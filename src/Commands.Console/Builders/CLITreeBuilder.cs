@@ -29,8 +29,8 @@
         /// </summary>
         /// <param name="builder">The command builder to build into a manager.</param>
         /// <param name="options">The options that set up a single command execution.</param>
-        /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
-        public static Task Run<T>(this ITreeBuilder builder, CLIOptions<T> options)
+        /// <returns>An asynchronous <see cref="ValueTask"/> containing the state of the command execution.</returns>
+        public static ValueTask Run<T>(this ITreeBuilder builder, CLIOptions<T> options)
             where T : ConsoleCallerContext
         {
             var coreCommandName = builder.Configuration.Properties[ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName] as string
@@ -56,8 +56,8 @@
         /// <param name="builder">The command builder to build into a manager.</param>
         /// <param name="caller">The caller that represents the source of this execution.</param>
         /// <param name="args">The CLI arguments that should be used to execute a command.</param>
-        /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
-        public static Task Run<T>(this ITreeBuilder builder, T caller, string[] args)
+        /// <returns>An asynchronous <see cref="ValueTask"/> containing the state of the command execution. This task should be awaited </returns>
+        public static ValueTask Run<T>(this ITreeBuilder builder, T caller, string[] args)
             where T : ConsoleCallerContext
         {
             var options = new CLIOptions<T>(caller)

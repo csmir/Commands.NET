@@ -14,18 +14,18 @@
         /// <remarks>
         ///     This method is only executed when the provided <paramref name="caller"/> is of type <typeparamref name="T"/>.
         /// </remarks>
-        public virtual Task HandleResult(T caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+        public virtual ValueTask HandleResult(T caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
             => base.HandleResult(caller, result, services, cancellationToken);
 
         /// <inheritdoc />
-        public override Task HandleResult(
+        public override ValueTask HandleResult(
             ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (caller is T typedCaller)
                 return HandleResult(typedCaller, result, services, cancellationToken);
 
             // If the caller is not of type T, return default, not handling the result.
-            return Task.CompletedTask;
+            return default;
         }
     }
 
@@ -46,8 +46,8 @@
         /// <param name="result">The result of the command execution.</param>
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="Task"/> representing the result of this operation.</returns>
-        public virtual Task HandleResult(
+        /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
+        public virtual ValueTask HandleResult(
             ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -84,8 +84,8 @@
         /// <param name="result">The result of the command execution.</param>
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="Task"/> representing the result of this operation.</returns>
-        protected async virtual Task HandleSuccess(
+        /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
+        protected async virtual ValueTask HandleSuccess(
             ICallerContext caller, IValueResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (result is InvokeResult invokeResult)
@@ -110,7 +110,6 @@
                                 await caller.Respond(taskResult);
                         }
                         break;
-#if NET8_0_OR_GREATER
                     case ValueTask awaitablevt:
                         await awaitablevt;
 
@@ -126,7 +125,6 @@
                                 await caller.Respond(taskResult);
                         }
                         break;
-#endif
                     case object obj:
                         if (obj != null)
                             await caller.Respond(obj);
@@ -142,10 +140,10 @@
         /// <param name="result">The result of the command execution.</param>
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="Task"/> representing the result of this operation.</returns>
-        protected virtual Task HandleCommandNotFound(
+        /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
+        protected virtual ValueTask HandleCommandNotFound(
             ICallerContext caller, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
-            => Task.CompletedTask;
+            => default;
 
         /// <summary>
         ///     Holds the evaluation data of a search operation where the root of a command is found, but no invokable command is discovered.
@@ -154,10 +152,10 @@
         /// <param name="result">The result of the command execution.</param>
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="Task"/> representing the result of this operation.</returns>
-        protected virtual Task HandleSearchIncomplete(
+        /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
+        protected virtual ValueTask HandleSearchIncomplete(
             ICallerContext caller, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
-            => Task.CompletedTask;
+            => default;
 
         /// <summary>
         ///     Holds the evaluation data of a match operation where the argument length of the best match does not match the input query.
@@ -166,10 +164,10 @@
         /// <param name="result">The result of the command execution.</param>
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="Task"/> representing the result of this operation.</returns>
-        protected virtual Task HandleArgumentMismatch(
+        /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
+        protected virtual ValueTask HandleArgumentMismatch(
             ICallerContext caller, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
-            => Task.CompletedTask;
+            => default;
 
         /// <summary>
         ///     Holds the evaluation data of a match operation where one or more arguments did not succeed conversion into target type.
@@ -178,10 +176,10 @@
         /// <param name="result">The result of the command execution.</param>
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="Task"/> representing the result of this operation.</returns>
-        protected virtual Task HandleConversionFailed(
+        /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
+        protected virtual ValueTask HandleConversionFailed(
             ICallerContext caller, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
-            => Task.CompletedTask;
+            => default;
 
         /// <summary>
         ///     Holds the evaluation data of a check operation where a pre- or postcondition did not succeed evaluation.
@@ -190,10 +188,10 @@
         /// <param name="result">The result of the command execution.</param>
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="Task"/> representing the result of this operation.</returns>
-        protected virtual Task HandleConditionUnmet(
+        /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
+        protected virtual ValueTask HandleConditionUnmet(
             ICallerContext caller, ConditionResult result, IServiceProvider services, CancellationToken cancellationToken)
-            => Task.CompletedTask;
+            => default;
 
         /// <summary>
         ///     Holds the evaluation data of an invoke operation where the invocation failed by exception.
@@ -202,10 +200,10 @@
         /// <param name="result">The result of the command execution.</param>
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="Task"/> representing the result of this operation.</returns>
-        protected virtual Task HandleInvocationFailed(
+        /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
+        protected virtual ValueTask HandleInvocationFailed(
             ICallerContext caller, InvokeResult result, IServiceProvider services, CancellationToken cancellationToken)
-            => Task.CompletedTask;
+            => default;
 
         /// <summary>
         ///     Holds the evaluation data of an unhandled result.
@@ -214,9 +212,9 @@
         /// <param name="result">The result of the command execution.</param>
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="Task"/> representing the result of this operation.</returns>
-        protected virtual Task HandleUnknownResult(
+        /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
+        protected virtual ValueTask HandleUnknownResult(
             ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
-            => Task.CompletedTask;
+            => default;
     }
 }

@@ -83,10 +83,10 @@ namespace Commands
             => inline ? $"{(Component != null ? $"Component = {Component} " : "")}Success = {(Exception == null ? "True" : $"False")}" : ToString();
 
         /// <summary>
-        ///     Implicitly converts a <see cref="SearchResult"/> to a <see cref="Task{TResult}"/>.
+        ///     Implicitly converts a <see cref="SearchResult"/> to a <see cref="ValueTask{TResult}"/>.
         /// </summary>
         /// <param name="result">The result to convert.</param>
-        public static implicit operator Task<SearchResult>(SearchResult result)
-            => Task.FromResult(result);
+        public static implicit operator ValueTask<SearchResult>(SearchResult result)
+            => new(result);
     }
 }

@@ -60,7 +60,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public Task Execute<T>(
+        public ValueTask Execute<T>(
             T caller, string args, CommandOptions? options = null)
             where T : ICallerContext
 #if NET8_0_OR_GREATER
@@ -70,13 +70,13 @@ namespace Commands
 #endif
 
         /// <inheritdoc />
-        public Task Execute<T>(
+        public ValueTask Execute<T>(
             T caller, IEnumerable<object> args, CommandOptions? options = null)
             where T : ICallerContext
             => Execute(caller, new ArgumentEnumerator(args), options ?? new CommandOptions());
 
         /// <inheritdoc />
-        public Task Execute<T>(
+        public ValueTask Execute<T>(
             T caller, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
             where T : ICallerContext
         {
@@ -86,21 +86,21 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public Task Execute<T>(
+        public ValueTask Execute<T>(
             T caller, ArgumentEnumerator args, CommandOptions options)
             where T : ICallerContext
         {
             var task = StartAsynchronousPipeline(caller, args, options);
 
             if (options.DoAsynchronousExecution)
-                return Task.CompletedTask;
+                return default;
 
             return task;
         }
 
         #region Pipeline
 
-        private async Task StartAsynchronousPipeline<T>(
+        private async ValueTask StartAsynchronousPipeline<T>(
             T caller, ArgumentEnumerator args, CommandOptions options)
             where T : ICallerContext
         {
@@ -128,7 +128,7 @@ namespace Commands
             await FinalizeInvocation(caller, result, options);
         }
 
-        private async Task<IExecuteResult> InvokeCommand<T>(
+        private async ValueTask<IExecuteResult> InvokeCommand<T>(
             T caller, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
             where T : ICallerContext
         {
@@ -173,7 +173,7 @@ namespace Commands
             }
         }
 
-        private async Task<ConvertResult[]> ConvertCommand<T>(
+        private async ValueTask<ConvertResult[]> ConvertCommand<T>(
             T caller, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
             where T : ICallerContext
         {
@@ -196,7 +196,7 @@ namespace Commands
             return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
         }
 
-        private async Task<ConvertResult[]> ParseArguments(
+        private async ValueTask<ConvertResult[]> ParseArguments(
             ICallerContext caller, IArgument[] arguments, ArgumentEnumerator args, CommandOptions options)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
@@ -258,7 +258,7 @@ namespace Commands
             return results;
         }
 
-        private async Task<ConditionResult> CheckConditions<T>(
+        private async ValueTask<ConditionResult> CheckConditions<T>(
             T caller, CommandInfo command, ConditionTrigger trigger, CommandOptions options)
             where T : ICallerContext
         {
@@ -279,7 +279,7 @@ namespace Commands
             return ConditionResult.FromSuccess(trigger);
         }
 
-        private async Task FinalizeInvocation(
+        private async ValueTask FinalizeInvocation(
             ICallerContext caller, IExecuteResult result, CommandOptions options)
         {
             foreach (var resolver in _handlers)

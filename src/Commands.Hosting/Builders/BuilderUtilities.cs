@@ -71,7 +71,7 @@ namespace Commands.Builders
         /// <param name="builder">The builder which is used to create new instances of <see cref="IComponentTree"/>.</param>
         /// <param name="sourcingAction">The action which should return a <see cref="SourceResult"/> representing a failed or succeeded retrieved command query.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public static ITreeBuilder AddSourceProvider(this ITreeBuilder builder, Func<IServiceProvider, Task<SourceResult>> sourcingAction)
+        public static ITreeBuilder AddSourceProvider(this ITreeBuilder builder, Func<IServiceProvider, ValueTask<SourceResult>> sourcingAction)
         {
             if (!(builder.Configuration.Properties.TryGetValue(HostingConfigurationPropertyDefinitions.SourceResolverCollection, out var srcProviders) && srcProviders is List<SourceProvider> providers))
                 providers = [];

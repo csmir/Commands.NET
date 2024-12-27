@@ -4,16 +4,12 @@
     {
         public static StringParser Instance { get; } = new();
 
-        public override async Task<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
-
             if (value is string str)
-            {
                 return Success(str);
-            }
 
-            return Success(value?.ToString()!);
+            return Success(value?.ToString());
         }
     }
 }

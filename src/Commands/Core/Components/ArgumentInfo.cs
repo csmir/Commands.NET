@@ -101,7 +101,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public Task<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public ValueTask<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Type.IsInstanceOfType(value))
                 return ConvertResult.FromSuccess(value);

@@ -5,10 +5,10 @@
     /// </summary>
     /// <param name="func">The asynchronous delegate representing this source operation.</param>
     public sealed class DelegateSourceProvider(
-        Func<IServiceProvider, Task<SourceResult>> func) : SourceProvider
+        Func<IServiceProvider, ValueTask<SourceResult>> func) : SourceProvider
     {
         /// <inheritdoc/>
-        public override Task<SourceResult> Receive(IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<SourceResult> Receive(IServiceProvider services, CancellationToken cancellationToken)
         {
             if (Ready())
                 return func(services);

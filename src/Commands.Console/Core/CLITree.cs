@@ -13,8 +13,8 @@ namespace Commands
         /// </summary>
         /// <param name="tree">The <see cref="IComponentTree"/> instance that should be used to run the CLI command.</param>
         /// <param name="options">The options that set up a single command execution.</param>
-        /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
-        public static Task Run<T>(this IComponentTree tree, CLIOptions<T> options)
+        /// <returns>An asynchronous <see cref="ValueTask"/> containing the state of the command execution.</returns>
+        public static ValueTask Run<T>(this IComponentTree tree, CLIOptions<T> options)
             where T : ConsoleCallerContext, new()
         {
 #if NET8_0_OR_GREATER
@@ -34,8 +34,8 @@ namespace Commands
         /// <param name="tree">The <see cref="IComponentTree"/> instance that should be used to run the CLI command.</param>
         /// <param name="caller">The caller that represents the source of this execution.</param>
         /// <param name="args">The CLI arguments that should be used to execute a command.</param>
-        /// <returns>An asynchronous <see cref="Task"/> containing the state of the command execution.</returns>
-        public static Task Run<T>(this IComponentTree tree, T caller, string[] args)
+        /// <returns>An awaitable <see cref="ValueTask"/> containing the state of the command execution.</returns>
+        public static ValueTask Run<T>(this IComponentTree tree, T caller, string[] args)
             where T : ConsoleCallerContext, new()
         {
             var options = new CLIOptions<T>(caller)

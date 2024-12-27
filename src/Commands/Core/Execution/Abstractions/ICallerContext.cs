@@ -12,7 +12,7 @@
         ///     Sends a response to the caller.
         /// </summary>
         /// <param name="response">The response to send.</param>
-        /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
+        /// <returns>An awaitable <see cref="ValueTask"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
         public Task Respond(object? response);
     }
 }

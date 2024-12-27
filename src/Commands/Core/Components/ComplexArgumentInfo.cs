@@ -122,7 +122,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public Task<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public ValueTask<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
             => throw new NotSupportedException("Complex arguments do not support parsing.");
 
         /// <inheritdoc />

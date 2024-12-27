@@ -4,7 +4,7 @@ namespace Commands.Tests
 {
     public class ORConditionAttribute(bool pass) : ConditionAttribute<OREvaluator>
     {
-        public override Task<ConditionResult> Evaluate(ICallerContext consumer, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConditionResult> Evaluate(ICallerContext consumer, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (pass)
                 return Success();

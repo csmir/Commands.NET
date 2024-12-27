@@ -33,7 +33,7 @@
         ///     Sends a response to the consumer of the command.
         /// </summary>
         /// <param name="response">The response to send to the consumer.</param>
-        /// <returns>An asynchronous <see cref="Task"/> that can be awaited to wait for the response to send, otherwise dismissed.</returns>
+        /// <returns>An asynchronous <see cref="ValueTask"/> that can be awaited to wait for the response to send, otherwise dismissed.</returns>
         public Task Respond(object response)
             => Caller.Respond(response);
     }

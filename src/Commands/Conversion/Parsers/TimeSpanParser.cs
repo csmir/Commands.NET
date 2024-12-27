@@ -33,11 +33,9 @@ namespace Commands.Conversion
             };
         }
 
-        public override async Task<ConvertResult> Parse(
+        public override ValueTask<ConvertResult> Parse(
             ICallerContext caller, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
-            await Task.CompletedTask;
-
             var val = value?.ToString();
             if (!TimeSpan.TryParse(val, out TimeSpan span))
             {

@@ -74,9 +74,9 @@ When a command is attempted to be executed, it will walk through every precondit
 ...
 [Condition]
 [Name("hello")]
-public Task<string> Command(string world)
+public ValueTask<string> Command(string world)
 {
-    return Task.FromResult("Hello, " + world + ". I can only execute when Condition says so!");
+    return ValueTask.FromResult("Hello, " + world + ". I can only execute when Condition says so!");
 }
 ...
 ```

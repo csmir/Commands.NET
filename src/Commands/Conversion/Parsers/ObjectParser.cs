@@ -5,11 +5,7 @@
     {
         public static ObjectParser Instance { get; } = new();
 
-        public override async Task<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
-        {
-            await Task.CompletedTask;
-
-            return Success(value);
-        }
+        public override ValueTask<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+            => Success(value);
     }
 }

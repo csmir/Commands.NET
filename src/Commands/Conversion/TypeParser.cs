@@ -49,8 +49,8 @@ namespace Commands.Conversion
         /// <param name="argument">Information about the invocation argument this evaluation converts for.</param>
         /// <param name="value">The raw command query argument to parse.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="Task"/> that contains the result of the evaluation.</returns>
-        public abstract Task<ConvertResult> Parse(
+        /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
+        public abstract ValueTask<ConvertResult> Parse(
             ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>

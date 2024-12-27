@@ -111,7 +111,7 @@ namespace Commands.Builders
             => AddModule(typeof(T));
 
         /// <inheritdoc />
-        public ITreeBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, Task> resultAction)
+        public ITreeBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction)
         {
             if (resultAction == null)
                 throw new ArgumentNullException(nameof(resultAction));
@@ -122,7 +122,7 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder AddResultHandler<T>(Func<T, IExecuteResult, IServiceProvider, Task> resultAction)
+        public ITreeBuilder AddResultHandler<T>(Func<T, IExecuteResult, IServiceProvider, ValueTask> resultAction)
             where T : class, ICallerContext
         {
             if (resultAction == null)

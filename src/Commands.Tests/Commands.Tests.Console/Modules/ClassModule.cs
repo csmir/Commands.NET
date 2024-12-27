@@ -7,6 +7,8 @@
     {
         public void Run()
         {
+            var attribute = Command.GetAttribute<ANDConditionAttribute>();
+
             Respond(Command.Attributes.Length);
             Respond("Succesfully ran " + Command.ToString());
         }

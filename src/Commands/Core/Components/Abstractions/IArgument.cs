@@ -40,7 +40,7 @@ namespace Commands
         /// <param name="value">The value which the <see cref="Parser"/> should parse.</param>
         /// <param name="services">The provider used to register modules and inject services.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="Task{ConvertResult}"/> holding the result of the convert operation.</returns>
-        public Task<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken);
+        /// <returns>An awaitable <see cref="ValueTask{ConvertResult}"/> holding the result of the convert operation.</returns>
+        public ValueTask<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken);
     }
 }

@@ -87,7 +87,7 @@
         ///     Turns this result into a <see cref="ValueTask{TResult}"/> for asynchronous operations.
         /// </summary>
         /// <param name="result">The result object to wrap in a <see cref="ValueTask{TResult}"/>.</param>
-        public static implicit operator Task<SourceResult>(SourceResult result)
-            => Task.FromResult(result);
+        public static implicit operator ValueTask<SourceResult>(SourceResult result)
+            => new(result);
     }
 }

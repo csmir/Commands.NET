@@ -19,7 +19,7 @@ builder.AddResultHandler((caller, result, services) =>
 {
     caller.Respond(result);
 
-    return Task.CompletedTask;
+    return ValueTask.CompletedTask;
 });
 
 builder.AddCommand("delegate", () => "Hello World!");

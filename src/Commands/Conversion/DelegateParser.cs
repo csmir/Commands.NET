@@ -6,11 +6,11 @@
     /// <typeparam name="T">The convertible type that this converter should convert to.</typeparam>
     /// <param name="func">The delegate that is invoked when the conversion is requested.</param>
     public sealed class DelegateParser<T>(
-        Func<ICallerContext, IArgument, object?, IServiceProvider, Task<ConvertResult>> func)
+        Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> func)
         : TypeParser<T>
     {
         /// <inheritdoc />
-        public override Task<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
             => func(caller, argument, value, services);
     }
 }

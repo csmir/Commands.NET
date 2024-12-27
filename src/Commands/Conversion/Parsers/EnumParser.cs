@@ -6,7 +6,7 @@
 
         public override Type Type { get; } = targetEnumType;
 
-        public override Task<ConvertResult> Parse(
+        public override ValueTask<ConvertResult> Parse(
             ICallerContext caller, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             try

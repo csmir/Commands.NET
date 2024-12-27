@@ -4,7 +4,7 @@
     {
         public CollectionType CollectionType { get; } = CollectionType.List;
 
-        public override async Task<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (value is not object[] array)
                 return Error($"The provided value is not an array. Expected: '{Type.Name}', got: '{value}'. At: '{argument.Name}'");

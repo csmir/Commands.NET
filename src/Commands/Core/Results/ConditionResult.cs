@@ -80,10 +80,10 @@ namespace Commands
             => inline ? $"Success = {(Exception == null ? "True" : $"False")}" : ToString();
 
         /// <summary>
-        ///     Implicitly converts a <see cref="ConditionResult"/> to a <see cref="Task{TResult}"/>.
+        ///     Implicitly converts a <see cref="ConditionResult"/> to a <see cref="ValueTask{TResult}"/>.
         /// </summary>
         /// <param name="result">The result to convert.</param>
-        public static implicit operator Task<ConditionResult>(ConditionResult result)
-            => Task.FromResult(result);
+        public static implicit operator ValueTask<ConditionResult>(ConditionResult result)
+            => new(result);
     }
 }

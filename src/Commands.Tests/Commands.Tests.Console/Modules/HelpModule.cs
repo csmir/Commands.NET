@@ -1,4 +1,6 @@
-﻿namespace Commands.Tests
+﻿using Commands.Conditions;
+
+namespace Commands.Tests
 {
     public sealed class HelpModule : CommandModule
     {
@@ -8,6 +10,8 @@
             var commands = Tree.GetCommands();
             foreach (var command in commands)
             {
+                command.GetAttribute<ANDConditionAttribute>();
+
                 Respond(command.FullName);
             }
         }

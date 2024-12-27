@@ -5,12 +5,12 @@
     /// </summary>
     /// <param name="func">The action to be invoked when receiving a result.</param>
     public sealed class DelegateResultHandler<T>(
-        Func<T, IExecuteResult, IServiceProvider, Task> func)
+        Func<T, IExecuteResult, IServiceProvider, ValueTask> func)
         : ResultHandler<T>
         where T : class, ICallerContext
     {
         /// <inheritdoc />
-        public override Task HandleResult(T caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+        public override ValueTask HandleResult(T caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (result.Success && result is InvokeResult invoke)
                 return HandleSuccess(caller, invoke, services, cancellationToken);
@@ -24,13 +24,13 @@
     /// </summary>
     /// <param name="func">The action to be invoked when receiving a result.</param>
     public sealed class DelegateResultHandler(
-        Func<ICallerContext, IExecuteResult, IServiceProvider, Task> func)
+        Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> func)
         : ResultHandler
     {
-        private readonly Func<ICallerContext, IExecuteResult, IServiceProvider, Task> _action = func;
+        private readonly Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> _action = func;
 
         /// <inheritdoc />
-        public override async Task HandleResult(
+        public override async ValueTask HandleResult(
             ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
             // If the result is successful and is an invocation result, we can handle it as a successful command.

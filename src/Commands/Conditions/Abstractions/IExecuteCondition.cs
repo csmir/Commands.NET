@@ -21,8 +21,8 @@ namespace Commands
         /// <param name="trigger">The trigger that caused the condition to be checked.</param>
         /// <param name="services">The provider used to register modules and inject services.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
-        /// <returns>An awaitable <see cref="Task"/> that contains the result of the evaluation.</returns>
-        public Task<ConditionResult> Evaluate(ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken);
+        /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
+        public ValueTask<ConditionResult> Evaluate(ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>
         ///     Gets an evaluator that is used to determine the result of the evaluation.
