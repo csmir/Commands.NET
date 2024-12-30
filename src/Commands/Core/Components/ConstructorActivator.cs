@@ -84,7 +84,7 @@ namespace Commands
                         continue;
                     }
 
-                    throw new InvalidOperationException($"Constructor {command?.Parent?.Name ?? Target.Name} defines {parameter.Type} but {c_serviceType.Name} does not know a service by that type.");
+                    throw new InvalidOperationException($"Constructor {command?.Parent?.Name ?? Target.Name} defines unknown service {parameter.Type}.");
                 }
 
                 services[i] = service;
