@@ -16,12 +16,12 @@ namespace Commands
         /// <summary>
         ///     Gets the name of the configuration property that defines the filter expression for creating a command or module in the <see cref="ComponentTree"/>.
         /// </summary>
-        public const string ComponentRegistrationExpression = "ComponentRegistrationExpression";
+        public const string ComponentRegistrationFilterExpression = "ComponentRegistrationFilterExpression";
 
         /// <summary>
-        ///     Gets the name of the configuration property that defines the write expression used to validate the build log.
+        ///     Gets the name of the configuration property that defines the logger used to log the registration of a command or module.
         /// </summary>
-        public const string WriteBuildLogExpression = "BuildLogExpression";
+        public const string ComponentRegistrationLoggingExpression = "ComponentRegistrationLoggingExpression";
 
         /// <summary>
         ///     Gets the name of the configuration property that defines if modules should be created to be read-only during the build process.

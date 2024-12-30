@@ -8,6 +8,10 @@ var tree = ComponentTree.CreateBuilder()
     {
         configure.AddParser(new CSharpScriptParser());
     })
+    .WithRegistrationLogging((action, message) =>
+    {
+        AnsiConsole.MarkupLineInterpolated($"[grey]action: {action}[/]\n\t{message}");
+    })
     .AddResultHandler(async (c, r, s) => await c.Respond(r))
     .Build();
 

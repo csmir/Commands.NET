@@ -22,9 +22,6 @@ namespace Commands.Builders
         public ICollection<Type> Types { get; set; } = Assembly.GetEntryAssembly()?.GetTypes() ?? [];
 
         /// <inheritdoc />
-        public Func<IComponent, bool> ComponentRegistrationFilter { get; set; } = _ => true;
-
-        /// <inheritdoc />
         /// <remarks>
         ///     This property is set to <see langword="false"/> by default. If set to <see langword="true"/>, all modules in <see cref="Components"/> and <see cref="Types"/> be set to read-only after the build process.
         /// </remarks>
@@ -173,7 +170,15 @@ namespace Commands.Builders
         /// <inheritdoc />
         public ITreeBuilder WithRegistrationFilter(Func<IComponent, bool> filter)
         {
-            ComponentRegistrationFilter = filter;
+            Configuration.Properties[ConfigurationPropertyDefinitions.ComponentRegistrationFilterExpression] = filter;
+
+            return this;
+        }
+
+        /// <inheritdoc />
+        public ITreeBuilder WithRegistrationLogging(Action<BuildAction, string> logger)
+        {
+            Configuration.Properties[ConfigurationPropertyDefinitions.ComponentRegistrationLoggingExpression] = logger;
 
             return this;
         }
@@ -191,7 +196,6 @@ namespace Commands.Builders
         /// <inheritdoc />
         public IComponentTree Build()
         {
-            Configuration.Properties[ConfigurationPropertyDefinitions.ComponentRegistrationExpression] = ComponentRegistrationFilter;
             Configuration.Properties[ConfigurationPropertyDefinitions.MakeModulesReadonly] = MakeModulesReadonly;
 
             if (!string.IsNullOrEmpty(NamingPattern))
@@ -199,7 +203,7 @@ namespace Commands.Builders
 
             var configuration = Configuration.Build();
 
-            var components = configuration.GetModules(Types, null, false)
+            var components = configuration.GetModules([.. Types], null, false)
                 .Concat(Components.Select(x => x.Build(configuration)));
 
             return new ComponentTree(components, [.. Handlers]);

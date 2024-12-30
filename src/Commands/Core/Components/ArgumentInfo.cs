@@ -37,7 +37,7 @@ namespace Commands
 
         /// <inheritdoc />
         public bool IsCollection
-            => Parser is ICollectionConverter;
+            => Parser is ICollectionParser;
 
         internal ArgumentInfo(
             ParameterInfo parameterInfo, string? name, ComponentConfiguration configuration)
@@ -103,6 +103,7 @@ namespace Commands
         /// <inheritdoc />
         public ValueTask<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
+            // Fast path for matching instances of certain types.
             if (Type.IsInstanceOfType(value))
                 return ConvertResult.FromSuccess(value);
 

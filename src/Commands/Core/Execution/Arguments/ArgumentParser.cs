@@ -48,7 +48,7 @@ namespace Commands
             if (string.IsNullOrWhiteSpace(toParse))
                 return [];
 
-            return ParseKeyValueCollection(toParse.TrimEnd().Split());
+            return ParseKeyValueCollection(toParse.TrimEnd().Split(' '));
         }
 
         /// <summary>

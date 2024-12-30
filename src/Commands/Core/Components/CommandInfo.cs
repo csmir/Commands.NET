@@ -82,11 +82,11 @@ namespace Commands
         }
 
         internal CommandInfo(
-            ModuleInfo? module, IActivator invoker, string[] aliases, bool hasContext, ComponentConfiguration options)
+            ModuleInfo? module, IActivator invoker, string[] aliases, bool hasContext, ComponentConfiguration configuration)
         {
             var attributes = invoker.Target.GetAttributes(true).Concat(module?.Attributes ?? []).Distinct();
 
-            var parameters = invoker.Target.GetArguments(hasContext, options);
+            var parameters = invoker.Target.GetArguments(hasContext, configuration);
 
             (MinLength, MaxLength) = parameters.GetLength();
 

@@ -54,6 +54,11 @@ namespace Commands
         public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options)
             where T : ICallerContext
         {
+            // When building a complex object, one or more arguments have to be passed to the constructor in any case.
+            // This way, we can use the same invoker for complex constructors and module constructors.
+            if (args.Length != 0)
+                return _ctor.Invoke(args);
+
             var services = new object?[Parameters.Length];
             for (int i = 0; i < Parameters.Length; i++)
             {

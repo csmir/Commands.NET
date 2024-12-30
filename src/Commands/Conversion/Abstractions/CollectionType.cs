@@ -1,4 +1,6 @@
-﻿namespace Commands.Conversion
+﻿using System.Reflection;
+
+namespace Commands.Conversion
 {
     /// <summary>
     ///     A collection type which is converted by a collection converter. Non-generic collections are not supported.
@@ -26,6 +28,16 @@
         /// <remarks>
         ///     <see cref="SortedSet{T}"/> is not supported from this type.
         /// </remarks>
-        Set = 3
+        Set = 3,
+
+#if NET8_0_OR_GREATER
+        /// <summary>
+        ///     The collection type is a <see cref="Span{T}"/> or <see cref="ReadOnlySpan{T}"/>.
+        /// </summary>
+        /// <remarks>
+        ///     In the current version of .NET (as of writing, .NET 9.0), <see cref="Span{T}"/> cannot be used in reflection (cannot be boxed as object which <see cref="MethodBase.Invoke(object?, object?[])"/> infers), so it is not implemented by Commands.NET until further notice. Relevant proposal: <see href="https://github.com/dotnet/runtime/issues/45152"/>
+        /// </remarks>
+        Span = 4,
+#endif
     }
 }

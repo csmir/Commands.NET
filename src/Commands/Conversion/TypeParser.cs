@@ -110,8 +110,8 @@ namespace Commands.Conversion
             var list = TryParseParser.CreateBaseConverters();
 
             list.Add(new TimeSpanParser());
-            list.Add(ObjectParser.Instance);
-            list.Add(StringParser.Instance);
+            list.Add(new ObjectParser());
+            list.Add(new StringParser());
 
             return list;
         }

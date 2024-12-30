@@ -25,7 +25,7 @@ namespace Commands
                 if (component.IsSearchable)
                     topLevelComponents.Add(component);
 
-                if (component is ComponentCollection collection)
+                else if (component is ComponentCollection collection)
                 {
                     collection.Bind(this);
 

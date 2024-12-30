@@ -94,7 +94,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the collection is marked as read-only.</exception>
         public void Sort()
         {
             ThrowIfLocked();
@@ -105,12 +105,12 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the collection is marked as read-only.</exception>
         public bool Add(IComponent component)
             => AddRange(component) > 0;
 
         /// <inheritdoc />
-        /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the collection is marked as read-only.</exception>
         public int AddRange(params IComponent[] components)
         {
             ThrowIfLocked();
@@ -136,12 +136,12 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the collection is marked as read-only.</exception>
         public bool Remove(IComponent component)
             => RemoveRange(component) > 0;
 
         /// <inheritdoc />
-        /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the collection is marked as read-only.</exception>
         public int RemoveRange(params IComponent[] components)
         {
             ThrowIfLocked();
@@ -163,7 +163,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
+        /// <exception cref="NotSupportedException">Thrown when the collection is marked as read-only.</exception>
         public void Clear()
         {
             ThrowIfLocked();
@@ -201,7 +201,7 @@ namespace Commands
         private void ThrowIfLocked()
         {
             if (IsReadOnly)
-                throw new InvalidOperationException("This collection has been marked as read-only and cannot be mutated.");
+                throw new NotSupportedException("This collection has been marked as read-only and cannot be mutated.");
         }
 
         void ICollection<IComponent>.Add(IComponent item)

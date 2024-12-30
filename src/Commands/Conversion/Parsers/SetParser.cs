@@ -1,6 +1,6 @@
 ﻿namespace Commands.Conversion
 {
-    internal sealed class SetParser<T>(TypeParser underlyingConverter) : TypeParser<T>, ICollectionConverter
+    internal sealed class SetParser<T>(TypeParser underlyingConverter) : TypeParser<T>, ICollectionParser
     {
         public CollectionType CollectionType { get; } = CollectionType.Set;
 
