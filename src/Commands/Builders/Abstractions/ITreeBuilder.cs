@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Commands.Builders
 {
@@ -104,25 +105,49 @@ namespace Commands.Builders
         public ITreeBuilder AddModule(Action<ModuleBuilder> configureModule);
 
         /// <summary>
-        ///     Adds a module to the <see cref="Types"/> collection. This method will skip the add operation if the type is already present.
+        ///     Adds a type to the <see cref="Types"/> collection. This method will skip the add operation if the type is already present.
         /// </summary>
         /// <remarks>
-        ///     Validations are performed during <see cref="Build"/> to ensure that the type is a valid module type: A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>; If not, it will be skipped during the registration process.
+        ///     Validations are performed during <see cref="Build"/> to ensure that provided types are a valid module type: A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>; 
+        ///     If not, it will be skipped during the registration process, or, if there are static methods marked by <see cref="NameAttribute"/> inside, will register only these components.
         /// </remarks>
         /// <param name="moduleType">A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddModule(Type moduleType);
+        public ITreeBuilder AddType(
+#if NET8_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+# endif
+            Type moduleType);
 
         /// <summary>
-        ///     Adds a module to the <see cref="Types"/> collection. This method will skip the add operation if the type is already present.
+        ///     Adds a type to the <see cref="Types"/> collection. This method will skip the add operation if the type is already present.
         /// </summary>
         /// <remarks>
-        ///     Validations are performed during <see cref="Build"/> to ensure that the type is a valid module type: A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>; If not, it will be skipped during the registration process.
+        ///     Validations are performed during <see cref="Build"/> to ensure that provided types are a valid module type: A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>; 
+        ///     If not, it will be skipped during the registration process, or, if there are static methods marked by <see cref="NameAttribute"/> inside, will register only these components.
         /// </remarks>
         /// <typeparam name="T">A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>.</typeparam>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddModule<T>()
-            where T : CommandModule;
+        public ITreeBuilder AddType<
+#if NET8_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
+            T>()
+            where T : class;
+
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="types"></param>
+        /// <returns></returns>
+        public ITreeBuilder AddTypes(params Type[] types);
+
+        /// <summary>
+        ///     
+        /// </summary>
+        /// <param name="types"></param>
+        /// <returns></returns>
+        public ITreeBuilder WithTypes(params Type[] types);
 
         /// <summary>
         ///     Configures an asynchronous action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/>. 
@@ -151,20 +176,6 @@ namespace Commands.Builders
         /// <param name="resolver">The implementation of <see cref="ResultHandler"/> to add.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddResultHandler(ResultHandler resolver);
-
-        /// <summary>
-        ///     Configures the <see cref="Types"/> with an additional assembly, skipping the add operation if the assembly is already present.
-        /// </summary>
-        /// <param name="assembly">An assembly that should be added to <see cref="Types"/>.</param>
-        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddAssembly(Assembly assembly);
-
-        /// <summary>
-        ///     Configures the <see cref="Types"/> with an additional set of assemblies, skipping the add operation of an assembly in the collection if it is already present.
-        /// </summary>
-        /// <param name="assemblies">A collection of assemblies that should be added to <see cref="Types"/>.</param>
-        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder AddAssemblies(params Assembly[] assemblies);
 
         /// <summary>
         ///     Configures the build configuration to filter components at registration, based on the provided predicate.

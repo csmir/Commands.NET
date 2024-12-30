@@ -9,8 +9,6 @@ namespace Commands
     [DebuggerDisplay("{ToString()}")]
     public sealed class CommandInfo : IComponent, IArgumentBucket
     {
-        private readonly Guid __id = Guid.NewGuid();
-
         /// <inheritdoc />
         public IActivator Activator { get; }
 
@@ -34,9 +32,6 @@ namespace Commands
 
         /// <inheritdoc />
         public int MaxLength { get; }
-
-        /// <inheritdoc />
-        public float Priority { get; }
 
         /// <inheritdoc />
         public ModuleInfo? Parent { get; }
@@ -103,8 +98,6 @@ namespace Commands
                 }
             }
 
-            Priority = attributes.GetAttribute<PriorityAttribute>()?.Priority ?? 0;
-
             Activator = invoker;
             Parent = module;
 
@@ -124,7 +117,7 @@ namespace Commands
             foreach (var argument in Arguments)
                 score += argument.GetScore();
 
-            score += Priority;
+            score += Attributes.GetAttribute<PriorityAttribute>()?.Priority ?? 0; ;
 
             return score;
         }
@@ -135,7 +128,7 @@ namespace Commands
 
         /// <inheritdoc />
         public bool Equals(IComponent? other)
-            => other is CommandInfo info && info.__id == __id;
+            => other is CommandInfo info && ReferenceEquals(this, info);
 
         /// <inheritdoc />
         public override string ToString()
@@ -148,10 +141,10 @@ namespace Commands
 
         /// <inheritdoc />
         public override bool Equals(object? obj)
-            => obj is CommandInfo info && info.__id == __id;
+            => obj is CommandInfo info && ReferenceEquals(this, info);
 
         /// <inheritdoc />
         public override int GetHashCode()
-            => __id.GetHashCode();
+            => Activator!.Target.GetHashCode();
     }
 }

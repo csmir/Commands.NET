@@ -18,11 +18,6 @@ namespace Commands
         public string[] Aliases { get; }
 
         /// <summary>
-        ///     Gets the priority of the component.
-        /// </summary>
-        public float Priority { get; }
-
-        /// <summary>
         ///     Gets all evaluations that this component should do prior to executing the command.
         /// </summary>
         public ConditionEvaluator[] Conditions { get; }

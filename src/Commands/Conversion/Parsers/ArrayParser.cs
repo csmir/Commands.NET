@@ -11,7 +11,9 @@
             if (value is not object[] array)
                 return Error($"The provided value is not an array. Expected: '{Type.Name}', got: '{value}'. At: '{argument.Name}'");
 
+#pragma warning disable IL3050 // We are certain that Type has DynamicallyAccessedMemberTypes.All
             var instance = Array.CreateInstance(Type, array.Length);
+#pragma warning restore IL3050
 
             for (var i = 0; i < array.Length; i++)
             {

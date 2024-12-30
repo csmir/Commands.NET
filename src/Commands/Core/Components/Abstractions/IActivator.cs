@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Commands
 {
@@ -27,7 +28,10 @@ namespace Commands
         /// <summary>
         ///     Gets the return type of the target, if it is a method. If it is a constructor, it will return null.
         /// </summary>
-        /// <returns>A type representing the returned value of the invoked target.</returns>
+        /// <returns>A type representing the returned value of the invoked target.</returns>\
+#if NET8_0_OR_GREATER
+        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
         public Type? GetReturnType();
     }
 }

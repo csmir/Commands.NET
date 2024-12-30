@@ -12,21 +12,6 @@ namespace Commands
     public static class ComponentUtilities
     {
         /// <summary>
-        ///     Browses through the types known in the provided <paramref name="assemblies"/> and returns every discovered top-level module.
-        /// </summary>
-        /// <param name="configuration">The configuration that defines the command registration process.</param>
-        /// <param name="assemblies">The assemblies that should be searched to discover new modules.</param>
-        /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> containing all discovered modules in the provided <paramref name="assemblies"/>.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public static IEnumerable<ModuleInfo> GetComponents(this ComponentConfiguration configuration, params Assembly[] assemblies)
-        {
-            if (assemblies == null)
-                throw new ArgumentNullException(nameof(assemblies));
-
-            return configuration.GetComponents(assemblies.SelectMany(x => x.GetTypes()).ToArray());
-        }
-
-        /// <summary>
         ///     Browses through the types known in the <paramref name="types"/> and returns every discovered top-level module.
         /// </summary>
         /// <param name="configuration">The configuration that defines the command registration process.</param>
@@ -57,9 +42,21 @@ namespace Commands
 
             var commands = configuration.GetCommands(parent.Type, parent, parent.Aliases.Length > 0);
 
-            var modules = configuration.GetModules(parent.Type.GetNestedTypes(), parent, true);
+            try
+            {
+#pragma warning disable IL2075 // We are *not* certain that parent.Type has DynamicallyAccessedMemberTypes.All, but we will catch and continue if not.
+                var nestedTypes = parent.Type.GetNestedTypes();
+#pragma warning restore IL2075
 
-            return commands.Concat(modules);
+                var modules = configuration.GetModules(nestedTypes, parent, true);
+
+                return commands.Concat(modules);
+            }
+            catch
+            {
+                return commands;
+                // Do nothing, we simply cannot get the nested types.
+            }
         }
 
         /// <summary>
@@ -166,7 +163,9 @@ namespace Commands
         internal static IEnumerable<IComponent> GetCommands(this ComponentConfiguration configuration, Type type, ModuleInfo? parent, bool withDefaults)
         {
             // run through all type methods.
+#pragma warning disable IL2070 // We are certain that type has DynamicallyAccessedMemberTypes.All
             var members = type.GetMembers(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
+#pragma warning restore IL2070
 
             foreach (var member in members)
             {
@@ -307,14 +306,12 @@ namespace Commands
             return new(minLength, maxLength);
         }
 
-        internal static ConstructorInfo GetInvokableConstructor(
-#if NET8_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-        #endif
-            this Type type)
+        internal static ConstructorInfo GetInvokableConstructor(this Type type)
         {
+#pragma warning disable IL2070 // We are certain that type has DynamicallyAccessedMemberTypes.All
             var ctors = type.GetConstructors()
                 .OrderByDescending(x => x.GetParameters().Length);
+#pragma warning restore IL2070
 
             foreach (var ctor in ctors)
             {

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Commands
 {
@@ -35,9 +36,12 @@ namespace Commands
         }
 
         /// <inheritdoc />
+#if NET8_0_OR_GREATER
+        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
         public Type? GetReturnType()
-        {
-            return _method.ReturnType;
-        }
+#pragma warning disable IL2073
+            => _method.ReturnType;
+#pragma warning restore IL2073
     }
 }

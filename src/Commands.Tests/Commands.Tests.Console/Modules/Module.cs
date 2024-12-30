@@ -43,20 +43,6 @@
             }
         }
 
-        [Name("priority")]
-        [Priority(1)]
-        public void Priority1(bool optional)
-        {
-            Respond($"Success: {Command.Priority} {optional}");
-        }
-
-        [Name("priority")]
-        [Priority(2)]
-        public Task Priority2(bool optional)
-        {
-            return Respond($"Success: {Command.Priority} {optional}");
-        }
-
         [Name("remainder")]
         public void Remainder([Remainder] string values)
         {

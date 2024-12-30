@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace Commands.Builders
@@ -16,10 +17,7 @@ namespace Commands.Builders
         public ICollection<ResultHandler> Handlers { get; set; } = [];
 
         /// <inheritdoc />
-        /// <remarks>
-        ///     This collection is set initially to <see cref="Assembly.GetExportedTypes"/> of the entry assembly. If the entry assembly is <see langword="null"/>, this property is set to an empty array.
-        /// </remarks>
-        public ICollection<Type> Types { get; set; } = Assembly.GetEntryAssembly()?.GetTypes() ?? [];
+        public ICollection<Type> Types { get; set; } = [];
 
         /// <inheritdoc />
         /// <remarks>
@@ -92,7 +90,11 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder AddModule(Type moduleType)
+        public ITreeBuilder AddType(
+#if NET8_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+# endif
+            Type moduleType)
         {
             if (Types.Contains(moduleType))
                 return this;
@@ -103,9 +105,37 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder AddModule<T>()
-            where T : CommandModule
-            => AddModule(typeof(T));
+        public ITreeBuilder AddType<
+#if NET8_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
+            T>()
+            where T : class
+            => AddType(typeof(T));
+
+#pragma warning disable IL2072
+        /// <inheritdoc />
+        public ITreeBuilder AddTypes(params Type[] types)
+        {
+            // We cannot add the range to the collection immediately, because we need AddType to infer DynamicallyAccessedMemberTypes.All
+            foreach (var type in types)
+                AddType(type);
+
+            return this;
+        }
+
+        /// <inheritdoc />
+        public ITreeBuilder WithTypes(params Type[] types)
+        {
+            // We cannot reassign the collection, because we need AddType to infer DynamicallyAccessedMemberTypes.All
+            Types = [];
+
+            foreach (var type in types)
+                AddType(type);
+
+            return this;
+        }
+#pragma warning restore IL2072
 
         /// <inheritdoc />
         public ITreeBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction)
@@ -137,32 +167,6 @@ namespace Commands.Builders
                 throw new ArgumentNullException(nameof(resolver));
 
             Handlers.Add(resolver);
-
-            return this;
-        }
-
-        /// <inheritdoc />
-        public ITreeBuilder AddAssembly(Assembly assembly)
-        {
-            if (assembly == null)
-                throw new ArgumentNullException(nameof(assembly));
-
-            var unwrappedAssembly = assembly.GetTypes();
-
-            foreach (var type in unwrappedAssembly)
-                AddModule(type);
-
-            return this;
-        }
-
-        /// <inheritdoc />
-        public ITreeBuilder AddAssemblies(params Assembly[] assemblies)
-        {
-            if (assemblies == null)
-                throw new ArgumentNullException(nameof(assemblies));
-
-            foreach (var assembly in assemblies)
-                AddAssembly(assembly);
 
             return this;
         }

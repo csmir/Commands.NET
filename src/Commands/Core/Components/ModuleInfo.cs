@@ -10,8 +10,6 @@ namespace Commands
     [DebuggerDisplay("Count = {Count}, {ToString()}")]
     public sealed class ModuleInfo : ComponentCollection, IComponent
     {
-        private readonly Guid __id = Guid.NewGuid();
-
         /// <summary>
         ///     Gets the type of this module.
         /// </summary>
@@ -34,9 +32,6 @@ namespace Commands
 
         /// <inheritdoc />
         public ConditionEvaluator[] Conditions { get; }
-
-        /// <inheritdoc />
-        public float Priority { get; }
 
         /// <inheritdoc />
         public ModuleInfo? Parent { get; }
@@ -66,9 +61,6 @@ namespace Commands
             => false;
 
         internal ModuleInfo(
-#if NET8_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)]
-        #endif
             Type type, ModuleInfo? root, string[] aliases, ComponentConfiguration configuration)
             : base(configuration.GetProperty(ConfigurationPropertyDefinitions.MakeModulesReadonly, false))
         {
@@ -80,8 +72,6 @@ namespace Commands
             Attributes = attributes.ToArray();
 
             Conditions = ConditionEvaluator.CreateEvaluators(attributes.OfType<IExecuteCondition>()).ToArray();
-
-            Priority = attributes.GetAttribute<PriorityAttribute>()?.Priority ?? 0;
 
             Aliases = aliases;
 
@@ -116,7 +106,7 @@ namespace Commands
             if (Name != Type?.Name)
                 score += 1.0f;
 
-            score += Priority;
+            score += Attributes.GetAttribute<PriorityAttribute>()?.Priority ?? 0;
 
             return score;
         }
@@ -127,7 +117,7 @@ namespace Commands
 
         /// <inheritdoc />
         public bool Equals(IComponent? other)
-            => other is ModuleInfo info && info.__id == __id;
+            => other is ModuleInfo info && ReferenceEquals(this, info);
 
         /// <inheritdoc />
         public override IEnumerable<SearchResult> Find(ArgumentEnumerator args)
@@ -162,10 +152,10 @@ namespace Commands
 
         /// <inheritdoc />
         public override bool Equals(object? obj)
-            => obj is ModuleInfo info && info.__id == __id;
+            => obj is ModuleInfo info && ReferenceEquals(this, info);
 
         /// <inheritdoc />
         public override int GetHashCode()
-            => __id.GetHashCode();
+            => Activator!.Target.GetHashCode();
     }
 }

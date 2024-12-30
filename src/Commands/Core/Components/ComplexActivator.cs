@@ -23,6 +23,9 @@ namespace Commands
             => Target.Invoke(null, args);
 
         /// <inheritdoc />
+#if NET8_0_OR_GREATER
+        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
         public Type? GetReturnType()
             => default;
     }
