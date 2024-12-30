@@ -1,16 +1,17 @@
 ﻿namespace Commands.Conversion
 {
-    internal sealed class ArrayParser<T>(TypeParser underlyingConverter) : TypeParser<T>, ICollectionParser
+    internal sealed class ArrayParser(TypeParser underlyingConverter) : TypeParser
     {
-        public CollectionType CollectionType { get; } = CollectionType.Array;
+        private static readonly Dictionary<Type, TypeParser> _converters = [];
+
+        public override Type Type => underlyingConverter.Type;
 
         public override async ValueTask<ConvertResult> Parse(ICallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (value is not object[] array)
                 return Error($"The provided value is not an array. Expected: '{Type.Name}', got: '{value}'. At: '{argument.Name}'");
 
-            // Create an instance of the array type.
-            var instance = new T[array.Length];
+            var instance = Array.CreateInstance(Type, array.Length);
 
             for (var i = 0; i < array.Length; i++)
             {
@@ -21,23 +22,18 @@
                 if (!result.Success)
                     return Error($"Failed to convert an array element. Expected: '{underlyingConverter.Type.Name}', got: '{item}'. At: '{argument.Name}', Index: '{i}'");
 
-                instance[i] = (T)result.Value!;
+                instance.SetValue(result.Value, i);
             }
 
             return Success(instance);
         }
-    }
-
-    internal static class ArrayParser
-    {
-        private static readonly Dictionary<Type, TypeParser> _converters = [];
 
         public static TypeParser GetOrCreate(TypeParser underlyingConverter)
         {
             if (_converters.TryGetValue(underlyingConverter.Type, out var converter))
                 return converter;
 
-            converter = (TypeParser)Activator.CreateInstance(typeof(ArrayParser<>).MakeGenericType(underlyingConverter.Type), underlyingConverter)!;
+            converter = new ArrayParser(underlyingConverter)!;
 
             _converters.Add(underlyingConverter.Type, converter);
 

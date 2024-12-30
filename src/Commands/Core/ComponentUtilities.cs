@@ -69,8 +69,6 @@ namespace Commands
         /// <returns>An instance of <see cref="TypeParser"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object and no custom converter is defined, which do not need to be converted.</returns>
         public static TypeParser? GetParser(this ComponentConfiguration configuration, Type type)
         {
-            configuration.Log(BuildAction.ParserDiscovery, $"Discovering parser for type {type.FullName}.");
-
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
@@ -83,7 +81,7 @@ namespace Commands
 
                     // csmir: Chosen not to support nested collections as this is a whole different level of complexity for both parsing and validation.
 
-                    throw BuildException.CollectionNotSupported(elementType);
+                    throw BuildException.ParserNotSupported(elementType);
                 }
 
                 return parser;
@@ -91,60 +89,13 @@ namespace Commands
 
             
             if (configuration.Parsers.TryGetValue(type, out var parser))
-            {
-                configuration.Log(BuildAction.ParserDiscovered, $"Discovered base parser for type {type.FullName}.");
-
                 return parser;
-            }
 
             if (type.IsEnum)
-            {
-                parser = EnumParser.GetOrCreate(type);
-
-                configuration.Log(BuildAction.ParserDiscovered, $"Discovered enum parser for enum type {type.FullName}.");
-
-                return parser;
-            }
+                return EnumParser.GetOrCreate(type);
 
             if (type.IsArray)
-            {
-                parser = ArrayParser.GetOrCreate(GetParser(type.GetElementType()!));
-
-                configuration.Log(BuildAction.ParserDiscovered, $"Discovered array parser for array type {type.FullName}.");
-
-                return parser;
-            }
-
-            try
-            {
-                var elementType = type.GetGenericArguments()[0];
-
-                parser = GetParser(elementType);
-
-                var enumType = type.GetCollectionType(elementType);
-
-                if (enumType == CollectionType.List)
-                {
-                    parser = ListParser.GetOrCreate(parser);
-
-                    configuration.Log(BuildAction.ParserDiscovered, $"Discovered list parser for list type {type.FullName}.");
-
-                    return parser;
-                }
-
-                if (enumType == CollectionType.Set)
-                {
-                    parser = SetParser.GetOrCreate(parser);
-
-                    configuration.Log(BuildAction.ParserDiscovered, $"Discovered set parser for set type {type.FullName}.");
-
-                    return parser;
-                }
-            }
-            catch
-            {
-                throw BuildException.CollectionNotSupported(type);
-            }
+                return ArrayParser.GetOrCreate(GetParser(type.GetElementType()!));
 
             return null;
         }
@@ -168,8 +119,6 @@ namespace Commands
 
         internal static IEnumerable<ModuleInfo> GetModules(this ComponentConfiguration configuration, Type[] types, ModuleInfo? parent, bool withNested)
         {
-            configuration.Log(BuildAction.ModuleDiscovery, $"Discovering {(withNested ? "nested" : "top-level")} modules{(parent?.Type != null ? " within " + parent.Type.FullName : "")} for {types.Length} types.");
-
             foreach (var type in types)
             {
                 if (!withNested && type.IsNested)
@@ -177,8 +126,6 @@ namespace Commands
 
                 if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
                     continue;
-
-                configuration.Log(BuildAction.ModuleDiscovered, $"Discovered module by type {type.FullName}.");
 
                 var aliases = Array.Empty<string>();
 
@@ -204,31 +151,19 @@ namespace Commands
 
                 if (!skip)
                 {
-                    configuration.Log(BuildAction.ComponentCreating, $"Creating module object for {type.FullName}.");
-
                     // yield a new module if all aliases are valid and it shouldn't be skipped.
                     var component = new ModuleInfo(type, parent, aliases, configuration);
 
                     var componentFilter = configuration.GetProperty<Func<IComponent, bool>>(ConfigurationPropertyDefinitions.ComponentRegistrationFilterExpression);
 
                     if (componentFilter?.Invoke(component) ?? true)
-                    {
-                        configuration.Log(BuildAction.ComponentCreated, $"Created module object for {type.FullName}");
-
                         yield return component;
-                    }
-                    else
-                        configuration.Log(BuildAction.ComponentSkipped, $"Skipped module registration for {type.FullName} as it did not succeed registration filter.");
                 }
-                else
-                    configuration.Log(BuildAction.ComponentSkipped, $"Skipped module creation for {type.FullName} as it was marked to be ignored.");
             }
         }
 
         internal static IEnumerable<IComponent> GetCommands(this ComponentConfiguration configuration, Type type, ModuleInfo? parent, bool withDefaults)
         {
-            configuration.Log(BuildAction.CommandDiscovery, $"Discovering commands for type {type.FullName}.");
-
             // run through all type methods.
             var members = type.GetMembers(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
 
@@ -265,8 +200,6 @@ namespace Commands
 
                     if (method != null)
                     {
-                        configuration.Log(BuildAction.ComponentCreating, $"Creating command object for {type.Name}.{method.Name}.");
-
                         CommandInfo? component;
                         if (method.IsStatic)
                         {
@@ -284,38 +217,14 @@ namespace Commands
                         var componentFilter = configuration.GetProperty<Func<IComponent, bool>>(ConfigurationPropertyDefinitions.ComponentRegistrationFilterExpression);
 
                         if (componentFilter?.Invoke(component) ?? true)
-                        {
-                            configuration.Log(BuildAction.ComponentCreated, $"Created command object for {type.Name}.{method.Name}");
-
                             yield return component;
-                        }
-                        else
-                            configuration.Log(BuildAction.ComponentSkipped, $"Skipped command registration for {type.Name}.{method.Name} as it did not succeed registration filter.");
                     }
                 }
-                else if (skip)
-                    configuration.Log(BuildAction.ComponentSkipped, $"Skipped command creation for {type.Name}.{member.Name} as it was marked to be ignored.");
             }
-        }
-
-        internal static CollectionType GetCollectionType(this Type type, Type? elementType = null)
-        {
-            if (elementType != null)
-            {
-                if (type.IsAssignableFrom(typeof(List<>).MakeGenericType(elementType)))
-                    return CollectionType.List;
-
-                if (type.IsAssignableFrom(typeof(HashSet<>).MakeGenericType(elementType)))
-                    return CollectionType.Set;
-            }
-
-            return CollectionType.None;
         }
 
         internal static IArgument[] GetArguments(this MethodBase method, bool withContext, ComponentConfiguration configuration)
         {
-            configuration.Log(BuildAction.ArgumentsDiscovery, $"Discovering arguments for command {method.DeclaringType}.{method.Name}.");
-
             var parameters = method.GetParameters();
 
             if (withContext)
@@ -344,8 +253,6 @@ namespace Commands
                 else
                     arr[i] = new ArgumentInfo(parameters[i], name, configuration);
             }
-
-            configuration.Log(BuildAction.ArgumentsDiscovered, $"Discovered {arr.Length} arguments for command {method.DeclaringType}.{method.Name}.");
 
             return arr;
         }
@@ -398,8 +305,5 @@ namespace Commands
 
             return new(minLength, maxLength);
         }
-
-        internal static void Log(this ComponentConfiguration configuration, BuildAction action, string value)
-            => configuration.GetProperty<Action<BuildAction, string>>(ConfigurationPropertyDefinitions.ComponentRegistrationLoggingExpression)?.Invoke(action, value);
     }
 }

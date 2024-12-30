@@ -176,14 +176,6 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder WithRegistrationLogging(Action<BuildAction, string> logger)
-        {
-            Configuration.Properties[ConfigurationPropertyDefinitions.ComponentRegistrationLoggingExpression] = logger;
-
-            return this;
-        }
-
-        /// <inheritdoc />
         public ITreeBuilder ConfigureComponents(Action<IConfigurationBuilder> configure)
         {
             Configuration ??= new ComponentConfigurationBuilder();

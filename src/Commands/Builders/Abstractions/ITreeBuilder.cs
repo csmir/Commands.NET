@@ -167,7 +167,7 @@ namespace Commands.Builders
         public ITreeBuilder AddAssemblies(params Assembly[] assemblies);
 
         /// <summary>
-        ///     Configures the <see cref="RegistrationFilter"/> to filter components at registration, based on the provided predicate.
+        ///     Configures the build configuration to filter components at registration, based on the provided predicate.
         /// </summary>
         /// <remarks>
         ///     <b>Whether this filter returns true or false has no effect on the validation of component integrity.</b>
@@ -176,13 +176,6 @@ namespace Commands.Builders
         /// <param name="filter">A predicate which determines if a component should be added to its parent component, or directly to the command tree if it is a top-level one.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder WithRegistrationFilter(Func<IComponent, bool> filter);
-
-        /// <summary>
-        ///     Configures the <see cref="RegistrationLogger"/> to log messages during the registration process, based on the provided action.
-        /// </summary>
-        /// <param name="logger">An action that will log registration actions as messages that can be used to understand the component build process.</param>
-        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder WithRegistrationLogging(Action<BuildAction, string> logger);
 
         /// <summary>
         ///     Configures the <see cref="Configuration"/> property with modified values through the <paramref name="configure"/> action.

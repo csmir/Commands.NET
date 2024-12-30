@@ -37,7 +37,7 @@ namespace Commands
 
         /// <inheritdoc />
         public bool IsCollection
-            => Parser is ICollectionParser;
+            => Type.IsArray;
 
         internal ArgumentInfo(
             ParameterInfo parameterInfo, string? name, ComponentConfiguration configuration)

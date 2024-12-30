@@ -6,16 +6,17 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>13.0</LangVersion>
 		<WarningsAsErrors>true</WarningsAsErrors>
-	  
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	  
-		<!-- Do not warn CA1822 for deliberate instance-access design. -->
+
+		<IsAotCompatible Condition="'$(TargetFramework)' == 'net8'">true</IsAotCompatible>
+		
 		<NoWarn>CA1822;IDE0130</NoWarn>
 
 		<AssemblyVersion>1.0</AssemblyVersion>
 		<PackageVersion>1.0.0</PackageVersion>
 		<FileVersion>1.0.0.0</FileVersion>
+
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
 		<PackageId>Commands.NET</PackageId>
 	  
