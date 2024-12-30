@@ -17,7 +17,7 @@ Commands.NET aims to improve your experience integrating input from different so
 - [Additional Packages](#additional-packages)
 
 > [!NOTE]
-> Commands.NET is CLS-compliant and built on .NET Standard 2.1. 
+> Commands.NET is built on ns2.0 and 8.0, being available for use for virtually all versions from framework 4.6.1 onward. Read [here](https://learn.microsoft.com/nl-nl/dotnet/standard/net-standard?tabs=net-standard-2-0) for more details. 
 
 ## Getting Started
 
