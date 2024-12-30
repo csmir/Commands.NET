@@ -7,8 +7,6 @@ namespace Commands
     /// </summary>
     public sealed class ConstructorActivator : IActivator
     {
-        private static readonly Type c_serviceType = typeof(IServiceProvider);
-
         private readonly ConstructorInfo _ctor;
 
         /// <summary>
@@ -47,7 +45,7 @@ namespace Commands
                 return ctor;
             }
 
-            throw new InvalidOperationException($"{type} is marked as {nameof(CommandModule)}, but no public constructors are accessible for this type to be constructed.");
+            throw new InvalidOperationException($"{type} has no public constructors that are accessible for this type to be constructed.");
         }
 
         /// <inheritdoc />
@@ -68,7 +66,7 @@ namespace Commands
 
                 if (service == null)
                 {
-                    if (parameter.Type.GUID == c_serviceType.GUID)
+                    if (parameter.Type == typeof(IServiceProvider))
                     {
                         services[i] = options.Services;
                         continue;
