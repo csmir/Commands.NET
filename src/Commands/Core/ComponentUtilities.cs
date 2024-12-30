@@ -1,5 +1,6 @@
 ﻿using Commands.Conversion;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Commands
@@ -304,6 +305,26 @@ namespace Commands
             }
 
             return new(minLength, maxLength);
+        }
+
+        internal static ConstructorInfo GetInvokableConstructor(
+#if NET8_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+        #endif
+            this Type type)
+        {
+            var ctors = type.GetConstructors()
+                .OrderByDescending(x => x.GetParameters().Length);
+
+            foreach (var ctor in ctors)
+            {
+                if (ctor.GetCustomAttributes().Any(attr => attr is IgnoreAttribute))
+                    continue;
+
+                return ctor;
+            }
+
+            throw new InvalidOperationException($"{type} has no public constructors that are accessible for this type to be constructed.");
         }
     }
 }

@@ -82,7 +82,7 @@ namespace Commands
             else
                 IsOptional = false;
 
-            Activator = new ConstructorActivator(Type);
+            Activator = new ComplexActivator(Type);
 
             var parameters = Activator.Target.GetArguments(false, configuration);
 

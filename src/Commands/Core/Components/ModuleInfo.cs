@@ -1,5 +1,6 @@
 ﻿using Commands.Conditions;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Commands
 {
@@ -65,6 +66,9 @@ namespace Commands
             => false;
 
         internal ModuleInfo(
+#if NET8_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods)]
+        #endif
             Type type, ModuleInfo? root, string[] aliases, ComponentConfiguration configuration)
             : base(configuration.GetProperty(ConfigurationPropertyDefinitions.MakeModulesReadonly, false))
         {
@@ -81,7 +85,7 @@ namespace Commands
 
             Aliases = aliases;
 
-            Activator = new ConstructorActivator(type);
+            Activator = new ModuleActivator(type);
 
             Push(configuration.GetNestedComponents(this).OrderByDescending(x => x.Score));
         }
