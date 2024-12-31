@@ -8,19 +8,25 @@ namespace Commands
     /// </summary>
     public sealed class ModuleActivator : IActivator
     {
+        private readonly ConstructorInfo _ctor;
         /// <summary>
         ///     Gets a collection of parameters for the constructor.
         /// </summary>
         public IParameter[] Parameters { get; }
 
         /// <inheritdoc />
-        public MethodBase Target { get; }
+        public MethodBase Target
+            => _ctor;
 
-        internal ModuleActivator(Type type)
+        internal ModuleActivator(
+#if NET8_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
+            Type type)
         {
             var ctor = type.GetInvokableConstructor();
 
-            Target = ctor;
+            _ctor = ctor;
 
             var parameters = ctor.GetParameters();
 
@@ -54,7 +60,7 @@ namespace Commands
                     throw new InvalidOperationException($"Constructor {command?.Parent?.Name ?? Target.Name} defines unknown service {parameter.Type}.");
             }
 
-            return Target.Invoke(null, services);
+            return _ctor.Invoke(services);
         }
 
         /// <inheritdoc />

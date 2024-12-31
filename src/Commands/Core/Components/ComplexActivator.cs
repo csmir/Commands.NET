@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using System.Reflection;
 
 namespace Commands
@@ -8,19 +9,26 @@ namespace Commands
     /// </summary>
     public sealed class ComplexActivator : IActivator
     {
-        /// <inheritdoc />
-        public MethodBase Target { get; }
+        private readonly ConstructorInfo _ctor;
 
-        internal ComplexActivator(Type type)
+        /// <inheritdoc />
+        public MethodBase Target
+            => _ctor;
+
+        internal ComplexActivator(
+#if NET8_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
+            Type type)
         {
             var ctor = type.GetInvokableConstructor();
 
-            Target = ctor;
+            _ctor = ctor;
         }
 
         /// <inheritdoc />
         public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options) where T : ICallerContext
-            => Target.Invoke(null, args);
+            => _ctor.Invoke(args);
 
         /// <inheritdoc />
 #if NET8_0_OR_GREATER

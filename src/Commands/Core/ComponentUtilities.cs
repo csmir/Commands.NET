@@ -40,13 +40,11 @@ namespace Commands
             if (parent.Type == null)
                 return [];
 
-            var commands = configuration.GetCommands(parent.Type, parent, parent.Aliases.Length > 0);
+            var commands = configuration.GetCommands(parent, parent.Aliases.Length > 0);
 
             try
             {
-#pragma warning disable IL2075 // We are *not* certain that parent.Type has DynamicallyAccessedMemberTypes.All, but we will catch and continue if not.
                 var nestedTypes = parent.Type.GetNestedTypes();
-#pragma warning restore IL2075
 
                 var modules = configuration.GetModules(nestedTypes, parent, true);
 
@@ -150,7 +148,9 @@ namespace Commands
                 if (!skip)
                 {
                     // yield a new module if all aliases are valid and it shouldn't be skipped.
+#pragma warning disable IL2072 // We are certain that this Type is available in nAOT.
                     var component = new ModuleInfo(type, parent, aliases, configuration);
+#pragma warning restore IL2072
 
                     var componentFilter = configuration.GetProperty<Func<IComponent, bool>>(ConfigurationPropertyDefinitions.ComponentRegistrationFilterExpression);
 
@@ -160,12 +160,9 @@ namespace Commands
             }
         }
 
-        internal static IEnumerable<IComponent> GetCommands(this ComponentConfiguration configuration, Type type, ModuleInfo? parent, bool withDefaults)
+        internal static IEnumerable<IComponent> GetCommands(this ComponentConfiguration configuration, ModuleInfo parent, bool withDefaults)
         {
-            // run through all type methods.
-#pragma warning disable IL2070 // We are certain that type has DynamicallyAccessedMemberTypes.All
-            var members = type.GetMembers(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
-#pragma warning restore IL2070
+            var members = parent.Type!.GetMembers(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
 
             foreach (var member in members)
             {
@@ -306,12 +303,14 @@ namespace Commands
             return new(minLength, maxLength);
         }
 
-        internal static ConstructorInfo GetInvokableConstructor(this Type type)
+        internal static ConstructorInfo GetInvokableConstructor(
+#if NET8_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
+            this Type type)
         {
-#pragma warning disable IL2070 // We are certain that type has DynamicallyAccessedMemberTypes.All
             var ctors = type.GetConstructors()
                 .OrderByDescending(x => x.GetParameters().Length);
-#pragma warning restore IL2070
 
             foreach (var ctor in ctors)
             {

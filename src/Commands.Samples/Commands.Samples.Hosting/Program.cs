@@ -30,6 +30,7 @@ await Host.CreateDefaultBuilder(args)
 
             return SourceResult.FromSuccess(context, input);
         });
+        configure.WithTypes(typeof(Program).Assembly.GetExportedTypes());
         configure.AddResultHandler<HostedCallerContext>((context, result, services) =>
         {
             switch (result)

@@ -190,7 +190,7 @@ namespace Commands
             }
 
             // If concatenation is still filled on escaping the sequence, add as last argument.
-            if (concatenation.Count == 0)
+            if (concatenation.Count != 0)
             {
                 if (name is null)
                     yield return new(string.Join(U0020, concatenation), null);

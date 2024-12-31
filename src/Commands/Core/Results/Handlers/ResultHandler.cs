@@ -1,4 +1,6 @@
-﻿namespace Commands
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Commands
 {
     /// <summary>
     ///     A handler for post-execution processes bound to specific types of <see cref="ICallerContext"/>. This generic handler filters results based on the caller type.
@@ -85,6 +87,10 @@
         /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
         /// <param name="cancellationToken">A token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
+#if NET8_0_OR_GREATER
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(Task<>))]
+        [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(ValueTask<>))]
+#endif
         protected async virtual ValueTask HandleSuccess(
             ICallerContext caller, IValueResult result, IServiceProvider services, CancellationToken cancellationToken)
         {
@@ -100,15 +106,25 @@
 
                         var ttype = invokeResult.Command.Activator.GetReturnType()!;
 
-                        if (ttype.IsGenericType)
+                        try
                         {
-                            _taskResultPropertyCallers[0] ??= ttype.GetProperty("Result")!.GetValue!;
+                            if (ttype.IsGenericType)
+                            {
+                                _taskResultPropertyCallers[0] ??= ttype.GetProperty("Result")!.GetValue!;
 
-                            var taskResult = _taskResultPropertyCallers[0](awaitablet);
+                                var taskResult = _taskResultPropertyCallers[0](awaitablet);
 
-                            if (taskResult != null)
-                                await caller.Respond(taskResult);
+                                if (taskResult != null)
+                                    await caller.Respond(taskResult);
+                            }
                         }
+                        catch (Exception ex)
+                        {
+                            await caller.Respond(ex);
+                            await caller.Respond(ttype.Name);
+                            await caller.Respond(string.Join(", ", ttype.GetMembers().Select(x => x.Name)));
+                        }
+
                         break;
                     case ValueTask awaitablevt:
                         await awaitablevt;

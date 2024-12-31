@@ -13,6 +13,9 @@ namespace Commands
         /// <summary>
         ///     Gets the type of this module.
         /// </summary>
+#if NET8_0_OR_GREATER
+        [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
         public Type? Type { get; }
 
         /// <summary>
@@ -61,6 +64,9 @@ namespace Commands
             => false;
 
         internal ModuleInfo(
+#if NET8_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+#endif
             Type type, ModuleInfo? root, string[] aliases, ComponentConfiguration configuration)
             : base(configuration.GetProperty(ConfigurationPropertyDefinitions.MakeModulesReadonly, false))
         {

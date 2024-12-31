@@ -82,7 +82,9 @@ namespace Commands
             else
                 IsOptional = false;
 
+#pragma warning disable IL2072 // We are certain that this Type is available in nAOT.
             Activator = new ComplexActivator(Type);
+#pragma warning restore IL2073
 
             var parameters = Activator.Target.GetArguments(false, configuration);
 

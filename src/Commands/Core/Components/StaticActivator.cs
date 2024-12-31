@@ -40,7 +40,7 @@ namespace Commands
         [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
 #endif
         public Type? GetReturnType()
-#pragma warning disable IL2073
+#pragma warning disable IL2073 // We are certain that this type is available in nAOT.
             => _method.ReturnType;
 #pragma warning restore IL2073
     }
