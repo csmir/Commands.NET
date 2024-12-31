@@ -35,7 +35,7 @@ namespace Commands.Builders
         /// <summary>
         ///     Gets or sets a collection of types that are to be used to discover created modules.
         /// </summary>
-        public ICollection<Type> Types { get; set; }
+        public ICollection<TypeDefinition> Types { get; set; }
 
         /// <summary>
         ///     Gets or sets a value indicating whether modules should be made read-only after the registration process.
@@ -115,7 +115,7 @@ namespace Commands.Builders
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddType(
 #if NET8_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 # endif
             Type moduleType);
 
@@ -130,7 +130,7 @@ namespace Commands.Builders
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddType<
 #if NET8_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
             T>()
             where T : class;

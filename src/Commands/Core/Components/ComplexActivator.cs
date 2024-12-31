@@ -17,7 +17,7 @@ namespace Commands
 
         internal ComplexActivator(
 #if NET8_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif
             Type type)
         {

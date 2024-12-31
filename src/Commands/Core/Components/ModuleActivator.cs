@@ -20,7 +20,7 @@ namespace Commands
 
         internal ModuleActivator(
 #if NET8_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif
             Type type)
         {
@@ -62,12 +62,5 @@ namespace Commands
 
             return _ctor.Invoke(services);
         }
-
-        /// <inheritdoc />
-#if NET8_0_OR_GREATER
-        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-#endif
-        public Type? GetReturnType()
-            => default;
     }
 }

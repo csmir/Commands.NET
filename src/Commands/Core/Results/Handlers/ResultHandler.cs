@@ -90,6 +90,7 @@ namespace Commands
         /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
 #if NET8_0_OR_GREATER
         [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Task<>))]
+        [UnconditionalSuppressMessage("AotAnalysis", "IL2075", Justification = "The availability of Task<> is ensured at compile-time.")]
 #endif
         protected async virtual ValueTask HandleSuccess(
             ICallerContext caller, IValueResult result, IServiceProvider services, CancellationToken cancellationToken)

@@ -18,7 +18,7 @@ namespace Commands
         /// <param name="types">The types that should be searched to discover new modules.</param>
         /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> containing all discovered modules in the provided <paramref name="types"/>.</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static IEnumerable<ModuleInfo> GetComponents(this ComponentConfiguration configuration, params Type[] types)
+        public static IEnumerable<ModuleInfo> GetComponents(this ComponentConfiguration configuration, params TypeDefinition[] types)
         {
             if (types == null)
                 throw new ArgumentNullException(nameof(types));
@@ -32,6 +32,9 @@ namespace Commands
         /// <param name="configuration">The configuration that define the command registration process.</param>
         /// <param name="parent">The module who'se members should be iterated.</param>
         /// <returns>An array of all discovered components.</returns>
+#if NET8_0_OR_GREATER
+        [UnconditionalSuppressMessage("AotAnalysis", "IL2062", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
+#endif
         public static IEnumerable<IComponent> GetNestedComponents(this ComponentConfiguration configuration, ModuleInfo parent)
         {
             if (parent == null)
@@ -44,9 +47,9 @@ namespace Commands
 
             try
             {
-                var nestedTypes = parent.Type.GetNestedTypes();
+                var nestedTypes = parent.Type.GetNestedTypes(BindingFlags.Public);
 
-                var modules = configuration.GetModules(nestedTypes, parent, true);
+                var modules = configuration.GetModules([.. nestedTypes], parent, true);
 
                 return commands.Concat(modules);
             }
@@ -113,10 +116,12 @@ namespace Commands
         internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
             => provider.GetCustomAttributes(inherit).OfType<Attribute>();
 
-        internal static IEnumerable<ModuleInfo> GetModules(this ComponentConfiguration configuration, Type[] types, ModuleInfo? parent, bool withNested)
+        internal static IEnumerable<ModuleInfo> GetModules(this ComponentConfiguration configuration, TypeDefinition[] types, ModuleInfo? parent, bool withNested)
         {
-            foreach (var type in types)
+            foreach (var definition in types)
             {
+                var type = definition.Value;
+
                 if (!withNested && type.IsNested)
                     continue;
 
@@ -148,9 +153,7 @@ namespace Commands
                 if (!skip)
                 {
                     // yield a new module if all aliases are valid and it shouldn't be skipped.
-#pragma warning disable IL2072 // Type availability is assured from origin call.
                     var component = new ModuleInfo(type, parent, aliases, configuration);
-#pragma warning restore IL2072
 
                     var componentFilter = configuration.GetProperty<Func<IComponent, bool>>(ConfigurationPropertyDefinitions.ComponentRegistrationFilterExpression);
 
@@ -162,14 +165,14 @@ namespace Commands
 
         internal static IEnumerable<IComponent> GetCommands(this ComponentConfiguration configuration, ModuleInfo parent, bool withDefaults)
         {
-            var members = parent.Type!.GetMembers(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
+            var members = parent.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
 
-            foreach (var member in members)
+            foreach (var method in members)
             {
                 var aliases = Array.Empty<string>();
 
                 var skip = false;
-                foreach (var attribute in member.GetCustomAttributes(true))
+                foreach (var attribute in method.GetCustomAttributes(true))
                 {
                     if (attribute is NameAttribute names)
                     {
@@ -188,34 +191,24 @@ namespace Commands
 
                 if (!skip && (withDefaults || aliases.Length > 0))
                 {
-                    var method = member switch
+                    CommandInfo? component;
+                    if (method.IsStatic)
                     {
-                        PropertyInfo property => property.GetMethod,
-                        MethodInfo rawMethod => rawMethod,
-                        _ => null
-                    };
+                        var param = method.GetParameters();
 
-                    if (method != null)
-                    {
-                        CommandInfo? component;
-                        if (method.IsStatic)
-                        {
-                            var param = method.GetParameters();
+                        var hasContext = false;
+                        if (param.Length > 0 && param[0].ParameterType.IsGenericType && param[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>))
+                            hasContext = true;
 
-                            var hasContext = false;
-                            if (param.Length > 0 && param[0].ParameterType.IsGenericType && param[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>))
-                                hasContext = true;
-
-                            component = new CommandInfo(parent, new StaticActivator(method, hasContext), aliases, hasContext, configuration);
-                        }
-                        else
-                            component = new CommandInfo(parent, new InstanceActivator(method), aliases, false, configuration);
-
-                        var componentFilter = configuration.GetProperty<Func<IComponent, bool>>(ConfigurationPropertyDefinitions.ComponentRegistrationFilterExpression);
-
-                        if (componentFilter?.Invoke(component) ?? true)
-                            yield return component;
+                        component = new CommandInfo(parent, new StaticActivator(method, hasContext), aliases, hasContext, configuration);
                     }
+                    else
+                        component = new CommandInfo(parent, new InstanceActivator(method), aliases, false, configuration);
+
+                    var componentFilter = configuration.GetProperty<Func<IComponent, bool>>(ConfigurationPropertyDefinitions.ComponentRegistrationFilterExpression);
+
+                    if (componentFilter?.Invoke(component) ?? true)
+                        yield return component;
                 }
             }
         }
@@ -305,7 +298,7 @@ namespace Commands
 
         internal static ConstructorInfo GetInvokableConstructor(
 #if NET8_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif
             this Type type)
         {

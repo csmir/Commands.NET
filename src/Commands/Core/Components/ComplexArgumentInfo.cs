@@ -59,6 +59,9 @@ namespace Commands
         public bool HasArguments
             => Arguments.Length > 0;
 
+#if NET8_0_OR_GREATER
+        [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
+#endif
         internal ComplexArgumentInfo(
             ParameterInfo parameterInfo, string? name, ComponentConfiguration configuration)
         {
@@ -83,9 +86,7 @@ namespace Commands
             else
                 IsOptional = false;
 
-#pragma warning disable IL2072 // Type availability is assured from origin call.
             Activator = new ComplexActivator(Type);
-#pragma warning restore IL2072
 
             var parameters = Activator.Target.GetArguments(false, configuration);
 

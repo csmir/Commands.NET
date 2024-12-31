@@ -17,7 +17,7 @@ namespace Commands.Builders
         public ICollection<ResultHandler> Handlers { get; set; } = [];
 
         /// <inheritdoc />
-        public ICollection<Type> Types { get; set; } = [];
+        public ICollection<TypeDefinition> Types { get; set; } = [];
 
         /// <inheritdoc />
         /// <remarks>
@@ -92,7 +92,7 @@ namespace Commands.Builders
         /// <inheritdoc />
         public ITreeBuilder AddType(
 #if NET8_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 # endif
             Type moduleType)
         {
@@ -107,7 +107,7 @@ namespace Commands.Builders
         /// <inheritdoc />
         public ITreeBuilder AddType<
 #if NET8_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
             T>()
             where T : class
