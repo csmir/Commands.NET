@@ -29,12 +29,5 @@ namespace Commands
         /// <inheritdoc />
         public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options) where T : ICallerContext
             => _ctor.Invoke(args);
-
-        /// <inheritdoc />
-#if NET8_0_OR_GREATER
-        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-#endif
-        public Type? GetReturnType()
-            => default;
     }
 }

@@ -3,12 +3,7 @@ using Commands.Tests;
 
 var tree = ComponentTree.CreateBuilder()
     .AddType<Module>()
-    .AddResultHandler((c, res, serv) =>
-    {
-        c.Respond(res);
-
-        return ValueTask.CompletedTask;
-    })
+    .AddResultHandler(async (c, res, serv) => await c.Respond(res))
     .Build();
 
 while (true)

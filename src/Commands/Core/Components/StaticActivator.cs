@@ -34,14 +34,5 @@ namespace Commands
 
             return Target.Invoke(null, args);
         }
-
-        /// <inheritdoc />
-#if NET8_0_OR_GREATER
-        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-#endif
-        public Type? GetReturnType()
-#pragma warning disable IL2073 // We are certain that this type is available in nAOT.
-            => _method.ReturnType;
-#pragma warning restore IL2073
     }
 }

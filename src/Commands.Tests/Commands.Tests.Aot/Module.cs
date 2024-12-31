@@ -25,8 +25,6 @@ namespace Commands.Tests
         {
             public Task Respond(object? response)
             {
-                Console.WriteLine("Responding:");
-
                 Console.WriteLine(response);
 
                 return Task.CompletedTask;

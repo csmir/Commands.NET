@@ -1,5 +1,6 @@
 ﻿using Commands.Conversion;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Commands
@@ -82,9 +83,9 @@ namespace Commands
             else
                 IsOptional = false;
 
-#pragma warning disable IL2072 // We are certain that this Type is available in nAOT.
+#pragma warning disable IL2072 // Type availability is assured from origin call.
             Activator = new ComplexActivator(Type);
-#pragma warning restore IL2073
+#pragma warning restore IL2072
 
             var parameters = Activator.Target.GetArguments(false, configuration);
 

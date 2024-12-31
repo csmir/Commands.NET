@@ -24,14 +24,5 @@ namespace Commands
         /// <returns>The result of the invocation. This result is <see langword="null"/> if the method signature returns void.</returns>
         public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options)
             where T : ICallerContext;
-
-        /// <summary>
-        ///     Gets the return type of the target, if it is a method. If it is a constructor, it will return null.
-        /// </summary>
-        /// <returns>A type representing the returned value of the invoked target.</returns>\
-#if NET8_0_OR_GREATER
-        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-#endif
-        public Type? GetReturnType();
     }
 }

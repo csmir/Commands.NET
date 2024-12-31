@@ -1,4 +1,6 @@
-﻿namespace Commands.Conversion
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Commands.Conversion
 {
     internal sealed class ArrayParser(TypeParser underlyingConverter) : TypeParser
     {
@@ -11,7 +13,7 @@
             if (value is not object[] array)
                 return Error($"The provided value is not an array. Expected: '{Type.Name}', got: '{value}'. At: '{argument.Name}'");
 
-#pragma warning disable IL3050 // We are certain that Type has DynamicallyAccessedMemberTypes.All
+#pragma warning disable IL3050 // Type availability is assured from origin call.
             var instance = Array.CreateInstance(Type, array.Length);
 #pragma warning restore IL3050
 

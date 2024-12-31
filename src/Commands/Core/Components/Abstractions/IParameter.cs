@@ -1,4 +1,6 @@
-﻿namespace Commands
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Commands
 {
     /// <summary>
     ///     Reveals information about a parameter of a signature.

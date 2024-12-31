@@ -148,7 +148,7 @@ namespace Commands
                 if (!skip)
                 {
                     // yield a new module if all aliases are valid and it shouldn't be skipped.
-#pragma warning disable IL2072 // We are certain that this Type is available in nAOT.
+#pragma warning disable IL2072 // Type availability is assured from origin call.
                     var component = new ModuleInfo(type, parent, aliases, configuration);
 #pragma warning restore IL2072
 

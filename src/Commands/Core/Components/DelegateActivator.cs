@@ -36,14 +36,5 @@ namespace Commands
 
             return Target.Invoke(_instance, args);
         }
-
-        /// <inheritdoc />
-#if NET8_0_OR_GREATER
-        [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-#endif
-        public Type? GetReturnType()
-#pragma warning disable IL2073
-            => _method.ReturnType;
-#pragma warning restore IL2073
     }
 }

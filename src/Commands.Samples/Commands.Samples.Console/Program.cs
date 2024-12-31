@@ -26,6 +26,8 @@ builder.AddCommand("delegate", () => "Hello World!");
 builder.AddCommand("delegate-context", (CommandContext<CustomCaller> ctx) => $"Hello, {ctx.Caller.Name}!");
 builder.AddCommand("delegate-params", (string name) => $"Hello, {name}!");
 
+builder.WithTypes(typeof(Program).Assembly.GetExportedTypes());
+
 var manager = builder.Build();
 
 while (true)

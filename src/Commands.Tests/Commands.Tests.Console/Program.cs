@@ -8,6 +8,7 @@ var tree = ComponentTree.CreateBuilder()
     {
         configure.AddParser(new CSharpScriptParser());
     })
+    .WithTypes(typeof(Program).Assembly.GetExportedTypes())
     .AddResultHandler(async (c, r, s) => await c.Respond(r))
     .Build();
 
