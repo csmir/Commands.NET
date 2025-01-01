@@ -35,7 +35,7 @@ namespace Commands.Builders
         /// <param name="name">The name of the command.</param>
         /// <param name="executeDelegate">The delegate used to execute the command.</param>
         public CommandBuilder(string name, Delegate executeDelegate)
-            : this(name, [] , executeDelegate) { }
+            : this(name, [], executeDelegate) { }
 
         /// <summary>
         ///     Creates a new instance of <see cref="CommandBuilder"/> with the specified name, aliases, and delegate.

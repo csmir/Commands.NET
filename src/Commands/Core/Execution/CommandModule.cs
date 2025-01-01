@@ -1,7 +1,4 @@
-﻿using System.Net.NetworkInformation;
-using System.Reflection;
-
-namespace Commands
+﻿namespace Commands
 {
     /// <summary>
     ///     Represents a <see cref="CommandModule"/> that implements an implementation-friendly accessor to the <see cref="ICallerContext"/>.

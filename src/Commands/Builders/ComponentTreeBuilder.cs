@@ -97,7 +97,7 @@ namespace Commands.Builders
 #if NET8_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
-            T>()
+        T>()
             where T : class
             => AddType(typeof(T));
 

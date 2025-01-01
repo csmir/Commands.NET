@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace Commands
+﻿namespace Commands
 {
     /// <summary>
     ///     An attribute that defines the name of a module (<see cref="CommandModule"/>), a declared command or a command parameter. This class cannot be inherited.
@@ -15,7 +13,7 @@ namespace Commands
         /// <summary>
         ///     Gets the name of the target.
         /// </summary>
-        public string Name 
+        public string Name
             => Aliases[0];
 
         /// <summary>

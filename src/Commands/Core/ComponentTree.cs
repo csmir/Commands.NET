@@ -1,7 +1,6 @@
 ﻿using Commands.Builders;
 using Commands.Conditions;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Commands
 {
@@ -227,7 +226,7 @@ namespace Commands
 
                         continue;
                     }
-                    
+
                     if (complexArgument.IsOptional)
                         results[i] = ParseResult.FromSuccess(Type.Missing);
 
@@ -282,7 +281,7 @@ namespace Commands
                 await resolver.HandleResult(caller, result, options.Services, options.CancellationToken);
         }
 
-#endregion
+        #endregion
 
         /// <summary>
         ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="ComponentTree"/>. This builder is pre-configured with default settings.

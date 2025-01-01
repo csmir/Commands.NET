@@ -1,6 +1,4 @@
-﻿using Commands.Conditions;
-
-namespace Commands.Tests
+﻿namespace Commands.Tests
 {
     public sealed class HelpModule : CommandModule
     {
