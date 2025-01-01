@@ -2,7 +2,11 @@
 
 namespace Commands.Builders
 {
-    /// <inheritdoc cref="IConditionBuilder"/>
+    /// <summary>
+    ///     A builder model for an execution condition, which is an evaluation that is triggered based on the configured trigger moment, setting up the command to fail or succeed. This class cannot be inherited.
+    /// </summary>
+    /// <typeparam name="TEval">The evaluation approach that the built condition should have in order to fail or succeed.</typeparam>
+    /// <typeparam name="TContext">The context to which the resulting condition is bound, failing automatically if the provided context cannot be cast to it.</typeparam>
     public sealed class ConditionBuilder<TEval, TContext> : IConditionBuilder
         where TEval : ConditionEvaluator, new()
         where TContext : ICallerContext
@@ -26,11 +30,11 @@ namespace Commands.Builders
         ///     Creates a new instance of <see cref="ConditionBuilder{T, T}"/> with the specified trigger and delegate.
         /// </summary>
         /// <param name="trigger">A set of flags which determines when in the execution pipeline the condition should be evaluated.</param>
-        /// <param name="func">A delegate that is called when the provided triggers determine that it should be evaluated.</param>
-        public ConditionBuilder(ConditionTrigger trigger, Func<TContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> func)
+        /// <param name="executionHandler">A delegate that is called when the provided triggers determine that it should be evaluated.</param>
+        public ConditionBuilder(ConditionTrigger trigger, Func<TContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> executionHandler)
         {
             Triggers = trigger;
-            Handler = func;
+            Handler = executionHandler;
         }
 
         /// <summary>
@@ -56,10 +60,9 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public IExecuteCondition Build()
+        public ICondition Build()
         {
-            if (Handler is null)
-                throw new ArgumentNullException(nameof(Handler));
+            Assert.NotNull(Handler, nameof(Handler));
 
             return new DelegateCondition<TEval, TContext>(Triggers, Handler);
         }

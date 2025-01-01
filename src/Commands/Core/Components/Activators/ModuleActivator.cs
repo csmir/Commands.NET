@@ -9,10 +9,11 @@ namespace Commands
     public sealed class ModuleActivator : IActivator
     {
         private readonly ConstructorInfo _ctor;
+
         /// <summary>
-        ///     Gets a collection of parameters for the constructor.
+        ///     Gets a collection of services for the group.
         /// </summary>
-        public IParameter[] Parameters { get; }
+        public ServiceInfo[] Services { get; }
 
         /// <inheritdoc />
         public MethodBase Target
@@ -24,26 +25,26 @@ namespace Commands
 #endif
             Type type)
         {
-            var ctor = type.GetInvokableConstructor();
+            var ctors = type.GetAvailableConstructors();
 
-            _ctor = ctor;
+            _ctor = ctors.First();
 
-            var parameters = ctor.GetParameters();
+            var parameters = _ctor.GetParameters();
 
-            Parameters = new IParameter[parameters.Length];
+            Services = new ServiceInfo[parameters.Length];
 
             for (var i = 0; i < parameters.Length; i++)
-                Parameters[i] = new ServiceInfo(parameters[i]);
+                Services[i] = new ServiceInfo(parameters[i]);
         }
 
         /// <inheritdoc />
         public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options)
             where T : ICallerContext
         {
-            var services = new object?[Parameters.Length];
-            for (int i = 0; i < Parameters.Length; i++)
+            var services = new object?[Services.Length];
+            for (int i = 0; i < Services.Length; i++)
             {
-                var parameter = Parameters[i];
+                var parameter = Services[i];
 
                 var service = options.Services.GetService(parameter.Type);
 

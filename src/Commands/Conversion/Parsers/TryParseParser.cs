@@ -10,7 +10,7 @@ namespace Commands.Conversion
     public sealed class TryParseParser<T>(TryParseParser<T>.ParseDelegate parser) : TypeParser<T>
     {
         /// <inheritdoc />
-        public override ValueTask<ConvertResult> Parse(
+        public override ValueTask<ParseResult> Parse(
             ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if ((value is string str && parser(str, out var result)) || parser(value?.ToString(), out result))

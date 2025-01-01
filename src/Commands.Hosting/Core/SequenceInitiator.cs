@@ -102,7 +102,7 @@ namespace Commands
 
                             var options = source.Options ?? new();
 
-                            options.DoAsynchronousExecution = false;
+                            options.AsynchronousExecution = false;
                             options.Services = scope.ServiceProvider;
 
                             await Tree.Execute(source.Consumer!, source.Args!.Value, options); // never null if source succeeded.

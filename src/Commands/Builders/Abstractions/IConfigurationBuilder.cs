@@ -8,22 +8,18 @@ namespace Commands.Builders
     public interface IConfigurationBuilder
     {
         /// <summary>
-        ///     Gets or sets a collection of <see cref="TypeParser"/>, each containing an operation for <see cref="Type"/> parsing. Parsing of <see langword="object"/>, <see langword="string"/>, implementations of <see langword="enum"/> and implementations of <see cref="IEnumerable{T}"/> are not necessary to implement, as they are handled internally by the <see cref="IComponentTree"/>.
+        ///     Gets or sets the <see cref="TypeParser"/> collection to use when constructing components with this configuration.
         /// </summary>
         /// <remarks>
-        ///     This collection is set by default to the value of <see cref="TypeParser.CreateDefaults"/>. 
+        ///     This collection is set by default to the value of <see cref="TypeParser.CreateDefaults"/>.
         ///     Mutation to existing parsers or adding new parsers can be done through the methods provided by this interface.
-        ///     By default, any new parsers added will replace existing parsers with the same <see cref="Type"/>. 
-        ///     <br />
-        ///     <br />
-        ///     The list of types that are converted by the default parsers are:
+        ///     Any new parsers added will replace existing parsers with the same <see cref="Type"/>. By default, this collection contains parsers for:
         ///     <list type="bullet">
-        ///         <item>String characters, being: <see langword="char"/>.</item>
-        ///         <item>Integers variants, being: <see langword="bool"/>, <see langword="byte"/>, <see langword="sbyte"/>, <see langword="short"/>, <see langword="ushort"/>, <see langword="int"/>, <see langword="uint"/>, <see langword="long"/> and <see langword="ulong"/>.</item>
-        ///         <item>Floating point numbers, being: <see langword="float"/>, <see langword="decimal"/> and <see langword="double"/>.</item>
-        ///         <item>Commonly used structs, being: <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/> and <see cref="Guid"/>.</item>
+        ///         <item>All BCL types (<see href="https://learn.microsoft.com/en-us/dotnet/standard/class-library-overview#system-namespace"/>).</item>
+        ///         <item><see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/> and <see cref="Guid"/>.</item>
+        ///         <item><see cref="Enum"/> implementations for which no custom parser exists.</item>
         ///     </list>
-        ///     <i>The parser for <see cref="TimeSpan"/> does not implement <see cref="TryParseParser"/>, instead having extended logic under <see cref="TimeSpanParser"/>.</i>
+        ///     <i>Collections implementing <see cref="Array"/> are converted by their respective element types, and not the types themselves.</i>
         /// </remarks>
         public IDictionary<Type, TypeParser> Parsers { get; set; }
 
@@ -36,12 +32,12 @@ namespace Commands.Builders
         ///     Configures an action that will convert a raw argument into the target type, signified by <typeparamref name="TParsable"/>.
         /// </summary>
         /// <remarks>
-        ///     An existing <see cref="TypeParser"/> -if any- implementing the same <see cref="Type"/> as <typeparamref name="TParsable"/> will be replaced by this operation.
+        ///     Any existing <see cref="TypeParser"/> implementing the same <see cref="Type"/> as <typeparamref name="TParsable"/> will be replaced by this operation.
         /// </remarks>
         /// <typeparam name="TParsable">The type for this parser to target.</typeparam>
         /// <param name="convertAction">The action that is responsible for the parsing process.</param>
         /// <returns>The same <see cref="IConfigurationBuilder"/> for call-chaining.</returns>
-        public IConfigurationBuilder AddParser<TParsable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction);
+        public IConfigurationBuilder AddParser<TParsable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ParseResult>> convertAction);
 
         /// <summary>
         ///     Adds an implementation of <see cref="TypeParser"/> to <see cref="Parsers"/>, replacing an existing parser with the same <see cref="Type"/>.

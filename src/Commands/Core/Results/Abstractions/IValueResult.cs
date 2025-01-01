@@ -9,7 +9,7 @@
         ///     Gets the value of the resulted operation.
         /// </summary>
         /// <remarks>
-        ///     
+        ///     Will be null when <see cref="IExecuteResult.Success"/> is <see langword="false"/>.
         /// </remarks>
         public object? Value { get; }
     }

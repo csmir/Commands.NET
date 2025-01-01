@@ -1,5 +1,6 @@
 ﻿using Commands.Conditions;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Commands
 {
@@ -19,7 +20,7 @@ namespace Commands
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
-        public ConditionEvaluator[] Conditions { get; }
+        public ConditionEvaluator[] Evaluators { get; }
 
         /// <inheritdoc />
         public IArgument[] Arguments { get; }
@@ -64,46 +65,49 @@ namespace Commands
         public bool HasArguments
             => Arguments.Length > 0;
 
-        internal CommandInfo(StaticActivator invoker, string[] aliases, bool hasContext, ComponentConfiguration options)
-            : this(null, invoker, aliases, hasContext, options)
+        internal CommandInfo(ModuleInfo parent, StaticActivator invoker, string[] aliases, bool hasContext, ComponentConfiguration options)
+            : this(parent, invoker, [], aliases, hasContext, options)
         {
 
         }
 
-        internal CommandInfo(DelegateActivator invoker, IExecuteCondition[] conditions, string[] aliases, bool hasContext, ComponentConfiguration options)
-            : this(null, invoker, aliases, hasContext, options)
+        internal CommandInfo(ModuleInfo parent, InstanceActivator activator, string[] aliases, ComponentConfiguration configuration)
+            : this(parent, activator, [], aliases, true, configuration)
         {
-            Conditions = ConditionEvaluator.CreateEvaluators(conditions).ToArray();
+
         }
 
         internal CommandInfo(
-            ModuleInfo? module, IActivator invoker, string[] aliases, bool hasContext, ComponentConfiguration configuration)
+            ModuleInfo? parent, IActivator invoker, ICondition[] conditions, string[] aliases, bool hasContext, ComponentConfiguration configuration)
         {
-            var attributes = invoker.Target.GetAttributes(true).Concat(module?.Attributes ?? []).Distinct();
-
-            var parameters = invoker.Target.GetArguments(hasContext, configuration);
+            var parameters = invoker.Target.BuildArguments(hasContext, configuration);
 
             (MinLength, MaxLength) = parameters.GetLength();
 
             Aliases = aliases;
 
-            if (parameters.Any(x => x.IsRemainder))
+            for (var i = 0; i < parameters.Length; i++)
             {
-                for (var i = 0; i < parameters.Length; i++)
-                {
-                    var parameter = parameters[i];
+                var parameter = parameters[i];
 
-                    if (parameter.IsRemainder && i != parameters.Length - 1)
-                        throw BuildException.RemainderNotSupported(FullName);
-                }
+                if (parameter.IsRemainder && i != parameters.Length - 1)
+                    throw new NotSupportedException("Remainder arguments must be the last argument in the method signature.");
             }
 
             Activator = invoker;
-            Parent = module;
+            Parent = parent;
+
+            var attributes = invoker.Target.GetAttributes(true);
 
             Attributes = attributes.ToArray();
 
-            Conditions = ConditionEvaluator.CreateEvaluators(attributes.OfType<IExecuteCondition>()).ToArray();
+            // 1: Runtime
+            // 2: Attribute
+            // 3: Parent
+            Evaluators = ConditionEvaluator.CreateEvaluators(conditions)
+                .Concat(ConditionEvaluator.CreateEvaluators(attributes.OfType<ICondition>()))
+                .Concat(parent?.Evaluators ?? [])
+                .ToArray();
 
             Arguments = parameters;
             HasRemainder = parameters.Any(x => x.IsRemainder);
@@ -117,7 +121,7 @@ namespace Commands
             foreach (var argument in Arguments)
                 score += argument.GetScore();
 
-            score += Attributes.GetAttribute<PriorityAttribute>()?.Priority ?? 0; ;
+            score += Attributes.FirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
 
             return score;
         }

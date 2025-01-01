@@ -1,4 +1,5 @@
-﻿using Commands.Conditions;
+﻿using Commands.Builders;
+using Commands.Conditions;
 
 namespace Commands
 {
@@ -18,9 +19,12 @@ namespace Commands
         public string[] Aliases { get; }
 
         /// <summary>
-        ///     Gets all evaluations that this component should do prior to executing the command.
+        ///     Gets all evaluations that this component should do during the execution process, determined by a set of defined <see cref="ICondition"/>'s pointing at the component.
         /// </summary>
-        public ConditionEvaluator[] Conditions { get; }
+        /// <remarks>
+        ///     When this property is called by a child component, this property will inherit all evaluations from the component's <see cref="Parent"/> component(s).
+        /// </remarks>
+        public ConditionEvaluator[] Evaluators { get; }
 
         /// <summary>
         ///     Gets the invocation target of this component.

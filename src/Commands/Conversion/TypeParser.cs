@@ -13,17 +13,12 @@ namespace Commands.Conversion
         public override Type Type { get; } = typeof(T);
 
         /// <summary>
-        ///     Creates a new <see cref="ConvertResult"/> representing a successful evaluation.
+        ///     Creates a new <see cref="ParseResult"/> representing a successful parse operation.
         /// </summary>
         /// <param name="value">The value parsed from a raw argument into the target type of this parser.</param>
-        /// <returns>A <see cref="ConvertResult"/> representing the successful evaluation.</returns>
-        public virtual ConvertResult Success(T? value)
-        {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
-
-            return base.Success(value);
-        }
+        /// <returns>A <see cref="ParseResult"/> representing the successful parse operation.</returns>
+        public virtual ParseResult Success(T? value)
+            => base.Success(value);
     }
 
     /// <summary>
@@ -51,59 +46,55 @@ namespace Commands.Conversion
         /// <param name="value">The raw command query argument to parse.</param>
         /// <param name="cancellationToken">The token to cancel the operation.</param>
         /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
-        public abstract ValueTask<ConvertResult> Parse(
+        public abstract ValueTask<ParseResult> Parse(
             ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken);
 
         /// <summary>
-        ///     Creates a new <see cref="ConvertResult"/> representing a failed evaluation.
+        ///     Creates a new <see cref="ParseResult"/> representing a failed evaluation.
         /// </summary>
         /// <param name="exception">The exception that caused the evaluation to fail.</param>
-        /// <returns>A <see cref="ConvertResult"/> representing the failed evaluation.</returns>
-        protected ConvertResult Error(Exception exception)
+        /// <returns>A <see cref="ParseResult"/> representing the failed evaluation.</returns>
+        protected ParseResult Error(Exception exception)
         {
-            if (exception == null)
-                
-                throw new ArgumentNullException(nameof(exception));
+            Assert.NotNull(exception, nameof(exception));
 
-            if (exception is ConvertException convertEx)
-                return ConvertResult.FromError(convertEx);
+            if (exception is ParseException convertEx)
+                return ParseResult.FromError(convertEx);
 
-            return ConvertResult.FromError(ConvertException.ConvertFailed(Type, exception));
+            return ParseResult.FromError(ParseException.ConvertFailed(Type, exception));
         }
 
         /// <summary>
-        ///     Creates a new <see cref="ConvertResult"/> representing a failed evaluation.
+        ///     Creates a new <see cref="ParseResult"/> representing a failed evaluation.
         /// </summary>
         /// <param name="error">The error that caused the evaluation to fail.</param>
-        /// <returns>A <see cref="ConvertResult"/> representing the failed evaluation.</returns>
-        protected ConvertResult Error(string error)
+        /// <returns>A <see cref="ParseResult"/> representing the failed evaluation.</returns>
+        protected ParseResult Error(string error)
         {
-            if (string.IsNullOrEmpty(error))
-                throw new ArgumentNullException(nameof(error));
+            Assert.NotNullOrEmpty(error, nameof(error));
 
-            return ConvertResult.FromError(new ConvertException(error));
+            return ParseResult.FromError(new ParseException(error));
         }
 
         /// <summary>
-        ///     Creates a new <see cref="ConvertResult"/> representing a successful evaluation.
+        ///     Creates a new <see cref="ParseResult"/> representing a successful evaluation.
         /// </summary>
         /// <param name="value">The value parsed from a raw argument into the target type of this parser.</param>
-        /// <returns>A <see cref="ConvertResult"/> representing the successful evaluation.</returns>
-        protected ConvertResult Success(object? value)
-            => ConvertResult.FromSuccess(value);
+        /// <returns>A <see cref="ParseResult"/> representing the successful evaluation.</returns>
+        protected ParseResult Success(object? value)
+            => ParseResult.FromSuccess(value);
 
         /// <summary>
-        ///     Creates a dictionary of base value type converters.
+        ///     Creates a collection of default <see cref="TypeParser"/> implementations.
         /// </summary>
         /// <remarks>
-        ///     The list of types that are parsed by these converters are:
+        ///     This collection returns parsers for:
         ///     <list type="bullet">
-        ///         <item>Core types, being: <see langword="object"/>, <see langword="string"/> and its element type; <see langword="char"/>.</item>
-        ///         <item>Integers variants, being: <see langword="bool"/>, <see langword="byte"/>, <see langword="sbyte"/>, <see langword="short"/>, <see langword="ushort"/>, <see langword="int"/>, <see langword="uint"/>, <see langword="long"/> and <see langword="ulong"/>.</item>
-        ///         <item>Floating point numbers, being: <see langword="float"/>, <see langword="decimal"/> and <see langword="double"/>.</item>
-        ///         <item>Commonly used structs, being: <see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/> and <see cref="Guid"/>.</item>
+        ///         <item>All BCL types (<see href="https://learn.microsoft.com/en-us/dotnet/standard/class-library-overview#system-namespace"/>).</item>
+        ///         <item><see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/> and <see cref="Guid"/>.</item>
+        ///         <item><see cref="Enum"/> implementations for which no custom parser exists.</item>
         ///     </list>
-        ///     <i>The parser <see cref="TimeSpan"/> does not implement the standard <see cref="TimeSpan.TryParse(string, out TimeSpan)"/>, instead having a custom implementation under <see cref="TimeSpanParser"/>.</i>
+        ///     <i>Collections implementing <see cref="Array"/> are converted by their respective element types, and not the types themselves.</i>
         /// </remarks>
         /// <returns>An <see cref="IEnumerable{T}"/> containing a range of <see cref="TypeParser"/>'s for all types listed above.</returns>
         public static IEnumerable<TypeParser> CreateDefaults()

@@ -88,10 +88,10 @@ namespace Commands
 
             Activator = new ComplexActivator(Type);
 
-            var parameters = Activator.Target.GetArguments(false, configuration);
+            var parameters = Activator.Target.BuildArguments(false, configuration);
 
             if (parameters.Length == 0)
-                throw BuildException.ComplexNotSupported(Type);
+                throw new NotSupportedException($"Complex argument of type {Type} must have at least one parameter.");
 
             (MinLength, MaxLength) = parameters.GetLength();
 
@@ -105,7 +105,6 @@ namespace Commands
                 Name = name!;
             else
                 Name = parameterInfo.Name ?? "";
-
         }
 
         /// <inheritdoc />
@@ -126,7 +125,7 @@ namespace Commands
         }
 
         /// <inheritdoc />
-        public ValueTask<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public ValueTask<ParseResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
             => throw new NotSupportedException("Complex arguments do not support parsing.");
 
         /// <inheritdoc />

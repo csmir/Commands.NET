@@ -13,7 +13,7 @@
 
                 Console.CursorVisible = false;
 
-                return Success(new CallerContext(), ArgumentParser.ParseKeyCollection(src));
+                return Success(new CallerContext(), ArgumentReader.Read(src));
             }
 
             return Error(new InvalidOperationException("The application failed to start."));

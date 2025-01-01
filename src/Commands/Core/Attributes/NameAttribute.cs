@@ -15,7 +15,8 @@ namespace Commands
         /// <summary>
         ///     Gets the name of the target.
         /// </summary>
-        public string Name { get; }
+        public string Name 
+            => Aliases[0];
 
         /// <summary>
         ///     Gets the aliases of the target.
@@ -41,25 +42,10 @@ namespace Commands
         /// <param name="aliases">The target's aliases. Aliases are not considered for parameter names.</param>
         public NameAttribute(params string[] aliases)
         {
-            if (aliases == null || aliases.Length == 0)
-                throw BuildException.AliasAtLeastOne();
+            if (aliases.Length == 0)
+                throw new ArgumentException("At least one alias must be provided.", nameof(aliases));
 
             Aliases = aliases;
-            Name = aliases[0];
-        }
-
-        internal void ValidateAliases(ComponentConfiguration configuration)
-        {
-            var pattern = configuration.GetProperty<Regex>(ConfigurationPropertyDefinitions.NameValidationExpression);
-
-            if (pattern != null)
-            {
-                foreach (var alias in Aliases)
-                {
-                    if (!pattern.IsMatch(alias))
-                        throw BuildException.AliasConvention(alias);
-                }
-            }
         }
     }
 }

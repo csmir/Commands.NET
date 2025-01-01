@@ -1,19 +1,10 @@
 ﻿namespace Commands.Samples
 {
-    public sealed class HostedCallerContext : ICallerContext
+    public sealed class HostedCallerContext(string input) : ICallerContext
     {
-        public string? Input { get; set; }
+        public string? Input { get; } = input;
 
         public Task Respond(object? response)
-        {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write("cout");
-            Console.ResetColor();
-            Console.WriteLine($": Commands.Samples.HostedCallerContext['{Input}']");
-            Console.Write("      ");
-            Console.WriteLine(response);
-
-            return Task.CompletedTask;
-        }
+            => new(() => Console.WriteLine(response));
     }
 }

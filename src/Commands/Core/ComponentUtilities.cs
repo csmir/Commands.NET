@@ -18,85 +18,11 @@ namespace Commands
         /// <param name="types">The types that should be searched to discover new modules.</param>
         /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> containing all discovered modules in the provided <paramref name="types"/>.</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static IEnumerable<ModuleInfo> GetComponents(this ComponentConfiguration configuration, params TypeDefinition[] types)
+        public static IEnumerable<ModuleInfo> BuildComponents(this ComponentConfiguration configuration, params TypeDefinition[] types)
         {
-            if (types == null)
-                throw new ArgumentNullException(nameof(types));
+            Assert.NotNull(types, nameof(types));
 
-            return configuration.GetModules(types, null, false);
-        }
-
-        /// <summary>
-        ///     Iterates through all members of the <paramref name="parent"/> and returns every discovered component.
-        /// </summary>
-        /// <param name="configuration">The configuration that define the command registration process.</param>
-        /// <param name="parent">The module who'se members should be iterated.</param>
-        /// <returns>An array of all discovered components.</returns>
-#if NET8_0_OR_GREATER
-        [UnconditionalSuppressMessage("AotAnalysis", "IL2062", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
-#endif
-        public static IEnumerable<IComponent> GetNestedComponents(this ComponentConfiguration configuration, ModuleInfo parent)
-        {
-            if (parent == null)
-                throw new ArgumentNullException(nameof(parent));
-
-            if (parent.Type == null)
-                return [];
-
-            var commands = configuration.GetCommands(parent, parent.Aliases.Length > 0);
-
-            try
-            {
-                var nestedTypes = parent.Type.GetNestedTypes(BindingFlags.Public);
-
-                var modules = configuration.GetModules([.. nestedTypes], parent, true);
-
-                return commands.Concat(modules);
-            }
-            catch
-            {
-                return commands;
-                // Do nothing, we simply cannot get the nested types.
-            }
-        }
-
-        /// <summary>
-        ///     Returns the parser for the specified <paramref name="type"/> if it needs to be parsed. Otherwise, returns <see langword="null"/>.
-        /// </summary>
-        /// <param name="configuration">The configuration that define the command registration process.</param>
-        /// <param name="type">The type to get or create a parser for.</param>
-        /// <returns>An instance of <see cref="TypeParser"/> which converts an input into the respective type. <see langword="null"/> if it is a string or object and no custom converter is defined, which do not need to be converted.</returns>
-        public static TypeParser? GetParser(this ComponentConfiguration configuration, Type type)
-        {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
-
-            TypeParser GetParser(Type elementType)
-            {
-                if (!configuration.Parsers.TryGetValue(elementType!, out var parser))
-                {
-                    if (elementType.IsEnum)
-                        return EnumParser.GetOrCreate(elementType);
-
-                    // csmir: Chosen not to support nested collections as this is a whole different level of complexity for both parsing and validation.
-
-                    throw BuildException.ParserNotSupported(elementType);
-                }
-
-                return parser;
-            }
-
-            
-            if (configuration.Parsers.TryGetValue(type, out var parser))
-                return parser;
-
-            if (type.IsEnum)
-                return EnumParser.GetOrCreate(type);
-
-            if (type.IsArray)
-                return ArrayParser.GetOrCreate(GetParser(type.GetElementType()!));
-
-            return null;
+            return configuration.BuildModules(types, null, false);
         }
 
         /// <summary>
@@ -107,22 +33,47 @@ namespace Commands
         /// <returns>An attribute of the type <typeparamref name="T"/> if it exists; Otherwise <see langword="null"/>.</returns>
         public static T? GetAttribute<T>(this IScorable component)
             where T : Attribute
-            => component.Attributes.GetAttribute<T>();
+            => component.Attributes.FirstOrDefault<T>();
 
-        internal static T? GetAttribute<T>(this IEnumerable<Attribute> attributes)
+        internal static T? FirstOrDefault<T>(this IEnumerable<Attribute> attributes)
             where T : Attribute
             => attributes.OfType<T>().FirstOrDefault();
+
+        internal static bool Contains<T>(this IEnumerable<Attribute> attributes, bool allowMultipleMatches)
+        {
+            var found = false;
+            foreach (var entry in attributes)
+            {
+                if (entry is T)
+                {
+                    if (!allowMultipleMatches)
+                    {
+                        if (!found)
+                            found = true;
+                        else
+                            return false;
+                    }
+                    else
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            return found;
+        }
 
         internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
             => provider.GetCustomAttributes(inherit).OfType<Attribute>();
 
-        internal static IEnumerable<ModuleInfo> GetModules(this ComponentConfiguration configuration, TypeDefinition[] types, ModuleInfo? parent, bool withNested)
+        internal static IEnumerable<ModuleInfo> BuildModules(this ComponentConfiguration configuration, TypeDefinition[] types, ModuleInfo? parent, bool isNested)
         {
             foreach (var definition in types)
             {
                 var type = definition.Value;
 
-                if (!withNested && type.IsNested)
+                if (!isNested && type.IsNested)
                     continue;
 
                 if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
@@ -130,29 +81,29 @@ namespace Commands
 
                 var aliases = Array.Empty<string>();
 
-                var skip = false;
-                // run through all attributes.
+                var ignore = false;
                 foreach (var attribute in type.GetCustomAttributes(true))
                 {
                     if (attribute is NameAttribute names)
                     {
-                        // validate aliases.
-                        names.ValidateAliases(configuration);
+                        // Validate aliases. Nested modules are invalid if they have no aliases, so we invert the nested flag to not permit this.
+                        Assert.Aliases(names.Aliases, configuration, !isNested);
 
                         aliases = names.Aliases;
+
                         continue;
                     }
 
-                    if (attribute is IgnoreAttribute doSkip)
+                    if (attribute is IgnoreAttribute shouldIgnore)
                     {
-                        skip = true;
+                        ignore = true;
                         break;
                     }
                 }
 
-                if (!skip)
+                // Nested modules are invalid if they have no aliases.
+                if (!ignore && (!isNested || aliases.Length > 0))
                 {
-                    // yield a new module if all aliases are valid and it shouldn't be skipped.
                     var component = new ModuleInfo(type, parent, aliases, configuration);
 
                     var componentFilter = configuration.GetProperty<Func<IComponent, bool>>(ConfigurationPropertyDefinitions.ComponentRegistrationFilterExpression);
@@ -163,7 +114,7 @@ namespace Commands
             }
         }
 
-        internal static IEnumerable<IComponent> GetCommands(this ComponentConfiguration configuration, ModuleInfo parent, bool withDefaults)
+        internal static IEnumerable<IComponent> BuildCommands(this ComponentConfiguration configuration, ModuleInfo parent, bool isNested)
         {
             var members = parent.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
 
@@ -171,25 +122,27 @@ namespace Commands
             {
                 var aliases = Array.Empty<string>();
 
-                var skip = false;
+                var ignore = false;
                 foreach (var attribute in method.GetCustomAttributes(true))
                 {
                     if (attribute is NameAttribute names)
                     {
-                        names.ValidateAliases(configuration);
+                        // Validate aliases. Nested commands are valid if they have no aliases.
+                        Assert.Aliases(names.Aliases, configuration, isNested);
 
                         aliases = names.Aliases;
                         continue;
                     }
 
-                    if (attribute is IgnoreAttribute doSkip)
+                    if (attribute is IgnoreAttribute shouldIgnore)
                     {
-                        skip = true;
+                        ignore = true;
                         break;
                     }
                 }
 
-                if (!skip && (withDefaults || aliases.Length > 0))
+                // Nested commands are valid if they have no aliases.
+                if (!ignore && (isNested || aliases.Length > 0))
                 {
                     CommandInfo? component;
                     if (method.IsStatic)
@@ -203,7 +156,7 @@ namespace Commands
                         component = new CommandInfo(parent, new StaticActivator(method, hasContext), aliases, hasContext, configuration);
                     }
                     else
-                        component = new CommandInfo(parent, new InstanceActivator(method), aliases, false, configuration);
+                        component = new CommandInfo(parent, new InstanceActivator(method), aliases, configuration);
 
                     var componentFilter = configuration.GetProperty<Func<IComponent, bool>>(ConfigurationPropertyDefinitions.ComponentRegistrationFilterExpression);
 
@@ -213,7 +166,34 @@ namespace Commands
             }
         }
 
-        internal static IArgument[] GetArguments(this MethodBase method, bool withContext, ComponentConfiguration configuration)
+#if NET8_0_OR_GREATER
+        [UnconditionalSuppressMessage("AotAnalysis", "IL2062", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
+#endif
+        internal static IEnumerable<IComponent> BuildNestedComponents(this ComponentConfiguration configuration, ModuleInfo parent)
+        {
+            Assert.NotNull(parent, nameof(parent));
+
+            if (parent.Type == null)
+                return [];
+
+            var commands = configuration.BuildCommands(parent, parent.Aliases.Length > 0);
+
+            try
+            {
+                var nestedTypes = parent.Type.GetNestedTypes(BindingFlags.Public);
+
+                var modules = configuration.BuildModules([.. nestedTypes], parent, true);
+
+                return commands.Concat(modules);
+            }
+            catch
+            {
+                return commands;
+                // Do nothing, we simply cannot get the nested types.
+            }
+        }
+
+        internal static IArgument[] BuildArguments(this MethodBase method, bool withContext, ComponentConfiguration configuration)
         {
             var parameters = method.GetParameters();
 
@@ -247,29 +227,28 @@ namespace Commands
             return arr;
         }
 
-        internal static bool ContainsAttribute<T>(this IEnumerable<Attribute> attributes, bool allowMultipleMatches)
+        internal static TypeParser GetParser(this ComponentConfiguration configuration, Type type)
         {
-            var found = false;
-            foreach (var entry in attributes)
+            Assert.NotNull(type, nameof(type));
+
+            if (configuration.Parsers.TryGetValue(type, out var parser))
+                return parser;
+
+            if (type.IsEnum)
+                return EnumParser.GetOrCreate(type);
+
+            if (type.IsArray)
             {
-                if (entry is T)
-                {
-                    if (!allowMultipleMatches)
-                    {
-                        if (!found)
-                            found = true;
-                        else
-                            return false;
-                    }
-                    else
-                    {
-                        found = true;
-                        break;
-                    }
-                }
+                type = type.GetElementType()!;
+
+                if (configuration.Parsers.TryGetValue(type, out parser))
+                    return parser;
+
+                if (type.IsEnum)
+                    return EnumParser.GetOrCreate(type);
             }
 
-            return found;
+            throw new NotSupportedException($"No parser is known for type {type}.");
         }
 
         internal static Tuple<int, int> GetLength(this IArgument[] parameters)
@@ -296,24 +275,37 @@ namespace Commands
             return new(minLength, maxLength);
         }
 
-        internal static ConstructorInfo GetInvokableConstructor(
+        internal static IEnumerable<ConstructorInfo> GetAvailableConstructors(
 #if NET8_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif
-            this Type type)
+            this Type type, bool allowMultipleMatches = false)
         {
             var ctors = type.GetConstructors()
                 .OrderByDescending(x => x.GetParameters().Length);
 
+            var found = false;
             foreach (var ctor in ctors)
             {
                 if (ctor.GetCustomAttributes().Any(attr => attr is IgnoreAttribute))
                     continue;
 
-                return ctor;
+                if (!allowMultipleMatches)
+                {
+                    if (!found)
+                    {
+                        found = true;
+                        yield return ctor;
+                    }
+                    else
+                        yield break;
+                }
+
+                yield return ctor;
             }
 
-            throw new InvalidOperationException($"{type} has no public constructors that are accessible for this type to be constructed.");
+            if (!found)
+                throw new InvalidOperationException($"{type} has no publically available constructors to use in creating instances of this type.");
         }
     }
 }

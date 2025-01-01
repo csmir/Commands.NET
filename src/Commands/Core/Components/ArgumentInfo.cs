@@ -31,7 +31,7 @@ namespace Commands
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
-        public TypeParser? Parser { get; } = null;
+        public TypeParser Parser { get; }
 
         /// <inheritdoc />
         public int Position { get; }
@@ -43,6 +43,8 @@ namespace Commands
         internal ArgumentInfo(
             ParameterInfo parameterInfo, string? name, ComponentConfiguration configuration)
         {
+            ExposedType = parameterInfo.ParameterType;
+
             var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
             var attributes = parameterInfo.GetAttributes(false);
 
@@ -64,15 +66,12 @@ namespace Commands
             else
                 IsOptional = false;
 
-            if (attributes.ContainsAttribute<RemainderAttribute>(false) || attributes.ContainsAttribute<ParamArrayAttribute>(false))
+            if (attributes.Contains<RemainderAttribute>(false) || attributes.Contains<ParamArrayAttribute>(false))
                 IsRemainder = true;
             else
                 IsRemainder = false;
 
-            var converter = configuration.GetParser(Type);
-
-            Parser = converter;
-            ExposedType = parameterInfo.ParameterType;
+            Parser = configuration.GetParser(Type);
             Attributes = attributes.ToArray();
 
             if (!string.IsNullOrEmpty(name))
@@ -95,28 +94,25 @@ namespace Commands
             if (IsNullable)
                 score -= 0.25f;
 
-            if (Parser != null)
-                score += 0.5f;
-
             return score;
         }
 
         /// <inheritdoc />
-        public ValueTask<ConvertResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public ValueTask<ParseResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             // Fast path for matching instances of certain types.
             if (Type.IsInstanceOfType(value))
-                return ConvertResult.FromSuccess(value);
+                return ParseResult.FromSuccess(value);
 
             if (value is null or "null")
             {
                 if (IsNullable)
-                    return ConvertResult.FromSuccess(null);
+                    return ParseResult.FromSuccess(null);
 
-                return ConvertResult.FromError(new ArgumentNullException(nameof(value), "A null (or \"null\") value was attempted to be provided to a non-nullable command parameter."));
+                return ParseResult.FromError(new ParseException("A null (or \"null\") value was attempted to be provided to a non-nullable command parameter."));
             }
 
-            return Parser?.Parse(caller, this, value, services, cancellationToken) ?? ConvertResult.FromSuccess(value.ToString());
+            return Parser?.Parse(caller, this, value, services, cancellationToken) ?? ParseResult.FromSuccess(value.ToString());
         }
 
         /// <inheritdoc />

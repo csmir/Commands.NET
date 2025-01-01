@@ -17,7 +17,7 @@
         public static ITreeBuilder AddCommand(this ITreeBuilder builder, Delegate commandAction)
         {
             var coreCommandName = builder.Configuration.Properties[ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName] as string
-                ?? throw new BuildException($"{nameof(ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName)} is unavailable in the current context.");
+                ?? throw new NotSupportedException($"{nameof(ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName)} is unavailable in the current context.");
 
             builder.AddCommand(coreCommandName, commandAction, []);
 
@@ -34,7 +34,7 @@
             where T : ConsoleCallerContext
         {
             var coreCommandName = builder.Configuration.Properties[ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName] as string
-                ?? throw new BuildException($"{nameof(ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName)} is unavailable in the current context.");
+                ?? throw new NotSupportedException($"{nameof(ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName)} is unavailable in the current context.");
 
             var manager = builder.Build();
 
@@ -42,9 +42,9 @@
                 options.Arguments = [coreCommandName];
 
 #if NET8_0_OR_GREATER
-            var args = ArgumentParser.ParseKeyValueCollection(options.Arguments);
+            var args = ArgumentReader.ReadNamed(options.Arguments);
 #else
-            var args = ArgumentParser.ParseKeyCollection(string.Join(" ", options.Arguments));
+            var args = ArgumentReader.Read(string.Join(" ", options.Arguments));
 #endif
 
             return manager.Execute(options.Caller, args, options.Options);

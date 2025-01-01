@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace Commands.Builders
 {
-    /// <inheritdoc cref="ITreeBuilder" />
+    /// <summary>
+    ///     A builder model for a tree of components. This class cannot be inherited.
+    /// </summary>
     public sealed class ComponentTreeBuilder : ITreeBuilder
     {
         /// <inheritdoc />
@@ -20,22 +20,9 @@ namespace Commands.Builders
         public ICollection<TypeDefinition> Types { get; set; } = [];
 
         /// <inheritdoc />
-        /// <remarks>
-        ///     This property is set to <see langword="false"/> by default. If set to <see langword="true"/>, all modules in <see cref="Components"/> and <see cref="Types"/> be set to read-only after the build process.
-        /// </remarks>
-        public bool MakeModulesReadonly { get; set; } = false;
-
-        /// <inheritdoc />
-        /// <remarks>
-        ///     This property is set to <c>@"^[a-z0-9_-]*$"</c> by default.
-        /// </remarks>
-        public string? NamingPattern { get; set; } = @"^[a-z0-9_-]*$";
-
-        /// <inheritdoc />
         public ITreeBuilder AddCommand(CommandBuilder commandBuilder)
         {
-            if (commandBuilder == null)
-                throw new ArgumentNullException(nameof(commandBuilder));
+            Assert.NotNull(commandBuilder, nameof(commandBuilder));
 
             Components.Add(commandBuilder);
 
@@ -71,8 +58,7 @@ namespace Commands.Builders
         /// <inheritdoc />
         public ITreeBuilder AddModule(ModuleBuilder moduleBuilder)
         {
-            if (moduleBuilder == null)
-                throw new ArgumentNullException(nameof(moduleBuilder));
+            Assert.NotNull(moduleBuilder, nameof(moduleBuilder));
 
             Components.Add(moduleBuilder);
 
@@ -96,6 +82,8 @@ namespace Commands.Builders
 # endif
             Type moduleType)
         {
+            Assert.NotNull(moduleType, nameof(moduleType));
+
             if (Types.Contains(moduleType))
                 return this;
 
@@ -113,8 +101,10 @@ namespace Commands.Builders
             where T : class
             => AddType(typeof(T));
 
-#pragma warning disable IL2072
         /// <inheritdoc />
+#if NET8_0_OR_GREATER
+        [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The types are supplied from user-facing implementation, it is up to the user to ensure that these types are available in AOT context.")]
+#endif
         public ITreeBuilder AddTypes(params Type[] types)
         {
             // We cannot add the range to the collection immediately, because we need AddType to infer DynamicallyAccessedMemberTypes.All
@@ -125,6 +115,9 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
+#if NET8_0_OR_GREATER
+        [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The types are supplied from user-facing implementation, it is up to the user to ensure that these types are available in AOT context.")]
+#endif
         public ITreeBuilder WithTypes(params Type[] types)
         {
             // We cannot reassign the collection, because we need AddType to infer DynamicallyAccessedMemberTypes.All
@@ -135,13 +128,11 @@ namespace Commands.Builders
 
             return this;
         }
-#pragma warning restore IL2072
 
         /// <inheritdoc />
         public ITreeBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction)
         {
-            if (resultAction == null)
-                throw new ArgumentNullException(nameof(resultAction));
+            Assert.NotNull(resultAction, nameof(resultAction));
 
             Handlers.Add(new DelegateResultHandler(resultAction));
 
@@ -152,8 +143,7 @@ namespace Commands.Builders
         public ITreeBuilder AddResultHandler<T>(Func<T, IExecuteResult, IServiceProvider, ValueTask> resultAction)
             where T : class, ICallerContext
         {
-            if (resultAction == null)
-                throw new ArgumentNullException(nameof(resultAction));
+            Assert.NotNull(resultAction, nameof(resultAction));
 
             Handlers.Add(new DelegateResultHandler<T>(resultAction));
 
@@ -163,8 +153,7 @@ namespace Commands.Builders
         /// <inheritdoc />
         public ITreeBuilder AddResultHandler(ResultHandler resolver)
         {
-            if (resolver == null)
-                throw new ArgumentNullException(nameof(resolver));
+            Assert.NotNull(resolver, nameof(resolver));
 
             Handlers.Add(resolver);
 
@@ -172,16 +161,10 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public ITreeBuilder WithRegistrationFilter(Func<IComponent, bool> filter)
-        {
-            Configuration.Properties[ConfigurationPropertyDefinitions.ComponentRegistrationFilterExpression] = filter;
-
-            return this;
-        }
-
-        /// <inheritdoc />
         public ITreeBuilder ConfigureComponents(Action<IConfigurationBuilder> configure)
         {
+            Assert.NotNull(configure, nameof(configure));
+
             Configuration ??= new ComponentConfigurationBuilder();
 
             configure(Configuration);
@@ -192,14 +175,9 @@ namespace Commands.Builders
         /// <inheritdoc />
         public IComponentTree Build()
         {
-            Configuration.Properties[ConfigurationPropertyDefinitions.MakeModulesReadonly] = MakeModulesReadonly;
-
-            if (!string.IsNullOrEmpty(NamingPattern))
-                Configuration.Properties[ConfigurationPropertyDefinitions.NameValidationExpression] = new Regex(NamingPattern);
-
             var configuration = Configuration.Build();
 
-            var components = configuration.GetModules([.. Types], null, false)
+            var components = configuration.BuildModules([.. Types], null, false)
                 .Concat(Components.Select(x => x.Build(configuration)));
 
             return new ComponentTree(components, [.. Handlers]);

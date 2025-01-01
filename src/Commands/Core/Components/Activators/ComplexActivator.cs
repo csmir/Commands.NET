@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Numerics;
 using System.Reflection;
 
 namespace Commands
@@ -21,9 +20,9 @@ namespace Commands
 #endif
             Type type)
         {
-            var ctor = type.GetInvokableConstructor();
+            var ctors = type.GetAvailableConstructors();
 
-            _ctor = ctor;
+            _ctor = ctors.First();
         }
 
         /// <inheritdoc />

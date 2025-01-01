@@ -12,11 +12,12 @@ namespace Commands.Conditions
     /// <param name="func">A delegate that is executed when the trigger declares that this condition will be evaluated.</param>
     public sealed class DelegateCondition<TEval, TContext>(
         ConditionTrigger trigger, Func<TContext, CommandInfo, ConditionTrigger, IServiceProvider, ValueTask<ConditionResult>> func)
-        : IExecuteCondition
+        : ICondition
         where TEval : ConditionEvaluator, new()
+        where TContext : ICallerContext
     {
         /// <inheritdoc />
-        public ConditionTrigger Trigger { get; } = trigger;
+        public ConditionTrigger Triggers { get; } = trigger;
 
         /// <inheritdoc />
         public ValueTask<ConditionResult> Evaluate(ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
@@ -35,6 +36,6 @@ namespace Commands.Conditions
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public string GetGroupId()
-            => $"{GetType().Name}:{typeof(TEval).Name}:{Trigger}";
+            => $"{GetType().Name}:{typeof(TEval).Name}:{Triggers}";
     }
 }

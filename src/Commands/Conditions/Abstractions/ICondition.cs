@@ -4,17 +4,17 @@ using System.ComponentModel;
 namespace Commands
 {
     /// <summary>
-    ///     A condition that is evaluated whenever it is triggered according to a value of <see cref="ConditionTrigger"/>.
+    ///     A condition that is evaluated within the command execution pipeline according to a value of <see cref="ConditionTrigger"/>.
     /// </summary>
-    public interface IExecuteCondition
+    public interface ICondition
     {
         /// <summary>
-        ///     Gets the trigger that determines when the condition is evaluated. This enum is flagged, so multiple triggers can be applied by combining them.
+        ///     Gets the triggers that determine when the condition is evaluated.
         /// </summary>
-        public ConditionTrigger Trigger { get; }
+        public ConditionTrigger Triggers { get; }
 
         /// <summary>
-        ///     Evaluates the known data about a command at this point in execution, in order to determine if command execution can continue or not.
+        ///     Evaluates the known data about a command at a point in execution, in order to determine if command execution can continue or not.
         /// </summary>
         /// <param name="caller">The caller of the current execution.</param>
         /// <param name="command">The command currently being executed.</param>

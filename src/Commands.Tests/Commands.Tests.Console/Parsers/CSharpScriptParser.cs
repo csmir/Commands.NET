@@ -6,7 +6,7 @@ namespace Commands.Tests
 {
     public class CSharpScriptParser : TypeParser<Delegate>
     {
-        public override async ValueTask<ConvertResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        public override async ValueTask<ParseResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             if (value is string script)
             {

@@ -18,54 +18,44 @@ namespace Commands.Builders
     public interface ITreeBuilder
     {
         /// <summary>
-        ///     Gets or sets the component configuration builder for the <see cref="IComponentTree"/>.
+        ///     Gets or sets the component configuration builder for the <see cref="IComponentTree"/>. This configuration is used to determine the build process for modules and commands.
         /// </summary>
         public IConfigurationBuilder Configuration { get; set; }
 
         /// <summary>
-        ///     Gets or sets a collection of <see cref="CommandInfo"/>'s that are manually created before the registration process runs.
+        ///     Gets or sets a collection of <see cref="IComponentBuilder"/>'s that are manually built into implementations of <see cref="IComponent"/> before the registration process runs.
         /// </summary>
         public ICollection<IComponentBuilder> Components { get; set; }
 
         /// <summary>
-        ///     Gets or sets a collection of <see cref="ResultHandler"/> that serves as post-execution handlers.
+        ///     Gets or sets a collection of <see cref="ResultHandler"/> implementations that serve as post-execution handlers.
         /// </summary>
         public ICollection<ResultHandler> Handlers { get; set; }
 
         /// <summary>
-        ///     Gets or sets a collection of types that are to be used to discover created modules.
+        ///     Gets or sets a collection of types that are to be used to create modules for commands and submodules, implementing <see cref="CommandModule{T}"/> or <see cref="CommandModule"/>.
         /// </summary>
         public ICollection<TypeDefinition> Types { get; set; }
 
         /// <summary>
-        ///     Gets or sets a value indicating whether modules should be made read-only after the registration process.
-        /// </summary>
-        public bool MakeModulesReadonly { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the naming convention regular expression which implementations of <see cref="IComponent"/> must adhere to be registered into the <see cref="IComponentTree"/>.
-        /// </summary>
-        public string? NamingPattern { get; set; }
-
-        /// <summary>
-        ///     Adds a command to the <see cref="Components"/> collection.
+        ///     Adds a new <see cref="CommandBuilder"/> to the <see cref="Components"/> collection.
         /// </summary>
         /// <param name="commandBuilder">The builder instance to add to the collection, which will be built into a <see cref="CommandInfo"/> instance that can be executed by the <see cref="IComponentTree"/>.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddCommand(CommandBuilder commandBuilder);
 
         /// <summary>
-        ///     Adds a command to the <see cref="Components"/> collection.
+        ///     Adds a new <see cref="CommandBuilder"/> to the <see cref="Components"/> collection.
         /// </summary>
         /// <remarks>
-        ///     When using this method, the command will be created with the default constructor. In order for the command to be valid for execution, <see cref="ModuleBuilder.WithAliases(string[])"/> must be called within <paramref name="configureCommand"/>.
+        ///     When using this method, a new <see cref="CommandBuilder"/> will be created with its parameterless constructor. In order for the command to be valid for execution, <see cref="ModuleBuilder.WithAliases(string[])"/> must be called within <paramref name="configureCommand"/>.
         /// </remarks>
         /// <param name="configureCommand">An action that extends the fluent API of this type to configure the command.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddCommand(Action<CommandBuilder> configureCommand);
 
         /// <summary>
-        ///     Adds a command to the <see cref="Components"/> collection.
+        ///     Adds a new <see cref="CommandBuilder"/> to the <see cref="Components"/> collection.
         /// </summary>
         /// <remarks>
         ///     Delegate based commands are able to access the command's scope by implementing <see cref="CommandContext{T}"/> as the first argument in the lambda signature.
@@ -76,7 +66,7 @@ namespace Commands.Builders
         public ITreeBuilder AddCommand(string name, Delegate executionDelegate);
 
         /// <summary>
-        ///     Adds a command to the <see cref="Components"/> collection.
+        ///     Adds a new <see cref="CommandBuilder"/> to the <see cref="Components"/> collection.
         /// </summary>
         /// <remarks>
         ///     Delegate based commands are able to access the command's scope by implementing <see cref="CommandContext{T}"/> as the first argument in the lambda signature.
@@ -88,14 +78,14 @@ namespace Commands.Builders
         public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params string[] aliases);
 
         /// <summary>
-        ///     Adds a module to the <see cref="Components"/> collection.
+        ///     Adds a new <see cref="ModuleBuilder"/> to the <see cref="Components"/> collection.
         /// </summary>
         /// <param name="moduleBuilder">The builder instance to add to the collection, which will be built into a <see cref="ModuleInfo"/> instance that can contain commands to be executed by the <see cref="IComponentTree"/>.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddModule(ModuleBuilder moduleBuilder);
 
         /// <summary>
-        ///     Adds a module to the <see cref="Components"/> collection.
+        ///     Adds a new <see cref="ModuleBuilder"/> to the <see cref="Components"/> collection.
         /// </summary>
         /// <remarks>
         ///     When using this method, the module will be created with the default constructor. In order for the module to be valid for execution, <see cref="ModuleBuilder.WithAliases(string[])"/> must be called within <paramref name="configureModule"/>.
@@ -105,7 +95,7 @@ namespace Commands.Builders
         public ITreeBuilder AddModule(Action<ModuleBuilder> configureModule);
 
         /// <summary>
-        ///     Adds a type to the <see cref="Types"/> collection. This method will skip the add operation if the type is already present.
+        ///     Adds a <see cref="Type"/> to the <see cref="Types"/> collection. This method will skip the add operation if the type is already present.
         /// </summary>
         /// <remarks>
         ///     Validations are performed during <see cref="Build"/> to ensure that provided types are a valid module type: A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>; 
@@ -116,11 +106,11 @@ namespace Commands.Builders
         public ITreeBuilder AddType(
 #if NET8_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
-# endif
+#endif
             Type moduleType);
 
         /// <summary>
-        ///     Adds a type to the <see cref="Types"/> collection. This method will skip the add operation if the type is already present.
+        ///     Adds a <see cref="Type"/> to the <see cref="Types"/> collection. This method will skip the add operation if the type is already present.
         /// </summary>
         /// <remarks>
         ///     Validations are performed during <see cref="Build"/> to ensure that provided types are a valid module type: A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>; 
@@ -136,21 +126,21 @@ namespace Commands.Builders
             where T : class;
 
         /// <summary>
-        ///     
+        ///     Adds a <see cref="Type"/> collection to <see cref="Types"/>. This method will skip the add operation if the type is already present.
         /// </summary>
-        /// <param name="types"></param>
-        /// <returns></returns>
+        /// <param name="types">A collection of <see cref="Type"/> to add to this builder.</param>
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddTypes(params Type[] types);
 
         /// <summary>
-        ///     
+        ///     Replaces the <see cref="Types"/> collection with a new collection of types.
         /// </summary>
-        /// <param name="types"></param>
-        /// <returns></returns>
+        /// <param name="types">The collection of <see cref="Type"/> to replace the current collection in this builder with.</param>
+        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder WithTypes(params Type[] types);
 
         /// <summary>
-        ///     Configures an asynchronous action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/>. 
+        ///     Configures an awaitable action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/>. 
         /// </summary>
         /// <remarks>
         ///     To handle both failed and successful results, use <see cref="AddResultHandler(ResultHandler)"/> with an implementation of <see cref="ResultHandler"/> or <see cref="ResultHandler{T}"/>.
@@ -160,7 +150,7 @@ namespace Commands.Builders
         public ITreeBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction);
 
         /// <summary>
-        ///     Configures an asynchronous action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/> and the <see cref="ICallerContext"/> matches <typeparamref name="T"/>. 
+        ///     Configures an awaitable action to handle failed execution results. This action runs as the last step of execution, when <see cref="IExecuteResult.Success"/> is <see langword="false"/> and the <see cref="ICallerContext"/> matches <typeparamref name="T"/>. 
         /// </summary>
         /// <remarks>
         ///     To handle both failed and successful results, use <see cref="AddResultHandler(ResultHandler)"/> with an implementation of <see cref="ResultHandler"/> or <see cref="ResultHandler{T}"/>.
@@ -176,17 +166,6 @@ namespace Commands.Builders
         /// <param name="resolver">The implementation of <see cref="ResultHandler"/> to add.</param>
         /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
         public ITreeBuilder AddResultHandler(ResultHandler resolver);
-
-        /// <summary>
-        ///     Configures the build configuration to filter components at registration, based on the provided predicate.
-        /// </summary>
-        /// <remarks>
-        ///     <b>Whether this filter returns true or false has no effect on the validation of component integrity.</b>
-        ///     This means that the build process will still fail if the component is not a valid command or module under its own restrictions.
-        /// </remarks>
-        /// <param name="filter">A predicate which determines if a component should be added to its parent component, or directly to the command tree if it is a top-level one.</param>
-        /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-        public ITreeBuilder WithRegistrationFilter(Func<IComponent, bool> filter);
 
         /// <summary>
         ///     Configures the <see cref="Configuration"/> property with modified values through the <paramref name="configure"/> action.

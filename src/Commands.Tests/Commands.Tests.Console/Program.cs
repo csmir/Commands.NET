@@ -22,7 +22,7 @@ while (true)
 
     using var scope = services.CreateAsyncScope();
 
-    var values = ArgumentParser.ParseKeyValueCollection(input);
+    var values = ArgumentReader.ReadNamed(input);
 
     var caller = new CustomCaller()
     {

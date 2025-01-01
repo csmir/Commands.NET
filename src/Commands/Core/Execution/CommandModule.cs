@@ -1,4 +1,7 @@
-﻿namespace Commands
+﻿using System.Net.NetworkInformation;
+using System.Reflection;
+
+namespace Commands
 {
     /// <summary>
     ///     Represents a <see cref="CommandModule"/> that implements an implementation-friendly accessor to the <see cref="ICallerContext"/>.
@@ -7,67 +10,49 @@
     public abstract class CommandModule<T> : CommandModule
         where T : ICallerContext
     {
-        private T? _consumer;
+        private T? _caller;
 
         /// <summary>
-        ///     Gets the consumer for the command currently in scope.
+        ///     Gets the caller for the command currently in scope.
         /// </summary>
         /// <remarks>
-        ///     Throws if the <see cref="ICallerContext"/> provided in this scope does not match <typeparamref name="T"/>.
+        ///     This property assumes the type of <typeparamref name="T"/> is the same as the provided <see cref="ICallerContext"/>.
         /// </remarks>
         /// <exception cref="InvalidOperationException">Thrown when <typeparamref name="T"/> does not match with the provided</exception>
         public new T Caller
-        {
-            get
-            {
-                if (_consumer == null)
-                {
-                    if (base.Caller is T t)
-                    {
-                        _consumer = t;
-                    }
-                    else
-                        throw new InvalidOperationException($"{base.Caller.GetType()} cannot be cast to {typeof(T)}.");
-                }
-                return _consumer;
-            }
-        }
+           => _caller ??= base.Caller is T caller ? caller : throw new InvalidOperationException($"{base.Caller.GetType()} cannot be cast to {typeof(T)}.");
     }
 
     /// <summary>
-    ///     The base type needed to write commands with Commands.NET. This type can be derived freely, in order to extend and implement command functionality. 
-    ///     Modules do not have state, they are instantiated and populated before a command runs and immediately disposed when it finishes.
+    ///     The base type required for writing commands using Commands.NET. This type can be derived from freely, to extend or implement modular command functionality. 
+    ///     All modules are transient. They are injected and instantiated when command methods run, being disposed on return.
     /// </summary>
     /// <remarks>
-    ///      All derived types must be passed to the <see cref="IComponentTree"/> to be discoverable and automatically registered during creation.
+    ///      When an <see cref="IComponentTree"/> is created, all derived types must be passed to it for discovery and registration.
     /// </remarks>
     public abstract class CommandModule
     {
         /// <summary>
         ///     Gets the consumer for the command currently in scope.
         /// </summary>
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor.
-        public ICallerContext Caller { get; internal set; }
+        public ICallerContext Caller { get; internal set; } = null!;
 
         /// <summary>
         ///     Gets the reflection information about the command currently in scope.
         /// </summary>
-        public CommandInfo Command { get; internal set; }
+        public CommandInfo Command { get; internal set; } = null!;
 
         /// <summary>
-        ///     Gets the command manager that is responsible for the current command pipeline.
+        ///     Gets the command tree that is responsible for the current command pipeline.
         /// </summary>
-        public IComponentTree Tree { get; internal set; }
-#pragma warning restore CS8618
+        public IComponentTree Tree { get; internal set; } = null!;
 
         /// <summary>
-        ///     Sends a response to the consumer.
+        ///     Sends a response to the caller.
         /// </summary>
-        /// <param name="response">The response to send to the consumer.</param>
-        /// <returns>An asynchronous <see cref="ValueTask"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
-        public Task Respond(object response)
-        {
-            return Caller.Respond(response);
-        }
+        /// <param name="message">The message to send to the caller.</param>
+        /// <returns>An awaitable <see cref="Task"/> containing the result of this operation.</returns>
+        public Task Respond(object message)
+            => Caller.Respond(message);
     }
 }

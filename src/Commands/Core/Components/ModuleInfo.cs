@@ -34,7 +34,7 @@ namespace Commands
         public Attribute[] Attributes { get; }
 
         /// <inheritdoc />
-        public ConditionEvaluator[] Conditions { get; }
+        public ConditionEvaluator[] Evaluators { get; }
 
         /// <inheritdoc />
         public ModuleInfo? Parent { get; }
@@ -67,33 +67,32 @@ namespace Commands
 #if NET8_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
-            Type type, ModuleInfo? root, string[] aliases, ComponentConfiguration configuration)
+            Type type, ModuleInfo? parent, string[] aliases, ComponentConfiguration configuration)
             : base(configuration.GetProperty(ConfigurationPropertyDefinitions.MakeModulesReadonly, false))
         {
-            Parent = root;
+            Parent = parent;
             Type = type;
 
-            var attributes = type.GetAttributes(true).Concat(root?.Attributes ?? []).Distinct();
+            var attributes = type.GetAttributes(true);
 
             Attributes = attributes.ToArray();
-
-            Conditions = ConditionEvaluator.CreateEvaluators(attributes.OfType<IExecuteCondition>()).ToArray();
+            Evaluators = ConditionEvaluator.CreateEvaluators(attributes.OfType<ICondition>()).Concat(parent?.Evaluators ?? []).ToArray();
 
             Aliases = aliases;
 
             Activator = new ModuleActivator(type);
 
-            Push(configuration.GetNestedComponents(this).OrderByDescending(x => x.Score));
+            Push(configuration.BuildNestedComponents(this).OrderByDescending(x => x.Score));
         }
 
         internal ModuleInfo(
-            ModuleInfo? root, string[] aliases)
+            ModuleInfo? parent, ICondition[] conditions, string[] aliases)
             : base(false)
         {
-            Parent = root;
+            Parent = parent;
 
             Attributes = [];
-            Conditions = [];
+            Evaluators = ConditionEvaluator.CreateEvaluators(conditions).Concat(parent?.Evaluators ?? []).ToArray();
 
             Aliases = aliases;
         }
@@ -112,7 +111,7 @@ namespace Commands
             if (Name != Type?.Name)
                 score += 1.0f;
 
-            score += Attributes.GetAttribute<PriorityAttribute>()?.Priority ?? 0;
+            score += Attributes.FirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
 
             return score;
         }

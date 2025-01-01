@@ -7,9 +7,9 @@ namespace Commands
     ///     A readonly representation of a <see cref="Type"/>, enforcing dynamic access for all its members.
     /// </summary>
     /// <remarks>
-    ///     This type is implicitly convertible to <see cref="Type"/> and can be used in place of a <see cref="Type"/> in most cases.
+    ///     This struct is implicitly convertible to <see cref="Type"/> and can be used in place of a <see cref="Type"/> in most cases.
     /// </remarks>
-    [DebuggerDisplay("{Type}")]
+    [DebuggerDisplay("{Value}")]
     public readonly struct TypeDefinition
     {
         /// <summary>

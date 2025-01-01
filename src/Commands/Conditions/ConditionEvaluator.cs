@@ -13,7 +13,7 @@
         /// <summary>
         ///     Gets or sets the conditions that are being evaluated.
         /// </summary>
-        public IExecuteCondition[] Conditions { get; set; } = [];
+        public ICondition[] Conditions { get; set; } = [];
 
         /// <summary>
         ///     Determines if the contained set of conditions is met.
@@ -27,7 +27,7 @@
         public abstract ValueTask<ConditionResult> Evaluate(
             ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken);
 
-        internal static IEnumerable<ConditionEvaluator> CreateEvaluators(IEnumerable<IExecuteCondition> conditions)
+        internal static IEnumerable<ConditionEvaluator> CreateEvaluators(IEnumerable<ICondition> conditions)
         {
             foreach (var conditionTypeGroup in conditions.GroupBy(x => x.GetGroupId()))
             {

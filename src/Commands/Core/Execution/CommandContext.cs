@@ -1,10 +1,11 @@
 ﻿namespace Commands
 {
     /// <summary>
-    ///     Represents data about a command, as a <see cref="CommandModule"/> normally would. This class cannot be inherited.
+    ///     Represents data on a command, serving as a parameterized variant of the state held in a <see cref="CommandModule"/>. This class cannot be inherited.
     /// </summary>
     /// <remarks>
-    ///     This context is used for <see langword="static"/> and <see langword="delegate"/> commands.
+    ///     This context is used for <see langword="static"/> and <see langword="delegate"/> commands. 
+    ///     By marking it as the first parameter of any of these command types, the <see cref="IComponentTree"/> will automatically inject the context into the method.
     /// </remarks>
     public class CommandContext<T>(T consumer, CommandInfo command, IComponentTree tree, CommandOptions options)
         where T : ICallerContext
@@ -33,8 +34,8 @@
         ///     Sends a response to the consumer of the command.
         /// </summary>
         /// <param name="response">The response to send to the consumer.</param>
-        /// <returns>An asynchronous <see cref="ValueTask"/> that can be awaited to wait for the response to send, otherwise dismissed.</returns>
-        public Task Respond(object response)
+        /// <returns>An awaitable <see cref="Task"/> containing the state of the response.</returns>
+        public Task Respond(object? response)
             => Caller.Respond(response);
     }
 }

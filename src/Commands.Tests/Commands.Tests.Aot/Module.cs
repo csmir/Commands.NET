@@ -10,15 +10,15 @@ namespace Commands.Tests
     public class Module : CommandModule
     {
         [Name("command1")]
-        public string ACommand()
+        public static string ACommand()
             => "Test";
 
         [Name("command2")]
-        public void ACommand(params int[] arg)
+        public static void ACommand(params int[] arg)
             => Console.WriteLine(string.Join(", ", arg));
 
         [Name("command3")]
-        public Task<string> Respond(string str)
+        public static Task<string> Respond(string str)
             => Task.FromResult(str);
 
         public class CallerContext : ICallerContext

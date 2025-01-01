@@ -4,12 +4,9 @@ using System.Text;
 namespace Commands
 {
     /// <summary>
-    ///     Contains a set of arguments for the command pipeline. This class is not intended to be implemented by end-users. 
+    ///     Contains a set of arguments for the command pipeline.
     ///     By using either <see cref="IComponentTree.Execute{T}(T, IEnumerable{KeyValuePair{string, object?}}, CommandOptions?)"/> or <see cref="IComponentTree.Execute{T}(T, IEnumerable{object?}, CommandOptions?)"/> you can use named or unnamed command entry.
     /// </summary>
-    /// <remarks>
-    ///     Searching for commands supports only unnamed arguments. Named arguments are used for command parameter population.
-    /// </remarks>
     public struct ArgumentEnumerator
     {
         const char U0020 = ' ';
@@ -27,7 +24,7 @@ namespace Commands
             => _size;
 
         /// <summary>
-        ///     Creates a new instance of the <see cref="ArgumentEnumerator"/> class with a set of named arguments.
+        ///     Creates a new <see cref="ArgumentEnumerator"/> from a set of named arguments.
         /// </summary>
         /// <param name="args">The range of named arguments to enumerate in this set.</param>
         /// <param name="comparer">The comparer to evaluate keys in the inner named dictionary.</param>
@@ -53,7 +50,7 @@ namespace Commands
         }
 
         /// <summary>
-        ///     Creates a new instance of the <see cref="ArgumentEnumerator"/> class with a set of unnamed arguments.
+        ///     Creates a new <see cref="ArgumentEnumerator"/> from a set of unnamed arguments.
         /// </summary>
         /// <param name="args">The range of unnamed arguments to enumerate in this set.</param>
         public ArgumentEnumerator(IEnumerable<object> args)
@@ -171,9 +168,9 @@ namespace Commands
         /// <param name="args">The string to parse, and then create a new <see cref="ArgumentEnumerator"/> from.</param>
         public static implicit operator ArgumentEnumerator(string args)
 #if NET8_0_OR_GREATER
-            => new(ArgumentParser.ParseKeyValueCollection(args), StringComparer.OrdinalIgnoreCase);
+            => new(ArgumentReader.ReadNamed(args), StringComparer.OrdinalIgnoreCase);
 #else
-            => new(ArgumentParser.ParseKeyCollection(args));
+            => new(ArgumentReader.Read(args));
 #endif
     }
 }

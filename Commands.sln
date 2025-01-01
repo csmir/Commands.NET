@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Commands.Samples.CLI", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Tests.Aot", "src\Commands.Tests\Commands.Tests.Aot\Commands.Tests.Aot.csproj", "{B223CFF0-3809-49A7-AFC5-01BBEF6C6C65}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Samples.Core", "src\Commands.Samples\Commands.Samples.Core\Commands.Samples.Core.csproj", "{B744E55E-4DD1-4929-B831-CBB41B3B08CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,10 @@ Global
 		{B223CFF0-3809-49A7-AFC5-01BBEF6C6C65}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B223CFF0-3809-49A7-AFC5-01BBEF6C6C65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B223CFF0-3809-49A7-AFC5-01BBEF6C6C65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B744E55E-4DD1-4929-B831-CBB41B3B08CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B744E55E-4DD1-4929-B831-CBB41B3B08CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B744E55E-4DD1-4929-B831-CBB41B3B08CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B744E55E-4DD1-4929-B831-CBB41B3B08CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -85,6 +91,7 @@ Global
 		{60DC49E5-6EDF-4BD6-B153-509D581B19C0} = {1AB3A177-3567-4B50-98D5-9F6CF187D0DD}
 		{AFA097BA-5F8D-4A92-8BF0-AD5B78FB1B8F} = {A9564368-0CFA-474A-BFBA-A1A140C53F2F}
 		{B223CFF0-3809-49A7-AFC5-01BBEF6C6C65} = {1AB3A177-3567-4B50-98D5-9F6CF187D0DD}
+		{B744E55E-4DD1-4929-B831-CBB41B3B08CF} = {A9564368-0CFA-474A-BFBA-A1A140C53F2F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0CAE3B50-8AEE-4E7A-95F7-A63F51C38083}

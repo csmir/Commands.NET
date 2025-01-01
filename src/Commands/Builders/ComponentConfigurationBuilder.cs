@@ -2,8 +2,10 @@
 
 namespace Commands.Builders
 {
-    /// <inheritdoc cref="IConfigurationBuilder"/>
-    public class ComponentConfigurationBuilder : IConfigurationBuilder
+    /// <summary>
+    ///     A builder model for a component configuration. This class cannot be inherited.
+    /// </summary>
+    public sealed class ComponentConfigurationBuilder : IConfigurationBuilder
     {
         /// <summary>
         ///     Gets the configuration builder that is used as a fallback when no configuration is provided. This builder is built every time <see cref="ComponentConfiguration.Default"/> is called.
@@ -17,12 +19,11 @@ namespace Commands.Builders
         public IDictionary<object, object> Properties { get; set; } = new Dictionary<object, object>();
 
         /// <inheritdoc />
-        public IConfigurationBuilder AddParser<TConvertable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ConvertResult>> convertAction)
+        public IConfigurationBuilder AddParser<TConvertable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ParseResult>> parseAction)
         {
-            if (convertAction == null)
-                throw new ArgumentNullException(nameof(convertAction));
+            Assert.NotNull(parseAction, nameof(parseAction));
 
-            var converter = new DelegateParser<TConvertable>(convertAction);
+            var converter = new DelegateParser<TConvertable>(parseAction);
 
             Parsers[converter.Type] = converter;
 
@@ -30,30 +31,37 @@ namespace Commands.Builders
         }
 
         /// <inheritdoc />
-        public IConfigurationBuilder AddParser(TypeParser converter)
+        public IConfigurationBuilder AddParser(TypeParser parser)
         {
-            if (converter == null)
-                throw new ArgumentNullException(nameof(converter));
+            Assert.NotNull(parser, nameof(parser));
 
-            Parsers[converter.Type] = converter;
+            Parsers[parser.Type] = parser;
 
             return this;
         }
 
         /// <inheritdoc />
-        public IConfigurationBuilder WithParsers(params IEnumerable<TypeParser> converters)
+        public IConfigurationBuilder WithParsers(params IEnumerable<TypeParser> parsers)
         {
-            Parsers = converters
-                .ToDictionary(x => x.Type, x => x);
+            Parsers = parsers
+                .ToDictionary(x => x.Type, parser =>
+                {
+                    Assert.NotNull(parser, nameof(parser));
+                    return parser;
+                });
 
             return this;
         }
 
         /// <inheritdoc />
-        public IConfigurationBuilder AddParsers(params IEnumerable<TypeParser> converters)
+        public IConfigurationBuilder AddParsers(params IEnumerable<TypeParser> parsers)
         {
-            foreach (var converter in converters)
+            foreach (var converter in parsers)
+            {
+                Assert.NotNull(converter, nameof(converter));
+
                 Parsers[converter.Type] = converter;
+            }
 
             return this;
         }

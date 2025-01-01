@@ -1,10 +1,12 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 
 namespace Commands.Conversion
 {
     internal sealed partial class TimeSpanParser : TypeParser<TimeSpan>
     {
-        private readonly IReadOnlyDictionary<string, Func<string, TimeSpan>> _callback;
+        private readonly Dictionary<string, Func<string, TimeSpan>> _callback;
+
         private readonly Regex _regex = new(@"(\d*)\s*([a-zA-Z]*)\s*(?:and|,)?\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         public TimeSpanParser()
@@ -33,7 +35,7 @@ namespace Commands.Conversion
             };
         }
 
-        public override ValueTask<ConvertResult> Parse(
+        public override ValueTask<ParseResult> Parse(
             ICallerContext caller, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
         {
             var val = value?.ToString();

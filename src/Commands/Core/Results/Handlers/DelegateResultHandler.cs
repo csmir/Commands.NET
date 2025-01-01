@@ -27,8 +27,6 @@
         Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> func)
         : ResultHandler
     {
-        private readonly Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> _action = func;
-
         /// <inheritdoc />
         public override async ValueTask HandleResult(
             ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
@@ -37,7 +35,7 @@
             if (result.Success && result is IValueResult value)
                 await HandleSuccess(caller, value, services, cancellationToken);
             else
-                await _action(caller, result, services);
+                await func(caller, result, services);
         }
     }
 }

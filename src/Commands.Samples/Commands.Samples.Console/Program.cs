@@ -8,9 +8,9 @@ var builder = ComponentTree.CreateBuilder();
 builder.Configuration.AddParser<Version>((caller, argument, value, services) =>
 {
     if (Version.TryParse(value?.ToString(), out var version))
-        return ConvertResult.FromSuccess(version);
+        return ParseResult.FromSuccess(version);
 
-    return ConvertResult.FromError(new FormatException("Invalid version format."));
+    return ParseResult.FromError(new FormatException("Invalid version format."));
 });
 
 builder.Configuration.AddParser(new LiteralTypeParser(caseIgnore: true));

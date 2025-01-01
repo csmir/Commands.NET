@@ -44,8 +44,7 @@
         /// <returns>A <see cref="SourceResult"/> representing the failed evaluation.</returns>
         protected SourceResult Error(Exception exception)
         {
-            if (exception == null)
-                throw new ArgumentNullException(nameof(exception));
+            Assert.NotNull(exception, nameof(exception));
 
             if (exception is SourceException convertEx)
                 return SourceResult.FromError(convertEx);
@@ -60,8 +59,7 @@
         /// <returns>A <see cref="SourceResult"/> representing the failed evaluation.</returns>
         protected SourceResult Error(string error)
         {
-            if (string.IsNullOrEmpty(error))
-                throw new ArgumentNullException(nameof(error));
+            Assert.NotNullOrEmpty(error, nameof(error));
 
             return SourceResult.FromError(new SourceException(error));
         }

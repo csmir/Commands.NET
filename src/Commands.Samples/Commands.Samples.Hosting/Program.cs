@@ -7,43 +7,31 @@ using Microsoft.Extensions.Logging;
 await Host.CreateDefaultBuilder(args)
     .ConfigureCommands(configure =>
     {
+        configure.WithTypes(typeof(Program).Assembly.GetExportedTypes());
+
         configure.AddSourceProvider((services) =>
         {
-            // Format a nice prompt in convention with Microsoft.Extensions.Logging, which will print app startup messages in a similar format.
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write("cin");
-            Console.ResetColor();
-            Console.WriteLine(":  Commands.Samples.DelegateSourceProvider");
-            Console.Write("      ");
-
-            Console.CursorVisible = true;
-
             var input = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(input))
                 return SourceResult.FromError();
 
-            var context = new HostedCallerContext()
-            {
-                Input = input
-            };
+            var context = new HostedCallerContext(input);
 
             return SourceResult.FromSuccess(context, input);
         });
-        configure.WithTypes(typeof(Program).Assembly.GetExportedTypes());
-        configure.AddResultHandler<HostedCallerContext>((context, result, services) =>
+
+        configure.AddResultHandler<HostedCallerContext>(async (context, result, services) =>
         {
             switch (result)
             {
                 case InvokeResult invokeResult:
-                    context.Respond(result.Exception);
+                    await context.Respond(result.Exception);
                     break;
                 case SearchResult searchResult:
-                    context.Respond("Invalid command.");
+                    await context.Respond("Invalid command.");
                     break;
             }
-
-            return ValueTask.CompletedTask;
         });
     })
     .ConfigureLogging(configure =>

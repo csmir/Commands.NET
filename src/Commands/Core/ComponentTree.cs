@@ -65,9 +65,9 @@ namespace Commands
             T caller, string args, CommandOptions? options = null)
             where T : ICallerContext
 #if NET8_0_OR_GREATER
-            => Execute(caller, ArgumentParser.ParseKeyValueCollection(args), options);
+            => Execute(caller, ArgumentReader.ReadNamed(args), options);
 #else
-            => Execute(caller, ArgumentParser.ParseKeyCollection(args), options);
+            => Execute(caller, ArgumentReader.Read(args), options);
 #endif
 
         /// <inheritdoc />
@@ -93,7 +93,7 @@ namespace Commands
         {
             var task = StartAsynchronousPipeline(caller, args, options);
 
-            if (options.DoAsynchronousExecution)
+            if (options.AsynchronousExecution)
                 return default;
 
             return task;
@@ -169,7 +169,7 @@ namespace Commands
             }
         }
 
-        private async ValueTask<ConvertResult[]> ConvertCommand<T>(
+        private async ValueTask<ParseResult[]> ConvertCommand<T>(
             T caller, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
             where T : ICallerContext
         {
@@ -189,15 +189,15 @@ namespace Commands
             if (command.MaxLength > args.Length && command.MinLength <= args.Length)
                 return await ParseArguments(caller, command.Arguments, args, options);
 
-            return [ConvertResult.FromError(ConvertException.ArgumentMismatch())];
+            return [ParseResult.FromError(ParseException.ArgumentMismatch(command.MinLength, args.Length))];
         }
 
-        private async ValueTask<ConvertResult[]> ParseArguments(
+        private async ValueTask<ParseResult[]> ParseArguments(
             ICallerContext caller, IArgument[] arguments, ArgumentEnumerator args, CommandOptions options)
         {
             options.CancellationToken.ThrowIfCancellationRequested();
 
-            var results = new ConvertResult[arguments.Length];
+            var results = new ParseResult[arguments.Length];
 
             for (int i = 0; i < arguments.Length; i++)
             {
@@ -218,18 +218,18 @@ namespace Commands
                     {
                         try
                         {
-                            results[i] = ConvertResult.FromSuccess(complexArgument.Activator.Invoke(caller, null, result.Select(x => x.Value).ToArray(), null, options));
+                            results[i] = ParseResult.FromSuccess(complexArgument.Activator.Invoke(caller, null, result.Select(x => x.Value).ToArray(), null, options));
                         }
                         catch (Exception ex)
                         {
-                            results[i] = ConvertResult.FromError(ex);
+                            results[i] = ParseResult.FromError(ex);
                         }
 
                         continue;
                     }
                     
                     if (complexArgument.IsOptional)
-                        results[i] = ConvertResult.FromSuccess(Type.Missing);
+                        results[i] = ParseResult.FromSuccess(Type.Missing);
 
                     continue;
                 }
@@ -243,12 +243,12 @@ namespace Commands
 
                 if (argument.IsOptional)
                 {
-                    results[i] = ConvertResult.FromSuccess(Type.Missing);
+                    results[i] = ParseResult.FromSuccess(Type.Missing);
 
                     continue;
                 }
 
-                results[i] = ConvertResult.FromError(new ArgumentNullException(argument.Name));
+                results[i] = ParseResult.FromError(new ArgumentNullException(argument.Name));
             }
 
             return results;
@@ -260,7 +260,7 @@ namespace Commands
         {
             if (!options.SkipConditions)
             {
-                foreach (var condition in command.Conditions)
+                foreach (var condition in command.Evaluators)
                 {
                     if (condition.Trigger.HasFlag(trigger))
                     {

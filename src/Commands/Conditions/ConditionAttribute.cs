@@ -38,7 +38,6 @@ namespace Commands.Conditions
             return Error($"The provided {nameof(ICallerContext)} is not of the expected type: {typeof(TContext).Name}.");
         }
 
-
         /// <inheritdoc cref="Evaluate(ICallerContext, CommandInfo, ConditionTrigger, IServiceProvider, CancellationToken)" />
         /// <remarks>
         ///     Evaluates the condition for the given context, command, trigger, services and cancellation token. This evaluation only succeeds if the provided <see cref="ICallerContext"/> is an instance of <typeparamref name="TContext"/>.
@@ -57,11 +56,11 @@ namespace Commands.Conditions
     /// </remarks>
     /// <typeparam name="TEval">The type of evaluator that will be used to determine the result of the evaluation.</typeparam>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
-    public abstract class ConditionAttribute<TEval>() : Attribute, IExecuteCondition
+    public abstract class ConditionAttribute<TEval>() : Attribute, ICondition
         where TEval : ConditionEvaluator, new()
     {
         /// <inheritdoc />
-        public virtual ConditionTrigger Trigger { get; } = ConditionTrigger.Execution;
+        public virtual ConditionTrigger Triggers { get; } = ConditionTrigger.Execution;
 
         /// <inheritdoc />
         /// <remarks>
@@ -73,12 +72,12 @@ namespace Commands.Conditions
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public ConditionEvaluator GetEvaluator()
-            => new TEval() { Trigger = Trigger };
+            => new TEval() { Trigger = Triggers };
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]
         public virtual string GetGroupId()
-            => $"{GetType().Name}:{typeof(TEval).Name}:{Trigger}";
+            => $"{GetType().Name}:{typeof(TEval).Name}:{Triggers}";
 
         /// <summary>
         ///     Creates a new <see cref="ConditionResult"/> representing a failed evaluation.
@@ -87,13 +86,12 @@ namespace Commands.Conditions
         /// <returns>A <see cref="ConditionResult"/> representing the failed evaluation.</returns>
         protected ConditionResult Error(Exception exception)
         {
-            if (exception == null)
-                throw new ArgumentNullException(nameof(exception));
+            Assert.NotNull(exception, nameof(exception));
 
-            if (exception is ConditionException checkEx)
-                return ConditionResult.FromError(Trigger, checkEx);
+            if (exception is ConditionException conEx)
+                return ConditionResult.FromError(conEx);
 
-            return ConditionResult.FromError(Trigger, ConditionException.ConditionFailed(exception));
+            return ConditionResult.FromError(ConditionException.ConditionFailed(exception));
         }
 
         /// <summary>
@@ -103,10 +101,9 @@ namespace Commands.Conditions
         /// <returns>A <see cref="ConditionResult"/> representing the failed evaluation.</returns>
         protected ConditionResult Error(string error)
         {
-            if (string.IsNullOrEmpty(error))
-                throw new ArgumentNullException(nameof(error));
+            Assert.NotNullOrEmpty(error, nameof(error));
 
-            return ConditionResult.FromError(Trigger, new ConditionException(error));
+            return ConditionResult.FromError(new ConditionException(error));
         }
 
         /// <summary>
@@ -114,6 +111,6 @@ namespace Commands.Conditions
         /// </summary>
         /// <returns>A <see cref="ConditionResult"/> representing the successful evaluation.</returns>
         protected ConditionResult Success()
-            => ConditionResult.FromSuccess(Trigger);
+            => ConditionResult.FromSuccess();
     }
 }

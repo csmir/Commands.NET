@@ -18,9 +18,9 @@ namespace Commands
             where T : ConsoleCallerContext, new()
         {
 #if NET8_0_OR_GREATER
-            var args = ArgumentParser.ParseKeyValueCollection(options.Arguments);
+            var args = ArgumentReader.ReadNamed(options.Arguments);
 #else
-            var args = ArgumentParser.ParseKeyCollection(string.Join(" ", options.Arguments));
+            var args = ArgumentReader.Read(string.Join(" ", options.Arguments));
 #endif
 
             options.Caller ??= new T();
