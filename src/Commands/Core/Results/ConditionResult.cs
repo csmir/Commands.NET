@@ -1,5 +1,4 @@
 ﻿using Commands.Conditions;
-using System.Diagnostics;
 
 namespace Commands;
 

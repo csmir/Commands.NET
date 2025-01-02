@@ -1,6 +1,9 @@
-﻿using Commands.Builders;
+﻿
+global using System.Diagnostics;
+global using System.Diagnostics.CodeAnalysis;
+
+using Commands.Builders;
 using Commands.Conditions;
-using System.Diagnostics;
 
 namespace Commands;
 

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Commands.Conversion;
+﻿namespace Commands.Conversion;
 
 /// <summary>
 ///     A type converter that can convert a raw string value into a type with a try-parse method. This class cannot be inherited.

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     The result of a search operation within the command execution pipeline.

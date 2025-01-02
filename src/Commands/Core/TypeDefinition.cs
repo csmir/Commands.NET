@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     A readonly representation of a <see cref="Type"/>, enforcing dynamic access for all its members.

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Commands.Builders;
+﻿namespace Commands.Builders;
 
 /// <summary>
 ///     A configuration builder determining the build process for modules and commands in an <see cref="IComponentTree"/>. This class cannot be inherited.

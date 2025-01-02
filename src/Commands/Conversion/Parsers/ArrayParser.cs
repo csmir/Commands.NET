@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Commands.Conversion;
+﻿namespace Commands.Conversion;
 
 internal sealed class ArrayParser(TypeParser underlyingConverter) : TypeParser
 {
