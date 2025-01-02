@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
+	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net8</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -31,9 +31,9 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageIcon>cnet_nogap_bexp.png</PackageIcon>
-  </PropertyGroup>
+	</PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup>
 		<None Include="..\..\img\cnet_nogap_bexp.png">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
@@ -46,14 +46,14 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
-  </ItemGroup>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="*" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="*" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Commands\Commands.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Commands\Commands.csproj" />
+	</ItemGroup>
 
 </Project>
