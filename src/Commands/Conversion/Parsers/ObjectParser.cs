@@ -1,8 +1,7 @@
-﻿namespace Commands.Conversion
+﻿namespace Commands.Conversion;
+
+internal sealed class ObjectParser : TypeParser<object>
 {
-    internal sealed class ObjectParser : TypeParser<object>
-    {
-        public override ValueTask<ParseResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
-            => Success(value);
-    }
+    public override ValueTask<ParseResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        => Success(value);
 }

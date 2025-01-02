@@ -2,18 +2,17 @@
 
 using Commands.Conditions;
 
-namespace Commands.Samples
+namespace Commands.Samples;
+
+public class RequireOperatingSystemAttribute(PlatformID platform) : ConditionAttribute<ANDEvaluator>
 {
-    public class RequireOperatingSystemAttribute(PlatformID platform) : ConditionAttribute<ANDEvaluator>
+    public PlatformID Platform { get; } = platform;
+
+    public override ValueTask<ConditionResult> Evaluate(ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
     {
-        public PlatformID Platform { get; } = platform;
+        if (Environment.OSVersion.Platform == Platform)
+            return Success();
 
-        public override ValueTask<ConditionResult> Evaluate(ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
-        {
-            if (Environment.OSVersion.Platform == Platform)
-                return Success();
-
-            return Error("The platform does not support this operation.");
-        }
+        return Error("The platform does not support this operation.");
     }
 }

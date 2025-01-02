@@ -2,32 +2,31 @@
 
 using Commands.Conversion;
 
-namespace Commands.Samples
+namespace Commands.Samples;
+
+public class LiteralTypeParser(bool caseIgnore) : TypeParser<Type>
 {
-    public class LiteralTypeParser(bool caseIgnore) : TypeParser<Type>
+    private readonly bool _caseIgnore = caseIgnore;
+
+    public override ValueTask<ParseResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
-        private readonly bool _caseIgnore = caseIgnore;
-
-        public override ValueTask<ParseResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        try
         {
-            try
-            {
-                var typeSrc = Type.GetType(
-                    typeName: value?.ToString() ?? "",
-                    throwOnError: true,
-                    ignoreCase: _caseIgnore);
+            var typeSrc = Type.GetType(
+                typeName: value?.ToString() ?? "",
+                throwOnError: true,
+                ignoreCase: _caseIgnore);
 
-                if (typeSrc == null)
-                {
-                    return Error($"A type with name '{value}' was not found.");
-                }
-
-                return Success(typeSrc);
-            }
-            catch (Exception ex)
+            if (typeSrc == null)
             {
-                return Error(ex);
+                return Error($"A type with name '{value}' was not found.");
             }
+
+            return Success(typeSrc);
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
         }
     }
 }

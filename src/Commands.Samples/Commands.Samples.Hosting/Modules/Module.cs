@@ -1,12 +1,11 @@
-﻿namespace Commands.Samples
+﻿namespace Commands.Samples;
+
+public sealed class Module : CommandModule
 {
-    public sealed class Module : CommandModule
+    [Name("help")]
+    public void Help()
     {
-        [Name("help")]
-        public void Help()
-        {
-            foreach (var command in Tree.GetCommands())
-                Respond(command);
-        }
+        foreach (var command in Tree.GetCommands())
+            Respond(command);
     }
 }

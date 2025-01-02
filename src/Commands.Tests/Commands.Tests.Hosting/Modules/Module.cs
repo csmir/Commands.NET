@@ -1,11 +1,10 @@
-﻿namespace Commands.Tests
+﻿namespace Commands.Tests;
+
+public sealed class Module : CommandModule
 {
-    public sealed class Module : CommandModule
+    [Name("test")]
+    public void Test()
     {
-        [Name("test")]
-        public void Test()
-        {
-            Console.WriteLine("Tested");
-        }
+        Console.WriteLine("Tested");
     }
 }

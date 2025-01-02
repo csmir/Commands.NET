@@ -1,15 +1,14 @@
 ﻿
-namespace Commands.Samples
+namespace Commands.Samples;
+
+public class CustomCaller(string name) : ICallerContext
 {
-    public class CustomCaller(string name) : ICallerContext
+    public string Name { get; } = name;
+
+    public Task Respond(object? response)
     {
-        public string Name { get; } = name;
+        System.Console.WriteLine($"[{Name}] {response}");
 
-        public Task Respond(object? response)
-        {
-            System.Console.WriteLine($"[{Name}] {response}");
-
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 }

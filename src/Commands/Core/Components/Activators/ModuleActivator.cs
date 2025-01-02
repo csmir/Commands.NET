@@ -1,67 +1,66 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace Commands
+namespace Commands;
+
+/// <summary>
+///     An invoker that invokes a constructor.
+/// </summary>
+public sealed class ModuleActivator : IActivator
 {
+    private readonly ConstructorInfo _ctor;
+
     /// <summary>
-    ///     An invoker that invokes a constructor.
+    ///     Gets a collection of services for the group.
     /// </summary>
-    public sealed class ModuleActivator : IActivator
-    {
-        private readonly ConstructorInfo _ctor;
+    public ServiceInfo[] Services { get; }
 
-        /// <summary>
-        ///     Gets a collection of services for the group.
-        /// </summary>
-        public ServiceInfo[] Services { get; }
+    /// <inheritdoc />
+    public MethodBase Target
+        => _ctor;
 
-        /// <inheritdoc />
-        public MethodBase Target
-            => _ctor;
-
-        internal ModuleActivator(
+    internal ModuleActivator(
 #if NET8_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif
-            Type type)
+        Type type)
+    {
+        var ctors = type.GetAvailableConstructors();
+
+        _ctor = ctors.First();
+
+        var parameters = _ctor.GetParameters();
+
+        Services = new ServiceInfo[parameters.Length];
+
+        for (var i = 0; i < parameters.Length; i++)
+            Services[i] = new ServiceInfo(parameters[i]);
+    }
+
+    /// <inheritdoc />
+    public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options)
+        where T : ICallerContext
+    {
+        var services = new object?[Services.Length];
+        for (int i = 0; i < Services.Length; i++)
         {
-            var ctors = type.GetAvailableConstructors();
+            var parameter = Services[i];
 
-            _ctor = ctors.First();
+            var service = options.Services.GetService(parameter.Type);
 
-            var parameters = _ctor.GetParameters();
+            if (service != null || parameter.IsNullable)
+                services[i] = service;
 
-            Services = new ServiceInfo[parameters.Length];
+            else if (parameter.Type == typeof(IServiceProvider))
+                services[i] = options.Services;
 
-            for (var i = 0; i < parameters.Length; i++)
-                Services[i] = new ServiceInfo(parameters[i]);
+            else if (parameter.IsOptional)
+                services[i] = Type.Missing;
+
+            else
+                throw new InvalidOperationException($"Constructor {command?.Parent?.Name ?? Target.Name} defines unknown service {parameter.Type}.");
         }
 
-        /// <inheritdoc />
-        public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options)
-            where T : ICallerContext
-        {
-            var services = new object?[Services.Length];
-            for (int i = 0; i < Services.Length; i++)
-            {
-                var parameter = Services[i];
-
-                var service = options.Services.GetService(parameter.Type);
-
-                if (service != null || parameter.IsNullable)
-                    services[i] = service;
-
-                else if (parameter.Type == typeof(IServiceProvider))
-                    services[i] = options.Services;
-
-                else if (parameter.IsOptional)
-                    services[i] = Type.Missing;
-
-                else
-                    throw new InvalidOperationException($"Constructor {command?.Parent?.Name ?? Target.Name} defines unknown service {parameter.Type}.");
-            }
-
-            return _ctor.Invoke(services);
-        }
+        return _ctor.Invoke(services);
     }
 }

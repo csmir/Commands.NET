@@ -1,32 +1,31 @@
-﻿namespace Commands.Tests
+﻿namespace Commands.Tests;
+
+internal class CustomSourceResolver : SourceProvider
 {
-    internal class CustomSourceResolver : SourceProvider
+    public override ValueTask<SourceResult> Receive(IServiceProvider services, CancellationToken cancellationToken)
     {
-        public override ValueTask<SourceResult> Receive(IServiceProvider services, CancellationToken cancellationToken)
+        if (Ready())
         {
-            if (Ready())
-            {
-                Console.CursorVisible = true;
-                Console.Write("> ");
+            Console.CursorVisible = true;
+            Console.Write("> ");
 
-                var src = Console.ReadLine()!;
+            var src = Console.ReadLine()!;
 
-                Console.CursorVisible = false;
+            Console.CursorVisible = false;
 
-                return Success(new CallerContext(), ArgumentReader.Read(src));
-            }
-
-            return Error(new InvalidOperationException("The application failed to start."));
+            return Success(new CallerContext(), ArgumentReader.Read(src));
         }
 
-        public class CallerContext : ICallerContext
-        {
-            public Task Respond(object? response)
-            {
-                Console.WriteLine(response);
+        return Error(new InvalidOperationException("The application failed to start."));
+    }
 
-                return Task.CompletedTask;
-            }
+    public class CallerContext : ICallerContext
+    {
+        public Task Respond(object? response)
+        {
+            Console.WriteLine(response);
+
+            return Task.CompletedTask;
         }
     }
 }

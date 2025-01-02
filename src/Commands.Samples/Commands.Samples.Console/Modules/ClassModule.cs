@@ -1,17 +1,16 @@
-﻿namespace Commands.Samples
+﻿namespace Commands.Samples;
+
+[Name("class")]
+public class ClassModule : CommandModule
 {
-    [Name("class")]
-    public class ClassModule : CommandModule
+    public string ClassCommand()
     {
-        public string ClassCommand()
-        {
-            return "Hello from a class command!";
-        }
+        return "Hello from a class command!";
+    }
 
-        [Ignore]
-        public void NotACommand()
-        {
+    [Ignore]
+    public void NotACommand()
+    {
 
-        }
     }
 }

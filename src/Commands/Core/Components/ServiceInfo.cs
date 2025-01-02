@@ -1,52 +1,51 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
 
-namespace Commands
+namespace Commands;
+
+/// <summary>
+///     Reveals information about a service parameter.
+/// </summary>
+[DebuggerDisplay("{ToString()}")]
+public sealed class ServiceInfo : IParameter
 {
-    /// <summary>
-    ///     Reveals information about a service parameter.
-    /// </summary>
-    [DebuggerDisplay("{ToString()}")]
-    public sealed class ServiceInfo : IParameter
+    /// <inheritdoc />
+    public Type Type { get; }
+
+    /// <inheritdoc />
+    public Type ExposedType { get; }
+
+    /// <inheritdoc />
+    public bool IsNullable { get; }
+
+    /// <inheritdoc />
+    public bool IsOptional { get; }
+
+    internal ServiceInfo(
+        ParameterInfo parameterInfo)
     {
-        /// <inheritdoc />
-        public Type Type { get; }
+        var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
 
-        /// <inheritdoc />
-        public Type ExposedType { get; }
-
-        /// <inheritdoc />
-        public bool IsNullable { get; }
-
-        /// <inheritdoc />
-        public bool IsOptional { get; }
-
-        internal ServiceInfo(
-            ParameterInfo parameterInfo)
+        if (underlying != null)
         {
-            var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
-
-            if (underlying != null)
-            {
-                IsNullable = true;
-                Type = underlying;
-            }
-            else
-            {
-                IsNullable = false;
-                Type = parameterInfo.ParameterType;
-            }
-
-            if (parameterInfo.IsOptional)
-                IsOptional = true;
-            else
-                IsOptional = false;
-
-            ExposedType = parameterInfo.ParameterType;
+            IsNullable = true;
+            Type = underlying;
+        }
+        else
+        {
+            IsNullable = false;
+            Type = parameterInfo.ParameterType;
         }
 
-        /// <inheritdoc />
-        public override string ToString()
-            => Type.Name;
+        if (parameterInfo.IsOptional)
+            IsOptional = true;
+        else
+            IsOptional = false;
+
+        ExposedType = parameterInfo.ParameterType;
     }
+
+    /// <inheritdoc />
+    public override string ToString()
+        => Type.Name;
 }

@@ -1,17 +1,16 @@
-﻿namespace Commands.Tests
+﻿namespace Commands.Tests;
+
+public sealed class EnumerableModule : CommandModule
 {
-    public sealed class EnumerableModule : CommandModule
+    [Name("param-array")]
+    public static void ParamArray(params string[] _)
     {
-        [Name("param-array")]
-        public static void ParamArray(params string[] _)
-        {
 
-        }
+    }
 
-        [Name("array")]
-        public static void Array(int _, [Remainder] int[] __)
-        {
+    [Name("array")]
+    public static void Array(int _, [Remainder] int[] __)
+    {
 
-        }
     }
 }
