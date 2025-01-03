@@ -7,17 +7,16 @@ public class Command
 {
     public static void TestBuilds()
     {
-        ComponentConfigurationBuilder.Default.Properties[ConfigurationPropertyDefinitions.NameValidationExpression] = "^[a-zA-Z0-9_]+$";
-        ComponentConfigurationBuilder.Default.Properties[ConfigurationPropertyDefinitions.MakeModulesReadonly] = false;
+        ComponentConfigurationBuilder.Default.Properties["NameValidationExpression"] = "^[a-zA-Z0-9_]+$";
+        ComponentConfigurationBuilder.Default.Properties["MakeModulesReadonly"] = false;
 
-        var calculateModule = new ModuleBuilder()
+        var calculateModule = new CommandGroupBuilder()
             .WithAliases("calculate");
 
         var lengthCondition = new ConditionBuilder<ANDEvaluator, CustomCaller>()
-            .WithHandler((ctx, cmd, trigger, services) => ctx.ArgumentCount <= 10
+            .WithHandler((ctx, cmd, services) => ctx.ArgumentCount <= 10
                 ? ConditionResult.FromSuccess()
-                : ConditionResult.FromError("The input is too long."))
-            .WithTriggers(ConditionTrigger.Parsing);
+                : ConditionResult.FromError("The input is too long."));
 
         var sumCommand = new CommandBuilder()
             .WithHandler((CommandContext<CustomCaller> ctx, int num1, int op2) => $"{num1} + {op2} = {num1 + op2}!")

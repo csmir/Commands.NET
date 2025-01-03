@@ -19,7 +19,7 @@ public sealed class ComponentConfigurationBuilder : IConfigurationBuilder
     public IDictionary<object, object> Properties { get; set; } = new Dictionary<object, object>();
 
     /// <inheritdoc />
-    public IConfigurationBuilder AddParser<TConvertable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ParseResult>> parseAction)
+    public IConfigurationBuilder AddParser<TConvertable>(Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> parseAction)
     {
         Assert.NotNull(parseAction, nameof(parseAction));
 

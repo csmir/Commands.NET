@@ -35,7 +35,7 @@ internal sealed partial class TimeSpanParser : TypeParser<TimeSpan>
     }
 
     public override ValueTask<ParseResult> Parse(
-        ICallerContext caller, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        ICallerContext caller, ICommandParameter parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
         var val = value?.ToString();
         if (!TimeSpan.TryParse(val, out TimeSpan span))

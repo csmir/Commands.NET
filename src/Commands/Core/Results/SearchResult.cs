@@ -30,7 +30,7 @@ public readonly struct SearchResult : IExecuteResult
     internal static SearchResult FromSuccess(IComponent component, int searchHeight)
         => new(component, searchHeight, null);
 
-    internal static SearchResult FromError(ModuleInfo? module = null)
+    internal static SearchResult FromError(CommandGroup? module = null)
         => new(module, 0, module != null ? SearchException.SearchIncomplete() : SearchException.ComponentsNotFound());
 
     /// <inheritdoc />

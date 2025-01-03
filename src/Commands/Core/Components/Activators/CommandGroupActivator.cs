@@ -3,22 +3,22 @@
 namespace Commands;
 
 /// <summary>
-///     An invoker that invokes a constructor.
+///     An invoker that invokes a command group constructor.
 /// </summary>
-public sealed class ModuleActivator : IActivator
+public sealed class CommandGroupActivator : IActivator
 {
     private readonly ConstructorInfo _ctor;
 
     /// <summary>
     ///     Gets a collection of services for the group.
     /// </summary>
-    public ServiceInfo[] Services { get; }
+    public CommandGroupService[] Services { get; }
 
     /// <inheritdoc />
     public MethodBase Target
         => _ctor;
 
-    internal ModuleActivator(
+    internal CommandGroupActivator(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif
@@ -30,14 +30,14 @@ public sealed class ModuleActivator : IActivator
 
         var parameters = _ctor.GetParameters();
 
-        Services = new ServiceInfo[parameters.Length];
+        Services = new CommandGroupService[parameters.Length];
 
         for (var i = 0; i < parameters.Length; i++)
-            Services[i] = new ServiceInfo(parameters[i]);
+            Services[i] = new CommandGroupService(parameters[i]);
     }
 
     /// <inheritdoc />
-    public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options)
+    public object? Invoke<T>(T caller, Command? command, object?[] args, IComponentTree? tree, CommandOptions options)
         where T : ICallerContext
     {
         var services = new object?[Services.Length];

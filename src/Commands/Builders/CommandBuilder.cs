@@ -6,7 +6,7 @@ namespace Commands.Builders;
 ///     A builder model that represents the construction of a delegate based command. This class cannot be inherited.
 /// </summary>
 /// <remarks>
-///     This class is used to configure a command before it is built into a <see cref="CommandInfo"/> object. 
+///     This class is used to configure a command before it is built into a <see cref="Command"/> object. 
 ///     By calling <see cref="Build(ComponentConfiguration)"/>, the command is built into an object that can be executed by the <see cref="IComponentTree"/>.
 /// </remarks>
 public sealed class CommandBuilder : IComponentBuilder
@@ -171,12 +171,12 @@ public sealed class CommandBuilder : IComponentBuilder
     }
 
     /// <summary>
-    ///     Builds the current <see cref="CommandBuilder"/> into a <see cref="CommandInfo"/> instance. 
+    ///     Builds the current <see cref="CommandBuilder"/> into a <see cref="Command"/> instance. 
     /// </summary>
     /// <param name="configuration">The configuration that should be used to determine the validity of the provided component.</param>
     /// <param name="parent">The parent module of this component.</param>
-    /// <returns>A new instance of <see cref="CommandInfo"/> based on the configured values of this builder.</returns>
-    public CommandInfo Build(ComponentConfiguration configuration, ModuleInfo? parent)
+    /// <returns>A new instance of <see cref="Command"/> based on the configured values of this builder.</returns>
+    public Command Build(ComponentConfiguration configuration, CommandGroup? parent)
     {
         Assert.NotNull(Handler, nameof(Handler));
         Assert.Aliases(Aliases, configuration, _isNested);
@@ -185,7 +185,7 @@ public sealed class CommandBuilder : IComponentBuilder
 
         var hasContext = param.Length > 0 && param[0].ParameterType.IsGenericType && param[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>);
 
-        return new CommandInfo(parent, new DelegateActivator(Handler.Method, Handler.Target, hasContext), [.. Conditions.Select(x => x.Build())], [.. Aliases], hasContext, configuration);
+        return new Command(parent, new DelegateCommandActivator(Handler.Method, Handler.Target, hasContext), [.. Conditions.Select(x => x.Build())], [.. Aliases], hasContext, configuration);
     }
 
     /// <inheritdoc />

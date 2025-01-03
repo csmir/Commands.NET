@@ -8,11 +8,6 @@ namespace Commands;
 [DebuggerDisplay("{ToString()}")]
 public readonly struct ConditionResult : IExecuteResult
 {
-    /// <summary>
-    ///     Gets during what execution step the condition was triggered.
-    /// </summary>
-    public ConditionTrigger Trigger { get; }
-
     /// <inheritdoc />
     public Exception? Exception { get; }
 
@@ -20,9 +15,8 @@ public readonly struct ConditionResult : IExecuteResult
     public bool Success
         => Exception == null;
 
-    private ConditionResult(ConditionTrigger trigger, Exception? exception)
+    private ConditionResult(Exception? exception)
     {
-        Trigger = trigger;
         Exception = exception;
     }
 
@@ -31,15 +25,7 @@ public readonly struct ConditionResult : IExecuteResult
     /// </summary>
     /// <returns>A new result containing information about the succeeded operation.</returns>
     public static ConditionResult FromSuccess()
-        => new(ConditionTrigger.None, null);
-
-    /// <summary>
-    ///     Creates a new <see cref="ConditionResult"/> resembling a successful check operation.
-    /// </summary>
-    /// <param name="trigger">The trigger that caused the condition to be checked.</param>
-    /// <returns>A new result containing information about the succeeded operation.</returns>
-    public static ConditionResult FromSuccess(ConditionTrigger trigger)
-        => new(trigger, null);
+        => new(null);
 
     /// <summary>
     ///     Creates a new <see cref="ConditionResult"/> resembling a failed check operation.
@@ -47,7 +33,7 @@ public readonly struct ConditionResult : IExecuteResult
     /// <param name="reason">The reason why the check failed.</param>
     /// <returns>A new result containing information about the failed operation.</returns>
     public static ConditionResult FromError(string reason)
-        => new(ConditionTrigger.None, new ConditionException(reason));
+        => new(new ConditionException(reason));
 
     /// <summary>
     ///     Creates a new <see cref="ConditionResult"/> resembling a failed check operation.
@@ -55,16 +41,7 @@ public readonly struct ConditionResult : IExecuteResult
     /// <param name="exception">The exception that contains the failure reason of this check.</param>
     /// <returns>A new result containing information about the failed operation.</returns>
     public static ConditionResult FromError(Exception exception)
-        => new(ConditionTrigger.None, exception);
-
-    /// <summary>
-    ///     Creates a new <see cref="ConditionResult"/> resembling a failed check operation.
-    /// </summary>
-    /// <param name="trigger">The trigger that caused the condition to be checked.</param>
-    /// <param name="exception">The exception that occurred during the check operation.</param>
-    /// <returns>A new result containing information about the failed operation.</returns>
-    public static ConditionResult FromError(ConditionTrigger trigger, Exception exception)
-        => new(trigger, exception);
+        => new(exception);
 
     /// <inheritdoc />
     public override string ToString()

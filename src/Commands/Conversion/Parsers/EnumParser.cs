@@ -7,7 +7,7 @@ internal sealed class EnumParser(Type targetEnumType) : TypeParser
     public override Type Type { get; } = targetEnumType;
 
     public override ValueTask<ParseResult> Parse(
-        ICallerContext caller, IArgument parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        ICallerContext caller, ICommandParameter parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
         try
         {

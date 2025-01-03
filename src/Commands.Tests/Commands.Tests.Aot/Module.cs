@@ -17,11 +17,7 @@ public class Module : CommandModule
 
     public class CallerContext : ICallerContext
     {
-        public Task Respond(object? response)
-        {
-            Console.WriteLine(response);
-
-            return Task.CompletedTask;
-        }
+        public void Respond(object? response)
+            => Console.WriteLine(response);
     }
 }

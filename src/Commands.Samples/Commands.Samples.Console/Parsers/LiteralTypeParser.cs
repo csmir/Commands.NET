@@ -8,7 +8,7 @@ public class LiteralTypeParser(bool caseIgnore) : TypeParser<Type>
 {
     private readonly bool _caseIgnore = caseIgnore;
 
-    public override ValueTask<ParseResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+    public override ValueTask<ParseResult> Parse(ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
         try
         {

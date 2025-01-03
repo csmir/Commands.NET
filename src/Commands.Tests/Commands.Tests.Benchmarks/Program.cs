@@ -48,74 +48,71 @@ public class Program
     [Benchmark]
     public async Task RunCommand()
     {
-        await _tree!.Execute(new BenchmarkCaller(), ["scenario"]);
+        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario"]);
     }
 
     [Benchmark]
     public async Task RunParametered()
     {
-        await _tree!.Execute(new BenchmarkCaller(), ["scenario-parameterized", "1"]);
+        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-parameterized", "1"]);
     }
 
     [Benchmark]
     public async Task RunNested()
     {
-        await _tree!.Execute(new BenchmarkCaller(), ["scenario-nested", "scenario-injected"]);
+        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-nested", "scenario-injected"]);
     }
 
     [Benchmark]
     public async Task RunException()
     {
-        await _tree!.Execute(new BenchmarkCaller(), ["scenario-exception"]);
+        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-exception"]);
     }
 
     [Benchmark]
     public async Task RunTaskException()
     {
-        await _tree!.Execute(new BenchmarkCaller(), ["scenario-task-exception"]);
+        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-task-exception"]);
     }
 
     [Benchmark]
     public async Task RunExceptionThrow()
     {
-        await _tree!.Execute(new BenchmarkCaller(), ["scenario-exception-throw"]);
+        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-exception-throw"]);
     }
 
     [Benchmark]
     public async Task RunTaskExceptionThrow()
     {
-        await _tree!.Execute(new BenchmarkCaller(), ["scenario-task-exception-throw"]);
+        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-task-exception-throw"]);
     }
 
     [Benchmark]
     public async Task RunOperationMutation()
     {
-        await _tree!.Execute(new BenchmarkCaller(), ["scenario-operation-mutation"]);
+        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-operation-mutation"]);
     }
 
     [Benchmark]
     public async Task RunOperationTaskMutation()
     {
-        await _tree!.Execute(new BenchmarkCaller(), ["scenario-task-operation-mutation"]);
+        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-task-operation-mutation"]);
     }
 
     [Benchmark]
     public async Task RunOperationFormattable()
     {
-        await _tree!.Execute(new BenchmarkCaller(), ["scenario-operation-formattable"]);
+        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-operation-formattable"]);
     }
 
     [Benchmark]
     public async Task RunOperationTaskFormattable()
     {
-        await _tree!.Execute(new BenchmarkCaller(), ["scenario-task-operation-formattable"]);
+        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-task-operation-formattable"]);
     }
 
     public class BenchmarkCaller : ICallerContext
     {
-        public Task Respond(object? response)
-        {
-            return Task.CompletedTask;
-        }
+        public void Respond(object? response) { }
     }
 }

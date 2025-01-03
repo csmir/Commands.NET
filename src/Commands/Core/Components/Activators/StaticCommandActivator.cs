@@ -5,7 +5,7 @@ namespace Commands;
 /// <summary>
 ///     An invoker for static commands.
 /// </summary>
-public sealed class StaticActivator : IActivator
+public sealed class StaticCommandActivator : IActivator
 {
     private readonly bool _withContext;
     private readonly MethodInfo _method;
@@ -14,14 +14,14 @@ public sealed class StaticActivator : IActivator
     public MethodBase Target
         => _method;
 
-    internal StaticActivator(MethodInfo target, bool withContext)
+    internal StaticCommandActivator(MethodInfo target, bool withContext)
     {
         _withContext = withContext;
         _method = target;
     }
 
     /// <inheritdoc />
-    public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options)
+    public object? Invoke<T>(T caller, Command? command, object?[] args, IComponentTree? tree, CommandOptions options)
         where T : ICallerContext
     {
         if (_withContext)

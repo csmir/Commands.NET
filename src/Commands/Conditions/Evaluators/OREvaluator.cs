@@ -6,20 +6,20 @@
 public sealed class OREvaluator : ConditionEvaluator
 {
     /// <inheritdoc />
-    public override async ValueTask<ConditionResult> Evaluate(ICallerContext consumer, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
+    public override async ValueTask<ConditionResult> Evaluate(ICallerContext consumer, Command command, IServiceProvider services, CancellationToken cancellationToken)
     {
         var lastFailure = default(ConditionResult);
 
         foreach (var condition in Conditions)
         {
-            var result = await condition.Evaluate(consumer, command, trigger, services, cancellationToken);
+            var result = await condition.Evaluate(consumer, command, services, cancellationToken);
 
             if (result.Success)
-                return ConditionResult.FromSuccess(trigger);
+                return result;
 
             lastFailure = result;
         }
 
-        return ConditionResult.FromError(trigger, lastFailure.Exception!);
+        return lastFailure;
     }
 }

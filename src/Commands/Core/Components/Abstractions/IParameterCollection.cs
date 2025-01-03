@@ -3,7 +3,7 @@
 /// <summary>
 ///     Reveals information about a bucket that contains zero-or-more arguments to resolve.
 /// </summary>
-public interface IArgumentBucket
+public interface IParameterCollection
 {
     /// <summary>
     ///     Gets the activator for this bucket.
@@ -13,12 +13,12 @@ public interface IArgumentBucket
     /// <summary>
     ///     Gets an array of arguments this bucket exposes.
     /// </summary>
-    public IArgument[] Arguments { get; }
+    public ICommandParameter[] Parameters { get; }
 
     /// <summary>
     ///     Gets if this bucket has zero or more arguments.
     /// </summary>
-    public bool HasArguments { get; }
+    public bool HasParameters { get; }
 
     /// <summary>
     ///     Gets the minimum length of this bucket's arguments.

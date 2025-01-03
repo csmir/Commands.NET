@@ -15,7 +15,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     public ICollection<ResultHandler> Handlers { get; set; } = [];
 
     /// <inheritdoc />
-    public ICollection<TypeDefinition> Types { get; set; } = [];
+    public ICollection<DynamicType> Types { get; set; } = [];
 
     /// <inheritdoc />
     public ITreeBuilder AddCommand(CommandBuilder commandBuilder)
@@ -54,23 +54,23 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddModule(ModuleBuilder moduleBuilder)
+    public ITreeBuilder AddCommandGroup(CommandGroupBuilder groupBuilder)
     {
-        Assert.NotNull(moduleBuilder, nameof(moduleBuilder));
+        Assert.NotNull(groupBuilder, nameof(groupBuilder));
 
-        Components.Add(moduleBuilder);
+        Components.Add(groupBuilder);
 
         return this;
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddModule(Action<ModuleBuilder> configureModule)
+    public ITreeBuilder AddCommandGroup(Action<CommandGroupBuilder> configureGroup)
     {
-        var moduleBuilder = new ModuleBuilder();
+        var groupBuilder = new CommandGroupBuilder();
 
-        configureModule(moduleBuilder);
+        configureGroup(groupBuilder);
 
-        return AddModule(moduleBuilder);
+        return AddCommandGroup(groupBuilder);
     }
 
     /// <inheritdoc />
@@ -78,14 +78,14 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 # endif
-        Type moduleType)
+        Type groupType)
     {
-        Assert.NotNull(moduleType, nameof(moduleType));
+        Assert.NotNull(groupType, nameof(groupType));
 
-        if (Types.Contains(moduleType))
+        if (Types.Contains(groupType))
             return this;
 
-        Types.Add(moduleType);
+        Types.Add(groupType);
 
         return this;
     }
@@ -128,12 +128,29 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
+    public ITreeBuilder AddResultHandler(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction)
+    {
+        Assert.NotNull(resultAction, nameof(resultAction));
+        Handlers.Add(new DelegateResultHandler(resultAction));
+        return this;
+    }
+
+    /// <inheritdoc />
     public ITreeBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction)
     {
         Assert.NotNull(resultAction, nameof(resultAction));
 
         Handlers.Add(new DelegateResultHandler(resultAction));
 
+        return this;
+    }
+
+    /// <inheritdoc />
+    public ITreeBuilder AddResultHandler<T>(Action<T, IExecuteResult, IServiceProvider> resultAction)
+        where T : class, ICallerContext
+    {
+        Assert.NotNull(resultAction, nameof(resultAction));
+        Handlers.Add(new DelegateResultHandler<T>(resultAction));
         return this;
     }
 

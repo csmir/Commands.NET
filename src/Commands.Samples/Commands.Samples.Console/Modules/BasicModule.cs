@@ -26,7 +26,7 @@ public class BasicModule : CommandModule<CustomCaller>
         response.AppendLine($"Fullname: {type.FullName}");
         response.AppendLine($"Assembly: {type.Assembly.FullName}");
 
-        Caller.Respond(response.ToString()).Wait();
+        Respond(response.ToString());
     }
 
     [Name("copy")]

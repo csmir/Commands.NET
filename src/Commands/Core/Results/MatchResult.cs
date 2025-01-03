@@ -9,7 +9,7 @@ public readonly struct MatchResult : IExecuteResult
     /// <summary>
     ///     Gets the command known during the matching operation.
     /// </summary>
-    public CommandInfo Command { get; }
+    public Command Command { get; }
 
     /// <inheritdoc />
     public Exception? Exception { get; }
@@ -20,7 +20,7 @@ public readonly struct MatchResult : IExecuteResult
 
     internal object?[]? Arguments { get; }
 
-    private MatchResult(CommandInfo command, object[]? arguments, Exception? exception)
+    private MatchResult(Command command, object[]? arguments, Exception? exception)
     {
         Command = command;
         Arguments = arguments;
@@ -33,7 +33,7 @@ public readonly struct MatchResult : IExecuteResult
     /// <param name="command">The match command.</param>
     /// <param name="arguments">The converted arguments of the command.</param>
     /// <returns>A new result containing information about the operation.</returns>
-    public static MatchResult FromSuccess(CommandInfo command, object[] arguments)
+    public static MatchResult FromSuccess(Command command, object[] arguments)
         => new(command, arguments, null);
 
     /// <summary>
@@ -42,7 +42,7 @@ public readonly struct MatchResult : IExecuteResult
     /// <param name="command">The match command.</param>
     /// <param name="exception">The exception that occurred during the matching process.</param>
     /// <returns>A new result containing information about the operation.</returns>
-    public static MatchResult FromError(CommandInfo command, Exception exception)
+    public static MatchResult FromError(Command command, Exception exception)
         => new(command, null, exception);
 
     /// <inheritdoc />

@@ -8,7 +8,7 @@ public class RequireOperatingSystemAttribute(PlatformID platform) : ConditionAtt
 {
     public PlatformID Platform { get; } = platform;
 
-    public override ValueTask<ConditionResult> Evaluate(ICallerContext caller, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
+    public override ValueTask<ConditionResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (Environment.OSVersion.Platform == Platform)
             return Success();

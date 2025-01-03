@@ -1,38 +1,29 @@
 ﻿using Commands;
-using Commands.Builders;
 using Commands.Samples;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 await Host.CreateDefaultBuilder(args)
-    .ConfigureCommands(configure =>
+    .ConfigureServices(configure =>
     {
-        configure.WithTypes(typeof(Program).Assembly.GetExportedTypes());
-
-        configure.AddSourceProvider((services) =>
-        {
-            var input = Console.ReadLine();
-
-            if (string.IsNullOrWhiteSpace(input))
-                return SourceResult.FromError();
-
-            var context = new HostedCallerContext(input);
-
-            return SourceResult.FromSuccess(context, input);
-        });
-
-        configure.AddResultHandler<HostedCallerContext>(async (context, result, services) =>
-        {
-            switch (result)
+        var builder = ComponentTree.CreateBuilder()
+            .WithTypes(typeof(Program).Assembly.GetExportedTypes())
+            .AddResultHandler<HostedCallerContext>((context, result, services) =>
             {
-                case InvokeResult invokeResult:
-                    await context.Respond(result.Exception);
-                    break;
-                case SearchResult searchResult:
-                    await context.Respond("Invalid command.");
-                    break;
-            }
-        });
+                switch (result)
+                {
+                    case InvokeResult invokeResult:
+                        context.Respond(result.Exception);
+                        break;
+                    case SearchResult searchResult:
+                        context.Respond("Invalid command.");
+                        break;
+                }
+            });
+
+        configure.AddSingleton((services) => builder.Build());
+        configure.AddHostedService<Listener>();
     })
     .ConfigureLogging(configure =>
     {

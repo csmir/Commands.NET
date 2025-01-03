@@ -3,12 +3,12 @@
 namespace Commands;
 
 /// <summary>
-///     Reveals information about an invocation argument of a command or any complex member.
+///     Reveals information about an invocation parameter of a command or any complex member.
 /// </summary>
-public interface IArgument : IScorable, IParameter
+public interface ICommandParameter : IScorable, IParameter
 {
     /// <summary>
-    ///     Gets the position of this argument in the command's parameter list.
+    ///     Gets the position of this parameter in the command's parameter list.
     /// </summary>
     /// <remarks>
     ///     This value is zero-based.
@@ -16,25 +16,25 @@ public interface IArgument : IScorable, IParameter
     public int Position { get; }
 
     /// <summary>
-    ///     Gets if this argument is the query remainder or not.
+    ///     Gets if this parameter is the query remainder or not.
     /// </summary>
     public bool IsRemainder { get; }
 
     /// <summary>
-    ///     Gets if this argument is a collection type or not.
+    ///     Gets if this parameter is a collection type or not.
     /// </summary>
     public bool IsCollection { get; }
 
     /// <summary>
-    ///     Gets the parser for this argument.
+    ///     Gets the parser for this parameter.
     /// </summary>
     /// <remarks>
-    ///     Will be <see langword="null"/> if <see cref="Type"/> is <see cref="string"/>, <see cref="object"/>, or if this argument is <see cref="ComplexArgumentInfo"/>.
+    ///     Will be <see langword="null"/> if this parameter is <see cref="CommandComplexParameter"/>.
     /// </remarks>
     public TypeParser? Parser { get; }
 
     /// <summary>
-    ///     Attempts to convert the provided value to the target type of this argument.
+    ///     Attempts to convert the provided value to the target type of this parameter.
     /// </summary>
     /// <param name="caller">The caller of the current execution.</param>
     /// <param name="value">The value which the <see cref="Parser"/> should parse.</param>

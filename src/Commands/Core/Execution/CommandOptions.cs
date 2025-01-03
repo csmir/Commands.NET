@@ -44,7 +44,7 @@ public sealed class CommandOptions
     ///             Services, specifically those created as singleton or scoped to anything but a single command.
     ///         </item>
     ///         <item>
-    ///             Implementations of <see cref="TypeParser"/>, <see cref="TypeParser{T}"/> and <see cref="ConditionAttribute"/>, <see cref="ConditionAttribute{T}"/>.
+    ///             Implementations of <see cref="TypeParser"/>, <see cref="TypeParser{T}"/>, <see cref="ConditionAttribute{T}"/> or <see cref="ConditionAttribute{TEval, TContext}"/>.
     ///         </item>
     ///         <item>
     ///             Mutable collections and objects with shared access. <see cref="ComponentCollection"/> implementations are concurrently accessible, not needing additional effort to make thread-safe.

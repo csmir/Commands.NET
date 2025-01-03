@@ -2,14 +2,14 @@
 
 internal sealed class ArrayParser(TypeParser underlyingConverter) : TypeParser
 {
-    private static readonly Dictionary<Type, TypeParser> _converters = [];
+    private static readonly Dictionary<Type, ArrayParser> _converters = [];
 
     public override Type Type => underlyingConverter.Type;
 
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
 #endif
-    public override async ValueTask<ParseResult> Parse(ICallerContext consumer, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+    public override async ValueTask<ParseResult> Parse(ICallerContext consumer, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (value is not object[] array)
             return Error($"The provided value is not an array. Expected: '{Type.Name}', got: '{value}'. At: '{argument.Name}'");
@@ -31,7 +31,7 @@ internal sealed class ArrayParser(TypeParser underlyingConverter) : TypeParser
         return Success(instance);
     }
 
-    public static TypeParser GetOrCreate(TypeParser underlyingConverter)
+    internal static ArrayParser GetOrCreate(TypeParser underlyingConverter)
     {
         if (_converters.TryGetValue(underlyingConverter.Type, out var converter))
             return converter;

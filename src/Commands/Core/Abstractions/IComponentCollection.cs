@@ -13,34 +13,34 @@ public interface IComponentCollection : ICollection<IComponent>, IEnumerable<ICo
     public abstract IEnumerable<SearchResult> Find(ArgumentEnumerator args);
 
     /// <summary>
-    ///     Filters all components in the current collection that are of <see cref="CommandInfo"/>.
+    ///     Filters all components in the current collection that are of <see cref="Command"/>.
     /// </summary>
     /// <param name="browseNestedComponents">Defines if all subcomponents of this collection should also be scanned and return their commands.</param>
     /// <returns>A lazily evaluated enumerable containing the discovered commands in this operation.</returns>
     public IEnumerable<IComponent> GetCommands(bool browseNestedComponents = true);
 
     /// <summary>
-    ///     Filters all components in the current collection that are of <see cref="CommandInfo"/>, matching the provided predicate.
+    ///     Filters all components in the current collection that are of <see cref="Command"/>, matching the provided predicate.
     /// </summary>
     /// <param name="predicate">The filter predicate to retrieve commands with.</param>
     /// <param name="browseNestedComponents">Defines if all subcomponents of this collection should also be scanned and return their commands.</param>
     /// <returns>A lazily evaluated enumerable containing the discovered commands in this operation.</returns>
-    public IEnumerable<IComponent> GetCommands(Predicate<CommandInfo> predicate, bool browseNestedComponents = true);
+    public IEnumerable<IComponent> GetCommands(Predicate<Command> predicate, bool browseNestedComponents = true);
 
     /// <summary>
-    ///     Filters all components in the current collection that are of <see cref="ModuleInfo"/>.
+    ///     Filters all components in the current collection that are of <see cref="CommandGroup"/>.
     /// </summary>
     /// <param name="browseNestedComponents">Defines if all subcomponents of this collection should also be scanned and return their modules.</param>
     /// <returns>A lazily evaluated enumerable containing the discovered modules in this operation.</returns>
     public IEnumerable<IComponent> GetModules(bool browseNestedComponents = true);
 
     /// <summary>
-    ///     Filters all components in the current collection that are of <see cref="ModuleInfo"/>, matching the provided predicate.
+    ///     Filters all components in the current collection that are of <see cref="CommandGroup"/>, matching the provided predicate.
     /// </summary>
     /// <param name="predicate">The filter predicate to retrieve modules with.</param>
     /// <param name="browseNestedComponents">Defines if all subcomponents of this collection should also be scanned and return their modules.</param>    
     /// <returns>A lazily evaluated enumerable containing the discovered modules in this operation.</returns>
-    public IEnumerable<IComponent> GetModules(Predicate<ModuleInfo> predicate, bool browseNestedComponents = true);
+    public IEnumerable<IComponent> GetModules(Predicate<CommandGroup> predicate, bool browseNestedComponents = true);
 
     /// <summary>
     ///     Retrieves the count of all subcomponents in the current collection of components, including their own subcomponents. The result is the amount of commands and modules available in this collection.

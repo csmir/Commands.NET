@@ -15,12 +15,7 @@ builder.Configuration.AddParser<Version>((caller, argument, value, services) =>
 
 builder.Configuration.AddParser(new LiteralTypeParser(caseIgnore: true));
 
-builder.AddResultHandler((caller, result, services) =>
-{
-    caller.Respond(result);
-
-    return ValueTask.CompletedTask;
-});
+builder.AddResultHandler((caller, result, services) => caller.Respond(result));
 
 builder.AddCommand("delegate", () => "Hello World!");
 builder.AddCommand("delegate-context", (CommandContext<CustomCaller> ctx) => $"Hello, {ctx.Caller.Name}!");
@@ -36,5 +31,5 @@ while (true)
 
     var consumer = new CustomCaller(name: "Harold");
 
-    await manager.Execute(consumer, input);
+    manager.Execute(consumer, input);
 }

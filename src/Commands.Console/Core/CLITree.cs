@@ -14,7 +14,7 @@ public static class CLITree
     /// <param name="tree">The <see cref="IComponentTree"/> instance that should be used to run the CLI command.</param>
     /// <param name="options">The options that set up a single command execution.</param>
     /// <returns>An asynchronous <see cref="ValueTask"/> containing the state of the command execution.</returns>
-    public static ValueTask Run<T>(this IComponentTree tree, CLIOptions<T> options)
+    public static void Run<T>(this IComponentTree tree, CLIOptions<T> options)
         where T : ConsoleCallerContext, new()
     {
 #if NET8_0_OR_GREATER
@@ -25,7 +25,7 @@ public static class CLITree
 
         options.Caller ??= new T();
 
-        return tree.Execute(options.Caller, args, options.Options);
+        tree.Execute(options.Caller, args, options.Options);
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public static class CLITree
     /// <param name="caller">The caller that represents the source of this execution.</param>
     /// <param name="args">The CLI arguments that should be used to execute a command.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> containing the state of the command execution.</returns>
-    public static ValueTask Run<T>(this IComponentTree tree, T caller, string[] args)
+    public static void Run<T>(this IComponentTree tree, T caller, string[] args)
         where T : ConsoleCallerContext, new()
     {
         var options = new CLIOptions<T>(caller)
@@ -43,7 +43,7 @@ public static class CLITree
             Arguments = args
         };
 
-        return tree.Run(options);
+        tree.Run(options);
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public static class CLITree
     {
         var configuration = new ComponentConfigurationBuilder();
 
-        configuration.Properties[ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName] = "env-core";
+        configuration.Properties["CLIDefaultOverloadName"] = "env-core";
 
         configuration.AddParser(new ColorTypeParser());
 

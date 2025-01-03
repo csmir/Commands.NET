@@ -1,39 +1,10 @@
 ﻿using Commands.Conversion;
-using System.ComponentModel;
 using System.Reflection;
 
 namespace Commands;
 
-/// <summary>
-///     A helper class that exposes utilities for command and module registration.
-/// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
-public static class ComponentUtilities
+internal static class ComponentUtilities
 {
-    /// <summary>
-    ///     Browses through the types known in the <paramref name="types"/> and returns every discovered top-level module.
-    /// </summary>
-    /// <param name="configuration">The configuration that defines the command registration process.</param>
-    /// <param name="types">The types that should be searched to discover new modules.</param>
-    /// <returns>A lazily evaluated <see cref="IEnumerable{T}"/> containing all discovered modules in the provided <paramref name="types"/>.</returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    public static IEnumerable<ModuleInfo> BuildComponents(this ComponentConfiguration configuration, params TypeDefinition[] types)
-    {
-        Assert.NotNull(types, nameof(types));
-
-        return configuration.BuildModules(types, null, false);
-    }
-
-    /// <summary>
-    ///     Gets the first attribute of the specified type set on this component, if it exists.
-    /// </summary>
-    /// <typeparam name="T">The attribute type to filter by.</typeparam>
-    /// <param name="component">The component that should be searched for the attribute.</param>
-    /// <returns>An attribute of the type <typeparamref name="T"/> if it exists; Otherwise <see langword="null"/>.</returns>
-    public static T? GetAttribute<T>(this IScorable component)
-        where T : Attribute
-        => component.Attributes.FirstOrDefault<T>();
-
     internal static T? FirstOrDefault<T>(this IEnumerable<Attribute> attributes)
         where T : Attribute
         => attributes.OfType<T>().FirstOrDefault();
@@ -66,8 +37,10 @@ public static class ComponentUtilities
     internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
         => provider.GetCustomAttributes(inherit).OfType<Attribute>();
 
-    internal static IEnumerable<ModuleInfo> BuildModules(this ComponentConfiguration configuration, TypeDefinition[] types, ModuleInfo? parent, bool isNested)
+    internal static IEnumerable<CommandGroup> BuildModules(this ComponentConfiguration configuration, DynamicType[] types, CommandGroup? parent, bool isNested)
     {
+        Assert.NotNull(types, nameof(types));
+
         foreach (var definition in types)
         {
             var type = definition.Value;
@@ -102,18 +75,11 @@ public static class ComponentUtilities
 
             // Nested modules are invalid if they have no aliases.
             if (!ignore && (!isNested || aliases.Length > 0))
-            {
-                var component = new ModuleInfo(type, parent, aliases, configuration);
-
-                var componentFilter = configuration.GetProperty<Func<IComponent, bool>>(ConfigurationPropertyDefinitions.ComponentRegistrationFilterExpression);
-
-                if (componentFilter?.Invoke(component) ?? true)
-                    yield return component;
-            }
+                yield return new CommandGroup(type, parent, aliases, configuration);
         }
     }
 
-    internal static IEnumerable<IComponent> BuildCommands(this ComponentConfiguration configuration, ModuleInfo parent, bool isNested)
+    internal static IEnumerable<IComponent> BuildCommands(this ComponentConfiguration configuration, CommandGroup parent, bool isNested)
     {
         var members = parent.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
 
@@ -143,7 +109,7 @@ public static class ComponentUtilities
             // Nested commands are valid if they have no aliases.
             if (!ignore && (isNested || aliases.Length > 0))
             {
-                CommandInfo? component;
+                Command? component;
                 if (method.IsStatic)
                 {
                     var param = method.GetParameters();
@@ -152,15 +118,12 @@ public static class ComponentUtilities
                     if (param.Length > 0 && param[0].ParameterType.IsGenericType && param[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>))
                         hasContext = true;
 
-                    component = new CommandInfo(parent, new StaticActivator(method, hasContext), aliases, hasContext, configuration);
+                    component = new Command(parent, new StaticCommandActivator(method, hasContext), aliases, hasContext, configuration);
                 }
                 else
-                    component = new CommandInfo(parent, new InstanceActivator(method), aliases, configuration);
+                    component = new Command(parent, new InstanceCommandActivator(method), aliases, configuration);
 
-                var componentFilter = configuration.GetProperty<Func<IComponent, bool>>(ConfigurationPropertyDefinitions.ComponentRegistrationFilterExpression);
-
-                if (componentFilter?.Invoke(component) ?? true)
-                    yield return component;
+                yield return component;
             }
         }
     }
@@ -168,7 +131,7 @@ public static class ComponentUtilities
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL2062", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
 #endif
-    internal static IEnumerable<IComponent> BuildNestedComponents(this ComponentConfiguration configuration, ModuleInfo parent)
+    internal static IEnumerable<IComponent> BuildNestedComponents(this ComponentConfiguration configuration, CommandGroup parent)
     {
         Assert.NotNull(parent, nameof(parent));
 
@@ -192,14 +155,14 @@ public static class ComponentUtilities
         }
     }
 
-    internal static IArgument[] BuildArguments(this MethodBase method, bool withContext, ComponentConfiguration configuration)
+    internal static ICommandParameter[] BuildArguments(this MethodBase method, bool withContext, ComponentConfiguration configuration)
     {
         var parameters = method.GetParameters();
 
         if (withContext)
             parameters = parameters.Skip(1).ToArray();
 
-        var arr = new IArgument[parameters.Length];
+        var arr = new ICommandParameter[parameters.Length];
 
         for (var i = 0; i < parameters.Length; i++)
         {
@@ -218,9 +181,9 @@ public static class ComponentUtilities
             }
 
             if (complex)
-                arr[i] = new ComplexArgumentInfo(parameters[i], name, configuration);
+                arr[i] = new CommandComplexParameter(parameters[i], name, configuration);
             else
-                arr[i] = new ArgumentInfo(parameters[i], name, configuration);
+                arr[i] = new CommandParameter(parameters[i], name, configuration);
         }
 
         return arr;
@@ -250,23 +213,23 @@ public static class ComponentUtilities
         throw new NotSupportedException($"No parser is known for type {type}.");
     }
 
-    internal static Tuple<int, int> GetLength(this IArgument[] parameters)
+    internal static Tuple<int, int> GetLength(this IEnumerable<ICommandParameter> arguments)
     {
         var minLength = 0;
         var maxLength = 0;
 
-        foreach (var parameter in parameters)
+        foreach (var parameter in arguments)
         {
-            if (parameter is ComplexArgumentInfo complexParam)
+            if (parameter is CommandComplexParameter complexArgument)
             {
-                maxLength += complexParam.MaxLength;
-                minLength += complexParam.MinLength;
+                maxLength += complexArgument.MaxLength;
+                minLength += complexArgument.MinLength;
             }
 
-            if (parameter is ArgumentInfo defaultParam)
+            if (parameter is CommandParameter defaultArgument)
             {
                 maxLength++;
-                if (!defaultParam.IsOptional)
+                if (!defaultArgument.IsOptional)
                     minLength++;
             }
         }

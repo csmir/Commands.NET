@@ -5,7 +5,7 @@ namespace Commands;
 /// <summary>
 ///     Represents an activator that can create an instance of a complex type, being a parameter marked with <see cref="ComplexAttribute"/>.
 /// </summary>
-public sealed class ComplexActivator : IActivator
+public sealed class ComplexParameterActivator : IActivator
 {
     private readonly ConstructorInfo _ctor;
 
@@ -13,7 +13,7 @@ public sealed class ComplexActivator : IActivator
     public MethodBase Target
         => _ctor;
 
-    internal ComplexActivator(
+    internal ComplexParameterActivator(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif
@@ -25,6 +25,6 @@ public sealed class ComplexActivator : IActivator
     }
 
     /// <inheritdoc />
-    public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options) where T : ICallerContext
+    public object? Invoke<T>(T caller, Command? command, object?[] args, IComponentTree? tree, CommandOptions options) where T : ICallerContext
         => _ctor.Invoke(args);
 }

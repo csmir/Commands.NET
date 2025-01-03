@@ -4,7 +4,7 @@ namespace Commands;
 
 /// <summary>
 ///     Contains a set of arguments for the command pipeline.
-///     By using either <see cref="IComponentTree.Execute{T}(T, IEnumerable{KeyValuePair{string, object?}}, CommandOptions?)"/> or <see cref="IComponentTree.Execute{T}(T, IEnumerable{object?}, CommandOptions?)"/> you can use named or unnamed command entry.
+///     By using either <see cref="IComponentTree.ExecuteAsync{T}(T, IEnumerable{KeyValuePair{string, object?}}, CommandOptions?)"/> or <see cref="IComponentTree.ExecuteAsync{T}(T, IEnumerable{object?}, CommandOptions?)"/> you can use named or unnamed command entry.
 /// </summary>
 public struct ArgumentEnumerator
 {
@@ -119,7 +119,7 @@ public struct ArgumentEnumerator
     ///     Joins the remaining unnamed arguments in the set into a single string.
     /// </summary>
     /// <returns>A joined string containing all remaining arguments in this enumerator.</returns>
-    public readonly string JoinRemaining(char separator = U0020)
+    public readonly string TakeRemaining(char separator = U0020)
 #if NET8_0_OR_GREATER
         => string.Join(separator, _unnamedArgs[_indexUnnamed..]);
 #else

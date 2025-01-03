@@ -3,10 +3,12 @@ global using System.Diagnostics;
 global using System.Diagnostics.CodeAnalysis;
 
 using Commands.Builders;
-using Commands.Conditions;
 
 namespace Commands;
 
+/// <summary>
+///     A concurrent implementation of the mechanism that allows commands to be executed using a provided set of arguments. This class cannot be inherited.
+/// </summary>
 /// <inheritdoc cref="IComponentTree"/>
 [DebuggerDisplay("Count = {Count}")]
 public sealed class ComponentTree : ComponentCollection, IComponentTree
@@ -14,9 +16,9 @@ public sealed class ComponentTree : ComponentCollection, IComponentTree
     private readonly ResultHandler[] _handlers;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="ComponentTree"/> class, which serves as a container for executing commands and modules.
+    ///     Initializes a new instance of the <see cref="ComponentTree"/> class, which serves as a container for executing commands.
     /// </summary>
-    /// <param name="components">A collection of executable components that can be executed by calling <see cref="Execute{T}(T, string, CommandOptions?)"/> or any overload of the same method.</param>
+    /// <param name="components">A collection of executable components that can be executed by calling <see cref="ExecuteAsync{T}(T, string, CommandOptions?)"/> or any overload of the same method.</param>
     /// <param name="handlers">A collection of <see cref="ResultHandler"/> implementations that handle results returned by the handler.</param>
     public ComponentTree(IEnumerable<IComponent> components, params ResultHandler[] handlers)
         : base(false)
@@ -53,8 +55,8 @@ public sealed class ComponentTree : ComponentCollection, IComponentTree
             if (!args.TryNext(searchHeight, out var value) || !component.Aliases.Contains(value))
                 continue;
 
-            if (component is ModuleInfo module)
-                discovered.AddRange(module.Find(args));
+            if (component is CommandGroup group)
+                discovered.AddRange(group.Find(args));
             else
                 discovered.Add(SearchResult.FromSuccess(component, searchHeight + 1));
         }
@@ -63,8 +65,7 @@ public sealed class ComponentTree : ComponentCollection, IComponentTree
     }
 
     /// <inheritdoc />
-    public ValueTask Execute<T>(
-        T caller, string args, CommandOptions? options = null)
+    public void Execute<T>(T caller, string args, CommandOptions? options = null) 
         where T : ICallerContext
 #if NET8_0_OR_GREATER
         => Execute(caller, ArgumentReader.ReadNamed(args), options);
@@ -73,37 +74,64 @@ public sealed class ComponentTree : ComponentCollection, IComponentTree
 #endif
 
     /// <inheritdoc />
-    public ValueTask Execute<T>(
-        T caller, IEnumerable<object> args, CommandOptions? options = null)
+    public void Execute<T>(T caller, IEnumerable<object> args, CommandOptions? options = null) 
         where T : ICallerContext
         => Execute(caller, new ArgumentEnumerator(args), options ?? new CommandOptions());
 
     /// <inheritdoc />
-    public ValueTask Execute<T>(
+    public void Execute<T>(T caller, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null) 
+        where T : ICallerContext
+    {
+        options ??= new CommandOptions();
+
+        Execute(caller, new ArgumentEnumerator(args, options.Comparer), options);
+    }
+
+    /// <inheritdoc />
+    public void Execute<T>(T caller, ArgumentEnumerator args, CommandOptions options) 
+        where T : ICallerContext
+        => StartAsynchronousPipeline(caller, args, options).GetAwaiter().GetResult();
+
+    /// <inheritdoc />
+    public Task ExecuteAsync<T>(
+        T caller, string args, CommandOptions? options = null)
+        where T : ICallerContext
+#if NET8_0_OR_GREATER
+        => ExecuteAsync(caller, ArgumentReader.ReadNamed(args), options);
+#else
+        => ExecuteAsync(caller, ArgumentReader.Read(args), options);
+#endif
+
+    /// <inheritdoc />
+    public Task ExecuteAsync<T>(
+        T caller, IEnumerable<object> args, CommandOptions? options = null)
+        where T : ICallerContext
+        => ExecuteAsync(caller, new ArgumentEnumerator(args), options ?? new CommandOptions());
+
+    /// <inheritdoc />
+    public Task ExecuteAsync<T>(
         T caller, IEnumerable<KeyValuePair<string, object?>> args, CommandOptions? options = null)
         where T : ICallerContext
     {
         options ??= new CommandOptions();
 
-        return Execute(caller, new ArgumentEnumerator(args, options.Comparer), options);
+        return ExecuteAsync(caller, new ArgumentEnumerator(args, options.Comparer), options);
     }
 
     /// <inheritdoc />
-    public ValueTask Execute<T>(
+    public Task ExecuteAsync<T>(
         T caller, ArgumentEnumerator args, CommandOptions options)
         where T : ICallerContext
     {
         var task = StartAsynchronousPipeline(caller, args, options);
 
         if (options.AsynchronousExecution)
-            return default;
+            return Task.CompletedTask;
 
         return task;
     }
 
-    #region Pipeline
-
-    private async ValueTask StartAsynchronousPipeline<T>(
+    private async Task StartAsynchronousPipeline<T>(
         T caller, ArgumentEnumerator args, CommandOptions options)
         where T : ICallerContext
     {
@@ -112,7 +140,7 @@ public sealed class ComponentTree : ComponentCollection, IComponentTree
         var searches = Find(args);
         foreach (var search in searches)
         {
-            if (search.Component is CommandInfo command)
+            if (search.Component is Command command)
             {
                 result = await InvokeCommand(caller, command, search.SearchHeight, args, options);
 
@@ -128,39 +156,41 @@ public sealed class ComponentTree : ComponentCollection, IComponentTree
 
         result ??= SearchResult.FromError();
 
-        await FinalizeInvocation(caller, result, options);
+        foreach (var resolver in _handlers)
+            await resolver.HandleResult(caller, result, options.Services, options.CancellationToken);
     }
 
     private async ValueTask<IExecuteResult> InvokeCommand<T>(
-        T caller, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
+        T caller, Command command, int argHeight, ArgumentEnumerator args, CommandOptions options)
         where T : ICallerContext
     {
         options.CancellationToken.ThrowIfCancellationRequested();
 
-        var beforeConvertConditions = await CheckConditions(caller, command, ConditionTrigger.Parsing, options);
+        var conversion = await ParseCommand(caller, command, argHeight, args, options);
 
-        if (!beforeConvertConditions.Success)
-            return beforeConvertConditions;
-
-        var conversion = await ConvertCommand(caller, command, argHeight, args, options);
-
-        var arguments = new object[conversion.Length];
+        var arguments = new object?[conversion.Length];
 
         for (int i = 0; i < conversion.Length; i++)
         {
             if (!conversion[i].Success)
                 return MatchResult.FromError(command, conversion[i].Exception!);
 
-            arguments[i] = conversion[i].Value!;
+            arguments[i] = conversion[i].Value;
+        }
+
+        if (!options.SkipConditions)
+        {
+            foreach (var condition in command.Evaluators)
+            {
+                var checkResult = await condition.Evaluate(caller, command, options.Services, options.CancellationToken);
+
+                if (!checkResult.Success)
+                    return checkResult;
+            }
         }
 
         try
         {
-            var beforeInvocationConditions = await CheckConditions(caller, command, ConditionTrigger.Execution, options);
-
-            if (!beforeInvocationConditions.Success)
-                return beforeInvocationConditions;
-
             var value = command.Activator.Invoke(caller, command, arguments, this, options);
 
             return InvokeResult.FromSuccess(command, value);
@@ -171,56 +201,55 @@ public sealed class ComponentTree : ComponentCollection, IComponentTree
         }
     }
 
-    private async ValueTask<ParseResult[]> ConvertCommand<T>(
-        T caller, CommandInfo command, int argHeight, ArgumentEnumerator args, CommandOptions options)
+    private async ValueTask<ParseResult[]> ParseCommand<T>(
+        T caller, Command command, int argHeight, ArgumentEnumerator args, CommandOptions options)
         where T : ICallerContext
     {
         options.CancellationToken.ThrowIfCancellationRequested();
 
         args.SetSize(argHeight);
 
-        if (!command.HasArguments && args.Length == 0)
+        if (!command.HasParameters && args.Length == 0)
             return [];
 
         if (command.MaxLength == args.Length)
-            return await ParseArguments(caller, command.Arguments, args, options);
+            return await ParseParameters(caller, command.Parameters, args, options);
 
         if (command.MaxLength <= args.Length && command.HasRemainder)
-            return await ParseArguments(caller, command.Arguments, args, options);
+            return await ParseParameters(caller, command.Parameters, args, options);
 
         if (command.MaxLength > args.Length && command.MinLength <= args.Length)
-            return await ParseArguments(caller, command.Arguments, args, options);
+            return await ParseParameters(caller, command.Parameters, args, options);
 
         return [ParseResult.FromError(ParseException.ArgumentMismatch(command.MinLength, args.Length))];
     }
 
-    private async ValueTask<ParseResult[]> ParseArguments(
-        ICallerContext caller, IArgument[] arguments, ArgumentEnumerator args, CommandOptions options)
+    private async ValueTask<ParseResult[]> ParseParameters(
+        ICallerContext caller, ICommandParameter[] parameters, ArgumentEnumerator args, CommandOptions options)
     {
         options.CancellationToken.ThrowIfCancellationRequested();
 
-        var results = new ParseResult[arguments.Length];
+        var results = new ParseResult[parameters.Length];
 
-        for (int i = 0; i < arguments.Length; i++)
+        for (int i = 0; i < parameters.Length; i++)
         {
-            var argument = arguments[i];
+            var argument = parameters[i];
 
             if (argument.IsRemainder)
             {
-                results[i] = await argument.Parse(caller, argument.IsCollection ? args.TakeRemaining() : args.JoinRemaining(options.RemainderSeparator), options.Services, options.CancellationToken);
-
+                results[i] = await argument.Parse(caller, argument.IsCollection ? args.TakeRemaining() : args.TakeRemaining(options.RemainderSeparator), options.Services, options.CancellationToken);
                 break;
             }
 
-            if (argument is ComplexArgumentInfo complexArgument)
+            if (argument is CommandComplexParameter complexParameter)
             {
-                var result = await ParseArguments(caller, complexArgument.Arguments, args, options);
+                var result = await ParseParameters(caller, complexParameter.Parameters, args, options);
 
                 if (result.All(x => x.Success))
                 {
                     try
                     {
-                        results[i] = ParseResult.FromSuccess(complexArgument.Activator.Invoke(caller, null, result.Select(x => x.Value).ToArray(), null, options));
+                        results[i] = ParseResult.FromSuccess(complexParameter.Activator.Invoke(caller, null, result.Select(x => x.Value).ToArray(), null, options));
                     }
                     catch (Exception ex)
                     {
@@ -230,61 +259,22 @@ public sealed class ComponentTree : ComponentCollection, IComponentTree
                     continue;
                 }
 
-                if (complexArgument.IsOptional)
+                if (complexParameter.IsOptional)
                     results[i] = ParseResult.FromSuccess(Type.Missing);
 
                 continue;
             }
 
             if (args.TryNext(argument.Name!, out var value))
-            {
                 results[i] = await argument.Parse(caller, value, options.Services, options.CancellationToken);
-
-                continue;
-            }
-
-            if (argument.IsOptional)
-            {
+            else if (argument.IsOptional)
                 results[i] = ParseResult.FromSuccess(Type.Missing);
-
-                continue;
-            }
-
-            results[i] = ParseResult.FromError(new ArgumentNullException(argument.Name));
+            else
+                results[i] = ParseResult.FromError(new ArgumentNullException(argument.Name));
         }
 
         return results;
     }
-
-    private async ValueTask<ConditionResult> CheckConditions<T>(
-        T caller, CommandInfo command, ConditionTrigger trigger, CommandOptions options)
-        where T : ICallerContext
-    {
-        if (!options.SkipConditions)
-        {
-            foreach (var condition in command.Evaluators)
-            {
-                if (condition.Trigger.HasFlag(trigger))
-                {
-                    var checkResult = await condition.Evaluate(caller, command, trigger, options.Services, options.CancellationToken);
-
-                    if (!checkResult.Success)
-                        return checkResult;
-                }
-            }
-        }
-
-        return ConditionResult.FromSuccess(trigger);
-    }
-
-    private async ValueTask FinalizeInvocation(
-        ICallerContext caller, IExecuteResult result, CommandOptions options)
-    {
-        foreach (var resolver in _handlers)
-            await resolver.HandleResult(caller, result, options.Services, options.CancellationToken);
-    }
-
-    #endregion
 
     /// <summary>
     ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="ComponentTree"/>. This builder is pre-configured with default settings.

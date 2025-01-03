@@ -9,7 +9,7 @@ var tree = ComponentTree.CreateBuilder()
         configure.AddParser(new CSharpScriptParser());
     })
     .WithTypes(typeof(Program).Assembly.GetExportedTypes())
-    .AddResultHandler(async (c, r, s) => await c.Respond(r))
+    .AddResultHandler((c, r, s) => c.Respond(r))
     .Build();
 
 var services = new ServiceCollection()
@@ -20,7 +20,7 @@ while (true)
 {
     var input = AnsiConsole.Prompt(new TextPrompt<string>("Enter a command"));
 
-    using var scope = services.CreateAsyncScope();
+    using var scope = services.CreateScope();
 
     var values = ArgumentReader.ReadNamed(input);
 
@@ -29,10 +29,8 @@ while (true)
         ArgumentCount = values.Count()
     };
 
-    await tree.Execute(caller, values, new()
+    tree.Execute(caller, values, new()
     {
         Services = scope.ServiceProvider
     });
-
-    await scope.DisposeAsync();
 }

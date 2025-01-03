@@ -6,7 +6,7 @@ namespace Commands;
 ///     Reveals information about a service parameter.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public sealed class ServiceInfo : IParameter
+public sealed class CommandGroupService : IParameter
 {
     /// <inheritdoc />
     public Type Type { get; }
@@ -20,7 +20,7 @@ public sealed class ServiceInfo : IParameter
     /// <inheritdoc />
     public bool IsOptional { get; }
 
-    internal ServiceInfo(
+    internal CommandGroupService(
         ParameterInfo parameterInfo)
     {
         var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);

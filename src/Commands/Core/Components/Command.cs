@@ -3,10 +3,10 @@
 namespace Commands;
 
 /// <summary>
-///     Reveals information about a command.
+///     Contains information about a command that can be executed using an <see cref="IComponentTree"/>.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public sealed class CommandInfo : IComponent, IArgumentBucket
+public sealed class Command : IComponent, IParameterCollection
 {
     /// <inheritdoc />
     public IActivator Activator { get; }
@@ -21,7 +21,7 @@ public sealed class CommandInfo : IComponent, IArgumentBucket
     public ConditionEvaluator[] Evaluators { get; }
 
     /// <inheritdoc />
-    public IArgument[] Arguments { get; }
+    public ICommandParameter[] Parameters { get; }
 
     /// <inheritdoc />
     public bool HasRemainder { get; }
@@ -33,7 +33,7 @@ public sealed class CommandInfo : IComponent, IArgumentBucket
     public int MaxLength { get; }
 
     /// <inheritdoc />
-    public ModuleInfo? Parent { get; }
+    public CommandGroup? Parent { get; }
 
     /// <inheritdoc />
     public string? Name
@@ -48,7 +48,7 @@ public sealed class CommandInfo : IComponent, IArgumentBucket
         => GetScore();
 
     /// <inheritdoc />
-    public bool IsRuntimeComponent
+    public bool IsEmittedComponent
         => Parent == null;
 
     /// <inheritdoc />
@@ -60,23 +60,23 @@ public sealed class CommandInfo : IComponent, IArgumentBucket
         => Aliases.Length == 0;
 
     /// <inheritdoc />
-    public bool HasArguments
-        => Arguments.Length > 0;
+    public bool HasParameters
+        => Parameters.Length > 0;
 
-    internal CommandInfo(ModuleInfo parent, StaticActivator invoker, string[] aliases, bool hasContext, ComponentConfiguration options)
+    internal Command(CommandGroup parent, StaticCommandActivator invoker, string[] aliases, bool hasContext, ComponentConfiguration options)
         : this(parent, invoker, [], aliases, hasContext, options)
     {
 
     }
 
-    internal CommandInfo(ModuleInfo parent, InstanceActivator activator, string[] aliases, ComponentConfiguration configuration)
+    internal Command(CommandGroup parent, InstanceCommandActivator activator, string[] aliases, ComponentConfiguration configuration)
         : this(parent, activator, [], aliases, true, configuration)
     {
 
     }
 
-    internal CommandInfo(
-        ModuleInfo? parent, IActivator invoker, ICondition[] conditions, string[] aliases, bool hasContext, ComponentConfiguration configuration)
+    internal Command(
+        CommandGroup? parent, IActivator invoker, ICondition[] conditions, string[] aliases, bool hasContext, ComponentConfiguration configuration)
     {
         var parameters = invoker.Target.BuildArguments(hasContext, configuration);
 
@@ -107,7 +107,7 @@ public sealed class CommandInfo : IComponent, IArgumentBucket
             .Concat(parent?.Evaluators ?? [])
             .ToArray();
 
-        Arguments = parameters;
+        Parameters = parameters;
         HasRemainder = parameters.Any(x => x.IsRemainder);
     }
 
@@ -116,7 +116,7 @@ public sealed class CommandInfo : IComponent, IArgumentBucket
     {
         var score = 1.0f;
 
-        foreach (var argument in Arguments)
+        foreach (var argument in Parameters)
             score += argument.GetScore();
 
         score += Attributes.FirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
@@ -130,7 +130,7 @@ public sealed class CommandInfo : IComponent, IArgumentBucket
 
     /// <inheritdoc />
     public bool Equals(IComponent? other)
-        => other is CommandInfo info && ReferenceEquals(this, info);
+        => other is Command info && ReferenceEquals(this, info);
 
     /// <inheritdoc />
     public override string ToString()
@@ -139,11 +139,11 @@ public sealed class CommandInfo : IComponent, IArgumentBucket
     /// <inheritdoc cref="ToString()"/>
     /// <param name="withModuleInfo">Defines if the module information should be appended on the command level.</param>
     public string ToString(bool withModuleInfo)
-        => $"{(withModuleInfo ? $"{Parent}." : "")}{Activator.Target.Name}{(Name != null ? $"['{Name}']" : "")}({string.Join<IArgument>(", ", Arguments)})";
+        => $"{(withModuleInfo ? $"{Parent}." : "")}{Activator.Target.Name}{(Name != null ? $"['{Name}']" : "")}({string.Join<ICommandParameter>(", ", Parameters)})";
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => obj is CommandInfo info && ReferenceEquals(this, info);
+        => obj is Command info && ReferenceEquals(this, info);
 
     /// <inheritdoc />
     public override int GetHashCode()

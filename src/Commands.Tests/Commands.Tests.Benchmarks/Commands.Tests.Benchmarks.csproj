@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Commands\Commands.csproj" />
-	<ProjectReference Include="..\..\Commands.Hosting\Commands.Hosting.csproj" />
   </ItemGroup>
 
 </Project>

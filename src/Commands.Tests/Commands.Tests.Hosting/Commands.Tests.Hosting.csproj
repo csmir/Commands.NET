@@ -16,8 +16,4 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Commands.Hosting\Commands.Hosting.csproj" />
-  </ItemGroup>
-
 </Project>

@@ -5,7 +5,7 @@ namespace Commands;
 /// <summary>
 ///     An invoker for delegate commands.
 /// </summary>
-public sealed class DelegateActivator : IActivator
+public sealed class DelegateCommandActivator : IActivator
 {
     private readonly object? _instance;
     private readonly bool _withContext;
@@ -15,7 +15,7 @@ public sealed class DelegateActivator : IActivator
     public MethodBase Target
         => _method;
 
-    internal DelegateActivator(MethodInfo target, object? instance, bool withContext)
+    internal DelegateCommandActivator(MethodInfo target, object? instance, bool withContext)
     {
         _withContext = withContext;
         _instance = instance;
@@ -23,7 +23,7 @@ public sealed class DelegateActivator : IActivator
     }
 
     /// <inheritdoc />
-    public object? Invoke<T>(T caller, CommandInfo? command, object?[] args, IComponentTree? tree, CommandOptions options)
+    public object? Invoke<T>(T caller, Command? command, object?[] args, IComponentTree? tree, CommandOptions options)
         where T : ICallerContext
     {
         if (_withContext)

@@ -16,8 +16,8 @@ public static class CLITreeBuilder
     /// <returns>The same <see cref="ComponentTreeBuilder"/> for call-chaining.</returns>
     public static ITreeBuilder AddCommand(this ITreeBuilder builder, Delegate commandAction)
     {
-        var coreCommandName = builder.Configuration.Properties[ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName] as string
-            ?? throw new NotSupportedException($"{nameof(ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName)} is unavailable in the current context.");
+        var coreCommandName = builder.Configuration.Properties["CLIDefaultOverloadName"] as string
+            ?? throw new NotSupportedException($"The default CLI overload name is unavailable in the current context.");
 
         builder.AddCommand(coreCommandName, commandAction, []);
 
@@ -30,11 +30,11 @@ public static class CLITreeBuilder
     /// <param name="builder">The command builder to build into a manager.</param>
     /// <param name="options">The options that set up a single command execution.</param>
     /// <returns>An asynchronous <see cref="ValueTask"/> containing the state of the command execution.</returns>
-    public static ValueTask Run<T>(this ITreeBuilder builder, CLIOptions<T> options)
+    public static void Run<T>(this ITreeBuilder builder, CLIOptions<T> options)
         where T : ConsoleCallerContext
     {
-        var coreCommandName = builder.Configuration.Properties[ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName] as string
-            ?? throw new NotSupportedException($"{nameof(ConsoleConfigurationPropertyDefinitions.CLIDefaultOverloadName)} is unavailable in the current context.");
+        var coreCommandName = builder.Configuration.Properties["CLIDefaultOverloadName"] as string
+            ?? throw new NotSupportedException($"The default CLI overload name is unavailable in the current context.");
 
         var manager = builder.Build();
 
@@ -47,7 +47,7 @@ public static class CLITreeBuilder
         var args = ArgumentReader.Read(string.Join(" ", options.Arguments));
 #endif
 
-        return manager.Execute(options.Caller, args, options.Options);
+        manager.Execute(options.Caller, args, options.Options);
     }
 
     /// <summary>
@@ -57,7 +57,7 @@ public static class CLITreeBuilder
     /// <param name="caller">The caller that represents the source of this execution.</param>
     /// <param name="args">The CLI arguments that should be used to execute a command.</param>
     /// <returns>An asynchronous <see cref="ValueTask"/> containing the state of the command execution. This task should be awaited </returns>
-    public static ValueTask Run<T>(this ITreeBuilder builder, T caller, string[] args)
+    public static void Run<T>(this ITreeBuilder builder, T caller, string[] args)
         where T : ConsoleCallerContext
     {
         var options = new CLIOptions<T>(caller)
@@ -65,6 +65,6 @@ public static class CLITreeBuilder
             Arguments = args
         };
 
-        return builder.Run(options);
+        builder.Run(options);
     }
 }

@@ -33,7 +33,7 @@ public sealed class ColorTypeParser : TypeParser<Color>
     }
 
     /// <inheritdoc />
-    public override ValueTask<ParseResult> Parse(ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+    public override ValueTask<ParseResult> Parse(ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
         // The order of operations is built to be as efficient as possible, from the most common input types taking priority.
         if (value is not string str)

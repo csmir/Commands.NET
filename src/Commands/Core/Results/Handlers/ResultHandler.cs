@@ -8,22 +8,22 @@ namespace Commands;
 /// <remarks>
 ///     Implementing this type allows you to treat result data and scope finalization of all commands executed by the provided <see cref="ICallerContext"/>, regardless on whether the command execution succeeded or not.
 /// </remarks>
-/// <typeparam name="T"></typeparam>
-public abstract class ResultHandler<T> : ResultHandler
-    where T : class, ICallerContext
+/// <typeparam name="TCaller"></typeparam>
+public abstract class ResultHandler<TCaller> : ResultHandler
+    where TCaller : class, ICallerContext
 {
     /// <inheritdoc cref="ResultHandler.HandleResult(ICallerContext, IExecuteResult, IServiceProvider, CancellationToken)"/>.
     /// <remarks>
-    ///     This method is only executed when the provided <paramref name="caller"/> is of type <typeparamref name="T"/>.
+    ///     This method is only executed when the provided <paramref name="caller"/> is of type <typeparamref name="TCaller"/>.
     /// </remarks>
-    public virtual ValueTask HandleResult(T caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+    public virtual ValueTask HandleResult(TCaller caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         => base.HandleResult(caller, result, services, cancellationToken);
 
     /// <inheritdoc />
     public override ValueTask HandleResult(
         ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (caller is T typedCaller)
+        if (caller is TCaller typedCaller)
             return HandleResult(typedCaller, result, services, cancellationToken);
 
         // If the caller is not of type T, return default, not handling the result.
@@ -94,12 +94,20 @@ public abstract class ResultHandler
     protected async virtual ValueTask HandleSuccess(
         ICallerContext caller, IValueResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
+        async ValueTask Respond(object? obj)
+        {
+            if (caller is IAsyncCallerContext asyncCaller)
+                await asyncCaller.Respond(obj);
+            else
+                caller.Respond(obj);
+        }
+
         if (result is InvokeResult invokeResult)
         {
             switch (invokeResult.Value)
             {
                 case null: // (void)
-                    break;
+                    return;
 
                 case Task task:
                     await task;
@@ -113,13 +121,13 @@ public abstract class ResultHandler
                         var output = _taskGetValue?.Invoke(task, null);
 
                         if (output != null)
-                            await caller.Respond(output);
+                            await Respond(output);
                     }
+                    return;
 
-                    break;
                 case object obj:
-                    await caller.Respond(obj);
-                    break;
+                    await Respond(obj);
+                    return;
             }
         }
     }

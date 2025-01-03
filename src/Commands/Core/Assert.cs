@@ -20,7 +20,7 @@ public sealed class Assert
         if (!permitNamelessEntry && !aliases.Any())
             throw new ArgumentException("This nested component must have at least one name.");
 
-        var pattern = configuration.GetProperty<Regex>(ConfigurationPropertyDefinitions.NameValidationExpression);
+        var pattern = configuration.GetProperty<Regex>("NameValidationExpression");
 
         foreach (var alias in aliases)
         {

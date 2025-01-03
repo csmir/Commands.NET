@@ -10,14 +10,14 @@ public abstract class CommandModule<T> : CommandModule
     private T? _caller;
 
     /// <summary>
-    ///     Gets the caller for the command currently in scope.
+    ///     Gets the caller that requested this command to be executed.
     /// </summary>
     /// <remarks>
     ///     This property assumes the type of <typeparamref name="T"/> is the same as the provided <see cref="ICallerContext"/>.
     /// </remarks>
-    /// <exception cref="InvalidOperationException">Thrown when <typeparamref name="T"/> does not match with the provided</exception>
+    /// <exception cref="InvalidCastException">Thrown when the context cannot be cast to <typeparamref name="T"/></exception>
     public new T Caller
-       => _caller ??= base.Caller is T caller ? caller : throw new InvalidOperationException($"{base.Caller.GetType()} cannot be cast to {typeof(T)}.");
+       => _caller ??= base.Caller is T caller ? caller : throw new InvalidCastException($"{base.Caller.GetType()} cannot be cast to {typeof(T)}.");
 }
 
 /// <summary>
@@ -30,17 +30,17 @@ public abstract class CommandModule<T> : CommandModule
 public abstract class CommandModule
 {
     /// <summary>
-    ///     Gets the consumer for the command currently in scope.
+    ///     Gets the caller that requested this command to be executed.
     /// </summary>
     public ICallerContext Caller { get; internal set; } = null!;
 
     /// <summary>
-    ///     Gets the reflection information about the command currently in scope.
+    ///     Gets the information about the command currently being executed.
     /// </summary>
-    public CommandInfo Command { get; internal set; } = null!;
+    public Command Command { get; internal set; } = null!;
 
     /// <summary>
-    ///     Gets the command tree that is responsible for the current command pipeline.
+    ///     Gets the command tree that is responsible for the current command execution.
     /// </summary>
     public IComponentTree Tree { get; internal set; } = null!;
 
@@ -49,6 +49,15 @@ public abstract class CommandModule
     /// </summary>
     /// <param name="message">The message to send to the caller.</param>
     /// <returns>An awaitable <see cref="Task"/> containing the result of this operation.</returns>
-    public Task Respond(object message)
-        => Caller.Respond(message);
+    public Task Respond(object? message)
+    {
+        if (Caller is IAsyncCallerContext asyncCaller)
+        {
+            return asyncCaller.Respond(message);
+        }
+
+        Caller.Respond(message);
+
+        return Task.CompletedTask;
+    }
 }

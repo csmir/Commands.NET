@@ -7,13 +7,13 @@
 ///     This context is used for <see langword="static"/> and <see langword="delegate"/> commands. 
 ///     By marking it as the first parameter of any of these command types, the <see cref="IComponentTree"/> will automatically inject the context into the method.
 /// </remarks>
-public class CommandContext<T>(T consumer, CommandInfo command, IComponentTree tree, CommandOptions options)
+public class CommandContext<T>(T caller, Command command, IComponentTree tree, CommandOptions options)
     where T : ICallerContext
 {
     /// <summary>
-    ///     Gets the consumer of the command currently in scope.
+    ///     Gets the caller that requested this command to be executed.
     /// </summary>
-    public T Caller { get; } = consumer;
+    public T Caller { get; } = caller;
 
     /// <summary>
     ///     Gets the options for the command currently in scope.
@@ -21,20 +21,27 @@ public class CommandContext<T>(T consumer, CommandInfo command, IComponentTree t
     public CommandOptions Options { get; } = options;
 
     /// <summary>
-    ///     Gets the reflection information about the command currently in scope.
+    ///     Gets the information about the command currently being executed.
     /// </summary>
-    public CommandInfo Command { get; } = command;
+    public Command Command { get; } = command;
 
     /// <summary>
-    ///     Gets the command manager responsible for executing the current pipeline.
+    ///     Gets the command tree that is responsible for the current command execution.
     /// </summary>
     public IComponentTree Tree { get; } = tree;
 
     /// <summary>
-    ///     Sends a response to the consumer of the command.
+    ///     Sends a response to the caller of the command.
     /// </summary>
-    /// <param name="response">The response to send to the consumer.</param>
+    /// <param name="response">The response to send to the caller.</param>
     /// <returns>An awaitable <see cref="Task"/> containing the state of the response.</returns>
     public Task Respond(object? response)
-        => Caller.Respond(response);
+    {
+        if (Caller is IAsyncCallerContext asyncCaller)
+            return asyncCaller.Respond(response);
+        else
+            Caller.Respond(response);
+
+        return Task.CompletedTask;
+    }
 }

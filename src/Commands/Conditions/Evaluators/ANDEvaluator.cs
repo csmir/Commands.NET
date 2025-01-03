@@ -6,16 +6,16 @@
 public sealed class ANDEvaluator : ConditionEvaluator
 {
     /// <inheritdoc />
-    public override async ValueTask<ConditionResult> Evaluate(ICallerContext consumer, CommandInfo command, ConditionTrigger trigger, IServiceProvider services, CancellationToken cancellationToken)
+    public override async ValueTask<ConditionResult> Evaluate(ICallerContext consumer, Command command, IServiceProvider services, CancellationToken cancellationToken)
     {
         foreach (var condition in Conditions)
         {
-            var result = await condition.Evaluate(consumer, command, trigger, services, cancellationToken);
+            var result = await condition.Evaluate(consumer, command, services, cancellationToken);
 
             if (!result.Success)
-                return ConditionResult.FromError(trigger, result.Exception!);
+                return result;
         }
 
-        return ConditionResult.FromSuccess(trigger);
+        return ConditionResult.FromSuccess();
     }
 }

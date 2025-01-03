@@ -9,7 +9,7 @@ public sealed class TryParseParser<T>(TryParseParser<T>.ParseDelegate parser) : 
 {
     /// <inheritdoc />
     public override ValueTask<ParseResult> Parse(
-        ICallerContext caller, IArgument argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
         if ((value is string str && parser(str, out var result)) || parser(value?.ToString(), out result))
             return Success(result);

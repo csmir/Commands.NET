@@ -1,5 +1,6 @@
 ﻿using Commands.Builders;
 using Commands.Conversion;
+using System.Reflection;
 
 namespace Commands;
 
@@ -66,6 +67,17 @@ public sealed class ComponentConfiguration
     /// <returns>The value returned by <paramref name="key"/> if it exists and can be cast to <typeparamref name="T"/>; Otherwise <paramref name="defaultValue"/>.</returns>
     public T? GetProperty<T>(object key, T? defaultValue = default)
         => Properties.TryGetValue(key, out var value) && value is T tValue ? tValue : defaultValue;
+
+    /// <summary>
+    ///     Recursively searches through all the provided types and contained nested types to find all implementations of <see cref="CommandModule"/> or <see cref="CommandModule{T}"/>.
+    /// </summary>
+    /// <remarks>
+    ///     The provided types do not have to be implementations of a module type, as this operation ignores types that are not. Supplying <see cref="Assembly.GetTypes"/> -or other implicitly sourced type collections- is valid.
+    /// </remarks>
+    /// <param name="types">A collection of <see cref="DynamicType"/> which accepts <see cref="Type"/>, which could, or should, contain command modules.</param>
+    /// <returns>A lazily evaluated collection of <see cref="IComponent"/> implementations, being either <see cref="Command"/> or <see cref="CommandGroup"/> depending on if a method or a type was resolved.</returns>
+    public IEnumerable<IComponent> GetComponents(params DynamicType[] types)
+        => ComponentUtilities.BuildModules(this, types, null, false);
 
     /// <summary>
     ///     Creates a new instance of <see cref="ComponentConfigurationBuilder"/>, which can be built into an instance of <see cref="ComponentConfiguration"/>.

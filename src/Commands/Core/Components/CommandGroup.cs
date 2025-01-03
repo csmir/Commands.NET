@@ -6,7 +6,7 @@ namespace Commands;
 ///     Reveals information about a command module, hosting zero-or-more commands.
 /// </summary>
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
-public sealed class ModuleInfo : ComponentCollection, IComponent
+public sealed class CommandGroup : ComponentCollection, IComponent
 {
     /// <summary>
     ///     Gets the type of this module.
@@ -35,7 +35,7 @@ public sealed class ModuleInfo : ComponentCollection, IComponent
     public ConditionEvaluator[] Evaluators { get; }
 
     /// <inheritdoc />
-    public ModuleInfo? Parent { get; }
+    public CommandGroup? Parent { get; }
 
     /// <inheritdoc />
     public string? Name
@@ -50,7 +50,7 @@ public sealed class ModuleInfo : ComponentCollection, IComponent
         => GetScore();
 
     /// <inheritdoc />
-    public bool IsRuntimeComponent
+    public bool IsEmittedComponent
         => Type == null;
 
     /// <inheritdoc />
@@ -61,12 +61,12 @@ public sealed class ModuleInfo : ComponentCollection, IComponent
     public bool IsDefault
         => false;
 
-    internal ModuleInfo(
+    internal CommandGroup(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
-        Type type, ModuleInfo? parent, string[] aliases, ComponentConfiguration configuration)
-        : base(configuration.GetProperty(ConfigurationPropertyDefinitions.MakeModulesReadonly, false))
+        Type type, CommandGroup? parent, string[] aliases, ComponentConfiguration configuration)
+        : base(configuration.GetProperty("MakeModulesReadonly", false))
     {
         Parent = parent;
         Type = type;
@@ -78,13 +78,13 @@ public sealed class ModuleInfo : ComponentCollection, IComponent
 
         Aliases = aliases;
 
-        Activator = new ModuleActivator(type);
+        Activator = new CommandGroupActivator(type);
 
         Push(configuration.BuildNestedComponents(this).OrderByDescending(x => x.Score));
     }
 
-    internal ModuleInfo(
-        ModuleInfo? parent, ICondition[] conditions, string[] aliases)
+    internal CommandGroup(
+        CommandGroup? parent, ICondition[] conditions, string[] aliases)
         : base(false)
     {
         Parent = parent;
@@ -120,7 +120,7 @@ public sealed class ModuleInfo : ComponentCollection, IComponent
 
     /// <inheritdoc />
     public bool Equals(IComponent? other)
-        => other is ModuleInfo info && ReferenceEquals(this, info);
+        => other is CommandGroup info && ReferenceEquals(this, info);
 
     /// <inheritdoc />
     public override IEnumerable<SearchResult> Find(ArgumentEnumerator args)
@@ -139,7 +139,7 @@ public sealed class ModuleInfo : ComponentCollection, IComponent
 
             if (args.TryNext(searchHeight, out var value) && component.Aliases.Contains(value))
             {
-                if (component is ModuleInfo module)
+                if (component is CommandGroup module)
                     discovered.AddRange(module.Find(args));
                 else
                     discovered.Add(SearchResult.FromSuccess(component, searchHeight + 1));
@@ -155,7 +155,7 @@ public sealed class ModuleInfo : ComponentCollection, IComponent
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
-        => obj is ModuleInfo info && ReferenceEquals(this, info);
+        => obj is CommandGroup info && ReferenceEquals(this, info);
 
     /// <inheritdoc />
     public override int GetHashCode()

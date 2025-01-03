@@ -1,9 +1,9 @@
-﻿namespace Commands.Samples;
+﻿using Microsoft.Extensions.Logging;
 
-public sealed class HostedCallerContext(string input) : ICallerContext
+namespace Commands.Samples;
+
+public sealed class HostedCallerContext(ILogger logger) : ICallerContext
 {
-    public string? Input { get; } = input;
-
-    public Task Respond(object? response)
-        => new(() => Console.WriteLine(response));
+    public void Respond(object? response)
+        => logger.LogInformation("Response: {}", response);
 }

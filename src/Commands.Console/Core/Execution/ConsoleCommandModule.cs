@@ -5,9 +5,9 @@ namespace Commands;
 /// <summary>
 ///     Represents a module that can contain commands to execute, implementing <see cref="CommandModule{TConsumer}"/> with expanded functionality for console applications.
 /// </summary>
-/// <typeparam name="TConsumer">The consumer of the command being executed.</typeparam>
-public class ConsoleCommandModule<TConsumer> : CommandModule<TConsumer>
-    where TConsumer : ConsoleCallerContext
+/// <typeparam name="TCaller">The consumer of the command being executed.</typeparam>
+public class ConsoleCommandModule<TCaller> : CommandModule<TCaller>
+    where TCaller : ConsoleCallerContext
 {
     /// <summary>
     ///     Sends a question to the console and returns the response.
@@ -59,5 +59,5 @@ public class ConsoleCommandModule<TConsumer> : CommandModule<TConsumer>
     /// </summary>
     /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
     public virtual Task Send()
-        => Caller.Send();
+        => Caller.NewLine();
 }

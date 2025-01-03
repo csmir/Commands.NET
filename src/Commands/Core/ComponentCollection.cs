@@ -32,19 +32,19 @@ public abstract class ComponentCollection : IComponentCollection
         => GetCommands(_ => true, browseNestedComponents);
 
     /// <inheritdoc />
-    public IEnumerable<IComponent> GetCommands(Predicate<CommandInfo> predicate, bool browseNestedComponents = true)
+    public IEnumerable<IComponent> GetCommands(Predicate<Command> predicate, bool browseNestedComponents = true)
     {
         if (!browseNestedComponents)
-            return _components.Where(x => x is CommandInfo info && predicate(info));
+            return _components.Where(x => x is Command cmd && predicate(cmd));
 
         List<IComponent> discovered = [];
 
         foreach (var component in _components)
         {
-            if (component is CommandInfo command && predicate(command))
+            if (component is Command command && predicate(command))
                 discovered.Add(command);
 
-            if (component is ModuleInfo module)
+            if (component is CommandGroup module)
                 discovered.AddRange(module.GetCommands(predicate, browseNestedComponents));
         }
 
@@ -56,21 +56,21 @@ public abstract class ComponentCollection : IComponentCollection
         => GetModules(_ => true, browseNestedComponents);
 
     /// <inheritdoc />
-    public IEnumerable<IComponent> GetModules(Predicate<ModuleInfo> predicate, bool browseNestedComponents = true)
+    public IEnumerable<IComponent> GetModules(Predicate<CommandGroup> predicate, bool browseNestedComponents = true)
     {
         if (!browseNestedComponents)
-            return _components.Where(x => x is ModuleInfo info && predicate(info));
+            return _components.Where(x => x is CommandGroup grp && predicate(grp));
 
         List<IComponent> discovered = [];
 
         foreach (var component in _components)
         {
-            if (component is ModuleInfo module)
+            if (component is CommandGroup grp)
             {
-                if (predicate(module))
+                if (predicate(grp))
                     discovered.Add(component);
 
-                discovered.AddRange(module.GetModules(predicate, browseNestedComponents));
+                discovered.AddRange(grp.GetModules(predicate, browseNestedComponents));
             }
         }
 
@@ -83,8 +83,8 @@ public abstract class ComponentCollection : IComponentCollection
         var sum = 0;
         foreach (var component in _components)
         {
-            if (component is ModuleInfo module)
-                sum += module.CountAll();
+            if (component is CommandGroup grp)
+                sum += grp.CountAll();
 
             sum++;
         }

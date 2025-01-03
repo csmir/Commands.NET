@@ -3,10 +3,15 @@ using System.Reflection;
 
 namespace Commands;
 
-/// <inheritdoc />
+/// <summary>
+///     Reveals information about a type with a defined complex constructor.
+/// </summary>
 [DebuggerDisplay("{ToString()}")]
-public sealed class ArgumentInfo : IArgument
+public class CommandComplexParameter : ICommandParameter, IParameterCollection
 {
+    /// <inheritdoc />
+    public IActivator Activator { get; }
+
     /// <inheritdoc />
     public string Name { get; }
 
@@ -23,26 +28,41 @@ public sealed class ArgumentInfo : IArgument
     public bool IsOptional { get; }
 
     /// <inheritdoc />
-    public bool IsRemainder { get; }
-
-    /// <inheritdoc />
     public Attribute[] Attributes { get; }
 
     /// <inheritdoc />
-    public TypeParser Parser { get; }
+    public ICommandParameter[] Parameters { get; }
+
+    /// <inheritdoc />
+    public int MinLength { get; }
+
+    /// <inheritdoc />
+    public int MaxLength { get; }
+
+    /// <inheritdoc />
+    public TypeParser? Parser { get; } = null;
 
     /// <inheritdoc />
     public int Position { get; }
 
     /// <inheritdoc />
     public bool IsCollection
-        => Type.IsArray;
+        => false;
 
-    internal ArgumentInfo(
+    /// <inheritdoc />
+    public bool IsRemainder
+        => false;
+
+    /// <inheritdoc />
+    public bool HasParameters
+        => Parameters.Length > 0;
+
+#if NET8_0_OR_GREATER
+    [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
+#endif
+    internal CommandComplexParameter(
         ParameterInfo parameterInfo, string? name, ComponentConfiguration configuration)
     {
-        ExposedType = parameterInfo.ParameterType;
-
         var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
         var attributes = parameterInfo.GetAttributes(false);
 
@@ -64,13 +84,20 @@ public sealed class ArgumentInfo : IArgument
         else
             IsOptional = false;
 
-        if (attributes.Contains<RemainderAttribute>(false) || attributes.Contains<ParamArrayAttribute>(false))
-            IsRemainder = true;
-        else
-            IsRemainder = false;
+        Activator = new ComplexParameterActivator(Type);
 
-        Parser = configuration.GetParser(Type);
+        var parameters = Activator.Target.BuildArguments(false, configuration);
+
+        if (parameters.Length == 0)
+            throw new NotSupportedException($"Complex argument of type {Type} must have at least one parameter.");
+
+        (MinLength, MaxLength) = parameters.GetLength();
+
+        Parameters = parameters;
+
         Attributes = attributes.ToArray();
+
+        ExposedType = parameterInfo.ParameterType;
 
         if (!string.IsNullOrEmpty(name))
             Name = name!;
@@ -86,32 +113,18 @@ public sealed class ArgumentInfo : IArgument
         if (IsOptional)
             score -= 0.5f;
 
-        if (IsRemainder)
-            score -= 0.25f;
-
         if (IsNullable)
             score -= 0.25f;
+
+        foreach (var arg in Parameters)
+            score += arg.GetScore();
 
         return score;
     }
 
     /// <inheritdoc />
     public ValueTask<ParseResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
-    {
-        // Fast path for matching instances of certain types.
-        if (Type.IsInstanceOfType(value))
-            return ParseResult.FromSuccess(value);
-
-        if (value is null or "null")
-        {
-            if (IsNullable)
-                return ParseResult.FromSuccess(null);
-
-            return ParseResult.FromError(new ParseException("A null (or \"null\") value was attempted to be provided to a non-nullable command parameter."));
-        }
-
-        return Parser?.Parse(caller, this, value, services, cancellationToken) ?? ParseResult.FromSuccess(value.ToString());
-    }
+        => throw new NotSupportedException("Complex arguments do not support parsing.");
 
     /// <inheritdoc />
     public int CompareTo(object? obj)
@@ -124,5 +137,5 @@ public sealed class ArgumentInfo : IArgument
     /// <inheritdoc cref="ToString()"/>
     /// <param name="includeArgumentNames">Defines whether the argument signatures should be named or not.</param>
     public string ToString(bool includeArgumentNames)
-        => $"{Type.Name}{(includeArgumentNames ? Name : "")}";
+        => $"{Type.Name}{(includeArgumentNames ? $" {Name} " : "")}({string.Join<ICommandParameter>(", ", Parameters)})";
 }

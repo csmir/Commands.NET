@@ -37,7 +37,7 @@ public interface IConfigurationBuilder
     /// <typeparam name="TParsable">The type for this parser to target.</typeparam>
     /// <param name="convertAction">The action that is responsible for the parsing process.</param>
     /// <returns>The same <see cref="IConfigurationBuilder"/> for call-chaining.</returns>
-    public IConfigurationBuilder AddParser<TParsable>(Func<ICallerContext, IArgument, object?, IServiceProvider, ValueTask<ParseResult>> convertAction);
+    public IConfigurationBuilder AddParser<TParsable>(Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> convertAction);
 
     /// <summary>
     ///     Adds an implementation of <see cref="TypeParser"/> to <see cref="Parsers"/>, replacing an existing parser with the same <see cref="Type"/>.

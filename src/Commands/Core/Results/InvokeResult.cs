@@ -9,7 +9,7 @@ public readonly struct InvokeResult : IValueResult
     /// <summary>
     ///     Gets the command responsible for the invocation.
     /// </summary>
-    public CommandInfo Command { get; }
+    public Command Command { get; }
 
     /// <inheritdoc />
     public object? Value { get; }
@@ -21,7 +21,7 @@ public readonly struct InvokeResult : IValueResult
     public bool Success
         => Exception == null;
 
-    private InvokeResult(CommandInfo command, object? value, Exception? exception)
+    private InvokeResult(Command command, object? value, Exception? exception)
     {
         Command = command;
         Value = value;
@@ -35,7 +35,7 @@ public readonly struct InvokeResult : IValueResult
     /// <param name="command">The command that was invoked.</param>
     /// <param name="value">The result of command execution, being the returned value by the executed method.</param>
     /// <returns>A new result containing information about the operation.</returns>
-    public static InvokeResult FromSuccess(CommandInfo command, object? value)
+    public static InvokeResult FromSuccess(Command command, object? value)
         => new(command, value, null);
 
     /// <summary>
@@ -44,7 +44,7 @@ public readonly struct InvokeResult : IValueResult
     /// <param name="command">The command that failed to be invoked</param>
     /// <param name="exception">The exception that occurred during command invocation.</param>
     /// <returns>A new result containing information about the operation.</returns>
-    public static InvokeResult FromError(CommandInfo command, Exception exception)
+    public static InvokeResult FromError(Command command, Exception exception)
         => new(command, null, exception);
 
     /// <inheritdoc />

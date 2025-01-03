@@ -8,7 +8,7 @@ public sealed class HelpModule : CommandModule
         var commands = Tree.GetCommands();
         foreach (var command in commands)
         {
-            command.GetAttribute<ANDConditionAttribute>();
+            _ = command.Attributes.OfType<ANDAttribute>();
 
             Respond(command.FullName);
         }

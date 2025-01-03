@@ -31,9 +31,9 @@ public interface IComponent : IScorable, IEquatable<IComponent>
     public IActivator? Activator { get; }
 
     /// <summary>
-    ///     Gets the root module of this component. This property will be <see langword="null"/> if the component is not nested in a module.
+    ///     Gets the parent module of this component. This property will be <see langword="null"/> if the component is not nested in a module.
     /// </summary>
-    public ModuleInfo? Parent { get; }
+    public CommandGroup? Parent { get; }
 
     /// <summary>
     ///     Gets the score of the component.
@@ -44,12 +44,12 @@ public interface IComponent : IScorable, IEquatable<IComponent>
     public float Score { get; }
 
     /// <summary>
-    ///     Gets if the component is runtime built, meaning it was created dynamically through the fluent API.
+    ///     Gets if the component is runtime emitted, meaning it was created dynamically through the builder namespace.
     /// </summary>
     /// <remarks>
-    ///     Runtime components are delegate-based. They are not bound to a specific type, and are only structurally defined through the <see cref="IComponentTree"/>.
+    ///     Emitted components are delegate-based. They are not bound to a specific type, and are only structurally defined through the <see cref="IComponentTree"/>.
     /// </remarks>
-    public bool IsRuntimeComponent { get; }
+    public bool IsEmittedComponent { get; }
 
     /// <summary>
     ///     Gets if the component name is queryable.
