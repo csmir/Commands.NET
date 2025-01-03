@@ -27,5 +27,4 @@ jobs:
     - name: Publish
       run: |
         dotnet nuget push src/Commands/bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -n -s https://api.nuget.org/v3/index.json --skip-duplicate
-        dotnet nuget push src/Commands.Hosting/bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -n -s https://api.nuget.org/v3/index.json --skip-duplicate
         dotnet nuget push src/Commands.Console/bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -n -s https://api.nuget.org/v3/index.json --skip-duplicate
