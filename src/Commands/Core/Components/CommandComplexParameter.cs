@@ -7,7 +7,7 @@ namespace Commands;
 ///     Reveals information about a type with a defined complex constructor.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public class CommandComplexParameter : ICommandParameter, IParameterCollection
+public class CommandComplexParameter : ICommandParameter, ICommandSegment, IParameterCollection
 {
     /// <inheritdoc />
     public IActivator Activator { get; }
@@ -106,6 +106,10 @@ public class CommandComplexParameter : ICommandParameter, IParameterCollection
     }
 
     /// <inheritdoc />
+    public string GetFullName()
+        => string.Join(" ", Parameters.Select(x => x.GetFullName()));
+
+    /// <inheritdoc />
     public float GetScore()
     {
         var score = 1.0f;
@@ -123,12 +127,22 @@ public class CommandComplexParameter : ICommandParameter, IParameterCollection
     }
 
     /// <inheritdoc />
+    public bool HasAttribute<T>()
+        where T : Attribute
+        => Attributes.Contains<T>(true);
+
+    /// <inheritdoc />
+    public T? GetAttribute<T>(T? defaultValue = default)
+        where T : Attribute
+        => Attributes.FirstOrDefault<T>() ?? defaultValue;
+
+    /// <inheritdoc />
     public ValueTask<ParseResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
         => throw new NotSupportedException("Complex arguments do not support parsing.");
 
     /// <inheritdoc />
     public int CompareTo(object? obj)
-        => obj is IScorable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
+        => obj is ICommandSegment scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
     /// <inheritdoc />
     public override string ToString()

@@ -1,4 +1,4 @@
-﻿namespace Commands.Samples.Console.Modules;
+﻿namespace Commands.Samples;
 
 public class AsyncModule : CommandModule
 {

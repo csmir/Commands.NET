@@ -96,7 +96,7 @@ public abstract class ResultHandler
     {
         async ValueTask Respond(object? obj)
         {
-            if (caller is IAsyncCallerContext asyncCaller)
+            if (caller is AsyncCallerContext asyncCaller)
                 await asyncCaller.Respond(obj);
             else
                 caller.Respond(obj);
@@ -114,7 +114,8 @@ public abstract class ResultHandler
 
                     var taskType = task.GetType();
 
-                    if (taskType.IsGenericType)
+                    // If the task is a generic task, and the result is not a void task result, get the result and respond with it. Unfortunately we cannot do a type comparison on VoidTaskResult, because it is an internal corelib struct.
+                    if (taskType.IsGenericType && taskType.GenericTypeArguments[0].FullName != "System.Threading.Tasks.VoidTaskResult")
                     {
                         _taskGetValue ??= taskType.GetProperty("Result")!.GetMethod;
 

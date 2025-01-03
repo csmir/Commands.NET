@@ -10,7 +10,7 @@ public interface IComponentCollection : ICollection<IComponent>, IEnumerable<ICo
     /// </summary>
     /// <param name="args">The arguments to base the search operation on.</param>
     /// <returns>A lazily evaluated enumerable containing the discovered commands of this operation.</returns>
-    public abstract IEnumerable<SearchResult> Find(ArgumentEnumerator args);
+    public abstract IEnumerable<SearchResult> Find(ArgumentArray args);
 
     /// <summary>
     ///     Filters all components in the current collection that are of <see cref="Command"/>.

@@ -14,7 +14,7 @@ public sealed class CommandBuilder : IComponentBuilder
     private readonly bool _isNested;
 
     /// <inheritdoc />
-    public ICollection<string> Aliases { get; set; } = [];
+    public ICollection<string> Names { get; set; } = [];
 
     /// <inheritdoc />
     public ICollection<IConditionBuilder> Conditions { get; set; } = [];
@@ -38,19 +38,19 @@ public sealed class CommandBuilder : IComponentBuilder
         : this(name, [], executeDelegate) { }
 
     /// <summary>
-    ///     Creates a new instance of <see cref="CommandBuilder"/> with the specified name, aliases, and delegate.
+    ///     Creates a new instance of <see cref="CommandBuilder"/> with the specified name, names, and delegate.
     /// </summary>
     /// <param name="name">The name of the command.</param>
-    /// <param name="aliases">The aliases of the command, excluding the name.</param>
+    /// <param name="names">The names of the command, excluding the name.</param>
     /// <param name="executeDelegate">The delegate used to execute the command.</param>
-    public CommandBuilder(string name, IEnumerable<string> aliases, Delegate executeDelegate)
+    public CommandBuilder(string name, IEnumerable<string> names, Delegate executeDelegate)
     {
         var joined = new string[] { name }
-            .Concat(aliases)
+            .Concat(names)
             .Distinct()
             .ToArray();
 
-        Aliases = joined;
+        Names = joined;
         Handler = executeDelegate;
 
         Conditions = [];
@@ -68,13 +68,27 @@ public sealed class CommandBuilder : IComponentBuilder
     }
 
     /// <summary>
-    ///     Replaces the current collection of aliases with the specified aliases. Aliases are used to identify the command in the command execution pipeline.
+    ///     Adds a name to the collection of names. Names are used to identify the command in the command execution pipeline.
     /// </summary>
-    /// <param name="aliases">The aliases of the command.</param>
+    /// <param name="name">The name to add to the command.</param>
     /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
-    public CommandBuilder WithAliases(params string[] aliases)
+    public CommandBuilder AddName(string name)
     {
-        Aliases = aliases;
+        Assert.NotNullOrEmpty(name, nameof(name));
+
+        Names.Add(name);
+
+        return this;
+    }
+
+    /// <summary>
+    ///     Replaces the current collection of names with the specified names. Names are used to identify the command in the command execution pipeline.
+    /// </summary>
+    /// <param name="names">The names of the command.</param>
+    /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+    public CommandBuilder WithNames(params string[] names)
+    {
+        Names = names;
 
         return this;
     }
@@ -114,17 +128,6 @@ public sealed class CommandBuilder : IComponentBuilder
         Conditions.Add(condition);
         return this;
     }
-
-    /// <summary>
-    ///     Adds a condition to the command, which must succeed alongside other conditions with the same trigger created by this overload. Conditions are used to determine if the command can be executed.
-    /// </summary>
-    /// <remarks>
-    ///     This overload creates a new instance of the specified condition type and configures it using the provided <paramref name="configureCondition"/> delegate.
-    /// </remarks>
-    /// <param name="configureCondition">A configuration delegate that should configure the condition builder.</param>
-    /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
-    public CommandBuilder AddCondition(Action<ConditionBuilder<ANDEvaluator, ICallerContext>> configureCondition)
-        => AddCondition<ANDEvaluator, ICallerContext>(configureCondition);
 
     /// <summary>
     ///     Adds a condition to the command. Conditions are used to determine if the command can be executed.
@@ -179,11 +182,11 @@ public sealed class CommandBuilder : IComponentBuilder
     public Command Build(ComponentConfiguration configuration, CommandGroup? parent)
     {
         Assert.NotNull(Handler, nameof(Handler));
-        Assert.Aliases(Aliases, configuration, _isNested);
+        Assert.Names(Names, configuration, _isNested);
 
         var hasContext = Handler.Method.HasContext();
 
-        return new Command(parent, new DelegateCommandActivator(Handler.Method, Handler.Target, hasContext), [.. Conditions.Select(x => x.Build())], [.. Aliases], hasContext, configuration);
+        return new Command(parent, new DelegateCommandActivator(Handler.Method, Handler.Target, hasContext), [.. Conditions.Select(x => x.Build())], [.. Names], hasContext, configuration);
     }
 
     /// <inheritdoc />

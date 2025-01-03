@@ -1,5 +1,5 @@
 ﻿using Commands.Conditions;
-using System.Reflection;
+using System.Text;
 
 namespace Commands;
 
@@ -7,13 +7,16 @@ namespace Commands;
 ///     Contains information about a command that can be executed using an <see cref="IComponentTree"/>.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public sealed class Command : IComponent, IParameterCollection
+public sealed class Command : IComponent, ICommandSegment, IParameterCollection
 {
+    /// <inheritdoc />
+    public CommandGroup? Parent { get; private set; }
+
     /// <inheritdoc />
     public IActivator Activator { get; }
 
     /// <inheritdoc />
-    public string[] Aliases { get; }
+    public string[] Names { get; }
 
     /// <inheritdoc />
     public Attribute[] Attributes { get; }
@@ -34,15 +37,12 @@ public sealed class Command : IComponent, IParameterCollection
     public int MaxLength { get; }
 
     /// <inheritdoc />
-    public CommandGroup? Parent { get; }
-
-    /// <inheritdoc />
     public string? Name
-        => Aliases.Length > 0 ? Aliases[0] : null;
+        => Names.Length > 0 ? Names[0] : null;
 
     /// <inheritdoc />
     public string FullName
-        => $"{(Parent != null && Parent.Name != null ? $"{Parent.FullName} " : "")}{Name}";
+        => GetFullName();
 
     /// <inheritdoc />
     public float Score
@@ -54,32 +54,32 @@ public sealed class Command : IComponent, IParameterCollection
 
     /// <inheritdoc />
     public bool IsDefault
-        => Aliases.Length == 0;
+        => Names.Length == 0;
 
     /// <inheritdoc />
     public bool HasParameters
         => Parameters.Length > 0;
 
-    internal Command(CommandGroup parent, StaticCommandActivator invoker, string[] aliases, bool hasContext, ComponentConfiguration options)
-        : this(parent, invoker, [], aliases, hasContext, options)
+    internal Command(CommandGroup parent, StaticCommandActivator invoker, string[] names, bool hasContext, ComponentConfiguration options)
+        : this(parent, invoker, [], names, hasContext, options)
     {
 
     }
 
-    internal Command(CommandGroup parent, InstanceCommandActivator activator, string[] aliases, ComponentConfiguration configuration)
-        : this(parent, activator, [], aliases, false, configuration)
+    internal Command(CommandGroup parent, InstanceCommandActivator activator, string[] names, ComponentConfiguration configuration)
+        : this(parent, activator, [], names, false, configuration)
     {
 
     }
 
     internal Command(
-        CommandGroup? parent, IActivator invoker, ICondition[] conditions, string[] aliases, bool hasContext, ComponentConfiguration configuration)
+        CommandGroup? parent, IActivator invoker, ICondition[] conditions, string[] names, bool hasContext, ComponentConfiguration configuration)
     {
         var parameters = invoker.Target.BuildArguments(hasContext, configuration);
 
         (MinLength, MaxLength) = parameters.GetLength();
 
-        Aliases = aliases;
+        Names = names;
 
         for (var i = 0; i < parameters.Length; i++)
         {
@@ -109,6 +109,35 @@ public sealed class Command : IComponent, IParameterCollection
     }
 
     /// <inheritdoc />
+    public string GetFullName()
+    {
+        var sb = new StringBuilder();
+
+        if (Parent != null && Parent.Name != null)
+        {
+            sb.Append(Parent.GetFullName());
+
+            if (Name != null)
+                sb.Append(' ');
+
+            sb.Append(Name);
+        }
+        else if (Name != null)
+            sb.Append(Name);
+
+        if (HasParameters)
+        {
+            foreach (var parameter in Parameters)
+            {
+                sb.Append(' ');
+                sb.Append(parameter.GetFullName());
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    /// <inheritdoc />
     public float GetScore()
     {
         var score = 1.0f;
@@ -122,8 +151,18 @@ public sealed class Command : IComponent, IParameterCollection
     }
 
     /// <inheritdoc />
+    public bool HasAttribute<T>()
+        where T : Attribute
+        => Attributes.Contains<T>(true);
+
+    /// <inheritdoc />
+    public T? GetAttribute<T>(T? defaultValue = default)
+        where T : Attribute
+        => Attributes.FirstOrDefault<T>() ?? defaultValue;
+
+    /// <inheritdoc />
     public int CompareTo(object? obj)
-        => obj is IScorable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
+        => obj is ICommandSegment scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
     /// <inheritdoc />
     public bool Equals(IComponent? other)
@@ -136,7 +175,35 @@ public sealed class Command : IComponent, IParameterCollection
     /// <inheritdoc cref="ToString()"/>
     /// <param name="withModuleInfo">Defines if the module information should be appended on the command level.</param>
     public string ToString(bool withModuleInfo)
-        => $"{(withModuleInfo ? $"{Parent}." : "")}{Activator.Target.Name}{(Name != null ? $"['{Name}']" : "")}({string.Join<ICommandParameter>(", ", Parameters)})";
+    {
+        var sb = new StringBuilder();
+
+        if (withModuleInfo && Parent != null)
+        {
+            sb.Append(Parent.ToString());
+            sb.Append('.');
+        }
+
+        // If the activator is a delegate variant, the target of the activator is in most circumstances, a generated signature which is not reader-friendly.
+        // We instead will simply append the word "Command" to the output.
+        if (Activator is DelegateCommandActivator)
+            sb.Append("Command");
+        else
+            sb.Append(Activator.Target.Name);
+
+        if (Name != null)
+        {
+            sb.Append("['");
+            sb.Append(Name);
+            sb.Append("']");
+        }
+
+        sb.Append('(');
+        sb.Append(string.Join<ICommandParameter>(", ", Parameters));
+        sb.Append(')');
+
+        return sb.ToString();
+    }
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
@@ -146,28 +213,36 @@ public sealed class Command : IComponent, IParameterCollection
     public override int GetHashCode()
         => base.GetHashCode();
 
+    // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentTree, it will not be bound.
+    void IComponent.Bind(CommandGroup parent)
+        => Parent ??= parent;
+
     /// <inheritdoc cref="Create(Delegate, string[], ICondition[], ComponentConfiguration?)"/>
-    public static Command Create(Delegate executionDelegate, string[] aliases, ComponentConfiguration? configuration = null)
-        => Create(executionDelegate, aliases, [], configuration);
+    public static Command Create(Delegate executionDelegate, params string[] names)
+        => Create(executionDelegate, names, []);
+
+    /// <inheritdoc cref="Create(Delegate, string[], ICondition[], ComponentConfiguration?)"/>
+    public static Command Create(Delegate executionDelegate, string[] names, ComponentConfiguration? configuration = null)
+        => Create(executionDelegate, names, [], configuration);
 
     /// <summary>
-    ///     Creates a new command from a delegate. If a method within a module is provided, it will not root itself to its parent, and will instead be a top-level command on its own.
+    ///     Creates a new command from a delegate. This command will be considered top-level until it is added manually to a <see cref="CommandGroup"/>.
     /// </summary>
     /// <param name="executionDelegate">The delegate which contains an action executed when the command is triggered by a caller.</param>
-    /// <param name="aliases">A set of names by which the command will be able to be executed.</param>
+    /// <param name="names">A set of names by which the command will be able to be executed.</param>
     /// <param name="conditions">A set of conditions that should be evaluated before the command is executed.</param>
     /// <param name="configuration">The configuration that should be used to configure the built component.</param>
     /// <returns>A new instance of <see cref="Command"/> being an action that can be formed based on provided input.</returns>
-    public static Command Create(Delegate executionDelegate, string[] aliases, ICondition[] conditions, ComponentConfiguration? configuration = null)
+    public static Command Create(Delegate executionDelegate, string[] names, ICondition[] conditions, ComponentConfiguration? configuration = null)
     {
         Assert.NotNull(executionDelegate, nameof(executionDelegate));
 
-        configuration ??= new ComponentConfiguration();
+        configuration ??= ComponentConfiguration.Default;
 
-        Assert.Aliases(aliases, configuration, false);
+        Assert.Names(names, configuration, false);
 
         var hasContext = executionDelegate.Method.HasContext();
 
-        return new Command(null, new DelegateCommandActivator(executionDelegate.Method, executionDelegate.Target, hasContext), conditions, aliases, hasContext, configuration);
+        return new Command(null, new DelegateCommandActivator(executionDelegate.Method, executionDelegate.Target, hasContext), conditions, names, hasContext, configuration);
     }
 }

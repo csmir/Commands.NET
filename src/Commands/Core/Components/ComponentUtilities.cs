@@ -37,7 +37,7 @@ internal static class ComponentUtilities
     internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
         => provider.GetCustomAttributes(inherit).OfType<Attribute>();
 
-    internal static IEnumerable<CommandGroup> BuildModules(this ComponentConfiguration configuration, DynamicType[] types, CommandGroup? parent, bool isNested)
+    internal static IEnumerable<CommandGroup> BuildGroups(this ComponentConfiguration configuration, DynamicType[] types, CommandGroup? parent, bool isNested)
     {
         Assert.NotNull(types, nameof(types));
 
@@ -51,31 +51,31 @@ internal static class ComponentUtilities
             if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
                 continue;
 
-            var aliases = Array.Empty<string>();
+            var names = Array.Empty<string>();
 
             var ignore = false;
             foreach (var attribute in type.GetCustomAttributes(true))
             {
-                if (attribute is NameAttribute names)
+                if (attribute is NameAttribute nameAttr)
                 {
-                    // Validate aliases. Nested modules are invalid if they have no aliases, so we invert the nested flag to not permit this.
-                    Assert.Aliases(names.Aliases, configuration, !isNested);
+                    // Validate names. Nested groups are invalid if they have no names, so we invert the nested flag to not permit this.
+                    Assert.Names(nameAttr.Names, configuration, !isNested);
 
-                    aliases = names.Aliases;
+                    names = nameAttr.Names;
 
                     continue;
                 }
 
-                if (attribute is IgnoreAttribute shouldIgnore)
+                if (attribute is IgnoreAttribute)
                 {
                     ignore = true;
                     break;
                 }
             }
 
-            // Nested modules are invalid if they have no aliases.
-            if (!ignore && (!isNested || aliases.Length > 0))
-                yield return new CommandGroup(type, parent, aliases, configuration);
+            // Nested groups are invalid if they have no names.
+            if (!ignore && (!isNested || names.Length > 0))
+                yield return new CommandGroup(type, parent, names, configuration);
         }
     }
 
@@ -85,39 +85,39 @@ internal static class ComponentUtilities
 
         foreach (var method in members)
         {
-            var aliases = Array.Empty<string>();
+            var names = Array.Empty<string>();
 
             var ignore = false;
             foreach (var attribute in method.GetCustomAttributes(true))
             {
-                if (attribute is NameAttribute names)
+                if (attribute is NameAttribute nameAttr)
                 {
-                    // Validate aliases. Nested commands are valid if they have no aliases.
-                    Assert.Aliases(names.Aliases, configuration, isNested);
+                    // Validate names. Nested commands are valid if they have no names.
+                    Assert.Names(nameAttr.Names, configuration, isNested);
 
-                    aliases = names.Aliases;
+                    names = nameAttr.Names;
                     continue;
                 }
 
-                if (attribute is IgnoreAttribute shouldIgnore)
+                if (attribute is IgnoreAttribute)
                 {
                     ignore = true;
                     break;
                 }
             }
 
-            // Nested commands are valid if they have no aliases.
-            if (!ignore && (isNested || aliases.Length > 0))
+            // Nested commands are valid if they have no names.
+            if (!ignore && (isNested || names.Length > 0))
             {
                 Command? component;
                 if (method.IsStatic)
                 {
                     var hasContext = method.HasContext();
 
-                    component = new Command(parent, new StaticCommandActivator(method, hasContext), aliases, hasContext, configuration);
+                    component = new Command(parent, new StaticCommandActivator(method, hasContext), names, hasContext, configuration);
                 }
                 else
-                    component = new Command(parent, new InstanceCommandActivator(method), aliases, configuration);
+                    component = new Command(parent, new InstanceCommandActivator(method), names, configuration);
 
                 yield return component;
             }
@@ -134,15 +134,15 @@ internal static class ComponentUtilities
         if (parent.Type == null)
             return [];
 
-        var commands = configuration.BuildCommands(parent, parent.Aliases.Length > 0);
+        var commands = configuration.BuildCommands(parent, parent.Names.Length > 0);
 
         try
         {
             var nestedTypes = parent.Type.GetNestedTypes(BindingFlags.Public);
 
-            var modules = configuration.BuildModules([.. nestedTypes], parent, true);
+            var groups = configuration.BuildGroups([.. nestedTypes], parent, true);
 
-            return commands.Concat(modules);
+            return commands.Concat(groups);
         }
         catch
         {
@@ -171,7 +171,7 @@ internal static class ComponentUtilities
 
                 if (attr is NameAttribute names)
                 {
-                    // aliases is not supported for parameters.
+                    // names is not supported for parameters.
                     name = names.Name;
                 }
             }

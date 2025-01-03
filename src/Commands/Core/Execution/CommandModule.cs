@@ -51,10 +51,8 @@ public abstract class CommandModule
     /// <returns>An awaitable <see cref="Task"/> containing the result of this operation.</returns>
     public Task Respond(object? message)
     {
-        if (Caller is IAsyncCallerContext asyncCaller)
-        {
+        if (Caller is AsyncCallerContext asyncCaller)
             return asyncCaller.Respond(message);
-        }
 
         Caller.Respond(message);
 

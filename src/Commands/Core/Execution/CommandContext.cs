@@ -33,14 +33,14 @@ public class CommandContext<T>(T caller, Command command, IComponentTree tree, C
     /// <summary>
     ///     Sends a response to the caller of the command.
     /// </summary>
-    /// <param name="response">The response to send to the caller.</param>
+    /// <param name="message">A message to send to the caller.</param>
     /// <returns>An awaitable <see cref="Task"/> containing the state of the response.</returns>
-    public Task Respond(object? response)
+    public Task Respond(object? message)
     {
-        if (Caller is IAsyncCallerContext asyncCaller)
-            return asyncCaller.Respond(response);
+        if (Caller is AsyncCallerContext asyncCaller)
+            return asyncCaller.Respond(message);
         else
-            Caller.Respond(response);
+            Caller.Respond(message);
 
         return Task.CompletedTask;
     }

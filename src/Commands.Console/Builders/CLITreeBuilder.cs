@@ -41,13 +41,7 @@ public static class CLITreeBuilder
         if (options.Arguments == null || options.Arguments.Length == 0)
             options.Arguments = [coreCommandName];
 
-#if NET8_0_OR_GREATER
-        var args = ArgumentReader.ReadNamed(options.Arguments);
-#else
-        var args = ArgumentReader.Read(string.Join(" ", options.Arguments));
-#endif
-
-        manager.Execute(options.Caller, args, options.Options);
+        manager.Execute(options.Caller, ArgumentArray.Read(options.Arguments), options.Options);
     }
 
     /// <summary>

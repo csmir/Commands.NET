@@ -5,7 +5,7 @@ namespace Commands;
 
 /// <inheritdoc />
 [DebuggerDisplay("{ToString()}")]
-public sealed class CommandParameter : ICommandParameter
+public sealed class CommandParameter : ICommandParameter, ICommandSegment
 {
     /// <inheritdoc />
     public string Name { get; }
@@ -79,6 +79,18 @@ public sealed class CommandParameter : ICommandParameter
     }
 
     /// <inheritdoc />
+    public string GetFullName()
+    {
+        if (IsOptional)
+            return $"[{Name}]";
+
+        if (IsRemainder)
+            return $"({Name}...)";
+
+        return $"<{Name}>";
+    }
+
+    /// <inheritdoc />
     public float GetScore()
     {
         var score = 1.0f;
@@ -94,6 +106,16 @@ public sealed class CommandParameter : ICommandParameter
 
         return score;
     }
+
+    /// <inheritdoc />
+    public bool HasAttribute<T>()
+        where T : Attribute
+        => Attributes.Contains<T>(true);
+
+    /// <inheritdoc />
+    public T? GetAttribute<T>(T? defaultValue = default)
+        where T : Attribute
+        => Attributes.FirstOrDefault<T>() ?? defaultValue;
 
     /// <inheritdoc />
     public ValueTask<ParseResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
@@ -115,7 +137,7 @@ public sealed class CommandParameter : ICommandParameter
 
     /// <inheritdoc />
     public int CompareTo(object? obj)
-        => obj is IScorable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
+        => obj is ICommandSegment scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
     /// <inheritdoc />
     public override string ToString()

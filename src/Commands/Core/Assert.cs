@@ -10,19 +10,19 @@ namespace Commands;
 public sealed class Assert
 {
     /// <summary>
-    ///     Validates that the specified aliases are not null or empty, and that they match the configured naming pattern.
+    ///     Validates that the specified names are not null or empty, and that they match the configured naming pattern.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static void Aliases(IEnumerable<string> aliases, ComponentConfiguration configuration, bool allowUnnamed)
+    public static void Names(IEnumerable<string> names, ComponentConfiguration configuration, bool allowUnnamed)
     {
-        NotNull(aliases, nameof(aliases));
+        NotNull(names, nameof(names));
 
-        if (!allowUnnamed && !aliases.Any())
+        if (!allowUnnamed && !names.Any())
             throw new ArgumentException("Nested or unbound components must have at least one name.");
 
         var pattern = configuration.GetProperty<Regex>("NameValidationExpression");
 
-        foreach (var alias in aliases)
+        foreach (var alias in names)
         {
             NotNullOrEmpty(alias, nameof(alias));
 

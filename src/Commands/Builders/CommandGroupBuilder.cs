@@ -12,7 +12,7 @@ namespace Commands.Builders;
 public sealed class CommandGroupBuilder : IComponentBuilder
 {
     /// <inheritdoc />
-    public ICollection<string> Aliases { get; set; } = [];
+    public ICollection<string> Names { get; set; } = [];
 
     /// <inheritdoc />
     public ICollection<IConditionBuilder> Conditions { get; set; } = [];
@@ -31,36 +31,50 @@ public sealed class CommandGroupBuilder : IComponentBuilder
     ///     Creates a new instance of <see cref="CommandGroupBuilder"/> with the specified name.
     /// </summary>
     /// <param name="name">The primary alias of the group.</param>
-    /// <exception cref="ArgumentNullException">Thrown when the provided aliases or name are null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when the provided names or name are null.</exception>
     public CommandGroupBuilder(string name)
         : this(name, []) { }
 
     /// <summary>
-    ///     Creates a new instance of <see cref="CommandGroupBuilder"/> with the specified name and aliases.
+    ///     Creates a new instance of <see cref="CommandGroupBuilder"/> with the specified name and names.
     /// </summary>
     /// <param name="name">The primary alias of the group.</param>
-    /// <param name="aliases">All remaining aliases of the group.</param>
-    /// <exception cref="ArgumentNullException">Thrown when the provided aliases or name are null.</exception>
-    public CommandGroupBuilder(string name, IEnumerable<string> aliases)
+    /// <param name="names">All remaining names of the group.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the provided names or name are null.</exception>
+    public CommandGroupBuilder(string name, IEnumerable<string> names)
     {
         var joined = new string[] { name }
-            .Concat(aliases)
+            .Concat(names)
             .Distinct()
             .ToList();
 
-        Aliases = joined;
+        Names = joined;
     }
 
     /// <summary>
-    ///     Replaces the current collection of aliases with the specified aliases. Aliases are used to identify the group in the command execution pipeline.
+    ///     Adds a name to the collection of names. Names are used to identify the group in the command execution pipeline.
     /// </summary>
-    /// <param name="aliases">The aliases of the group.</param>
+    /// <param name="name">The name to add to the group.</param>
     /// <returns>The same <see cref="CommandGroupBuilder"/> for call-chaining.</returns>
-    public CommandGroupBuilder WithAliases(params string[] aliases)
+    public CommandGroupBuilder AddName(string name)
     {
-        Assert.NotNull(aliases, nameof(aliases));
+        Assert.NotNullOrEmpty(name, nameof(name));
 
-        Aliases = aliases;
+        Names.Add(name);
+
+        return this;
+    }
+
+    /// <summary>
+    ///     Replaces the current collection of names with the specified names. Names are used to identify the group in the command execution pipeline.
+    /// </summary>
+    /// <param name="names">The names of the group.</param>
+    /// <returns>The same <see cref="CommandGroupBuilder"/> for call-chaining.</returns>
+    public CommandGroupBuilder WithNames(params string[] names)
+    {
+        Assert.NotNull(names, nameof(names));
+
+        Names = names;
 
         return this;
     }
@@ -139,13 +153,13 @@ public sealed class CommandGroupBuilder : IComponentBuilder
     /// </remarks>
     /// <param name="name">The name of the component.</param>
     /// <param name="executionDelegate">The delegate to execute when the provided name of this object is discovered in a search operation.</param>
-    /// <param name="aliases">The aliases of the component, excluding the name.</param>
+    /// <param name="names">The names of the component, excluding the name.</param>
     /// <returns>The same <see cref="CommandGroupBuilder"/> for call-chaining.</returns>
-    public CommandGroupBuilder AddCommand(string name, Delegate executionDelegate, params string[] aliases)
+    public CommandGroupBuilder AddCommand(string name, Delegate executionDelegate, params string[] names)
     {
         Assert.NotNull(executionDelegate, nameof(executionDelegate));
 
-        var commandBuilder = new CommandBuilder(name, aliases, executionDelegate);
+        var commandBuilder = new CommandBuilder(name, names, executionDelegate);
 
         return AddCommand(commandBuilder);
     }
@@ -262,9 +276,9 @@ public sealed class CommandGroupBuilder : IComponentBuilder
     /// <returns>A new instance of <see cref="CommandGroup"/> based on the configured values of this builder.</returns>
     public CommandGroup Build(ComponentConfiguration configuration, CommandGroup? parent)
     {
-        Assert.Aliases(Aliases, configuration, false);
+        Assert.Names(Names, configuration, false);
 
-        var groupInfo = new CommandGroup(parent, [.. Conditions.Select(x => x.Build())], [.. Aliases], configuration);
+        var groupInfo = new CommandGroup(parent, [.. Conditions.Select(x => x.Build())], [.. Names], configuration);
 
         foreach (var component in Components)
         {

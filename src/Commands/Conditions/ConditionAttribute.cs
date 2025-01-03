@@ -1,7 +1,7 @@
 ﻿namespace Commands.Conditions;
 
 /// <summary>
-///     An attribute that contains an evaluation method called when marked on top of a command signature, implementing <see cref="ConditionAttribute{T}"/> and adding validation the implementing <see cref="ICallerContext"/> to be an instance of <typeparamref name="TContext"/>.
+///     An attribute that contains an evaluation method called when marked on top of a command signature, implementing <see cref="ConditionAttribute{T}"/>. This attribute will only be ran if the provided <see cref="ICallerContext"/> is an instance of <typeparamref name="TContext"/>, otherwise, returning true by default.
 /// </summary>
 /// <remarks>
 ///     Custom implementations of <see cref="ConditionAttribute{T, T}"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
@@ -24,7 +24,7 @@ TEval, TContext> : ConditionAttribute<TEval>
         if (context is TContext caller)
             return Evaluate(caller, command, services, cancellationToken);
 
-        return Error($"The provided {nameof(ICallerContext)} is not of the expected type: {typeof(TContext).Name}.");
+        return Success();
     }
 
     /// <inheritdoc cref="Evaluate(ICallerContext, Command, IServiceProvider, CancellationToken)" />

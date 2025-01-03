@@ -22,14 +22,11 @@ while (true)
 
     using var scope = services.CreateScope();
 
-    var values = ArgumentReader.ReadNamed(input);
+    var values = ArgumentArray.Read(input);
 
-    var caller = new CustomCaller()
-    {
-        ArgumentCount = values.Count()
-    };
+    var caller = new AsyncCustomCaller();
 
-    tree.Execute(caller, values, new()
+    await tree.ExecuteAsync(caller, values, new()
     {
         Services = scope.ServiceProvider
     });

@@ -72,14 +72,6 @@ public sealed class CommandOptions
     /// </remarks> 
     public char RemainderSeparator { get; set; } = ' ';
 
-    /// <summary>
-    ///     Gets or sets the comparer used to match command names and named arguments.
-    /// </summary>
-    /// <remarks>
-    ///     Default: <see cref="StringComparer.OrdinalIgnoreCase"/>
-    /// </remarks> 
-    public StringComparer Comparer { get; set; } = StringComparer.OrdinalIgnoreCase;
-
     /// <inheritdoc cref="IServiceProvider" />
     /// <remarks>
     ///     This class implements the <see cref="IServiceProvider"/> interface and returns <see langword="null"/> for all service requests.

@@ -13,10 +13,9 @@ public sealed class ComponentConfiguration
     ///     Gets a default configuration that can be used as a fallback when no configuration is provided.
     /// </summary>
     /// <remarks>
-    ///     When this property is accessed, a new instance of <see cref="ComponentConfiguration"/> is built using the <see cref="ComponentConfigurationBuilder.Default"/> builder.
+    ///     This instance contains no properties, and only implements the default parsers created by <see cref="TypeParser.CreateDefaults"/>.
     /// </remarks>
-    public static ComponentConfiguration Default
-        => ComponentConfigurationBuilder.Default.Build();
+    public static ComponentConfiguration Default { get; } = new([], []);
 
     /// <summary>
     ///     Gets a collection of properties that are used to store additional information explicitly important during the build process.
@@ -28,34 +27,15 @@ public sealed class ComponentConfiguration
     /// </summary>
     public IReadOnlyDictionary<Type, TypeParser> Parsers { get; }
 
-    /// <summary>
-    ///     Creates a new instance of <see cref="ComponentConfiguration"/> with the default parsers and naming pattern.
-    /// </summary>
-    /// <remarks>
-    ///     This constructor initializes the <see cref="Parsers"/> collection with the default parsers for the most common types, using <see cref="TypeParser.CreateDefaults"/>.
-    /// </remarks>
-    public ComponentConfiguration()
-        : this(TypeParser.CreateDefaults()) { }
-
-    /// <summary>
-    ///     Creates a new instance of <see cref="ComponentConfiguration"/> with the specified parsers and naming pattern.
-    /// </summary>
-    /// <param name="parsers">The range of parsers to match to command arguments.</param>
-    public ComponentConfiguration(IEnumerable<TypeParser> parsers)
+    internal ComponentConfiguration(IEnumerable<TypeParser> parsers, IEnumerable<KeyValuePair<object, object>> properties)
     {
-        Properties = new Dictionary<object, object>();
-        Parsers = parsers.ToDictionary(x => x.Type, x => x);
-    }
+        var baseParsers = TypeParser.CreateDefaults().ToDictionary(x => x.Type, x => x);
 
-    /// <summary>
-    ///     Creates a new instance of <see cref="ComponentConfiguration"/> with the specified parsers, properties and naming pattern.
-    /// </summary>
-    /// <param name="parsers">The range of parsers to match to command arguments.</param>
-    /// <param name="properties">The properties that are used to store additional information explicitly important during the build process.</param>
-    public ComponentConfiguration(IEnumerable<KeyValuePair<Type, TypeParser>> parsers, IEnumerable<KeyValuePair<object, object>> properties)
-    {
+        foreach (var parser in parsers)
+            baseParsers[parser.Type] = parser;
+
+        Parsers = baseParsers;
         Properties = properties.ToDictionary(x => x.Key, x => x.Value);
-        Parsers = parsers.ToDictionary(x => x.Key, x => x.Value);
     }
 
     /// <summary>
@@ -76,8 +56,39 @@ public sealed class ComponentConfiguration
     /// </remarks>
     /// <param name="types">A collection of <see cref="DynamicType"/> which accepts <see cref="Type"/>, which could, or should, contain command modules.</param>
     /// <returns>A lazily evaluated collection of <see cref="IComponent"/> implementations, being either <see cref="Command"/> or <see cref="CommandGroup"/> depending on if a method or a type was resolved.</returns>
-    public IEnumerable<IComponent> GetComponents(params DynamicType[] types)
-        => ComponentUtilities.BuildModules(this, types, null, false);
+    public IEnumerable<IComponent> CreateComponents(params DynamicType[] types)
+        => ComponentUtilities.BuildGroups(this, types, null, false);
+
+    /// <summary>
+    ///     Creates a new instance of <see cref="ComponentConfiguration"/> with a range of default parsers, created from <see cref="TypeParser.CreateDefaults"/>.
+    /// </summary>
+    /// <inheritdoc cref="Create(IEnumerable{TypeParser}, IEnumerable{KeyValuePair{object, object}})"/>
+    public static ComponentConfiguration Create()
+        => Create([]);
+
+    /// <summary>
+    ///     Creates a new instance of <see cref="ComponentConfiguration"/> with the provided parsers and properties. 
+    /// </summary>
+    /// <remarks>
+    ///     The provided parsers will be merged with the default parsers created by <see cref="TypeParser.CreateDefaults"/>. If a parser with the same type is provided, it will override the default parser.
+    /// </remarks>
+    /// <param name="parsers">A <see cref="TypeParser"/> collection which will parse input arguments provided through the <see cref="IComponentTree"/> into instances of the types by which methods are marked.</param>
+    /// <param name="properties"></param>
+    /// <returns>A new instance of <see cref="ComponentConfiguration"/> containing a <see cref="TypeParser"/> dictionary and a collection of properties which determine certain settings within the component creation process.</returns>
+    public static ComponentConfiguration Create(IEnumerable<TypeParser> parsers, IEnumerable<KeyValuePair<object, object>>? properties = null)
+    {
+        foreach (var parser in parsers)
+            Assert.NotNull(parser, nameof(parser));
+
+        if (properties != null)
+        {
+            // Ensure that if a key is provided, it is not null. Otherwise, errors will occur in deeper processes.
+            foreach (var property in properties)
+                Assert.NotNull(property.Key, nameof(property.Key));
+        }
+
+        return new ComponentConfiguration(parsers, properties?.ToDictionary(x => x.Key, x => x.Value) ?? []);
+    }
 
     /// <summary>
     ///     Creates a new instance of <see cref="ComponentConfigurationBuilder"/>, which can be built into an instance of <see cref="ComponentConfiguration"/>.

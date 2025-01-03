@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Commands.Samples;
 
-public class BasicModule : CommandModule<CustomCaller>
+public class BasicModule : CommandModule<ConsoleCaller>
 {
     [Name("helloworld")]
     public string HelloWorld()

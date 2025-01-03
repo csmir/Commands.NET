@@ -1,24 +1,32 @@
 ﻿
 using Commands;
+using Commands.Samples;
 
-var group = CommandGroup.Create(["math"]);
+var math = CommandGroup.Create("math");
 
-group.Add(Command.Create(Sum, ["sum", "add"]));
-group.Add(Command.Create(Subtract, ["subtract", "sub"]));
-group.Add(Command.Create(Multiply, ["multiply", "mul"]));
-group.Add(Command.Create(Divide, ["divide", "div"]));
-group.Add(Command.Create(Exit, ["exit"]));
+math.Add(Command.Create(Sum, "sum", "add"));
+math.Add(Command.Create(Subtract, "subtract", "sub"));
+math.Add(Command.Create(Multiply, "multiply", "mul"));
+math.Add(Command.Create(Divide, "divide", "div"));
+math.Add(Command.Create(Exit, "exit"));
 
-var tree = new ComponentTree([group]);
+var help = CommandGroup.Create<HelpModule>();
+
+var tree = ComponentTree.Create(math, help);
 
 while (true)
-    tree.Execute(new ConsoleCallerContext(), Console.ReadLine()!);
+    tree.Execute(new ConsoleCallerContext(), Console.ReadLine());
 
-static int Sum(int a, int b) => a + b;
-static int Subtract(int a, int b) => a - b;
-static int Multiply(int a, int b) => a * b;
-static int Divide(int a, int b) => a / b;
-static void Exit() => Environment.Exit(0);
+static double Sum(double number, int sumBy)
+    => number + sumBy;
+static double Subtract(double number, int subtractBy)
+    => number - subtractBy;
+static double Multiply(double number, int multiplyBy)
+    => number * multiplyBy;
+static double Divide(double number, int divideBy)
+    => number / divideBy;
+static void Exit()
+    => Environment.Exit(0);
 
 class ConsoleCallerContext : ICallerContext
 {

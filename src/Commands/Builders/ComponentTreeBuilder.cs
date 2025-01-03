@@ -46,9 +46,9 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params string[] aliases)
+    public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params string[] names)
     {
-        var commandBuilder = new CommandBuilder(name, aliases, executionDelegate);
+        var commandBuilder = new CommandBuilder(name, names, executionDelegate);
 
         return AddCommand(commandBuilder);
     }
@@ -98,19 +98,6 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     T>()
         where T : class
         => AddType(typeof(T));
-
-    /// <inheritdoc />
-#if NET8_0_OR_GREATER
-    [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The types are supplied from user-facing implementation, it is up to the user to ensure that these types are available in AOT context.")]
-#endif
-    public ITreeBuilder AddTypes(params Type[] types)
-    {
-        // We cannot add the range to the collection immediately, because we need AddType to infer DynamicallyAccessedMemberTypes.All
-        foreach (var type in types)
-            AddType(type);
-
-        return this;
-    }
 
     /// <inheritdoc />
 #if NET8_0_OR_GREATER
@@ -192,7 +179,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     {
         var configuration = Configuration.Build();
 
-        var components = configuration.BuildModules([.. Types], null, false)
+        var components = configuration.BuildGroups([.. Types], null, false)
             .Concat(Components.Select(x => x.Build(configuration)));
 
         return new ComponentTree(components, [.. Handlers]);

@@ -14,15 +14,15 @@ public sealed class NameAttribute : Attribute
     ///     Gets the name of the target.
     /// </summary>
     public string Name
-        => Aliases[0];
+        => Names[0];
 
     /// <summary>
-    ///     Gets the aliases of the target.
+    ///     Gets the names of the target.
     /// </summary>
     /// <remarks>
-    ///     Aliases are not considered for parameter names. Parameters have only one name, defined by <see cref="Name"/>.
+    ///     Names are not considered for parameter names. Parameters have only one name, defined by <see cref="Name"/>.
     /// </remarks>
-    public string[] Aliases { get; }
+    public string[] Names { get; }
 
     /// <summary>
     ///     Creates a new <see cref="NameAttribute"/> with defined name.
@@ -35,14 +35,14 @@ public sealed class NameAttribute : Attribute
     }
 
     /// <summary>
-    ///     Creates a new <see cref="NameAttribute"/> with defined name and aliases.
+    ///     Creates a new <see cref="NameAttribute"/> with defined name and names.
     /// </summary>
-    /// <param name="aliases">The target's aliases. Aliases are not considered for parameter names.</param>
-    public NameAttribute(params string[] aliases)
+    /// <param name="names">The target's names. Names are not considered for parameter names.</param>
+    public NameAttribute(params string[] names)
     {
-        if (aliases.Length == 0)
-            throw new ArgumentException("At least one alias must be provided.", nameof(aliases));
+        if (names.Length == 0)
+            throw new ArgumentException("At least one alias must be provided.", nameof(names));
 
-        Aliases = aliases;
+        Names = names;
     }
 }

@@ -21,7 +21,7 @@ public abstract class ComponentCollection : IComponentCollection
         => IsReadOnly = isReadOnly;
 
     /// <inheritdoc />
-    public abstract IEnumerable<SearchResult> Find(ArgumentEnumerator args);
+    public abstract IEnumerable<SearchResult> Find(ArgumentArray args);
 
     /// <inheritdoc />
     public bool Contains(IComponent component)
@@ -98,7 +98,7 @@ public abstract class ComponentCollection : IComponentCollection
     {
         ThrowIfLocked();
 
-        var orderedCopy = new HashSet<IComponent>(_components.OrderByDescending(x => x.Score));
+        var orderedCopy = new HashSet<IComponent>(_components.OrderByDescending(x => x.GetScore()));
 
         Interlocked.Exchange(ref _components, orderedCopy);
     }
@@ -119,14 +119,22 @@ public abstract class ComponentCollection : IComponentCollection
         var copy = new HashSet<IComponent>(_components);
 
         foreach (var component in components)
-            hasChanged += copy.Add(component) ? 1 : 0;
+        {
+            var result = copy.Add(component);
+
+            // When addition is successful, and this collection is a CommandGroup, bind the component to the group.
+            if (this is CommandGroup group && result)
+                component.Bind(group);
+
+            hasChanged += result ? 1 : 0;
+        }
 
         if (hasChanged > 0)
         {
             // Notify the top-level collection that a mutation has occurred. This will add, and resort the components.
             _mutateParent?.Invoke(components, false);
 
-            var orderedCopy = new HashSet<IComponent>(copy.OrderByDescending(x => x.Score));
+            var orderedCopy = new HashSet<IComponent>(copy.OrderByDescending(x => x.GetScore()));
 
             Interlocked.Exchange(ref _components, orderedCopy);
         }

@@ -4,7 +4,7 @@
 ///     A readonly representation of a <see cref="Type"/>, enforcing dynamic access to its public methods, constructors and nested types.
 /// </summary>
 /// <remarks>
-///     This struct is implicitly convertible to <see cref="Type"/> and can be used in place of a <see cref="Type"/> in most cases.
+///     This struct is implicitly convertible from and to <see cref="Type"/> and can be used in place of a <see cref="Type"/> in most cases.
 /// </remarks>
 [DebuggerDisplay("{Value}")]
 public readonly struct DynamicType

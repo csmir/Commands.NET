@@ -17,15 +17,9 @@ public static class CLITree
     public static void Run<T>(this IComponentTree tree, CLIOptions<T> options)
         where T : ConsoleCallerContext, new()
     {
-#if NET8_0_OR_GREATER
-        var args = ArgumentReader.ReadNamed(options.Arguments);
-#else
-        var args = ArgumentReader.Read(string.Join(" ", options.Arguments));
-#endif
-
         options.Caller ??= new T();
 
-        tree.Execute(options.Caller, args, options.Options);
+        tree.Execute(options.Caller, ArgumentArray.Read(options.Arguments), options.Options);
     }
 
     /// <summary>

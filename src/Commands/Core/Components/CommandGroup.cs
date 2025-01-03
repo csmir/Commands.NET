@@ -1,4 +1,5 @@
 ﻿using Commands.Conditions;
+using System.Text;
 
 namespace Commands;
 
@@ -6,8 +7,35 @@ namespace Commands;
 ///     Reveals information about a command module, hosting zero-or-more commands.
 /// </summary>
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
-public sealed class CommandGroup : ComponentCollection, IComponent
+public sealed class CommandGroup : ComponentCollection, IComponent, ICommandSegment
 {
+    /// <inheritdoc />
+    public CommandGroup? Parent { get; private set; }
+
+    /// <inheritdoc />
+    public IActivator? Activator { get; }
+
+    /// <inheritdoc />
+    public string[] Names { get; }
+
+    /// <inheritdoc />
+    public Attribute[] Attributes { get; }
+
+    /// <inheritdoc />
+    public ConditionEvaluator[] Evaluators { get; }
+
+    /// <inheritdoc />
+    public string? Name
+        => Names.Length > 0 ? Names[0] : null;
+
+    /// <inheritdoc />
+    public bool IsSearchable
+        => Names.Length > 0;
+
+    /// <inheritdoc />
+    public bool IsDefault
+        => false;
+
     /// <summary>
     ///     Gets the type of this module.
     /// </summary>
@@ -22,46 +50,11 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     public int Depth
         => Parent?.Depth + 1 ?? 1;
 
-    /// <inheritdoc />
-    public IActivator? Activator { get; }
-
-    /// <inheritdoc />
-    public string[] Aliases { get; }
-
-    /// <inheritdoc />
-    public Attribute[] Attributes { get; }
-
-    /// <inheritdoc />
-    public ConditionEvaluator[] Evaluators { get; }
-
-    /// <inheritdoc />
-    public CommandGroup? Parent { get; }
-
-    /// <inheritdoc />
-    public string? Name
-        => Aliases.Length > 0 ? Aliases[0] : null;
-
-    /// <inheritdoc />
-    public string FullName
-        => $"{(Parent != null && Parent.Name != null ? $"{Parent.FullName} " : "")}{Name}";
-
-    /// <inheritdoc />
-    public float Score
-        => GetScore();
-
-    /// <inheritdoc />
-    public bool IsSearchable
-        => Aliases.Length > 0;
-
-    /// <inheritdoc />
-    public bool IsDefault
-        => false;
-
     internal CommandGroup(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
-        Type type, CommandGroup? parent, string[] aliases, ComponentConfiguration configuration)
+        Type type, CommandGroup? parent, string[] names, ComponentConfiguration configuration)
         : base(configuration.GetProperty("MakeModulesReadonly", false))
     {
         Parent = parent;
@@ -72,15 +65,15 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         Attributes = attributes.ToArray();
         Evaluators = ConditionEvaluator.CreateEvaluators(attributes.OfType<ICondition>()).Concat(parent?.Evaluators ?? []).ToArray();
 
-        Aliases = aliases;
+        Names = names;
 
         Activator = new CommandGroupActivator(type);
 
-        Push(configuration.BuildNestedComponents(this).OrderByDescending(x => x.Score));
+        Push(configuration.BuildNestedComponents(this).OrderByDescending(x => x.GetScore()));
     }
 
     internal CommandGroup(
-        CommandGroup? parent, ICondition[] conditions, string[] aliases, ComponentConfiguration configuration)
+        CommandGroup? parent, ICondition[] conditions, string[] names, ComponentConfiguration configuration)
         : base(configuration.GetProperty("MakeModulesReadonly", false))
     {
         Parent = parent;
@@ -88,7 +81,27 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         Attributes = [];
         Evaluators = ConditionEvaluator.CreateEvaluators(conditions).Concat(parent?.Evaluators ?? []).ToArray();
 
-        Aliases = aliases;
+        Names = names;
+    }
+
+    /// <inheritdoc />
+    public string GetFullName()
+    {
+        var sb = new StringBuilder();
+
+        if (Parent != null && Parent.Name != null)
+        {
+            sb.Append(Parent.GetFullName());
+
+            if (Name != null)
+                sb.Append(' ');
+
+            sb.Append(Name);
+        }
+        else if (Name != null)
+            sb.Append(Name);
+
+        return sb.ToString();
     }
 
     /// <inheritdoc />
@@ -111,35 +124,45 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     }
 
     /// <inheritdoc />
+    public bool HasAttribute<T>()
+        where T : Attribute
+        => Attributes.Contains<T>(true);
+
+    /// <inheritdoc />
+    public T? GetAttribute<T>(T? defaultValue = default)
+        where T : Attribute
+        => Attributes.FirstOrDefault<T>() ?? defaultValue;
+
+    /// <inheritdoc />
     public int CompareTo(object? obj)
-        => obj is IScorable scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
+        => obj is ICommandSegment scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
     /// <inheritdoc />
     public bool Equals(IComponent? other)
         => other is CommandGroup info && ReferenceEquals(this, info);
 
     /// <inheritdoc />
-    public override IEnumerable<SearchResult> Find(ArgumentEnumerator args)
+    public override IEnumerable<SearchResult> Find(ArgumentArray args)
     {
-        List<SearchResult> discovered =
-        [
+        var discovered = new List<SearchResult>()
+        {
             SearchResult.FromError(this)
-        ];
+        };
 
-        var searchHeight = Depth;
+        var index = Depth;
 
         foreach (var component in this)
         {
             if (component.IsDefault)
-                discovered.Add(SearchResult.FromSuccess(component, searchHeight));
+                discovered.Add(SearchResult.FromSuccess(component, index));
 
-            if (args.TryNext(searchHeight, out var value) && component.Aliases.Contains(value))
-            {
-                if (component is CommandGroup module)
-                    discovered.AddRange(module.Find(args));
-                else
-                    discovered.Add(SearchResult.FromSuccess(component, searchHeight + 1));
-            }
+            if (!args.TryGetElementAt(index, out var value) || !component.Names.Contains(value))
+                continue;
+
+            if (component is CommandGroup group)
+                discovered.AddRange(group.Find(args));
+            else
+                discovered.Add(SearchResult.FromSuccess(component, index + 1));
         }
 
         return discovered;
@@ -147,7 +170,31 @@ public sealed class CommandGroup : ComponentCollection, IComponent
 
     /// <inheritdoc />
     public override string ToString()
-        => $"{(Parent != null ? $"{Parent}." : "")}{(Name != null ? $"{Type?.Name}['{Name}']" : $"{Type?.Name}")}";
+    {
+        var sb = new StringBuilder();
+
+        if (Parent != null)
+        {
+            sb.Append(Parent.ToString());
+            sb.Append('.');
+        }
+
+        // When type is null this group has been created manually.
+        // We can only assume it is a group, as it does not have a type.
+        if (Type == null)
+            sb.Append("Group");
+        else
+            sb.Append(Type.Name);
+
+        if (Name != null)
+        {
+            sb.Append("['");
+            sb.Append(Name);
+            sb.Append("']");
+        }
+
+        return sb.ToString();
+    }
 
     /// <inheritdoc />
     public override bool Equals(object? obj)
@@ -157,20 +204,28 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     public override int GetHashCode()
         => base.GetHashCode();
 
+    // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentTree, it will not be bound.
+    void IComponent.Bind(CommandGroup parent)
+        => Parent ??= parent;
+
+    /// <inheritdoc cref="Create(string[], ComponentConfiguration?)"/>
+    public static CommandGroup Create(params string[] names)
+        => Create(names, null);
+
     /// <summary>
-    ///    Creates a new empty command group from the provided aliases, conditions and configuration.
+    ///    Creates a new empty command group from the provided names and configuration.
     /// </summary>
-    /// <param name="aliases">A set of names by which the command group will be able to be discovered.</param>
+    /// <param name="names">A set of names by which the command group will be able to be discovered.</param>
     /// <param name="configuration">The configuration that should be used to configure the built component.</param>
     /// <returns>A new <b>empty</b> instance of <see cref="CommandGroup"/>, able to be mutated using exposed API's.</returns>
-    public static CommandGroup Create(string[] aliases, ComponentConfiguration? configuration = null)
+    public static CommandGroup Create(string[] names, ComponentConfiguration? configuration = null)
     {
         configuration ??= ComponentConfiguration.Default;
 
-        Assert.NotNull(aliases, nameof(aliases));
-        Assert.Aliases(aliases, configuration, false);
+        Assert.NotNull(names, nameof(names));
+        Assert.Names(names, configuration, false);
 
-        return new CommandGroup(null, [], aliases, configuration);
+        return new CommandGroup(null, [], names, configuration);
     }
 
     /// <inheritdoc cref="Create(Type, ComponentConfiguration?)"/>
@@ -184,11 +239,8 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         => Create(typeof(T), configuration);
 
     /// <summary>
-    ///     Creates a new command group from the provided type and configuration.
+    ///     Creates a new command group from the provided type and configuration. If the provided type is a nested type, it will not be considered nested for the creation of this <see cref="CommandGroup"/>.
     /// </summary>
-    /// <remarks>
-    ///     Creating a command group through this method will expect a name is provided to the group.
-    /// </remarks>
     /// <param name="type">A type implementing <see cref="CommandModule"/> or <see cref="CommandModule{T}"/>.</param>
     /// <param name="configuration">The configuration that should be used to configure the built component.</param>
     /// <returns>A new instance of <see cref="CommandGroup"/> containing all discovered commands, subgroups and subcommands within the provided type.</returns>
@@ -205,10 +257,10 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
             throw new ArgumentException("The type must be a non-abstract, non-generic, and assignable to CommandModule to be considered a valid implementation.", nameof(type));
 
-        var aliases = type.GetAttributes(false).FirstOrDefault<NameAttribute>()?.Aliases ?? [];
+        var names = type.GetAttributes(false).FirstOrDefault<NameAttribute>()?.Names ?? [];
 
-        Assert.Aliases(aliases, configuration, false);
+        Assert.Names(names, configuration, false);
 
-        return new CommandGroup(type, null, aliases, configuration ?? new ComponentConfiguration());
+        return new CommandGroup(type, null, names, configuration);
     }
 }

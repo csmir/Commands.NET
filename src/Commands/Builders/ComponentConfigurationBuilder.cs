@@ -7,13 +7,8 @@ namespace Commands.Builders;
 /// </summary>
 public sealed class ComponentConfigurationBuilder : IConfigurationBuilder
 {
-    /// <summary>
-    ///     Gets the configuration builder that is used as a fallback when no configuration is provided. This builder is built every time <see cref="ComponentConfiguration.Default"/> is called.
-    /// </summary>
-    public static IConfigurationBuilder Default { get; } = new ComponentConfigurationBuilder();
-
     /// <inheritdoc />
-    public IDictionary<Type, TypeParser> Parsers { get; set; } = TypeParser.CreateDefaults().ToDictionary(x => x.Type, x => x);
+    public IDictionary<Type, TypeParser> Parsers { get; set; } = new Dictionary<Type, TypeParser>();
 
     /// <inheritdoc />
     public IDictionary<object, object> Properties { get; set; } = new Dictionary<object, object>();
@@ -41,12 +36,13 @@ public sealed class ComponentConfigurationBuilder : IConfigurationBuilder
     }
 
     /// <inheritdoc />
-    public IConfigurationBuilder WithParsers(params IEnumerable<TypeParser> parsers)
+    public IConfigurationBuilder WithParsers(params TypeParser[] parsers)
     {
         Parsers = parsers
             .ToDictionary(x => x.Type, parser =>
             {
                 Assert.NotNull(parser, nameof(parser));
+
                 return parser;
             });
 
@@ -54,13 +50,13 @@ public sealed class ComponentConfigurationBuilder : IConfigurationBuilder
     }
 
     /// <inheritdoc />
-    public IConfigurationBuilder AddParsers(params IEnumerable<TypeParser> parsers)
+    public IConfigurationBuilder AddParsers(params TypeParser[] parsers)
     {
-        foreach (var converter in parsers)
+        foreach (var parser in parsers)
         {
-            Assert.NotNull(converter, nameof(converter));
+            Assert.NotNull(parser, nameof(parser));
 
-            Parsers[converter.Type] = converter;
+            Parsers[parser.Type] = parser;
         }
 
         return this;
@@ -68,5 +64,5 @@ public sealed class ComponentConfigurationBuilder : IConfigurationBuilder
 
     /// <inheritdoc />
     public ComponentConfiguration Build()
-        => new(Parsers, Properties);
+        => new(Parsers.Values, Properties);
 }

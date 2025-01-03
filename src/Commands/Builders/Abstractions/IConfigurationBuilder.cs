@@ -51,14 +51,14 @@ public interface IConfigurationBuilder
     /// </summary>
     /// <param name="parsers">A collection of parsers to add or replace in <see cref="Parsers"/>.</param>
     /// <returns>The same <see cref="IConfigurationBuilder"/> for call-chaining.</returns>
-    public IConfigurationBuilder AddParsers(params IEnumerable<TypeParser> parsers);
+    public IConfigurationBuilder AddParsers(params TypeParser[] parsers);
 
     /// <summary>
     ///     Replaces the current collection of type parsers with the specified parsers.
     /// </summary>
     /// <param name="parsers">A collection of parsers to replace the existing parsers in <see cref="Parsers"/>.</param>
     /// <returns>The same <see cref="IConfigurationBuilder"/> for call-chaining.</returns>
-    public IConfigurationBuilder WithParsers(params IEnumerable<TypeParser> parsers);
+    public IConfigurationBuilder WithParsers(params TypeParser[] parsers);
 
     /// <summary>
     ///     Builds the current <see cref="IConfigurationBuilder"/> into a new instance of <see cref="ComponentConfiguration"/>.

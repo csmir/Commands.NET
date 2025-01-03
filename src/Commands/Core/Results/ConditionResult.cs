@@ -1,6 +1,4 @@
-﻿using Commands.Conditions;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     The result of a check operation within the command execution pipeline.

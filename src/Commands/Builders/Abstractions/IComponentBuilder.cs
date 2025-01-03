@@ -6,9 +6,9 @@
 public interface IComponentBuilder
 {
     /// <summary>
-    ///     Gets or sets all aliases of the component, including its name. This is used to identify the component in the command execution pipeline.
+    ///     Gets or sets all names of the component, including its name. This is used to identify the component in the command execution pipeline.
     /// </summary>
-    public ICollection<string> Aliases { get; }
+    public ICollection<string> Names { get; }
 
     /// <summary>
     ///     Gets or sets the conditions necessary for the component to execute.

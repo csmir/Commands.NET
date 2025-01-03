@@ -5,7 +5,7 @@ namespace Commands;
 /// <summary>
 ///     Reveals information about an invocation parameter of a command or any complex member.
 /// </summary>
-public interface ICommandParameter : IScorable, IParameter
+public interface ICommandParameter : ICommandSegment, IParameter
 {
     /// <summary>
     ///     Gets the position of this parameter in the command's parameter list.

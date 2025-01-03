@@ -1,6 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-using Commands.Builders;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Commands.Tests;
@@ -13,13 +12,10 @@ public class Program
     public Program()
     {
         var services = new ServiceCollection()
-            .AddSingleton(new ComponentTreeBuilder()
-            {
-
-            }.Build())
+            .AddSingleton(ComponentTree.CreateBuilder().WithTypes(typeof(Program).Assembly.GetTypes()).Build())
             .BuildServiceProvider();
 
-        _tree = services.GetRequiredService<ComponentTree>();
+        _tree = (services.GetRequiredService<IComponentTree>() as ComponentTree)!;
     }
 
     static void Main()
@@ -27,85 +23,91 @@ public class Program
         BenchmarkRunner.Run<Program>();
     }
 
+    //[Benchmark]
+    public void CreateArray()
+    {
+        new ArgumentArray(["scenario"]);
+    }
+
     [Benchmark]
     public void SearchCommand()
     {
-        _tree.Find(new ArgumentEnumerator(["scenario"]));
+        _tree.Find(new ArgumentArray(["scenario"]));
     }
 
-    [Benchmark]
+    //[Benchmark]
     public void SearchParametered()
     {
-        _tree.Find(new ArgumentEnumerator(["scenario-parameterized", "1"]));
+        _tree.Find(new ArgumentArray(["scenario-parameterized", "1"]));
     }
 
-    [Benchmark]
+    //[Benchmark]
     public void SearchNested()
     {
-        _tree.Find(new ArgumentEnumerator(["scenario-nested", "scenario-injected"]));
+        _tree.Find(new ArgumentArray(["scenario-nested", "scenario-injected"]));
     }
 
     [Benchmark]
     public async Task RunCommand()
     {
-        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario"]);
+        await _tree.ExecuteAsync(new BenchmarkCaller(), ["scenario"]);
     }
 
-    [Benchmark]
+    //[Benchmark]
     public async Task RunParametered()
     {
         await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-parameterized", "1"]);
     }
 
-    [Benchmark]
+    //[Benchmark]
     public async Task RunNested()
     {
         await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-nested", "scenario-injected"]);
     }
 
-    [Benchmark]
+    //[Benchmark]
     public async Task RunException()
     {
         await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-exception"]);
     }
 
-    [Benchmark]
+    //[Benchmark]
     public async Task RunTaskException()
     {
         await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-task-exception"]);
     }
 
-    [Benchmark]
+    //[Benchmark]
     public async Task RunExceptionThrow()
     {
         await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-exception-throw"]);
     }
 
-    [Benchmark]
+    //[Benchmark]
     public async Task RunTaskExceptionThrow()
     {
         await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-task-exception-throw"]);
     }
 
-    [Benchmark]
+    //[Benchmark]
     public async Task RunOperationMutation()
     {
         await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-operation-mutation"]);
     }
 
-    [Benchmark]
+    //[Benchmark]
     public async Task RunOperationTaskMutation()
     {
         await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-task-operation-mutation"]);
     }
 
-    [Benchmark]
+    //[Benchmark]
     public async Task RunOperationFormattable()
     {
         await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-operation-formattable"]);
     }
 
-    [Benchmark]
+    //[Benchmark]
     public async Task RunOperationTaskFormattable()
     {
         await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-task-operation-formattable"]);

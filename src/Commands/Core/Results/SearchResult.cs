@@ -31,7 +31,10 @@ public readonly struct SearchResult : IExecuteResult
         => new(component, searchHeight, null);
 
     internal static SearchResult FromError(CommandGroup? module = null)
-        => new(module, 0, module != null ? SearchException.SearchIncomplete() : SearchException.ComponentsNotFound());
+        => new(module, 0, SearchException.SearchIncomplete());
+
+    internal static SearchResult FromError()
+        => new(null, 0, SearchException.ComponentsNotFound());
 
     /// <inheritdoc />
     public override string ToString()

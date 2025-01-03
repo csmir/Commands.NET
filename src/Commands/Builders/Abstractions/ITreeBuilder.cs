@@ -45,7 +45,7 @@ public interface ITreeBuilder
     ///     Adds a new <see cref="CommandBuilder"/> to the <see cref="Components"/> collection.
     /// </summary>
     /// <remarks>
-    ///     When using this method, a new <see cref="CommandBuilder"/> will be created with its parameterless constructor. In order for the command to be valid for execution, <see cref="CommandGroupBuilder.WithAliases(string[])"/> must be called within <paramref name="configureCommand"/>.
+    ///     When using this method, a new <see cref="CommandBuilder"/> will be created with its parameterless constructor. In order for the command to be valid for execution, <see cref="CommandGroupBuilder.WithNames(string[])"/> must be called within <paramref name="configureCommand"/>.
     /// </remarks>
     /// <param name="configureCommand">An action that extends the fluent API of this type to configure the command.</param>
     /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
@@ -70,9 +70,9 @@ public interface ITreeBuilder
     /// </remarks>
     /// <param name="name">The name of the component.</param>
     /// <param name="executionDelegate">The delegate to execute when the provided name of this object is discovered in a search operation.</param>
-    /// <param name="aliases">The aliases of the component, excluding the name.</param>
+    /// <param name="names">The names of the component, excluding the name.</param>
     /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-    public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params string[] aliases);
+    public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params string[] names);
 
     /// <summary>
     ///     Adds a new <see cref="CommandGroupBuilder"/> to the <see cref="Components"/> collection.
@@ -85,7 +85,7 @@ public interface ITreeBuilder
     ///     Adds a new <see cref="CommandGroupBuilder"/> to the <see cref="Components"/> collection.
     /// </summary>
     /// <remarks>
-    ///     When using this method, the group will be created with the default constructor. In order for the group to be valid for execution, <see cref="CommandGroupBuilder.WithAliases(string[])"/> must be called within <paramref name="configureGroup"/>.
+    ///     When using this method, the group will be created with the default constructor. In order for the group to be valid for execution, <see cref="CommandGroupBuilder.WithNames(string[])"/> must be called within <paramref name="configureGroup"/>.
     /// </remarks>
     /// <param name="configureGroup">An action that extends the fluent API of this type to configure the group.</param>
     /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
@@ -96,7 +96,7 @@ public interface ITreeBuilder
     /// </summary>
     /// <remarks>
     ///     Validations are performed during <see cref="Build"/> to ensure that provided types are a valid module type: A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>; 
-    ///     If not, it will be skipped during the registration process, or, if there are static methods marked by <see cref="NameAttribute"/> inside, will register only these components.
+    ///     If not, it will be skipped during the registration process.
     /// </remarks>
     /// <param name="groupType">A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>.</param>
     /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
@@ -111,7 +111,7 @@ public interface ITreeBuilder
     /// </summary>
     /// <remarks>
     ///     Validations are performed during <see cref="Build"/> to ensure that provided types are a valid module type: A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>; 
-    ///     If not, it will be skipped during the registration process, or, if there are static methods marked by <see cref="NameAttribute"/> inside, will register only these components.
+    ///     If not, it will be skipped during the registration process.
     /// </remarks>
     /// <typeparam name="T">A non-nested, non-abstract, non-generic type that implements <see cref="CommandModule"/>.</typeparam>
     /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
@@ -121,13 +121,6 @@ public interface ITreeBuilder
 #endif
     T>()
         where T : class;
-
-    /// <summary>
-    ///     Adds a <see cref="Type"/> collection to <see cref="Types"/>. This method will skip the add operation if the type is already present.
-    /// </summary>
-    /// <param name="types">A collection of <see cref="Type"/> to add to this builder.</param>
-    /// <returns>The same <see cref="ITreeBuilder"/> for call-chaining.</returns>
-    public ITreeBuilder AddTypes(params Type[] types);
 
     /// <summary>
     ///     Replaces the <see cref="Types"/> collection with a new collection of types.

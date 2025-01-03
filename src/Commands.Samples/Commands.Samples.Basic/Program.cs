@@ -5,8 +5,8 @@ CLITree.CreateBuilder()
     .AddCommand(() => "Provide CLI arguments to execute other commands!")
     .AddCommand(c => c
         .WithHandler(() => "Hello world!")
-        .WithAliases("hello-world"))
+        .WithNames("hello-world"))
     .AddCommandGroup(m => m
         .AddCommand("bye-world", () => "Bye world!")
-        .WithAliases("subcommands"))
+        .WithNames("subcommands"))
     .Run(new ConsoleCallerContext(), args);
