@@ -4,18 +4,40 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Commands.Tests;
 
+public class BenchmarkCallerContext : AsyncCallerContext
+{
+    public override Task Respond(object? response)
+        => Task.CompletedTask;
+}
+
+[Name("group")]
+public class CreationAnalysisModule : CommandModule<BenchmarkCallerContext>
+{
+    [Name("command")]
+    public static void Command1() { }
+
+    [Name("command")]
+    public static void Command2() { }
+
+    [Name("command")]
+    public static void Command3() { }
+}
+
 [MemoryDiagnoser]
 public class Program
 {
-    private readonly ComponentTree _tree;
+    private readonly IComponentTree _components;
 
     public Program()
     {
         var services = new ServiceCollection()
-            .AddSingleton(ComponentTree.CreateBuilder().WithTypes(typeof(Program).Assembly.GetTypes()).Build())
+            .AddSingleton(ComponentTree.CreateBuilder()
+                .WithTypes(typeof(Program).Assembly.GetTypes())
+                .AddCommand("command", () => { })
+                .Build())
             .BuildServiceProvider();
 
-        _tree = (services.GetRequiredService<IComponentTree>() as ComponentTree)!;
+        _components = services.GetRequiredService<IComponentTree>();
     }
 
     static void Main()
@@ -23,95 +45,57 @@ public class Program
         BenchmarkRunner.Run<Program>();
     }
 
-    //[Benchmark]
-    public void CreateArray()
+    #region Object Creation Analysis
+
+    [Benchmark]
+    public void CommandCreate()
     {
-        new ArgumentArray(["scenario"]);
+        Command.Create(() => { }, "name");
     }
 
     [Benchmark]
-    public void SearchCommand()
+    public void GroupCreate()
     {
-        _tree.Find(new ArgumentArray(["scenario"]));
-    }
+        var group = CommandGroup.Create("name");
 
-    //[Benchmark]
-    public void SearchParametered()
-    {
-        _tree.Find(new ArgumentArray(["scenario-parameterized", "1"]));
-    }
-
-    //[Benchmark]
-    public void SearchNested()
-    {
-        _tree.Find(new ArgumentArray(["scenario-nested", "scenario-injected"]));
+        group.Add(Command.Create(() => { }, "name"));
     }
 
     [Benchmark]
-    public async Task RunCommand()
+    public void TypeGroupCreate()
     {
-        await _tree.ExecuteAsync(new BenchmarkCaller(), ["scenario"]);
+        CommandGroup.Create<CreationAnalysisModule>();
     }
 
-    //[Benchmark]
-    public async Task RunParametered()
+    [Benchmark]
+    public void CreateArguments()
     {
-        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-parameterized", "1"]);
+        ArgumentArray.Read("command");
     }
 
-    //[Benchmark]
-    public async Task RunNested()
+    #endregion
+
+    #region Pipeline Analysis
+
+    [Benchmark]
+    public void FindCommands()
     {
-        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-nested", "scenario-injected"]);
+        _components.Find(new ArgumentArray(["command"]));
     }
 
-    //[Benchmark]
-    public async Task RunException()
+    [Benchmark]
+    public void RunCommand()
     {
-        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-exception"]);
+        _components.Execute(new BenchmarkCaller(), ["command"]);
     }
 
-    //[Benchmark]
-    public async Task RunTaskException()
+    [Benchmark]
+    public Task RunCommandAsync()
     {
-        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-task-exception"]);
+        return _components.ExecuteAsync(new BenchmarkCaller(), ["command"]);
     }
 
-    //[Benchmark]
-    public async Task RunExceptionThrow()
-    {
-        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-exception-throw"]);
-    }
-
-    //[Benchmark]
-    public async Task RunTaskExceptionThrow()
-    {
-        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-task-exception-throw"]);
-    }
-
-    //[Benchmark]
-    public async Task RunOperationMutation()
-    {
-        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-operation-mutation"]);
-    }
-
-    //[Benchmark]
-    public async Task RunOperationTaskMutation()
-    {
-        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-task-operation-mutation"]);
-    }
-
-    //[Benchmark]
-    public async Task RunOperationFormattable()
-    {
-        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-operation-formattable"]);
-    }
-
-    //[Benchmark]
-    public async Task RunOperationTaskFormattable()
-    {
-        await _tree!.ExecuteAsync(new BenchmarkCaller(), ["scenario-task-operation-formattable"]);
-    }
+    #endregion
 
     public class BenchmarkCaller : ICallerContext
     {
