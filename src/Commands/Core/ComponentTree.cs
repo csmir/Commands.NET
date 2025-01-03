@@ -16,6 +16,19 @@ public sealed class ComponentTree : ComponentCollection, IComponentTree
     private readonly ResultHandler[] _handlers;
 
     /// <summary>
+    ///     Initializes a new instance of the <see cref="ComponentTree"/> class with a standard result handler that sends faulty results back to the <see cref="ICallerContext"/>.
+    /// </summary>
+    /// <param name="components">A collection of executable components that can be executed by calling <see cref="ExecuteAsync{T}(T, string, CommandOptions?)"/> or any overload of the same method.</param>
+    public ComponentTree(IEnumerable<IComponent> components)
+        : this(components, new DelegateResultHandler(async (ctx, res, serv) =>
+        {
+            if (ctx is IAsyncCallerContext asyncCtx)
+                await asyncCtx.Respond(res);
+            else
+                ctx.Respond(res);
+        })) { }
+
+    /// <summary>
     ///     Initializes a new instance of the <see cref="ComponentTree"/> class, which serves as a container for executing commands.
     /// </summary>
     /// <param name="components">A collection of executable components that can be executed by calling <see cref="ExecuteAsync{T}(T, string, CommandOptions?)"/> or any overload of the same method.</param>

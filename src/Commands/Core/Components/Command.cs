@@ -1,4 +1,5 @@
 ﻿using Commands.Conditions;
+using System.Reflection;
 
 namespace Commands;
 
@@ -48,10 +49,6 @@ public sealed class Command : IComponent, IParameterCollection
         => GetScore();
 
     /// <inheritdoc />
-    public bool IsEmittedComponent
-        => Parent == null;
-
-    /// <inheritdoc />
     public bool IsSearchable
         => true;
 
@@ -70,7 +67,7 @@ public sealed class Command : IComponent, IParameterCollection
     }
 
     internal Command(CommandGroup parent, InstanceCommandActivator activator, string[] aliases, ComponentConfiguration configuration)
-        : this(parent, activator, [], aliases, true, configuration)
+        : this(parent, activator, [], aliases, false, configuration)
     {
 
     }
@@ -147,5 +144,30 @@ public sealed class Command : IComponent, IParameterCollection
 
     /// <inheritdoc />
     public override int GetHashCode()
-        => Activator!.Target.GetHashCode();
+        => base.GetHashCode();
+
+    /// <inheritdoc cref="Create(Delegate, string[], ICondition[], ComponentConfiguration?)"/>
+    public static Command Create(Delegate executionDelegate, string[] aliases, ComponentConfiguration? configuration = null)
+        => Create(executionDelegate, aliases, [], configuration);
+
+    /// <summary>
+    ///     Creates a new command from a delegate. If a method within a module is provided, it will not root itself to its parent, and will instead be a top-level command on its own.
+    /// </summary>
+    /// <param name="executionDelegate">The delegate which contains an action executed when the command is triggered by a caller.</param>
+    /// <param name="aliases">A set of names by which the command will be able to be executed.</param>
+    /// <param name="conditions">A set of conditions that should be evaluated before the command is executed.</param>
+    /// <param name="configuration">The configuration that should be used to configure the built component.</param>
+    /// <returns>A new instance of <see cref="Command"/> being an action that can be formed based on provided input.</returns>
+    public static Command Create(Delegate executionDelegate, string[] aliases, ICondition[] conditions, ComponentConfiguration? configuration = null)
+    {
+        Assert.NotNull(executionDelegate, nameof(executionDelegate));
+
+        configuration ??= new ComponentConfiguration();
+
+        Assert.Aliases(aliases, configuration, false);
+
+        var hasContext = executionDelegate.Method.HasContext();
+
+        return new Command(null, new DelegateCommandActivator(executionDelegate.Method, executionDelegate.Target, hasContext), conditions, aliases, hasContext, configuration);
+    }
 }

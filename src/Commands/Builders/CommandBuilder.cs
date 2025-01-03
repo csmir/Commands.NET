@@ -173,7 +173,7 @@ public sealed class CommandBuilder : IComponentBuilder
     /// <summary>
     ///     Builds the current <see cref="CommandBuilder"/> into a <see cref="Command"/> instance. 
     /// </summary>
-    /// <param name="configuration">The configuration that should be used to determine the validity of the provided component.</param>
+    /// <param name="configuration">The configuration that should be used to configure the built component.</param>
     /// <param name="parent">The parent module of this component.</param>
     /// <returns>A new instance of <see cref="Command"/> based on the configured values of this builder.</returns>
     public Command Build(ComponentConfiguration configuration, CommandGroup? parent)
@@ -181,9 +181,7 @@ public sealed class CommandBuilder : IComponentBuilder
         Assert.NotNull(Handler, nameof(Handler));
         Assert.Aliases(Aliases, configuration, _isNested);
 
-        var param = Handler.Method.GetParameters();
-
-        var hasContext = param.Length > 0 && param[0].ParameterType.IsGenericType && param[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>);
+        var hasContext = Handler.Method.HasContext();
 
         return new Command(parent, new DelegateCommandActivator(Handler.Method, Handler.Target, hasContext), [.. Conditions.Select(x => x.Build())], [.. Aliases], hasContext, configuration);
     }

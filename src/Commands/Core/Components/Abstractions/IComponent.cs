@@ -31,7 +31,7 @@ public interface IComponent : IScorable, IEquatable<IComponent>
     public IActivator? Activator { get; }
 
     /// <summary>
-    ///     Gets the parent module of this component. This property will be <see langword="null"/> if the component is not nested in a module.
+    ///     Gets the parent module of this component. This property can be <see langword="null"/>.
     /// </summary>
     public CommandGroup? Parent { get; }
 
@@ -42,14 +42,6 @@ public interface IComponent : IScorable, IEquatable<IComponent>
     ///     Score defines the match priority of a component over another. This score is computed based on complexity, argument length and conversion.
     /// </remarks>
     public float Score { get; }
-
-    /// <summary>
-    ///     Gets if the component is runtime emitted, meaning it was created dynamically through the builder namespace.
-    /// </summary>
-    /// <remarks>
-    ///     Emitted components are delegate-based. They are not bound to a specific type, and are only structurally defined through the <see cref="IComponentTree"/>.
-    /// </remarks>
-    public bool IsEmittedComponent { get; }
 
     /// <summary>
     ///     Gets if the component name is queryable.

@@ -257,14 +257,14 @@ public sealed class CommandGroupBuilder : IComponentBuilder
     /// <summary>
     ///     Builds the current <see cref="CommandGroupBuilder"/> into a <see cref="CommandGroup"/> instance.
     /// </summary>
-    /// <param name="configuration">The configuration that should be used to determine the validity of the provided component.</param>
+    /// <param name="configuration">The configuration that should be used to configure the built component.</param>
     /// <param name="parent">The parent group of this component.</param>
     /// <returns>A new instance of <see cref="CommandGroup"/> based on the configured values of this builder.</returns>
     public CommandGroup Build(ComponentConfiguration configuration, CommandGroup? parent)
     {
         Assert.Aliases(Aliases, configuration, false);
 
-        var groupInfo = new CommandGroup(parent, [.. Conditions.Select(x => x.Build())], [.. Aliases]);
+        var groupInfo = new CommandGroup(parent, [.. Conditions.Select(x => x.Build())], [.. Aliases], configuration);
 
         foreach (var component in Components)
         {

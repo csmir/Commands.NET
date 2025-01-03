@@ -1,16 +1,15 @@
 ﻿
 using Commands;
-using Commands.Builders;
 
-var commands = new List<CommandBuilder>() {
-    new("sum", Sum),
-    new("subtract", Subtract),
-    new("multiply", Multiply),
-    new("divide", Divide),
-    new("exit", Exit)
-};
+var group = CommandGroup.Create(["math"]);
 
-var tree = new ComponentTree(commands.Select(x => x.Build()), new DelegateResultHandler<ConsoleCallerContext>((c, r, s) => c.Respond(r)));
+group.Add(Command.Create(Sum, ["sum", "add"]));
+group.Add(Command.Create(Subtract, ["subtract", "sub"]));
+group.Add(Command.Create(Multiply, ["multiply", "mul"]));
+group.Add(Command.Create(Divide, ["divide", "div"]));
+group.Add(Command.Create(Exit, ["exit"]));
+
+var tree = new ComponentTree([group]);
 
 while (true)
     tree.Execute(new ConsoleCallerContext(), Console.ReadLine()!);

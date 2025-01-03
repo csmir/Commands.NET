@@ -1,21 +1,11 @@
-﻿using Commands.Builders;
-
-namespace Commands.Tests;
+﻿namespace Commands.Tests;
 
 public class MutationModule : CommandModule
 {
     [Name("add-command")]
     public Task MutateCurrentModule(string commandName, [Remainder] Delegate executionAction)
     {
-        var configuration = new ComponentConfigurationBuilder()
-            .Build();
-
-        var command = new CommandBuilder()
-            .WithAliases(commandName)
-            .WithHandler(executionAction)
-            .Build(configuration);
-
-        Command.Parent!.Add(command);
+        Command.Parent!.Add(Commands.Command.Create(executionAction, [commandName]));
 
         return Respond("Command added.");
     }

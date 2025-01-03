@@ -50,10 +50,6 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         => GetScore();
 
     /// <inheritdoc />
-    public bool IsEmittedComponent
-        => Type == null;
-
-    /// <inheritdoc />
     public bool IsSearchable
         => Aliases.Length > 0;
 
@@ -84,8 +80,8 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     }
 
     internal CommandGroup(
-        CommandGroup? parent, ICondition[] conditions, string[] aliases)
-        : base(false)
+        CommandGroup? parent, ICondition[] conditions, string[] aliases, ComponentConfiguration configuration)
+        : base(configuration.GetProperty("MakeModulesReadonly", false))
     {
         Parent = parent;
 
@@ -159,5 +155,60 @@ public sealed class CommandGroup : ComponentCollection, IComponent
 
     /// <inheritdoc />
     public override int GetHashCode()
-        => Activator!.Target.GetHashCode();
+        => base.GetHashCode();
+
+    /// <summary>
+    ///    Creates a new empty command group from the provided aliases, conditions and configuration.
+    /// </summary>
+    /// <param name="aliases">A set of names by which the command group will be able to be discovered.</param>
+    /// <param name="configuration">The configuration that should be used to configure the built component.</param>
+    /// <returns>A new <b>empty</b> instance of <see cref="CommandGroup"/>, able to be mutated using exposed API's.</returns>
+    public static CommandGroup Create(string[] aliases, ComponentConfiguration? configuration = null)
+    {
+        configuration ??= ComponentConfiguration.Default;
+
+        Assert.NotNull(aliases, nameof(aliases));
+        Assert.Aliases(aliases, configuration, false);
+
+        return new CommandGroup(null, [], aliases, configuration);
+    }
+
+    /// <inheritdoc cref="Create(Type, ComponentConfiguration?)"/>
+    /// <typeparam name="T">A type implementing <see cref="CommandModule"/> or <see cref="CommandModule{T}"/>.</typeparam>
+    public static CommandGroup Create<
+#if NET8_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
+#endif
+    T>(ComponentConfiguration? configuration = null)
+        where T : CommandModule
+        => Create(typeof(T), configuration);
+
+    /// <summary>
+    ///     Creates a new command group from the provided type and configuration.
+    /// </summary>
+    /// <remarks>
+    ///     Creating a command group through this method will expect a name is provided to the group.
+    /// </remarks>
+    /// <param name="type">A type implementing <see cref="CommandModule"/> or <see cref="CommandModule{T}"/>.</param>
+    /// <param name="configuration">The configuration that should be used to configure the built component.</param>
+    /// <returns>A new instance of <see cref="CommandGroup"/> containing all discovered commands, subgroups and subcommands within the provided type.</returns>
+    public static CommandGroup Create(
+#if NET8_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
+#endif
+        Type type, ComponentConfiguration? configuration = null)
+    {
+        configuration ??= ComponentConfiguration.Default;
+
+        Assert.NotNull(type, nameof(type));
+
+        if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
+            throw new ArgumentException("The type must be a non-abstract, non-generic, and assignable to CommandModule to be considered a valid implementation.", nameof(type));
+
+        var aliases = type.GetAttributes(false).FirstOrDefault<NameAttribute>()?.Aliases ?? [];
+
+        Assert.Aliases(aliases, configuration, false);
+
+        return new CommandGroup(type, null, aliases, configuration ?? new ComponentConfiguration());
+    }
 }
