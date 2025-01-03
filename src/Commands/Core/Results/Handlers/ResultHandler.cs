@@ -115,7 +115,7 @@ public abstract class ResultHandler
                     var taskType = task.GetType();
 
                     // If the task is a generic task, and the result is not a void task result, get the result and respond with it. Unfortunately we cannot do a type comparison on VoidTaskResult, because it is an internal corelib struct.
-                    if (taskType.IsGenericType && taskType.GenericTypeArguments[0].FullName != "System.Threading.Tasks.VoidTaskResult")
+                    if (taskType.IsGenericType && taskType.GenericTypeArguments[0].Name != "VoidTaskResult")
                     {
                         _taskGetValue ??= taskType.GetProperty("Result")!.GetMethod;
 
