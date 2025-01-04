@@ -9,7 +9,7 @@ namespace Commands.Conversion;
 /// </summary>
 public sealed class ColorTypeParser : TypeParser<Color>
 {
-    private readonly IReadOnlyDictionary<string, Color> _colors;
+    private readonly Dictionary<string, Color> _colors;
 
     /// <summary>
     ///     Initializes a new instance of <see cref="ColorTypeParser"/>.
@@ -39,14 +39,14 @@ public sealed class ColorTypeParser : TypeParser<Color>
         if (value is not string str)
             str = value?.ToString() ?? string.Empty;
 
-        // Hex color codes, being most commonly used on Discord.
-        // Takes: #FFFFFF or FFFFFF
-        if (TryParseHex(str, out var color))
-            return Success(color);
-
         // Named colors, being the most commonly used to describe colors.
         // Takes: Red, Green, Blue etc.
-        if (TryParseNamed(str, out color))
+        if (TryParseNamed(str, out var color))
+            return Success(color);
+
+        // Hex color codes, being most commonly used color identification.
+        // Takes: #FFFFFF or FFFFFF
+        if (TryParseHex(str, out color))
             return Success(color);
 
         // RGB color codes, being second most common and used in many programming languages as well as editors.
