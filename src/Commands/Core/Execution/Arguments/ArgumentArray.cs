@@ -150,14 +150,13 @@ public struct ArgumentArray
         _remaindingLength = _unnamedArgs.Length - index;
     }
 
-    /// <inheritdoc cref="Read(string, StringComparer?)"/>
-    public static ArgumentArray Read(string[] input, StringComparer? comparer = null)
-    {
-        if (input is null || input.Length is 0)
-            return new([]);
+    /// <inheritdoc cref="Read(string, char[], StringComparer?)"/>
+    public static ArgumentArray Read(string? input, StringComparer? comparer = null)
+        => Read(input, [' '], comparer);
 
-        return new([.. ReadInternal(input)], comparer ?? StringComparer.OrdinalIgnoreCase);
-    }
+    /// <inheritdoc cref="Read(string, char[], StringComparer?)"/>
+    public static ArgumentArray Read(string[] input, StringComparer? comparer = null)
+        => new([.. ReadInternal(input)], comparer ?? StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     ///     Reads the provided <paramref name="input"/> into an array of command arguments. This method will never throw, always returning a new <see cref="ArgumentArray"/>.
@@ -181,16 +180,17 @@ public struct ArgumentArray
     ///     </list>
     /// </remarks>
     /// <param name="input">The caller input to parse into a set of arguments.</param>
+    /// <param name="separators">The characters to use as separators when splitting the input.</param>
     /// <param name="comparer">The comparer to use when comparing argument names.</param>
     /// <returns>
     ///     An array of arguments that can be used to search for a command or parse into a method.
     /// </returns>
-    public static ArgumentArray Read(string? input, StringComparer? comparer = null)
+    public static ArgumentArray Read(string? input, char[] separators, StringComparer? comparer = null)
     {
         if (string.IsNullOrWhiteSpace(input))
             return new([]);
 
-        return new([.. ReadInternal(input?.Split(' ') ?? [])], comparer ?? StringComparer.OrdinalIgnoreCase);
+        return new([.. ReadInternal(input!.Split(separators))], comparer ?? StringComparer.OrdinalIgnoreCase);
     }
 
     private static IEnumerable<KeyValuePair<string, object?>> ReadInternal(params string[] input)
