@@ -3,8 +3,6 @@
 [Name("overload")]
 public class OverloadTests : CommandModule
 {
-    public string GetDefault => Get("someId");
-
     [Name("get")]
     public static string Get(string id = "")
     {

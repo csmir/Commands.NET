@@ -3,9 +3,9 @@
 namespace Commands;
 
 /// <summary>
-///     Represents an activator that can create an instance of a complex type, being a parameter marked with <see cref="ComplexAttribute"/>.
+///     Represents an activator that can create an instance of a constructible type, being a parameter marked with <see cref="DeconstructAttribute"/>. This class cannot be inherited.
 /// </summary>
-public sealed class ComplexParameterActivator : IActivator
+public sealed class ConstructibleParameterActivator : IActivator
 {
     private readonly ConstructorInfo _ctor;
 
@@ -13,7 +13,7 @@ public sealed class ComplexParameterActivator : IActivator
     public MethodBase Target
         => _ctor;
 
-    internal ComplexParameterActivator(
+    internal ConstructibleParameterActivator(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif

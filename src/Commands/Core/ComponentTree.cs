@@ -220,7 +220,7 @@ public sealed class ComponentTree : ComponentCollection, IComponentTree
                 break;
             }
 
-            if (argument is CommandComplexParameter complexParameter)
+            if (argument is CommandConstructibleParameter complexParameter)
             {
                 var result = await ParseParameters(caller, complexParameter.Parameters, args, options);
 

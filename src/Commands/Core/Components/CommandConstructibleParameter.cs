@@ -7,7 +7,7 @@ namespace Commands;
 ///     Reveals information about a type with a defined complex constructor.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public class CommandComplexParameter : ICommandParameter, ICommandSegment, IParameterCollection
+public class CommandConstructibleParameter : ICommandParameter, ICommandSegment, IParameterCollection
 {
     /// <inheritdoc />
     public IActivator Activator { get; }
@@ -60,7 +60,7 @@ public class CommandComplexParameter : ICommandParameter, ICommandSegment, IPara
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
 #endif
-    internal CommandComplexParameter(
+    internal CommandConstructibleParameter(
         ParameterInfo parameterInfo, string? name, ComponentConfiguration configuration)
     {
         var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
@@ -84,7 +84,7 @@ public class CommandComplexParameter : ICommandParameter, ICommandSegment, IPara
         else
             IsOptional = false;
 
-        Activator = new ComplexParameterActivator(Type);
+        Activator = new ConstructibleParameterActivator(Type);
 
         var parameters = Activator.Target.BuildArguments(false, configuration);
 

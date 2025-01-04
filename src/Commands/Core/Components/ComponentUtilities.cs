@@ -166,7 +166,7 @@ internal static class ComponentUtilities
             var name = string.Empty;
             foreach (var attr in parameters[i].GetCustomAttributes())
             {
-                if (attr is ComplexAttribute)
+                if (attr is DeconstructAttribute)
                     complex = true;
 
                 if (attr is NameAttribute names)
@@ -177,7 +177,7 @@ internal static class ComponentUtilities
             }
 
             if (complex)
-                arr[i] = new CommandComplexParameter(parameters[i], name, configuration);
+                arr[i] = new CommandConstructibleParameter(parameters[i], name, configuration);
             else
                 arr[i] = new CommandParameter(parameters[i], name, configuration);
         }
@@ -219,7 +219,7 @@ internal static class ComponentUtilities
 
         foreach (var parameter in arguments)
         {
-            if (parameter is CommandComplexParameter complexArgument)
+            if (parameter is CommandConstructibleParameter complexArgument)
             {
                 maxLength += complexArgument.MaxLength;
                 minLength += complexArgument.MinLength;

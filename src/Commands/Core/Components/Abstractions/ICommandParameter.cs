@@ -29,7 +29,7 @@ public interface ICommandParameter : ICommandSegment, IParameter
     ///     Gets the parser for this parameter.
     /// </summary>
     /// <remarks>
-    ///     Will be <see langword="null"/> if this parameter is <see cref="CommandComplexParameter"/>.
+    ///     Will be <see langword="null"/> if this parameter is <see cref="CommandConstructibleParameter"/>.
     /// </remarks>
     public TypeParser? Parser { get; }
 
