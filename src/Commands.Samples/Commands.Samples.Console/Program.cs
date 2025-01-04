@@ -5,7 +5,7 @@ using Commands.Samples;
 var tree = ComponentTree.CreateBuilder()
     .ConfigureComponents(configure =>
     {
-        configure.AddParser(new LiteralTypeParser(caseIgnore: true));
+        configure.AddParser(new SystemTypeParser(caseIgnore: true));
         configure.AddParser(new TryParseParser<Version>(Version.TryParse));
     })
     .AddResultHandler((caller, result, services) => caller.Respond(result))
@@ -14,7 +14,7 @@ var tree = ComponentTree.CreateBuilder()
         .WithNames("greet")
         .AddCommand(x => x
             .WithNames("self")
-            .WithHandler((CommandContext<ConsoleCaller> ctx) => $"Hello, {ctx.Caller.Name}"))
+            .WithHandler((CommandContext<ConsoleCallerContext> ctx) => $"Hello, {ctx.Caller.Name}"))
         .AddCommand(x => x
             .WithNames("another")
             .WithHandler((string name) => $"Hello, {name}")))
@@ -24,7 +24,7 @@ while (true)
 {
     var input = Console.ReadLine()!;
 
-    var consumer = new ConsoleCaller(name: "Harold");
+    var consumer = new ConsoleCallerContext(name: "Pete");
 
     tree.Execute(consumer, input);
 }
