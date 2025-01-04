@@ -1,18 +1,18 @@
 ﻿namespace Commands.Tests;
 
 [Name("command")]
-public class Module : CommandModule
+public class BasicModule : CommandModule
 {
     [Name("nested")]
     public class NestedModule : CommandModule
     {
         [Name("deconstruct")]
-        public static string Deconstruct([Deconstruct] ConstructibleType complex)
-            => $"({complex.X}, {complex.Y}, {complex.Z}) {complex.Complexer}: {complex.Complexer.X}, {complex.Complexer.Y}, {complex.Complexer.Z}";
+        public static string Deconstruct([Deconstruct] ConstructibleType constructedType)
+            => $"({constructedType.X}, {constructedType.Y}, {constructedType.Z}) {constructedType.Child}: {constructedType.Child.InnerX}, {constructedType.Child.InnerY}, {constructedType.Child.InnerZ}";
 
         [Name("deconstruct")]
-        public static string Deconstruct([Deconstruct] ConstructibleInnerType? complex)
-            => $"({complex?.X}, {complex?.Y}, {complex?.Z})";
+        public static string Deconstruct([Deconstruct] NestedConstructibleType? constructedType)
+            => $"({constructedType?.InnerX}, {constructedType?.InnerY}, {constructedType?.InnerZ})";
 
         [Name("multiple")]
         public static string Test(bool @true, bool @false)
@@ -53,11 +53,11 @@ public class Module : CommandModule
 
     [Name("deconstruct")]
     public void Deconstruct([Deconstruct] ConstructibleType complex)
-        => Respond($"({complex.X}, {complex.Y}, {complex.Z}) {complex.Complexer}: {complex.Complexer.X}, {complex.Complexer.Y}, {complex.Complexer.Z}");
+        => Respond($"({complex.X}, {complex.Y}, {complex.Z}) {complex.Child}: {complex.Child.InnerX}, {complex.Child.InnerY}, {complex.Child.InnerZ}");
 
     [Name("deconstruct")]
-    public void Deconstruct([Deconstruct] ConstructibleInnerType? complex)
-        => Respond($"({complex?.X}, {complex?.Y}, {complex?.Z})");
+    public void Deconstruct([Deconstruct] NestedConstructibleType? complex)
+        => Respond($"({complex?.InnerX}, {complex?.InnerY}, {complex?.InnerZ})");
 
     [Name("param-array")]
     public void ParamArray(params string[] range)
@@ -66,4 +66,15 @@ public class Module : CommandModule
     [Name("array")]
     public void Array(int num, [Remainder] int[] range)
         => Respond($"Success: {num}, {string.Join(' ', range)}");
+
+    [Name("async")]
+    public async Task Async(bool delay)
+    {
+        if (delay)
+        {
+            await Task.Delay(Random.Shared.Next(5000, 10000));
+
+            await Respond("Success");
+        }
+    }
 }

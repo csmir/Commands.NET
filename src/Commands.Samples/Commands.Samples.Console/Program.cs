@@ -1,6 +1,4 @@
-﻿// This sample implements the same structure as https://github.com/csmir/Commands.NET/wiki/Quick-Guide.
-
-using Commands;
+﻿using Commands;
 using Commands.Conversion;
 using Commands.Samples;
 

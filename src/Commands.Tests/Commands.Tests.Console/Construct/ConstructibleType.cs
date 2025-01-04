@@ -1,8 +1,8 @@
 ﻿namespace Commands.Tests;
 
-public class ConstructibleType(int x, int y, int z, [Deconstruct] ConstructibleInnerType complexer)
+public class ConstructibleType(int x, int y, int z, [Deconstruct] NestedConstructibleType inner)
 {
     public int X = x, Y = y, Z = z;
 
-    public ConstructibleInnerType Complexer = complexer;
+    public NestedConstructibleType Child = inner;
 }

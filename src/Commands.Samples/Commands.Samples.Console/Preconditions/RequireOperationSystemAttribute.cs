@@ -1,6 +1,4 @@
-﻿// Documentation of this file can be found at: https://github.com/csmir/Commands.NET/wiki/Conditions.
-
-using Commands.Conditions;
+﻿using Commands.Conditions;
 
 namespace Commands.Samples;
 
