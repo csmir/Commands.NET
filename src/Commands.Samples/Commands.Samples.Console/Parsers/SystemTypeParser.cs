@@ -23,7 +23,7 @@ public class SystemTypeParser(bool caseIgnore) : TypeParser<Type>
         }
         catch (Exception ex)
         {
-            return Error($"A type with name '{value}' was not found within the current assembly.");
+            return Error($"A type with name '{value}' was not found within the current assembly. Did you provide the type's full name, including its namespace?");
         }
     }
 }
