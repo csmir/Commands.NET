@@ -116,38 +116,35 @@ public struct ArgumentArray
     ///     Joins the remaining unnamed arguments in the set into a single string.
     /// </summary>
     /// <returns>A joined string containing all remaining arguments in this enumerator.</returns>
-    public readonly string TakeRemaining(char separator)
+    public readonly string TakeRemaining(string parameterName, char separator)
 #if NET8_0_OR_GREATER
-        => string.Join(separator, _unnamedArgs[_index..]);
+        => string.Join(separator, TakeRemaining(parameterName));
 #else
-    {
-        var sb = new StringBuilder();
-        for (var i = _index; i < _unnamedArgs.Length; i++)
-        {
-            sb.Append(_unnamedArgs[i]);
-            if (i < _unnamedArgs.Length - 1)
-                sb.Append(separator);
-        }
-
-        return sb.ToString();
-    }
+        => string.Join($"{separator}", TakeRemaining(parameterName));
 #endif
 
     /// <summary>
     ///     Takes the remaining unnamed arguments in the set into an array which is used by Collector arguments.
     /// </summary>
     /// <returns>An array of objects that represent the remaining arguments of this enumerator.</returns>
-    public readonly object[] TakeRemaining()
+    public readonly object[] TakeRemaining(string parameterName)
+    {
+        if (_namedArgs.TryGetValue(parameterName, out var value))
 #if NET8_0_OR_GREATER
-        => _unnamedArgs[_index..];
+            return [value!, .. _unnamedArgs[_index..]];
+
+        return _unnamedArgs[_index..];
 #else
-        => _unnamedArgs.Skip(_index).ToArray();
+            return [value!, .. _unnamedArgs.Skip(_index)];
+
+        return _unnamedArgs.Skip(_index).ToArray();
 #endif
+    }
 
     internal void SetParseIndex(int index)
     {
         _index = index;
-        _remaindingLength = _unnamedArgs.Length - index;
+        _remaindingLength = Length - index;
     }
 
     /// <inheritdoc cref="Read(string, char[], StringComparer?)"/>

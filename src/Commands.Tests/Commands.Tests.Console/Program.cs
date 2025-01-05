@@ -22,10 +22,11 @@ while (true)
 
     var values = ArgumentArray.Read(input);
 
-    var caller = new AsyncCustomCaller();
+    var caller = new ConsoleCallerContext();
 
     using var scope = services.CreateScope();
-    await manager.TryExecuteAsync(caller, values, new()
+
+    manager.TryExecute(caller, values, new()
     {
         Services = scope.ServiceProvider
     });

@@ -10,10 +10,6 @@ public class BasicModule : CommandModule
         public static string Deconstruct([Deconstruct] ConstructibleType constructedType)
             => $"({constructedType.X}, {constructedType.Y}, {constructedType.Z}) {constructedType.Child}: {constructedType.Child.InnerX}, {constructedType.Child.InnerY}, {constructedType.Child.InnerZ}";
 
-        [Name("deconstruct")]
-        public static string Deconstruct([Deconstruct] NestedConstructibleType? constructedType)
-            => $"({constructedType?.InnerX}, {constructedType?.InnerY}, {constructedType?.InnerZ})";
-
         [Name("multiple")]
         public static string Test(bool @true, bool @false)
             => $"Success: {@true}, {@false}";
@@ -54,10 +50,6 @@ public class BasicModule : CommandModule
     [Name("deconstruct")]
     public void Deconstruct([Deconstruct] ConstructibleType complex)
         => Respond($"({complex.X}, {complex.Y}, {complex.Z}) {complex.Child}: {complex.Child.InnerX}, {complex.Child.InnerY}, {complex.Child.InnerZ}");
-
-    [Name("deconstruct")]
-    public void Deconstruct([Deconstruct] NestedConstructibleType? complex)
-        => Respond($"({complex?.InnerX}, {complex?.InnerY}, {complex?.InnerZ})");
 
     [Name("param-array")]
     public void ParamArray(params string[] range)

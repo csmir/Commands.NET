@@ -24,7 +24,7 @@ public class ConditionModule : CommandModule
     // Grouped by OR. This scenario will succeed.
     [OR1(true)]
     [OR1(false)]
-    // Grouped by AND. This scenario will fail.
+    // Grouped by AND. This scenario will succeed.
     [AND(true)]
     [AND(true)]
     public static string ConditionORAND()
@@ -33,7 +33,7 @@ public class ConditionModule : CommandModule
     }
 
     [Name("condition-or-multi")]
-    // Grouped by OR, across multiple condition types. Because the evaluator is the same, this scenario will succeed.
+    // Grouped by OR, across multiple condition types. Because the evaluator (T) implementation of the conditions are the same, this scenario will succeed.
     [OR1(false)]
     [OR2(false)]
     [OR2(true)]

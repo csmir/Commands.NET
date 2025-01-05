@@ -2,22 +2,22 @@
 using Commands;
 using Commands.Samples;
 
-var math = CommandGroup.Create("math");
+var exit = Command.Create(Exit, "exit");
 
-math.AddRange(
+var mathCommands = CommandGroup.Create("math");
+
+mathCommands.AddRange(
     Command.Create(Sum, "sum", "add"), 
     Command.Create(Subtract, "subtract", "sub"), 
     Command.Create(Multiply, "multiply", "mul"), 
-    Command.Create(Divide, "divide", "div"), 
-    Command.Create(Exit, "exit")
+    Command.Create(Divide, "divide", "div")
 );
 
-var help = CommandGroup.Create<HelpModule>();
+var helpCommands = CommandGroup.Create<HelpModule>();
 
-var manager = ComponentManager.Create(math, help);
+var manager = ComponentManager.Create(exit, mathCommands, helpCommands);
 
-while (true)
-    manager.TryExecute(new ConsoleCallerContext(), Console.ReadLine());
+manager.TryExecute(new ConsoleCallerContext(), args);
 
 static double Sum(double number, int sumBy)
     => number + sumBy;

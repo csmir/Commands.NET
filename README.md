@@ -12,28 +12,80 @@ Commands.NET aims to improve your experience integrating input from different so
 
 **Sources can range from command-line, console, chatboxes, to social platforms like Discord, Slack, Messenger & much, much more.*
 
-## Getting Started
-
-There are various resources available in order to get started with Commands.NET. Below, you can find samples and directions to the quick guide.
-
-### Documentation
+## Documentation
 
 Are you new to Commands.NET, wanting to implement into your applications? 
 [Read the quick guide](https://github.com/csmir/Commands.NET/wiki/Quick-Guide) to get started. 
 
 > For a more expanded view, browse the whole [Commands.NET Wiki](https://github.com/csmir/Commands.NET/wiki).
 
-### Examples
+## Usage
 
-Creating commands:
+### Running a Command
 
 ```cs
 var command = Command.Create(() => "Hello world!", "greet");
 
-var runner = ComponentManager.Create(command);
+var manager = ComponentManager.Create(command);
 
-runner.Execute("greet");
+manager.TryExecute(new DefaultCallerContext(), args);
+
+// dotnet run greet -> Hello world!
 ```
+
+### Creating Subcommands
+
+```cs
+var mathCommands = CommandGroup.Create("math");
+
+mathCommands.AddRange(
+    Command.Create((double number, int sumBy)      => number + sumBy, 
+        "sum", "add"), 
+    Command.Create((double number, int subtractBy) => number - subtractBy, 
+        "subtract", "sub"), 
+    Command.Create((double number, int multiplyBy) => number * multiplyBy, 
+        "multiply", "mul"), 
+    Command.Create((double number, int divideBy)   => number / divideBy, 
+        "divide", "div")
+);
+
+var manager = ComponentManager.Create(mathCommands);
+
+manager.TryExecute(new DefaultCallerContext(), args);
+
+// dotnet run math sum 5 3 -> 8
+```
+
+### Creating Modules
+
+```cs
+public class HelpModule : CommandModule 
+{
+    [Name("help")]
+    public void Help()
+    {
+        var builder = new StringBuilder()
+            .AppendLine("Commands:");
+
+        foreach (var command in Manager!.GetCommands())
+            builder.AppendLine(command.GetFullName());
+
+        Respond(builder.ToString());
+    }
+}
+
+...
+
+var helpCommands = CommandGroup.Create<HelpModule>();
+
+var manager = ComponentManager.Create(mathCommands, helpCommands);
+
+manager.TryExecute(new DefaultCallerContext(), args);
+
+// dotnet run help -> Commands: math sum ..., math subtract ..., math multiply ..., math divide ..., help ...
+```
+
+## Samples
 
 - [Commands.Samples.Core](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Core)
   - Manage, create and execute commands in a basic console application.
@@ -43,6 +95,4 @@ runner.Execute("greet");
   - Integrating Commands.NET into the .NET Generic Host infrastructure.
 - [Commands.Samples.CLI](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.CLI)
   - Create CLI actions with argument parsing and enhanced functionality through an extension package.
-
-## Features
 

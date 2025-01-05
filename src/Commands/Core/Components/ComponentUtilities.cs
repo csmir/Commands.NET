@@ -303,7 +303,8 @@ internal static class ComponentUtilities
 
             if (argument.IsRemainder)
             {
-                results[i] = await argument.Parse(caller, argument.IsCollection ? args.TakeRemaining() : args.TakeRemaining(options.RemainderSeparator), options.Services, options.CancellationToken);
+                results[i] = await argument.Parse(caller, argument.IsCollection ? args.TakeRemaining(argument.Name!) : args.TakeRemaining(argument.Name!, options.RemainderSeparator), options.Services, options.CancellationToken);
+
                 break;
             }
 

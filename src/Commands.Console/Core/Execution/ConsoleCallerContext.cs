@@ -30,7 +30,6 @@ public class ConsoleCallerContext : ICallerContext
     ///     Sends a message to the console.
     /// </summary>
     /// <param name="response">The message that should be sent in response to the console.</param>
-    /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
     public void Respond(object? response)
     {
         switch (response)
@@ -53,12 +52,8 @@ public class ConsoleCallerContext : ICallerContext
     /// <summary>
     ///     Creates a new line in the console.
     /// </summary>
-    /// <returns>An awaitable <see cref="Task"/> containing the state of the response. This call does not need to be awaited, running async if not.</returns>
-    public Task NewLine()
-    {
-        Console.WriteLine();
-        return Task.CompletedTask;
-    }
+    public void NewLine()
+        => Console.WriteLine();
 
     /// <summary>
     ///     Sends an exception to the console.

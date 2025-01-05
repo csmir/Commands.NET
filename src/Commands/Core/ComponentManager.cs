@@ -66,12 +66,22 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         => TryExecute(caller, ArgumentArray.Read(args), options);
 
     /// <inheritdoc />
+    public void TryExecute<T>(T caller, string[] args, CommandOptions? options = null)
+        where T : ICallerContext
+        => TryExecuteAsync(caller, ArgumentArray.Read(args), options).Wait();
+
+    /// <inheritdoc />
     public void TryExecute<T>(T caller, ArgumentArray args, CommandOptions? options = null)
         where T : ICallerContext
         => TryExecuteAsync(caller, args, options).Wait();
 
     /// <inheritdoc />
     public Task TryExecuteAsync<T>(T caller, string? args, CommandOptions? options = null)
+        where T : ICallerContext
+        => TryExecuteAsync(caller, ArgumentArray.Read(args), options);
+
+    /// <inheritdoc />
+    public Task TryExecuteAsync<T>(T caller, string[] args, CommandOptions? options = null)
         where T : ICallerContext
         => TryExecuteAsync(caller, ArgumentArray.Read(args), options);
 

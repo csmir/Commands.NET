@@ -34,6 +34,8 @@ public abstract class ComponentCollection : IComponentCollection
     /// <inheritdoc />
     public IEnumerable<IComponent> GetCommands(Predicate<Command> predicate, bool browseNestedComponents = true)
     {
+        Assert.NotNull(predicate, nameof(predicate));
+
         if (!browseNestedComponents)
             return _components.Where(x => x is Command cmd && predicate(cmd));
 
@@ -58,6 +60,8 @@ public abstract class ComponentCollection : IComponentCollection
     /// <inheritdoc />
     public IEnumerable<IComponent> GetModules(Predicate<CommandGroup> predicate, bool browseNestedComponents = true)
     {
+        Assert.NotNull(predicate, nameof(predicate));
+
         if (!browseNestedComponents)
             return _components.Where(x => x is CommandGroup grp && predicate(grp));
 
@@ -109,6 +113,8 @@ public abstract class ComponentCollection : IComponentCollection
 
         foreach (var component in components)
         {
+            Assert.NotNull(component, nameof(component));
+
             var result = copy.Add(component);
 
             // When addition is successful, and this collection is a CommandGroup, bind the component to the group.
@@ -146,7 +152,11 @@ public abstract class ComponentCollection : IComponentCollection
         var removed = 0;
 
         foreach (var component in components)
+        {
+            Assert.NotNull(component, nameof(component));
+
             removed += copy.Remove(component) ? 1 : 0;
+        }
 
         if (removed > 0)
         {

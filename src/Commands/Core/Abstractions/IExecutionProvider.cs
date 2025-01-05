@@ -17,6 +17,10 @@ public interface IExecutionProvider : IComponentCollection
         where T : ICallerContext;
 
     /// <inheritdoc cref="TryExecute{T}(T, string, CommandOptions?)"/>
+    public void TryExecute<T>(T caller, string[] args, CommandOptions? options = null)
+        where T : ICallerContext;
+
+    /// <inheritdoc cref="TryExecute{T}(T, string, CommandOptions?)"/>
     public void TryExecute<T>(T caller, ArgumentArray args, CommandOptions? options = null)
         where T : ICallerContext;
 
@@ -28,6 +32,10 @@ public interface IExecutionProvider : IComponentCollection
     /// <param name="options">A collection of options that determines pipeline logic.</param>
     /// <returns>An awaitable <see cref="Task"/> hosting the state of execution. This task should be awaited or returned, even if <see cref="CommandOptions.AsynchronousExecution"/> is set to <see langword="true"/>.</returns>
     public Task TryExecuteAsync<T>(T caller, string? args, CommandOptions? options = null)
+        where T : ICallerContext;
+
+    /// <inheritdoc cref="TryExecuteAsync{T}(T, string, CommandOptions?)"/>
+    public Task TryExecuteAsync<T>(T caller, string[] args, CommandOptions? options = null)
         where T : ICallerContext;
 
     /// <inheritdoc cref="TryExecuteAsync{T}(T, string, CommandOptions?)"/>

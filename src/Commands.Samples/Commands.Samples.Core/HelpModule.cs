@@ -5,33 +5,44 @@ namespace Commands.Samples;
 [Name("help")]
 public class HelpModule : CommandModule
 {
-    public void Help(int count = 10)
+    public void Help()
     {
-        // Ignore overloads and just list commands by name.
-        var commands = Manager!.GetCommands().ToArray();
+        var builder = new StringBuilder()
+            .AppendLine("Commands:");
 
-        var builder = new StringBuilder();
-
-        builder.AppendLine("Commands:");
-
-        for (var i = 0; i < count && i < (commands.Length > count ? count : commands.Length); i++)
-            builder.AppendLine(commands[i].GetFullName());
+        foreach (var command in Manager!.GetCommands())
+            builder.AppendLine(command.GetFullName());
 
         Respond(builder.ToString());
     }
 
-    public void Help([Remainder] string commandName)
+    public void Help([Remainder, Name("command-name")] string commandName)
     {
         var commands = Manager!.GetCommands();
 
-        var command = commands.FirstOrDefault(x => x.GetFullName().StartsWith(commandName));
+        var command = commands
+            .Where(x => x.GetFullName().StartsWith(commandName))
+            .ToArray();
 
-        if (command is null)
+        if (command.Length == 0)
         {
             Respond("Command not found.");
             return;
         }
 
-        Respond(command);
+        if (command.Length > 1)
+        {
+            var builder = new StringBuilder()
+                .AppendLine("Multiple commands found:");
+
+            for (var i = 0; i < command.Length; i++)
+                builder.AppendLine(command[i].GetFullName());
+
+            Respond(builder.ToString());
+
+            return;
+        }
+
+        Respond(command[0]);
     }
 }
