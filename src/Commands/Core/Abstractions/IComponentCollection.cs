@@ -49,11 +49,6 @@ public interface IComponentCollection : ICollection<IComponent>, IEnumerable<ICo
     public int CountAll();
 
     /// <summary>
-    ///     Sorts the components in the current collection based on their score.
-    /// </summary>
-    public void Sort();
-
-    /// <summary>
     ///     Adds all provided components to the current collection.
     /// </summary>
     /// <param name="components">The components to be added to the collection.</param>

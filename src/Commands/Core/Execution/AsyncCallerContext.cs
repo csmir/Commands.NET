@@ -2,7 +2,7 @@
 
 /// <summary>
 ///     An asynchronous mechanism that contains metadata about, and includes logic to respond to a command request. 
-///     This class implements an awaitable response operation, which is used to respond to a caller using asynchronous logic.
+///     This class implements an awaitable response operation.
 /// </summary>
 /// <remarks>
 ///     This class is intended to be implemented to provide custom behavior for sending responses to callers, or expanding the metadata that is sent with the entry of the pipeline.
@@ -17,5 +17,5 @@ public abstract class AsyncCallerContext : ICallerContext
     public abstract Task Respond(object? message);
 
     void ICallerContext.Respond(object? message)
-        => Respond(message);
+        => Respond(message).Wait();
 }

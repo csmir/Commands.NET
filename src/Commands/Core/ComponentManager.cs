@@ -68,7 +68,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     /// <inheritdoc />
     public void TryExecute<T>(T caller, ArgumentArray args, CommandOptions? options = null)
         where T : ICallerContext
-        => ExecutePipelineTask(caller, args, options ?? new()).GetAwaiter().GetResult();
+        => TryExecuteAsync(caller, args, options).Wait();
 
     /// <inheritdoc />
     public Task TryExecuteAsync<T>(T caller, string? args, CommandOptions? options = null)
@@ -97,10 +97,14 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         IExecuteResult? result = null;
 
         var searches = Find(args);
+
         foreach (var search in searches)
         {
             if (search.Component is Command command)
             {
+                // Reset the result if we're going to attempt to run a new command. We only output the last occurred error.
+                result = null;
+
                 var conversion = await command.Parse(caller, search.ParseIndex, args, options);
 
                 var arguments = new object?[conversion.Length];
@@ -122,7 +126,6 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
             }
 
             result ??= search;
-            continue;
         }
 
         result ??= SearchResult.FromError();

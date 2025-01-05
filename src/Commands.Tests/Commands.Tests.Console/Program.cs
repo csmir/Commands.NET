@@ -20,12 +20,11 @@ while (true)
 {
     var input = AnsiConsole.Prompt(new TextPrompt<string>("Enter a command"));
 
-    using var scope = services.CreateScope();
-
     var values = ArgumentArray.Read(input);
 
     var caller = new AsyncCustomCaller();
 
+    using var scope = services.CreateScope();
     await manager.TryExecuteAsync(caller, values, new()
     {
         Services = scope.ServiceProvider
