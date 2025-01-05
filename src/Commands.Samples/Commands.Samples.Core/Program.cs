@@ -17,7 +17,7 @@ var helpCommands = CommandGroup.Create<HelpModule>();
 
 var manager = ComponentManager.Create(exit, mathCommands, helpCommands);
 
-manager.TryExecute(new DefaultCallerContext(), args);
+manager.TryExecute(new ConsoleContext(), args);
 
 static double Sum(double number, int sumBy)
     => number + sumBy;

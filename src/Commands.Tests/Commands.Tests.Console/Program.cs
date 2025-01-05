@@ -23,7 +23,7 @@ while (true)
 
     using var scope = services.CreateScope();
 
-    manager.TryExecute(new DefaultCallerContext(), values, new()
+    manager.TryExecute(new ConsoleContext(), values, new()
     {
         Services = scope.ServiceProvider
     });

@@ -3,7 +3,7 @@
 /// <summary>
 ///     A default implementation of <see cref="ICallerContext"/> that writes responses to the console.
 /// </summary>
-public class DefaultCallerContext : ICallerContext
+public class ConsoleContext : ICallerContext
 {
     /// <summary>
     ///     Sends a response to the console.

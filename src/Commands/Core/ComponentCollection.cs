@@ -115,18 +115,38 @@ public abstract class ComponentCollection : IComponentCollection
         {
             Assert.NotNull(component, nameof(component));
 
-            var result = copy.Add(component);
+            var yieldedResult = false;
 
-            // When addition is successful, and this collection is a CommandGroup, bind the component to the group.
-            if (this is CommandGroup group && result)
-                component.Bind(group);
+            if (!component.IsSearchable && component is CommandGroup componentIsGroup)
+            {
+                // When the component is a command group and the group has no name, it should be a root group.
+                // However, it is only possible to be a root group if the current collection is a manager.
+                if (this is /* a */ ComponentManager) // Ingenius syntax, actually.
+                {
+                    // Add the contents of the group to the collection, instead of the group itself.
+                    var anyChanged = AddRange([.. componentIsGroup]);
 
-            hasChanged += result ? 1 : 0;
+                    // Consider the addition successful if the inner operation returned more than 0 changes.
+                    yieldedResult = anyChanged > 0;
+                }
+                else
+                    throw new InvalidOperationException($"Nameless {nameof(CommandGroup)} instances can only be added to a {nameof(ComponentManager)}.");
+            }
+            else
+            {
+                yieldedResult = copy.Add(component);
+
+                // When addition is successful, and this collection is a CommandGroup, bind the component to the group.
+                if (this is CommandGroup collectionIsGroup && yieldedResult)
+                    component.Bind(collectionIsGroup);
+            }
+
+            hasChanged += yieldedResult ? 1 : 0;
         }
 
         if (hasChanged > 0)
         {
-            // Notify the top-level collection that a mutation has occurred. This will add, and resort the components.
+            // Notify the top-level collection that a mutation has occurred. This will add, and re-sort the components.
             _mutateParent?.Invoke(components, false);
 
             var orderedCopy = new HashSet<IComponent>(copy.OrderByDescending(x => x.GetScore()));

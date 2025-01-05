@@ -8,32 +8,34 @@
 
 **Do more, with less. With speed, compatibility and fluent integration in mind.**
 
-Commands.NET aims to improve your experience integrating input from different sources* into the same, concurrent pool and treating them as triggered actions, called commands. It provides a modular and intuitive API for registering and executing commands.
+Commands.NET aims to improve your experience integrating input from different sources* into the same, concurrent pool and treating them as triggered actions, called commands. 
+It provides a modular and intuitive API for registering and executing commands.
+
+> Browse the [wiki](https://github.com/csmir/Commands.NET/wiki) for a full overview of the library.
 
 **Sources can range from command-line, console, chatboxes, to social platforms like Discord, Slack, Messenger & much, much more.*
-
-## Documentation
-
-Are you new to Commands.NET, wanting to implement into your applications? 
-[Read the quick guide](https://github.com/csmir/Commands.NET/wiki/Quick-Guide) to get started. 
-
-> For a more expanded view, browse the whole [Commands.NET Wiki](https://github.com/csmir/Commands.NET/wiki).
 
 ## Usage
 
 ### Running a Command
+
+A command is a method executed when a specific syntax is provided. 
+By creating a manager to contain said command, you can run it with the provided arguments.
 
 ```cs
 var command = Command.Create(() => "Hello world!", "greet");
 
 var manager = ComponentManager.Create(command);
 
-manager.TryExecute(new DefaultCallerContext(), args);
+manager.TryExecute(new ConsoleContext(), args);
 
 // dotnet run greet -> Hello world!
 ```
 
-### Creating Subcommands
+### Creating Command Groups
+
+Command groups are named collections of commands or other command groups. 
+Groups allow for subcommand creation, where the group name is a category for its children.
 
 ```cs
 var mathCommands = CommandGroup.Create("math");
@@ -51,12 +53,14 @@ mathCommands.AddRange(
 
 var manager = ComponentManager.Create(mathCommands);
 
-manager.TryExecute(new DefaultCallerContext(), args);
+manager.TryExecute(new ConsoleContext(), args);
 
 // dotnet run math sum 5 3 -> 8
 ```
 
-### Creating Modules
+### Creating Command Modules
+
+Command modules are classes that can contain commands or nested command modules, which themselves can also contain (sub)commands.
 
 ```cs
 public class HelpModule : CommandModule 
@@ -80,7 +84,7 @@ var helpCommands = CommandGroup.Create<HelpModule>();
 
 var manager = ComponentManager.Create(mathCommands, helpCommands);
 
-manager.TryExecute(new DefaultCallerContext(), args);
+manager.TryExecute(new ConsoleContext(), args);
 
 // dotnet run help -> Commands: math sum <...> math subtract <...> math ...
 ```

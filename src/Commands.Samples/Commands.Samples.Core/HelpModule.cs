@@ -2,9 +2,9 @@
 
 namespace Commands.Samples;
 
-[Name("help")]
 public class HelpModule : CommandModule
 {
+    [Name("help")]
     public void Help()
     {
         var builder = new StringBuilder()
@@ -16,6 +16,7 @@ public class HelpModule : CommandModule
         Respond(builder.ToString());
     }
 
+    [Name("help")]
     public void Help([Remainder, Name("command-name")] string commandName)
     {
         var commands = Manager!.GetCommands();

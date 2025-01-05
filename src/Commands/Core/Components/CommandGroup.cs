@@ -215,7 +215,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent, ICommandSegm
     /// <summary>
     ///    Creates a new empty command group from the provided names and configuration.
     /// </summary>
-    /// <param name="names">A set of names by which the command group will be able to be discovered.</param>
+    /// <param name="names">A set of names by which the command group will be able to be discovered. If this group is added to a <see cref="ComponentManager"/> (making it a top-level component), no names need to be provided.</param>
     /// <param name="configuration">The configuration that should be used to configure the built component.</param>
     /// <returns>A new <b>empty</b> instance of <see cref="CommandGroup"/>, able to be mutated using exposed API's.</returns>
     public static CommandGroup Create(string[] names, ComponentConfiguration? configuration = null)
@@ -223,7 +223,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent, ICommandSegm
         configuration ??= ComponentConfiguration.Default;
 
         Assert.NotNull(names, nameof(names));
-        Assert.Names(names, configuration, false);
+        Assert.Names(names, configuration, true);
 
         return new CommandGroup(null, [], names, configuration);
     }
@@ -255,11 +255,11 @@ public sealed class CommandGroup : ComponentCollection, IComponent, ICommandSegm
         Assert.NotNull(type, nameof(type));
 
         if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
-            throw new ArgumentException("The type must be a non-abstract, non-generic, and assignable to CommandModule to be considered a valid implementation.", nameof(type));
+            throw new ArgumentException($"Type must be non-abstract, fully implemented, and assignable to {nameof(CommandModule)} to be considered a valid group.", nameof(type));
 
         var names = type.GetAttributes(false).FirstOrDefault<NameAttribute>()?.Names ?? [];
 
-        Assert.Names(names, configuration, false);
+        Assert.Names(names, configuration, true);
 
         return new CommandGroup(type, null, names, configuration);
     }
