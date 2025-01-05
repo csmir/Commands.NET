@@ -93,6 +93,4 @@ manager.TryExecute(new DefaultCallerContext(), args);
   - Fluent API's, complex execution flow and workflow expansion.
 - [Commands.Samples.Hosting](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Hosting)
   - Integrating Commands.NET into the .NET Generic Host infrastructure.
-- [Commands.Samples.CLI](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.CLI)
-  - Create CLI actions with argument parsing and enhanced functionality through an extension package.
 

@@ -1,7 +1,6 @@
 ﻿using Commands;
 using Commands.Tests;
 using Microsoft.Extensions.DependencyInjection;
-using Spectre.Console;
 
 var manager = ComponentManager.CreateBuilder()
     .ConfigureComponents(configure =>
@@ -18,15 +17,13 @@ var services = new ServiceCollection()
 
 while (true)
 {
-    var input = AnsiConsole.Prompt(new TextPrompt<string>("Enter a command"));
+    var input = Console.ReadLine();
 
     var values = ArgumentArray.Read(input);
 
-    var caller = new ConsoleCallerContext();
-
     using var scope = services.CreateScope();
 
-    manager.TryExecute(caller, values, new()
+    manager.TryExecute(new DefaultCallerContext(), values, new()
     {
         Services = scope.ServiceProvider
     });

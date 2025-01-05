@@ -1,4 +1,4 @@
-﻿using Spectre.Console;
+﻿using System.Drawing;
 using System.Globalization;
 using System.Reflection;
 
@@ -7,14 +7,14 @@ namespace Commands.Conversion;
 /// <summary>
 ///     A parser that converts a string value to a <see cref="Color"/>.
 /// </summary>
-public sealed class ColorTypeParser : TypeParser<Color>
+public sealed class ColorParser : TypeParser<Color>
 {
     private readonly Dictionary<string, Color> _colors;
 
     /// <summary>
-    ///     Initializes a new instance of <see cref="ColorTypeParser"/>.
+    ///     Initializes a new instance of <see cref="ColorParser"/>.
     /// </summary>
-    public ColorTypeParser()
+    public ColorParser()
     {
         var writer = new Dictionary<string, Color>(StringComparer.OrdinalIgnoreCase);
 
@@ -74,7 +74,7 @@ public sealed class ColorTypeParser : TypeParser<Color>
                 byte.TryParse(separation[1], out var g) &&
                 byte.TryParse(separation[2], out var b))
             {
-                result = new(r, g, b);
+                result = Color.FromArgb(r, g, b);
                 return true;
             }
         }
@@ -101,7 +101,7 @@ public sealed class ColorTypeParser : TypeParser<Color>
                 var r = (byte)((rgb & 0xFF0000) >> 16);
                 var g = (byte)((rgb & 0x00FF00) >> 8);
                 var b = (byte)(rgb & 0x0000FF);
-                result = new(r, g, b);
+                result = Color.FromArgb(r, g, b);
                 return true;
             }
         }
@@ -119,7 +119,7 @@ public sealed class ColorTypeParser : TypeParser<Color>
             var g = (byte)((rgb & 0x00FF00) >> 8);
             var b = (byte)(rgb & 0x0000FF);
 
-            result = new(r, g, b);
+            result = Color.FromArgb(r, g, b);
 
             return true;
         }

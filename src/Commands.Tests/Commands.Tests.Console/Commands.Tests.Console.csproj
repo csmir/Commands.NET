@@ -14,7 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Commands.Console\Commands.Console.csproj" />
     <ProjectReference Include="..\..\Commands\Commands.csproj" />
   </ItemGroup>
 
