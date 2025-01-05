@@ -25,7 +25,7 @@ public abstract class CommandModule<T> : CommandModule
 ///     All modules are transient. They are injected and instantiated when command methods run, being disposed on return.
 /// </summary>
 /// <remarks>
-///      When an <see cref="IComponentTree"/> is created, all derived types must be passed to it for discovery and registration.
+///      When an <see cref="IExecutionProvider"/> is created, all derived types must be passed to it for discovery and registration.
 /// </remarks>
 public abstract class CommandModule
 {
@@ -40,9 +40,9 @@ public abstract class CommandModule
     public Command Command { get; internal set; } = null!;
 
     /// <summary>
-    ///     Gets the command tree that is responsible for the current command execution.
+    ///     Gets the <see cref="ComponentManager"/> that invoked this command. This property is <see langword="null"/> if the command was not invoked by a <see cref="ComponentManager"/>.
     /// </summary>
-    public IComponentTree Tree { get; internal set; } = null!;
+    public ComponentManager? Manager { get; internal set; }
 
     /// <summary>
     ///     Sends a response to the caller.

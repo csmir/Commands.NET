@@ -8,6 +8,9 @@ namespace Commands;
 /// </summary>
 public sealed class CommandOptions
 {
+    // A reference to the component manager that called the command, if any.
+    internal ComponentManager? Manager;
+
     /// <summary>
     ///     Gets or sets the services for running the request.
     /// </summary>

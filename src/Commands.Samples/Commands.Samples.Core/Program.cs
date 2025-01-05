@@ -12,10 +12,10 @@ math.Add(Command.Create(Exit, "exit"));
 
 var help = CommandGroup.Create<HelpModule>();
 
-var tree = ComponentTree.Create(math, help);
+var tree = ComponentManager.Create(math, help);
 
 while (true)
-    tree.Execute(new ConsoleCallerContext(), Console.ReadLine());
+    tree.TryExecute(new ConsoleCallerContext(), Console.ReadLine());
 
 static double Sum(double number, int sumBy)
     => number + sumBy;

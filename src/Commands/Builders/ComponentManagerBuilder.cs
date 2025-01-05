@@ -1,9 +1,7 @@
 ﻿namespace Commands.Builders;
 
-/// <summary>
-///     A builder model for a tree of components. This class cannot be inherited.
-/// </summary>
-public sealed class ComponentTreeBuilder : ITreeBuilder
+/// <inheritdoc cref="IManagerBuilder"/>
+public sealed class ComponentManagerBuilder : IManagerBuilder
 {
     /// <inheritdoc />
     public IConfigurationBuilder Configuration { get; set; } = new ComponentConfigurationBuilder();
@@ -18,7 +16,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     public ICollection<DynamicType> Types { get; set; } = [];
 
     /// <inheritdoc />
-    public ITreeBuilder AddCommand(CommandBuilder commandBuilder)
+    public IManagerBuilder AddCommand(CommandBuilder commandBuilder)
     {
         Assert.NotNull(commandBuilder, nameof(commandBuilder));
 
@@ -28,7 +26,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddCommand(Action<CommandBuilder> configureCommand)
+    public IManagerBuilder AddCommand(Action<CommandBuilder> configureCommand)
     {
         var commandBuilder = new CommandBuilder();
 
@@ -38,7 +36,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddCommand(string name, Delegate executionDelegate)
+    public IManagerBuilder AddCommand(string name, Delegate executionDelegate)
     {
         var commandBuilder = new CommandBuilder(name, [], executionDelegate);
 
@@ -46,7 +44,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddCommand(string name, Delegate executionDelegate, params string[] names)
+    public IManagerBuilder AddCommand(string name, Delegate executionDelegate, params string[] names)
     {
         var commandBuilder = new CommandBuilder(name, names, executionDelegate);
 
@@ -54,7 +52,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddCommandGroup(CommandGroupBuilder groupBuilder)
+    public IManagerBuilder AddCommandGroup(CommandGroupBuilder groupBuilder)
     {
         Assert.NotNull(groupBuilder, nameof(groupBuilder));
 
@@ -64,7 +62,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddCommandGroup(Action<CommandGroupBuilder> configureGroup)
+    public IManagerBuilder AddCommandGroup(Action<CommandGroupBuilder> configureGroup)
     {
         var groupBuilder = new CommandGroupBuilder();
 
@@ -74,7 +72,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddType(
+    public IManagerBuilder AddType(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 # endif
@@ -91,7 +89,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddType<
+    public IManagerBuilder AddType<
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
@@ -103,7 +101,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The types are supplied from user-facing implementation, it is up to the user to ensure that these types are available in AOT context.")]
 #endif
-    public ITreeBuilder WithTypes(params Type[] types)
+    public IManagerBuilder WithTypes(params Type[] types)
     {
         // We cannot reassign the collection, because we need AddType to infer DynamicallyAccessedMemberTypes.All
         Types = [];
@@ -115,7 +113,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddResultHandler(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction)
+    public IManagerBuilder AddResultHandler(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction)
     {
         Assert.NotNull(resultAction, nameof(resultAction));
         Handlers.Add(new DelegateResultHandler(resultAction));
@@ -123,7 +121,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction)
+    public IManagerBuilder AddResultHandler(Func<ICallerContext, IExecuteResult, IServiceProvider, ValueTask> resultAction)
     {
         Assert.NotNull(resultAction, nameof(resultAction));
 
@@ -133,7 +131,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddResultHandler<T>(Action<T, IExecuteResult, IServiceProvider> resultAction)
+    public IManagerBuilder AddResultHandler<T>(Action<T, IExecuteResult, IServiceProvider> resultAction)
         where T : class, ICallerContext
     {
         Assert.NotNull(resultAction, nameof(resultAction));
@@ -142,7 +140,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddResultHandler<T>(Func<T, IExecuteResult, IServiceProvider, ValueTask> resultAction)
+    public IManagerBuilder AddResultHandler<T>(Func<T, IExecuteResult, IServiceProvider, ValueTask> resultAction)
         where T : class, ICallerContext
     {
         Assert.NotNull(resultAction, nameof(resultAction));
@@ -153,7 +151,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder AddResultHandler(ResultHandler resolver)
+    public IManagerBuilder AddResultHandler(ResultHandler resolver)
     {
         Assert.NotNull(resolver, nameof(resolver));
 
@@ -163,7 +161,7 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public ITreeBuilder ConfigureComponents(Action<IConfigurationBuilder> configure)
+    public IManagerBuilder ConfigureComponents(Action<IConfigurationBuilder> configure)
     {
         Assert.NotNull(configure, nameof(configure));
 
@@ -175,13 +173,13 @@ public sealed class ComponentTreeBuilder : ITreeBuilder
     }
 
     /// <inheritdoc />
-    public IComponentTree Build()
+    public ComponentManager Build()
     {
         var configuration = Configuration.Build();
 
         var components = configuration.BuildGroups([.. Types], null, false)
             .Concat(Components.Select(x => x.Build(configuration)));
 
-        return new ComponentTree(components, [.. Handlers]);
+        return new(components, [.. Handlers]);
     }
 }

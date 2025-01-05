@@ -72,7 +72,7 @@ public sealed class ComponentConfiguration
     /// <remarks>
     ///     The provided parsers will be merged with the default parsers created by <see cref="TypeParser.CreateDefaults"/>. If a parser with the same type is provided, it will override the default parser.
     /// </remarks>
-    /// <param name="parsers">A <see cref="TypeParser"/> collection which will parse input arguments provided through the <see cref="IComponentTree"/> into instances of the types by which methods are marked.</param>
+    /// <param name="parsers">A <see cref="TypeParser"/> collection which will parse input arguments provided through the <see cref="IExecutionProvider"/> into instances of the types by which methods are marked.</param>
     /// <param name="properties"></param>
     /// <returns>A new instance of <see cref="ComponentConfiguration"/> containing a <see cref="TypeParser"/> dictionary and a collection of properties which determine certain settings within the component creation process.</returns>
     public static ComponentConfiguration Create(IEnumerable<TypeParser> parsers, IEnumerable<KeyValuePair<object, object>>? properties = null)
@@ -93,7 +93,7 @@ public sealed class ComponentConfiguration
     /// <summary>
     ///     Creates a new instance of <see cref="ComponentConfigurationBuilder"/>, which can be built into an instance of <see cref="ComponentConfiguration"/>.
     /// </summary>
-    /// <returns>A build model with a fluent API to configure how components should be registered within or at creation of the <see cref="IComponentTree"/>.</returns>
+    /// <returns>A build model with a fluent API to configure how components should be registered within or at creation of the <see cref="IExecutionProvider"/>.</returns>
     public static IConfigurationBuilder CreateBuilder()
         => new ComponentConfigurationBuilder();
 }

@@ -25,6 +25,6 @@ public sealed class ConstructibleParameterActivator : IActivator
     }
 
     /// <inheritdoc />
-    public object? Invoke<T>(T caller, Command? command, object?[] args, IComponentTree? tree, CommandOptions options) where T : ICallerContext
+    public object? Invoke<T>(T caller, Command? command, object?[] args, CommandOptions options) where T : ICallerContext
         => _ctor.Invoke(args);
 }

@@ -7,7 +7,7 @@ namespace Commands.Builders;
 /// </summary>
 /// <remarks>
 ///     This class is used to configure a command before it is built into a <see cref="Command"/> object. 
-///     By calling <see cref="Build(ComponentConfiguration)"/>, the command is built into an object that can be executed by the <see cref="IComponentTree"/>.
+///     By calling <see cref="Build(ComponentConfiguration)"/>, the command is built into an object that can be executed by the <see cref="IExecutionProvider"/>.
 /// </remarks>
 public sealed class CommandBuilder : IComponentBuilder
 {

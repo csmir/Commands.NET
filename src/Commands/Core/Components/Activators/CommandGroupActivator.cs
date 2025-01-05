@@ -37,7 +37,7 @@ public sealed class CommandGroupActivator : IActivator
     }
 
     /// <inheritdoc />
-    public object? Invoke<T>(T caller, Command? command, object?[] args, IComponentTree? tree, CommandOptions options)
+    public object? Invoke<T>(T caller, Command? command, object?[] args, CommandOptions options)
         where T : ICallerContext
     {
         var services = new object?[Services.Length];

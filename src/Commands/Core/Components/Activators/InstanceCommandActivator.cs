@@ -19,16 +19,16 @@ public sealed class InstanceCommandActivator : IActivator
     }
 
     /// <inheritdoc />
-    public object? Invoke<T>(T caller, Command? command, object?[] args, IComponentTree? tree, CommandOptions options)
+    public object? Invoke<T>(T caller, Command? command, object?[] args, CommandOptions options)
         where T : ICallerContext
     {
-        var module = command!.Parent?.Activator?.Invoke(caller, command, args, tree, options) as CommandModule;
+        var module = command!.Parent?.Activator?.Invoke(caller, command, args, options) as CommandModule;
 
         if (module != null)
         {
             module.Caller = caller;
             module.Command = command;
-            module.Tree = tree!;
+            module.Manager = options.Manager;
         }
 
         return Target.Invoke(module, args);

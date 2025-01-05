@@ -4,7 +4,7 @@ using System.Text;
 namespace Commands;
 
 /// <summary>
-///     Contains information about a command that can be executed using an <see cref="IComponentTree"/>.
+///     Contains information about a command that can be executed using an <see cref="IExecutionProvider"/>.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
 public sealed class Command : IComponent, ICommandSegment, IParameterCollection
@@ -106,6 +106,40 @@ public sealed class Command : IComponent, ICommandSegment, IParameterCollection
 
         Parameters = parameters;
         HasRemainder = parameters.Any(x => x.IsRemainder);
+    }
+
+    /// <summary>
+    ///     Runs the execution steps for executing the command; Evaluating present conditions and invoking the command handler.
+    /// </summary>
+    /// <typeparam name="T">The type of the <see cref="ICallerContext"/> provided to this command.</typeparam>
+    /// <param name="caller">The instance of the <see cref="ICallerContext"/> provided to this command.</param>
+    /// <param name="arguments">The arguments provided to this command.</param>
+    /// <param name="options">A collection of options that determines pipeline logic.</param>
+    /// <returns>An awaitable <see cref="ValueTask"/> containing the result of the execution. If <see cref="IExecuteResult.Success"/> is <see langword="true"/>, the command has successfully been executed.</returns>
+    public async ValueTask<IExecuteResult> Run<T>(T caller, object?[] arguments, CommandOptions options)
+        where T : ICallerContext
+    {
+        if (!options.SkipConditions)
+        {
+            foreach (var condition in Evaluators)
+            {
+                var checkResult = await condition.Evaluate(caller, this, options.Services, options.CancellationToken);
+
+                if (!checkResult.Success)
+                    return checkResult;
+            }
+        }
+
+        try
+        {
+            var value = Activator.Invoke(caller, this, arguments, options);
+
+            return InvokeResult.FromSuccess(this, value);
+        }
+        catch (Exception exception)
+        {
+            return InvokeResult.FromError(this, exception);
+        }
     }
 
     /// <inheritdoc />

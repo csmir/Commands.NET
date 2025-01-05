@@ -8,7 +8,7 @@ public class HelpModule : CommandModule
     public void Help(int count = 10)
     {
         // Ignore overloads and just list commands by name.
-        var commands = Tree.GetCommands().ToArray();
+        var commands = Manager!.GetCommands().ToArray();
 
         var builder = new StringBuilder();
 
@@ -22,7 +22,7 @@ public class HelpModule : CommandModule
 
     public void Help([Remainder] string commandName)
     {
-        var commands = Tree.GetCommands();
+        var commands = Manager!.GetCommands();
 
         var command = commands.FirstOrDefault(x => x.GetFullName().StartsWith(commandName));
 

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 await Host.CreateDefaultBuilder(args)
     .ConfigureServices(configure =>
     {
-        var builder = ComponentTree.CreateBuilder()
+        var builder = ComponentManager.CreateBuilder()
             .WithTypes(typeof(Program).Assembly.GetExportedTypes())
             .AddResultHandler<HostedCallerContext>((context, result, services) =>
             {

@@ -21,12 +21,12 @@ public sealed class StaticCommandActivator : IActivator
     }
 
     /// <inheritdoc />
-    public object? Invoke<T>(T caller, Command? command, object?[] args, IComponentTree? tree, CommandOptions options)
+    public object? Invoke<T>(T caller, Command? command, object?[] args, CommandOptions options)
         where T : ICallerContext
     {
         if (_withContext)
         {
-            var context = new CommandContext<T>(caller, command!, tree!, options);
+            var context = new CommandContext<T>(caller, command!, options);
 
             return Target.Invoke(null, [context, .. args]);
         }

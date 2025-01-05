@@ -7,7 +7,7 @@ public class HelpModule : CommandModule
     [Name("help")]
     public async Task Help()
     {
-        var commands = Tree.GetCommands();
+        var commands = Manager!.GetCommands();
 
         foreach (var command in commands)
         {

@@ -26,18 +26,18 @@ public class CreationAnalysisModule : CommandModule<BenchmarkCallerContext>
 [MemoryDiagnoser]
 public class Program
 {
-    private readonly IComponentTree _components;
+    private readonly ComponentManager _components;
 
     public Program()
     {
         var services = new ServiceCollection()
-            .AddSingleton(ComponentTree.CreateBuilder()
+            .AddSingleton(ComponentManager.CreateBuilder()
                 .WithTypes(typeof(Program).Assembly.GetTypes())
                 .AddCommand("command", () => { })
                 .Build())
             .BuildServiceProvider();
 
-        _components = services.GetRequiredService<IComponentTree>();
+        _components = services.GetRequiredService<ComponentManager>();
     }
 
     static void Main()
@@ -86,13 +86,13 @@ public class Program
     [Benchmark]
     public void RunCommand()
     {
-        _components.Execute(new BenchmarkCaller(), ["command"]);
+        _components.TryExecute(new BenchmarkCaller(), "command");
     }
 
     [Benchmark]
     public Task RunCommandAsync()
     {
-        return _components.ExecuteAsync(new BenchmarkCaller(), ["command"]);
+        return _components.TryExecuteAsync(new BenchmarkCaller(), "command");
     }
 
     #endregion

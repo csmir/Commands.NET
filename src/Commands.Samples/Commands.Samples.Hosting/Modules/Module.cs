@@ -5,7 +5,7 @@ public sealed class Module : CommandModule
     [Name("help")]
     public void Help()
     {
-        foreach (var command in Tree.GetCommands())
+        foreach (var command in Manager!.GetCommands())
             Respond(command);
     }
 }

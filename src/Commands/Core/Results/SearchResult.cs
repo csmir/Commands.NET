@@ -18,12 +18,15 @@ public readonly struct SearchResult : IExecuteResult
     public bool Success
         => Exception == null;
 
-    internal int SearchHeight { get; }
+    /// <summary>
+    ///     Gets the index at which the search operation ended and the command can be parsed from.
+    /// </summary>
+    public int ParseIndex { get; }
 
     private SearchResult(IComponent? component, int searchHeight, Exception? exception)
     {
         Component = component;
-        SearchHeight = searchHeight;
+        ParseIndex = searchHeight;
         Exception = exception;
     }
 
