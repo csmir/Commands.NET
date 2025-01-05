@@ -9,7 +9,7 @@ internal sealed class ArrayParser(TypeParser underlyingParser) : TypeParser
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
 #endif
-    public override async ValueTask<ParseResult> Parse(ICallerContext consumer, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+    public override async ValueTask<ParseResult> Parse(ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (value is not object[] array)
             return Error($"The provided value is not an array. Expected: '{Type.Name}', got: '{value}'. At: '{argument.Name}'");
@@ -20,7 +20,7 @@ internal sealed class ArrayParser(TypeParser underlyingParser) : TypeParser
         {
             var item = array.GetValue(i);
 
-            var result = await underlyingParser.Parse(consumer, argument, item, services, cancellationToken);
+            var result = await underlyingParser.Parse(caller, argument, item, services, cancellationToken);
 
             if (!result.Success)
                 return Error($"Failed to convert an array element. Expected: '{underlyingParser.Type.Name}', got: '{item}'. At: '{argument.Name}', Index: '{i}'");

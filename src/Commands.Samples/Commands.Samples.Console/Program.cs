@@ -24,7 +24,7 @@ while (true)
 {
     var input = Console.ReadLine()!;
 
-    var consumer = new ConsoleCallerContext(name: "Pete");
+    var caller = new ConsoleCallerContext(name: "Pete");
 
-    manager.TryExecute(consumer, input);
+    manager.TryExecute(caller, input);
 }

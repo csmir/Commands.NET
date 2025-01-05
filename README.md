@@ -82,7 +82,7 @@ var manager = ComponentManager.Create(mathCommands, helpCommands);
 
 manager.TryExecute(new DefaultCallerContext(), args);
 
-// dotnet run help -> Commands: math sum ..., math subtract ..., math multiply ..., math divide ..., help ...
+// dotnet run help -> Commands: math sum <...> math subtract <...> math ...
 ```
 
 ## Samples
