@@ -10,7 +10,7 @@
 ///         <item>If a parameter is optional, the value is decremented by <b>0.5</b>.</item>
 ///         <item>If a parameter is remainder, the value is decremented by <b>0.25</b>.</item>
 ///         <item>If a parameter is nullable, the value is decremented by <b>0.25</b>.</item>
-///         <item>If a parameter has a known type converter, the value is incremenented by <b>1</b>.</item>
+///         <item>If a parameter has a known type parser, the value is incremenented by <b>1</b>.</item>
 ///     </list>
 ///     Higher values take priority, meaning a command with a priority of <b>1</b> will execute first if other commands have a priority of <b>0</b>.
 /// </remarks>

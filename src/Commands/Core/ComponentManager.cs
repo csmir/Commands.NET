@@ -138,15 +138,15 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     ///     Creates a new empty instance of a <see cref="ComponentManager"/> with a default result handler.
     /// </summary>
     /// <returns>A newly created instance of <see cref="ComponentManager"/> which is able to discover and execute components based on provided input.</returns>
-    public static IExecutionProvider Create()
+    public static ComponentManager Create()
         => Create([]);
 
     /// <summary>
     ///     Creates a new instance of a <see cref="ComponentManager"/> with a default result handler.
     /// </summary>
-    /// <param name="components">A collection of top-level components that should be prepared for execution by the created tree.</param>
+    /// <param name="components">A collection of top-level components that should be prepared for execution by the created manager.</param>
     /// <returns>A newly created instance of <see cref="ComponentManager"/> which is able to discover and execute components based on provided input.</returns>
-    public static IExecutionProvider Create(params IComponent[] components)
+    public static ComponentManager Create(params IComponent[] components)
     {
         var basicResultHandler = new DelegateResultHandler(async (ctx, res, serv) =>
         {
@@ -162,7 +162,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     /// <summary>
     ///     Creates a new instance of a <see cref="ComponentManager"/> with the provided result handlers.
     /// </summary>
-    /// <param name="components">A collection of top-level components that should be prepared for execution by the created tree.</param>
+    /// <param name="components">A collection of top-level components that should be prepared for execution by the created manager.</param>
     /// <param name="resultHandlers">A collection of result handlers, responsible for resolving execution results.</param>
     /// <returns>A newly created instance of <see cref="ComponentManager"/> which is able to discover and execute components based on provided input.</returns>
     public static ComponentManager Create(IEnumerable<IComponent> components, ResultHandler[] resultHandlers)

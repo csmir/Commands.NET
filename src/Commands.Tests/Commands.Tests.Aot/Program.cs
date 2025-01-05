@@ -1,10 +1,10 @@
 ﻿using Commands;
 using Commands.Tests;
 
-var tree = ComponentManager.CreateBuilder()
+var manager = ComponentManager.CreateBuilder()
     .AddType<Module>()
     .AddResultHandler((c, res, serv) => c.Respond(res))
     .Build();
 
 while (true)
-    tree.TryExecute(new Module.CallerContext(), Console.ReadLine()!);
+    manager.TryExecute(new Module.CallerContext(), Console.ReadLine()!);

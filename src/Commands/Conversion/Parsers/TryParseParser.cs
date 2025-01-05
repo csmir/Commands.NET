@@ -1,9 +1,9 @@
 ﻿namespace Commands.Conversion;
 
 /// <summary>
-///     A type converter that can convert a raw string value into a type with a try-parse method. This class cannot be inherited.
+///     A type parser that can convert a raw string value into a type with a try-parse method. This class cannot be inherited.
 /// </summary>
-/// <typeparam name="T">The type this converter targets.</typeparam>
+/// <typeparam name="T">The type this parser targets.</typeparam>
 /// <param name="parser">The delegate to parse a nullable <see langword="string"/> to <typeparamref name="T"/>.</param>
 public sealed class TryParseParser<T>(TryParseParser<T>.ParseDelegate parser) : TypeParser<T>
 {
@@ -32,7 +32,7 @@ public sealed class TryParseParser<T>(TryParseParser<T>.ParseDelegate parser) : 
 
 internal static class TryParseParser
 {
-    public static List<TypeParser> CreateBaseConverters()
+    public static List<TypeParser> CreateBaseParsers()
         => [
             // char
             new TryParseParser<char>(char.TryParse),

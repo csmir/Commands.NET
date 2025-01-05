@@ -45,7 +45,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent, ICommandSegm
     public Type? Type { get; }
 
     /// <summary>
-    ///     Gets the depth of the module, being how deeply nested it is in the command tree.
+    ///     Gets the depth of the module, being how deeply nested it is in the component manager.
     /// </summary>
     public int Depth
         => Parent?.Depth + 1 ?? 1;
@@ -204,7 +204,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent, ICommandSegm
     public override int GetHashCode()
         => base.GetHashCode();
 
-    // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentTree, it will not be bound.
+    // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
 

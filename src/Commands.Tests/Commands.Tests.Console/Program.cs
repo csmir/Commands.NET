@@ -3,7 +3,7 @@ using Commands.Tests;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 
-var tree = ComponentManager.CreateBuilder()
+var manager = ComponentManager.CreateBuilder()
     .ConfigureComponents(configure =>
     {
         configure.AddParser(new CSharpScriptParser());
@@ -13,7 +13,7 @@ var tree = ComponentManager.CreateBuilder()
     .Build();
 
 var services = new ServiceCollection()
-    .AddSingleton(tree)
+    .AddSingleton(manager)
     .BuildServiceProvider();
 
 while (true)
@@ -26,7 +26,7 @@ while (true)
 
     var caller = new AsyncCustomCaller();
 
-    await tree.TryExecuteAsync(caller, values, new()
+    await manager.TryExecuteAsync(caller, values, new()
     {
         Services = scope.ServiceProvider
     });

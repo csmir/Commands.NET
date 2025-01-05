@@ -55,7 +55,7 @@ public abstract class TypeParser
         if (exception is ParseException convertEx)
             return ParseResult.FromError(convertEx);
 
-        return ParseResult.FromError(ParseException.ConvertFailed(Type, exception));
+        return ParseResult.FromError(ParseException.ParseFailed(Type, exception));
     }
 
     /// <summary>
@@ -93,7 +93,7 @@ public abstract class TypeParser
     /// <returns>An <see cref="IEnumerable{T}"/> containing a range of <see cref="TypeParser"/>'s for all types listed above.</returns>
     public static IEnumerable<TypeParser> CreateDefaults()
     {
-        var list = TryParseParser.CreateBaseConverters();
+        var list = TryParseParser.CreateBaseParsers();
 
         list.Add(new TimeSpanParser());
         list.Add(new ObjectParser());

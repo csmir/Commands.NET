@@ -247,7 +247,7 @@ public sealed class Command : IComponent, ICommandSegment, IParameterCollection
     public override int GetHashCode()
         => base.GetHashCode();
 
-    // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentTree, it will not be bound.
+    // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
 

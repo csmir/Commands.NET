@@ -2,7 +2,7 @@
 
 internal sealed class EnumParser(Type targetEnumType) : TypeParser
 {
-    private static readonly Dictionary<Type, EnumParser> _converters = [];
+    private static readonly Dictionary<Type, EnumParser> _parsers = [];
 
     public override Type Type { get; } = targetEnumType;
 
@@ -23,10 +23,10 @@ internal sealed class EnumParser(Type targetEnumType) : TypeParser
 
     internal static EnumParser GetOrCreate(Type type)
     {
-        if (_converters.TryGetValue(type, out var reader))
+        if (_parsers.TryGetValue(type, out var reader))
             return reader;
 
-        _converters.Add(type, reader = new EnumParser(type));
+        _parsers.Add(type, reader = new EnumParser(type));
 
         return reader;
     }

@@ -30,10 +30,11 @@ Creating commands:
 ```cs
 var command = Command.Create(() => "Hello world!", "greet");
 
-var runner = ComponentTree.Create(command);
+var runner = ComponentManager.Create(command);
 
 runner.Execute("greet");
 ```
+
 - [Commands.Samples.Core](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Core)
   - Manage, create and execute commands in a basic console application.
 - [Commands.Samples.Console](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Console)

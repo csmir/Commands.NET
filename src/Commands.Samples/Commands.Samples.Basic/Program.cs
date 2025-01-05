@@ -1,7 +1,7 @@
 ﻿using Commands;
 using Commands.Builders;
 
-CLITree.CreateBuilder()
+CLIManager.CreateBuilder()
     .AddCommand(() => "Provide CLI arguments to execute other commands!")
     .AddCommand(c => c
         .WithHandler(() => "Hello world!")

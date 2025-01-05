@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Commands.Samples;
 
-public class Listener(ILogger<Listener> logger, IExecutionProvider tree) : BackgroundService
+public class Listener(ILogger<Listener> logger, ComponentManager manager) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -15,7 +15,7 @@ public class Listener(ILogger<Listener> logger, IExecutionProvider tree) : Backg
 
             var context = new HostedCallerContext(logger);
 
-            await tree.TryExecuteAsync(context, input);
+            await manager.TryExecuteAsync(context, input);
         }
 
         logger.LogInformation("Stopped listening for commands.");

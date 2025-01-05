@@ -2,7 +2,7 @@
 using Commands.Conversion;
 using Commands.Samples;
 
-var tree = ComponentManager.CreateBuilder()
+var manager = ComponentManager.CreateBuilder()
     .ConfigureComponents(configure =>
     {
         configure.AddParser(new SystemTypeParser(caseIgnore: true));
@@ -26,5 +26,5 @@ while (true)
 
     var consumer = new ConsoleCallerContext(name: "Pete");
 
-    tree.TryExecute(consumer, input);
+    manager.TryExecute(consumer, input);
 }

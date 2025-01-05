@@ -3,7 +3,7 @@
 /// <summary>
 ///     Represents a set of extensions for the <see cref="ComponentManagerBuilder"/> class.
 /// </summary>
-public static class CLITreeBuilder
+public static class CLIManagerBuilder
 {
     /// <summary>
     ///     Adds a new <see cref="Delegate"/> based command to the list of <see cref="IManagerBuilder.Components"/>. 

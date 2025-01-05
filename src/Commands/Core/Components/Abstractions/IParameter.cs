@@ -9,7 +9,7 @@ public interface IParameter
     ///     Gets the type of this argument.
     /// </summary>
     /// <remarks>
-    ///     The returned value is always underlying where available, ensuring converters do not attempt to convert a nullable type.
+    ///     The returned value is always underlying where available, ensuring parsers do not attempt to convert a nullable type.
     /// </remarks>
     public Type Type { get; }
 
