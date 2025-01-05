@@ -63,8 +63,8 @@ public sealed class ComponentConfiguration
     ///     Creates a new instance of <see cref="ComponentConfiguration"/> with a range of default parsers, created from <see cref="TypeParser.CreateDefaults"/>.
     /// </summary>
     /// <inheritdoc cref="Create(IEnumerable{TypeParser}, IEnumerable{KeyValuePair{object, object}})"/>
-    public static ComponentConfiguration Create()
-        => Create([]);
+    public static ComponentConfiguration Create(params TypeParser[] parsers)
+        => Create(parsers);
 
     /// <summary>
     ///     Creates a new instance of <see cref="ComponentConfiguration"/> with the provided parsers and properties. 

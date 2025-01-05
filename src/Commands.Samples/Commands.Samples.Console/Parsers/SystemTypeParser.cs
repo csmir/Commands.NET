@@ -16,9 +16,6 @@ public class SystemTypeParser(bool caseIgnore) : TypeParser<Type>
                 throwOnError: true,
                 ignoreCase: _caseIgnore);
 
-            if (typeSrc == null)
-                return Error($"A type with name '{value}' was not found within the current assembly.");
-
             return Success(typeSrc);
         }
         catch

@@ -52,10 +52,8 @@ public abstract class ResultHandler
     public virtual ValueTask HandleResult(
         ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        //if (result is IValueResult valueResult && valueResult.Success)
-        //    return HandleSuccess(caller, valueResult, services, cancellationToken);
+        if (result is IValueResult valueResult && valueResult.Success)
+            return HandleSuccess(caller, valueResult, services, cancellationToken);
 
         switch (result)
         {
