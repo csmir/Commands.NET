@@ -3,10 +3,6 @@ For this claim to have any value, a great deal is done to help a developer write
 
 ## Available Content:
 
-### ⚙️ [[Configuration|Configuration]]
-
-More about how to configure Commands.NET, from module registration to command execution.
-
 ### 🛑 [[Using Execution Conditions|Conditions]]
 
 Define your own checks to ensure commands will only run and succeed when they are allowed to.

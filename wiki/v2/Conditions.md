@@ -15,7 +15,7 @@ using Commands.Conditions;
 
 namespace Commands.Samples;
 
-public class RequireOperatingSystemAttribute : ConditionAttribute
+public class RequireOperatingSystemAttribute : ConditionAttribute<ANDEvaluator>
 {
     public override ValueTask<CheckResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
     {
@@ -34,7 +34,7 @@ using Commands.Conditions;
 
 namespace Commands.Samples;
 
-public class RequireOperatingSystemAttribute(PlatformID platform) : ConditionAttribute
+public class RequireOperatingSystemAttribute(PlatformID platform) : ConditionAttribute<ANDEvaluator>
 {
     public PlatformID Platform { get; } = platform;
 
@@ -60,6 +60,10 @@ Our focus goes to the `EvaluateAsync` method, which will run this check.
 ```
 
 That's it. With this done, we can look towards the application of our created condition.
+
+> [!NOTE]
+> Conditions can be extended to only execute when a certain context is provided.
+> To do so, implement `ConditionAttribute<TEval, TContext>` instead of `ConditionAttribute<TEval>`.
 
 ## Using your Condition
 

@@ -3,10 +3,10 @@ The builder API's are designed to be flexible and extensible fluent interfaces t
 This article will introduce the builder API's and how to use them.
 
 - [Component Configuration](#command-configuration)
-- [Manager Builder](#manager-builder)
-- [Command Builder](#command-builder)
-- [Group Builder](#group-builder)
-- [Condition Builder](#condition-builder)
+- [Component Manager](#component-manager)
+- [Commands](#commands)
+- [Command Groups](#command-groups)
+- [Conditions](#conditions)
 
 ## Component Configuration
 
@@ -50,7 +50,7 @@ After you have configured the builder, you can build it into a `ComponentConfigu
 var configuration = builder.Build();
 ```
 
-## Manager Builder
+## Component Manager
 
 `IManagerBuilder` is an interactible interface to customize how the `ComponentManager` is created. 
 It wraps around `IConfigurationBuilder` to configure the manager with the desired components, instead of doing it manually.
@@ -112,7 +112,7 @@ After you have configured the builder, you can build it into a `ComponentManager
 var manager = builder.Build();
 ```
 
-## Command Builder
+## Commands
 
 `CommandBuilder` is an implementation of `IComponentBuilder` that allows for easy configuration of commands.
 
@@ -140,6 +140,10 @@ builder.WithNames("command", "cmd");
 builder.AddName("command");
 ```
 
+### Defining Conditions
+
+Conditions are used to filter commands or groups. This builder is extended [here](#conditions).
+
 ### Building the Command
 
 After you have configured the builder, you can build it into a `Command` instance:
@@ -151,7 +155,7 @@ var command = builder.Build();
 > `IComponentBuilder` build overloads accept a `ComponentConfiguration` instance to configure the component with a custom configuration.
 > The `IManagerBuilder` accepts `IComponentBuilder` instances that are not yet built, using its own defined `IConfigurationBuilder` to do so, when its own `Build` method is called.
 
-## Group Builder
+## Command Groups
 
 `CommandGroupBuilder` is an implementation of `IComponentBuilder` that allows for easy configuration of command groups.
 
@@ -190,13 +194,16 @@ After you have configured the builder, you can build it into a `CommandGroup` in
 var group = builder.Build();
 ```
 
-## Condition Builder
+## Conditions
 
 Condition builders are used to create conditions that can be used to filter commands or groups.
 
+These builders accept two generic parameters. A context, and an evaluator. 
+For more information on conditions and their constraints, see [[Conditions|Conditions]].
+
 To use this builder, you must first create an instance of it:
 ```cs
-var builder = new ConditionBuilder();
+var builder = new ConditionBuilder<ANDEvaluator, ICallerContext>();
 ```
 
 ### Setting a Handler
