@@ -276,7 +276,7 @@ public sealed class CommandGroupBuilder : IComponentBuilder
     /// <returns>A new instance of <see cref="CommandGroup"/> based on the configured values of this builder.</returns>
     public CommandGroup Build(ComponentConfiguration configuration, CommandGroup? parent)
     {
-        Assert.Names(Names, configuration, false);
+        Assert.Names(Names, configuration, true);
 
         var groupInfo = new CommandGroup(parent, [.. Conditions.Select(x => x.Build())], [.. Names], configuration);
 
