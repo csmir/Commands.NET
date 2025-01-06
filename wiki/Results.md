@@ -1,9 +1,9 @@
 Command results are handled by implementations of the `IExecuteResult` interface.
 When handling results, the different types of results are handled by the `ResultHandler` implementations. This document elaborates on how this process works.
 
-- [Result types](#result-types)
-- [Handling results](#handling-results)
-- [Complex results](#complex-results)
+- [Result Types](#result-types)
+- [Handling Results](#handling-results)
+- [Complex Results](#complex-results)
 - [Extended Implementations](#extended-implementations)
 
 ## Result types
@@ -27,7 +27,7 @@ If `false`, the `Exception` property will contain the exception that was thrown,
 
 It is good to note that every `IExecuteResult` implementation overrides `ToString()` with a preformatted message to send to the user. This message can be sent to the user by-for example-calling `caller.Respond(result)`.
 
-## Handling results
+## Handling Results
 
 `ResultHandler` implementations are used to handle the different types of results. It is possible to define multiple custom result resolvers of your own make.
 
@@ -52,11 +52,10 @@ using Commands;
 
 namespace Commands.Samples;
 
-public class CustomHandler : ResultHandler
+public class CustomResultHandler : ResultHandler
 {
     protected override ValueTask CommandNotFound(ICallerContext caller, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-		
     }
 }
 
@@ -78,15 +77,15 @@ The `CommandNotFound` method is called when the search operation returns no comm
 When you have succesfully constructed the logic for handling the result, you can pass it along when creating a new `ComponentManager`:
 
 ```cs
-var manager = ComponentManager.Create([], new CustomHandler());
+var manager = ComponentManager.Create([], new CustomResultHandler());
 ```
 
 Or, when using the builder pattern:
 ```cs
-builder.AddResultHandler(new CustomHandler());
+builder.AddResultHandler(new CustomResultHandler());
 ```
 
-## Complex results
+## Complex Results
 
 When it is necessary to catch all results, or filter by a more complex condition than the default protected methods, the `HandleResult` method can be overridden.
 
@@ -95,11 +94,10 @@ using Commands;
 
 namespace Commands.Samples;
 
-public class CustomHandler : ResultHandler
+public class CustomResultHandler : ResultHandler
 {
 	public override ValueTask HandleResult(ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
 	{
-
 	}
 }
 ```

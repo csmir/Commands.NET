@@ -1,74 +1,69 @@
 Conditions are checks that ensure that the command in scope is allowed to be executed and report success. 
 
-Let's work on an example precondition to understand how they work. Postconditions are similar to preconditions, but are executed after the command has been executed.
-
-- [Creating your Precondition](#creating-your-precondition)
-- [Using your Precondition](#using-your-precondition)
+- [Creating your Condition](#creating-your-condition)
+- [Using your Condition](#using-your-condition)
 - [Logical operations](#logical-operations)
 
-## Creating your Precondition
+## Creating your Condition
 
-All preconditions inherit `PreconditionAttribute`, which in turn inherits `Attribute`. To start creating your own precondition, you have to inherit `PreconditionAttribute` on a class:
+All preconditions inherit `ConditionAttribute`, which in turn inherits `Attribute`. 
+To start creating your own condition, you have to inherit `ConditionAttribute` on a class:
 
 ```cs
 using Commands;
 using Commands.Conditions;
-using Commands.Reflection;
 
-namespace Commands.Samples
+namespace Commands.Samples;
+
+public class RequireOperatingSystemAttribute : ConditionAttribute
 {
-    public class RequireOperatingSystemAttribute : PreconditionAttribute
+    public override ValueTask<CheckResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
     {
-        public override ValueTask<CheckResult> Evaluate(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
-        {
-
-        }
     }
 }
 ```
 
 With this class defined, and the method that will operate the evaluation being implemented, we can now write our code which defines the succession and failure conditions.
 
-First of all, the restriction must be compared against. To define this, we will implement a constructor parameter, automatically resolved as an attribute parameter by the IDE or code editor:
+First of all, the restriction must be compared against. 
+To define this, we will implement a constructor parameter, automatically resolved as an attribute parameter by the IDE or code editor:
 
 ```cs
 using Commands;
 using Commands.Conditions;
-using Commands.Reflection;
 
-namespace Commands.Samples
+namespace Commands.Samples;
+
+public class RequireOperatingSystemAttribute(PlatformID platform) : ConditionAttribute
 {
-    public class RequireOperatingSystemAttribute(PlatformID platform) : PreconditionAttribute
+    public PlatformID Platform { get; } = platform;
+
+    public override ValueTask<CheckResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
     {
-        public PlatformID Platform { get; } = platform;
-
-        public override ValueTask<CheckResult> Evaluate(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
-        {
-
-        }
     }
 }
 ```
 
-After this has been defined, the `Platform` property can be used to evaluate the current operating system against. Our focus goes to the `EvaluateAsync` method, which will run this check.
+After this has been defined, the `Platform` property can be used to evaluate the current operating system against. 
+Our focus goes to the `EvaluateAsync` method, which will run this check.
 
 ```cs
 ...
-        public override ValueTask<CheckResult> Evaluate(ConsumerBase consumer, CommandInfo command, IServiceProvider services, CancellationToken cancellationToken)
-        {
-            if (Environment.OSVersion.Platform == Platform)
-                return ValueTask.FromResult(Success());
+    public override ValueTask<CheckResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
+    {
+        if (Environment.OSVersion.Platform == Platform)
+            return ValueTask.FromResult(Success());
 
-            return ValueTask.FromResult(Error("The platform does not support this operation."));
-        }
+        return ValueTask.FromResult(Error("The platform does not support this operation."));
+    }
 ...
 ```
 
-That's it. With this done, we can look towards the application of our created precondition.
+That's it. With this done, we can look towards the application of our created condition.
 
-## Using your Precondition
+## Using your Condition
 
-After you have written your precondition, it is time to use it. Let's define a command that depends on the operating system to run.
+After you have written your condition, it is time to use it. Let's define a command that depends on the operating system to run.
 
 ```cs
 [Command("copy")]
@@ -103,12 +98,12 @@ public void Copy([Remainder] string toCopy)
 ...
 ```
 
-The precondition is now defined on this command, and will be called when this command is triggered. If the platform you run it on is indeed not Windows, it will fail.
+The conditions is now defined on this command, and will be called when this command is triggered. If the platform you run it on is indeed not Windows, it will fail.
 
 ## Logical operations
 
-Pre and postconditions can be combined with logical operations. This can be done by adding multiple preconditions to a command, and defining the logical operation in the condition you defined. There are two standard types:
+Conditions can be combined with logical operations. This can be done by adding multiple conditions to a command, and defining the logical operation in the condition you defined. There are two standard types:
 
-- `OREvaluator`: This will return success if any of the preconditions succeed.
+- `OREvaluator`: This will return success if any of the conditions implementing `OREvaluator` succeed.
 
-- `ANDEvaluator`: This will return success if all of the preconditions succeed.
+- `ANDEvaluator`: This will return success if all of the conditions implementing `ANDEvaluator` succeed.

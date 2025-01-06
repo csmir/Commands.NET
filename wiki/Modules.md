@@ -19,7 +19,6 @@ Commands in modules are defined by creating a method with the `NameAttribute` at
 [Name("command")]
 public void Command()
 {
-    
 }
 ```
 
@@ -34,14 +33,12 @@ Commands can be overloaded by defining multiple methods with the same name. The 
 [Name("command")]
 public void Command(int arg1)
 {
-    
 }
 
 // 'command 1 2' is valid
 [Name("command")]
 public void Command(int arg1, int arg2)
 {
-    
 }
 ```
 
@@ -59,13 +56,11 @@ public class CommandClass : CommandModule
     // 'command arg1' is valid
     public void Command(string arg1)
     {
-        
     }
     
     // 'command arg1 2' is valid
     public void Command(string arg1, int arg2)
     {
-        
     }
 }
 ```
@@ -84,7 +79,6 @@ public class CommandClass : CommandModule
     [Name("subcommand")]
     public void SubCommand()
     {
-        
     }
 }
 ```
@@ -102,7 +96,6 @@ public class CommandClass : CommandModule
         [Name("subsubcommand")]
         public void SubSubCommand()
         {
-            
         }
     }
 }
@@ -119,7 +112,6 @@ public class CommandClass : CommandModule
     // 'command' is valid
     public static void Command()
     {
-        
     }
 }
 ```
@@ -134,7 +126,6 @@ public class CommandClass : CommandModule
     // 'command' is valid
     public static void Command(CommandContext<TCaller> context)
     {
-        
     }
 }
 ```

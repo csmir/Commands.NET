@@ -36,6 +36,19 @@ public sealed class ComponentConfigurationBuilder : IConfigurationBuilder
     }
 
     /// <inheritdoc />
+    public IConfigurationBuilder AddParsers(params TypeParser[] parsers)
+    {
+        foreach (var parser in parsers)
+        {
+            Assert.NotNull(parser, nameof(parser));
+
+            Parsers[parser.Type] = parser;
+        }
+
+        return this;
+    }
+
+    /// <inheritdoc />
     public IConfigurationBuilder WithParsers(params TypeParser[] parsers)
     {
         Parsers = parsers
@@ -45,19 +58,6 @@ public sealed class ComponentConfigurationBuilder : IConfigurationBuilder
 
                 return parser;
             });
-
-        return this;
-    }
-
-    /// <inheritdoc />
-    public IConfigurationBuilder AddParsers(params TypeParser[] parsers)
-    {
-        foreach (var parser in parsers)
-        {
-            Assert.NotNull(parser, nameof(parser));
-
-            Parsers[parser.Type] = parser;
-        }
 
         return this;
     }

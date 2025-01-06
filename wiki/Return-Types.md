@@ -1,33 +1,37 @@
 Every command can have a different return type, from another. In order to handle the possible scenarios in which a developer might find themselves, the library tries to resolve as many as possible.
 
-- [Basic return types](#basic-return-types)
+- [Basic Return Types](#basic-return-types)
+- [Customizing Return Type Handling](#customizing-return-type-handling)
 
-## Basic return types
+## Basic Return Types
 
-Amongst the basic return types, the library supports:
+Amongst basic return types, the library supports:
 
 - `void`
 - `object`
 - `string`
-- `T`
+- `T:notnull`
 - `Task`
-- `Task<T>`
-- `ValueTask`
-- `ValueTask<T>`
+- `Task<T:notnull>`
 
-When returning `void`, the library will not send a response to the consumer.
+When returning `void`, the library will not send a response to the caller.
 
+```cs
+Command.Create(() => { });
+```
 ```cs
 // 'void' is valid
 [Name("void")]
 public void GetVoid()
 {
-    
 }
 ```
 
-When returning `string`, `T` or `object` the library will send the message to the consumer.
+When returning `string`, `T` or `object` the library will send the return value to the caller.
 
+```cs
+Command.Create(() => "string");
+```
 ```cs
 // 'string' is valid
 [Name("string")]
@@ -38,6 +42,9 @@ public string GetString()
 ```
 
 ```cs
+Command.Create(() => new object());
+```
+```cs
 // 'object' is valid
 [Name("object")]
 public object GetObject()
@@ -46,8 +53,11 @@ public object GetObject()
 }
 ```
 
-When returning `Task` or `ValueTask`, the library will await the task. If the task returns a value, it *will* be sent to the consumer. If there is no value, the library will not send a response.
+When returning `Task`, the library will await the task. If the task returns a value, it *will* be sent to the caller. If there is no value, the library will not send a response.
 
+```cs
+Command.Create(() => Task.CompletedTask);
+```
 ```cs
 // 'task' is valid
 [Name("task")]
@@ -57,4 +67,28 @@ public Task GetTask()
 }
 ```
 
-> The library will automatically convert the return type to a string, if it is `T` and unhandled.
+> [!NOTE]
+> ValueTask is not handled as a method return type. Furthermore, the library will convert the return type to a `string` by calling `ToString`, if it is `T` and unhandled.
+
+## Custom Return Type Handling
+
+`ResultHandler` implements overloads for customizing how method return types are handled by the library.
+
+This is useful for handling custom return types, or for changing the default behavior:
+
+```cs
+using Commands;
+
+namespace Commands.Samples;
+
+public class CustomResultHandler : ResultHandler
+{
+    public override ValueTask HandleSuccess(ICallerContext caller, IValueResult result, IServiceProvider services, CancellationToken cancellationToken)
+    {
+        if (result.Value is int i)
+        {
+            caller.Respond($"The number is {i}");
+        }
+    }
+}
+```
