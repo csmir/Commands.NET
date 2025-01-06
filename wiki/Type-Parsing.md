@@ -31,7 +31,6 @@ All TypeParsers inherit `TypeParser<T>` or `TypeParser`. To start creating your 
 
 ```cs
 using Commands;
-using Commands.Conversion;
 
 namespace Commands.Samples;
 

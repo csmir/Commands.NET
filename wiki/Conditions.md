@@ -11,7 +11,6 @@ To start creating your own condition, you have to inherit `ConditionAttribute` o
 
 ```cs
 using Commands;
-using Commands.Conditions;
 
 namespace Commands.Samples;
 
@@ -30,7 +29,6 @@ To define this, we will implement a constructor parameter, automatically resolve
 
 ```cs
 using Commands;
-using Commands.Conditions;
 
 namespace Commands.Samples;
 

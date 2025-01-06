@@ -23,6 +23,8 @@ A command is a method executed when a specific syntax is provided.
 By creating a manager to contain said command, you can run it with the provided arguments.
 
 ```cs
+using Commands;
+
 var command = Command.Create(() => "Hello world!", "greet");
 
 var manager = ComponentManager.Create(command);
@@ -38,6 +40,8 @@ Command groups are named collections of commands or other command groups.
 Groups allow for subcommand creation, where the group name is a category for its children.
 
 ```cs
+using Commands;
+
 var mathCommands = CommandGroup.Create("math");
 
 mathCommands.AddRange(
@@ -63,6 +67,8 @@ manager.TryExecute(new ConsoleContext(), args);
 Command modules are classes that can contain commands or nested command modules, which themselves can also contain (sub)commands.
 
 ```cs
+using Commands;
+
 public class HelpModule : CommandModule 
 {
     [Name("help")]
@@ -94,6 +100,9 @@ manager.TryExecute(new ConsoleContext(), args);
 Commands.NET is designed to be compatible with dependency injection out of the box, propagating `IServiceProvider` throughout the execution flow.
 
 ```cs
+using Commands;
+using Microsoft.Extensions.DependencyInjection;
+
 var services = new ServiceCollection()
     .AddSingleton<MyService>()
     .AddSingleton<ComponentManager>(ComponentManager.Create(mathCommands, helpCommands);
