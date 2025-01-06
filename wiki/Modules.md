@@ -8,7 +8,6 @@ This article will cover how modules work, which command scenarios are *at least*
 - [Class-level execution](#class-commands)
 - [Nesting commands](#nesting-commands)
 - [Static definitions](#static-definitions)
-- [Property commands](#property-commands)
 
 ## Basic usage
 

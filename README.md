@@ -89,6 +89,29 @@ manager.TryExecute(new ConsoleContext(), args);
 // dotnet run help -> Commands: math sum <...> math subtract <...> math ...
 ```
 
+### Using Dependency Injection
+
+Commands.NET is designed to be compatible with dependency injection out of the box, propagating `IServiceProvider` throughout the execution flow.
+
+```cs
+var services = new ServiceCollection()
+    .AddSingleton<MyService>()
+    .AddSingleton<ComponentManager>(ComponentManager.Create(mathCommands, helpCommands);
+    .BuildServiceProvider();
+
+var manager = services.GetRequiredService<ComponentManager>();
+
+manager.TryExecute(new ConsoleContext(), args, new CommandOptions() { ServiceProvider = services });
+```
+
+Modules can be injected directly from the provider. They themselves are considered transient services;
+
+```cs
+public class ServicedModule(MyService service) : CommandModule 
+{
+}
+```
+
 ## Samples
 
 - [Commands.Samples.Core](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Core)

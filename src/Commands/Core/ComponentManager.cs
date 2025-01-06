@@ -15,7 +15,15 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     private readonly bool _handlersAvailable;
     private readonly ResultHandler[] _handlers;
 
-    internal ComponentManager(IEnumerable<IComponent> components, ResultHandler[] handlers)
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ComponentManager"/> class.
+    /// </summary>
+    /// <remarks>
+    ///     This constructor is dependency-injection friendly, allowing `Enumerable` services to be immediately injected from an <see cref="IServiceProvider"/>.
+    /// </remarks>
+    /// <param name="components">A collection of <see cref="IComponent"/> implementations that should be considered top-level.</param>
+    /// <param name="handlers">A collection of <see cref="ResultHandler"/> implementations that should resolve command results by defined approaches.</param>
+    public ComponentManager(IEnumerable<IComponent> components, IEnumerable<ResultHandler> handlers)
         : base(false)
     {
         var topLevelComponents = new List<IComponent>();
