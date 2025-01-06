@@ -13,7 +13,7 @@ jobs:
       with:
         username: csmir
         access_token: ${{ secrets.GITHUB_TOKEN }}
-        wiki_folder: wiki/v1
+        wiki_folder: wiki/v2
         ignore_safe_warnings: true
         commit_message: 'Wiki Update'
         commit_username: 'contributors'
