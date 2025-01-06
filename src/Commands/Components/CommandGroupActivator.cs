@@ -40,26 +40,32 @@ public sealed class CommandGroupActivator : IActivator
     public object? Invoke<T>(T caller, Command? command, object?[] args, CommandOptions options)
         where T : ICallerContext
     {
-        var services = new object?[Services.Length];
-        for (int i = 0; i < Services.Length; i++)
+        var obj = options.Services.GetService(Target.DeclaringType!);
+
+        if (obj == null)
         {
-            var parameter = Services[i];
+            var services = new object?[Services.Length];
+            for (int i = 0; i < Services.Length; i++)
+            {
+                var parameter = Services[i];
 
-            var service = options.Services.GetService(parameter.Type);
+                var service = options.Services.GetService(parameter.Type);
 
-            if (service != null || parameter.IsNullable)
-                services[i] = service;
+                if (service != null || parameter.IsNullable)
+                    services[i] = service;
 
-            else if (parameter.Type == typeof(IServiceProvider))
-                services[i] = options.Services;
+                else if (parameter.Type == typeof(IServiceProvider))
+                    services[i] = options.Services;
 
-            else if (parameter.IsOptional)
-                services[i] = Type.Missing;
+                else if (parameter.IsOptional)
+                    services[i] = Type.Missing;
 
-            else
-                throw new InvalidOperationException($"Constructor {command?.Parent?.Name ?? Target.Name} defines unknown service {parameter.Type}.");
+                else
+                    throw new InvalidOperationException($"Constructor {command?.Parent?.Name ?? Target.Name} defines unknown service {parameter.Type}.");
+            }
+
+            return _ctor.Invoke(services);
         }
-
-        return _ctor.Invoke(services);
+        return obj;
     }
 }
