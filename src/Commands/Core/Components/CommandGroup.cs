@@ -1,4 +1,5 @@
-﻿using Commands.Conditions;
+﻿using Commands.Builders;
+using Commands.Conditions;
 using System.Text;
 
 namespace Commands;
@@ -263,4 +264,11 @@ public sealed class CommandGroup : ComponentCollection, IComponent, ICommandSegm
 
         return new CommandGroup(type, null, names, configuration);
     }
+
+    /// <summary>
+    ///     Creates a new <see cref="CommandGroupBuilder"/> which can be built into a new instance of <see cref="CommandGroup"/>.
+    /// </summary>
+    /// <returns>A new instance of <see cref="CommandGroupBuilder"/> containing API's to configure a <see cref="CommandGroup"/> with specified behavior.</returns>
+    public static CommandGroupBuilder CreateBuilder()
+        => new();
 }

@@ -43,8 +43,10 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
 
         Push(topLevelComponents.OrderByDescending(x => x.GetScore()));
 
-        _handlersAvailable = handlers.Length > 0;
-        _handlers = handlers;
+        var arr = handlers.ToArray();
+
+        _handlersAvailable = arr.Length > 0;
+        _handlers = arr;
     }
 
     /// <inheritdoc />

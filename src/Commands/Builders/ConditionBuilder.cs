@@ -47,6 +47,6 @@ public sealed class ConditionBuilder<TEval, TContext> : IConditionBuilder
     {
         Assert.NotNull(Handler, nameof(Handler));
 
-        return new DelegateCondition<TEval, TContext>(Handler);
+        return new CommandCondition<TEval, TContext>(Handler);
     }
 }

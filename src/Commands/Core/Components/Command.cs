@@ -1,4 +1,6 @@
-﻿using Commands.Conditions;
+﻿using Commands.Builders;
+using Commands.Conditions;
+using System.Data;
 using System.Text;
 
 namespace Commands;
@@ -279,4 +281,11 @@ public sealed class Command : IComponent, ICommandSegment, IParameterCollection
 
         return new Command(null, new DelegateCommandActivator(executionDelegate.Method, executionDelegate.Target, hasContext), conditions, names, hasContext, configuration);
     }
+
+    /// <summary>
+    ///     Creates a new <see cref="CommandBuilder"/> which can be built into a new instance of <see cref="Command"/>.
+    /// </summary>
+    /// <returns>A new instance of <see cref="CommandBuilder"/> containing API's to configure a <see cref="Command"/> with specified behavior.</returns>
+    public static CommandBuilder CreateBuilder()
+        => new();
 }
