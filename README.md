@@ -110,7 +110,7 @@ var services = new ServiceCollection()
 
 var manager = services.GetRequiredService<ComponentManager>();
 
-manager.TryExecute(new ConsoleContext(), args, new CommandOptions() { ServiceProvider = services });
+manager.TryExecute(new ConsoleContext(), args, new CommandOptions() { Services = services });
 ```
 
 Modules can be injected directly from the provider. They themselves are considered transient services;
