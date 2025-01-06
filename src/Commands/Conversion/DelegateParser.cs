@@ -1,4 +1,4 @@
-﻿namespace Commands.Conversion;
+﻿namespace Commands;
 
 /// <summary>
 ///     Represents a parser that invokes a delegate when parameter conversion of its type <typeparamref name="T"/> occurs. This class cannot be inherited.

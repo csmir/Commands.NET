@@ -1,6 +1,4 @@
-﻿using Commands.Conversion;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     Reveals information about an invocation parameter of a command or any complex member.
@@ -29,7 +27,7 @@ public interface ICommandParameter : ICommandSegment, IParameter
     ///     Gets the parser for this parameter.
     /// </summary>
     /// <remarks>
-    ///     Will be <see langword="null"/> if this parameter is <see cref="CommandConstructibleParameter"/>.
+    ///     Will be <see langword="null"/> if this parameter is <see cref="ConstructibleParameter"/>.
     /// </remarks>
     public TypeParser? Parser { get; }
 

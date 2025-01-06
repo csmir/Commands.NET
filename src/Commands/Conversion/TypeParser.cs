@@ -1,4 +1,4 @@
-﻿namespace Commands.Conversion;
+﻿namespace Commands;
 
 /// <inheritdoc />
 /// <typeparam name="T">The type this <see cref="TypeParser{T}"/> should parse into.</typeparam>

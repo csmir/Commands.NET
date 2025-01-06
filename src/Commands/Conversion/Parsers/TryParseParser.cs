@@ -1,4 +1,4 @@
-﻿namespace Commands.Conversion;
+﻿namespace Commands;
 
 /// <summary>
 ///     A type parser that can convert a raw string value into a type with a try-parse method. This class cannot be inherited.

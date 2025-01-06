@@ -1,6 +1,4 @@
-﻿using Commands.Conditions;
-
-namespace Commands.Builders;
+﻿namespace Commands.Builders;
 
 /// <summary>
 ///     A builder model for an execution condition, setting up the command to fail or succeed. This class cannot be inherited.

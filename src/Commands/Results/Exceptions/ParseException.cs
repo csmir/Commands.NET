@@ -1,6 +1,4 @@
-﻿using Commands.Conversion;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     An <see cref="Exception"/> that is thrown when no matched command succeeded converting its arguments. This class cannot be inherited.

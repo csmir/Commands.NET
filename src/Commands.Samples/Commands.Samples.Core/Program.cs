@@ -7,9 +7,9 @@ var exit = Command.Create(() => Environment.Exit(0), "exit");
 var mathCommands = CommandGroup.Create("math");
 
 mathCommands.AddRange(
-    Command.Create(Sum, "sum", "add"), 
-    Command.Create(Subtract, "subtract", "sub"), 
-    Command.Create(Multiply, "multiply", "mul"), 
+    Command.Create(Sum, "sum", "add"),
+    Command.Create(Subtract, "subtract", "sub"),
+    Command.Create(Multiply, "multiply", "mul"),
     Command.Create(Divide, "divide", "div")
 );
 

@@ -1,6 +1,4 @@
-﻿using Commands.Conditions;
-
-namespace Commands.Builders;
+﻿namespace Commands.Builders;
 
 /// <summary>
 ///     A builder model of a group that can contain commands and sub-groups. This class cannot be inherited.

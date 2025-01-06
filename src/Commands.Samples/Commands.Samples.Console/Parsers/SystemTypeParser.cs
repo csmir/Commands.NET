@@ -1,6 +1,4 @@
-﻿using Commands.Conversion;
-
-namespace Commands.Samples;
+﻿namespace Commands.Samples;
 
 // A parser that converts a string to a System.Type found within the current assembly.
 public class SystemTypeParser(bool caseIgnore) : TypeParser<Type>

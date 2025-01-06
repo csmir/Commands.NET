@@ -1,4 +1,4 @@
-﻿namespace Commands.Conversion;
+﻿namespace Commands;
 
 internal sealed class EnumParser(Type targetEnumType) : TypeParser
 {

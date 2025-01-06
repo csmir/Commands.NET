@@ -1,6 +1,4 @@
-﻿using Commands.Conditions;
-
-namespace Commands.Samples;
+﻿namespace Commands.Samples;
 
 public class RequireOperatingSystemAttribute(PlatformID platform) : ConditionAttribute<ANDEvaluator, ConsoleCallerContext>
 {

@@ -1,6 +1,4 @@
-﻿using Commands.Conversion;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     An attribute to define that a final parameter should use the remaining entries in the command query, if any. This class cannot be inherited.

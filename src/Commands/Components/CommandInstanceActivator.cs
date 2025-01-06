@@ -5,7 +5,7 @@ namespace Commands;
 /// <summary>
 ///     An invoker for instanced commands.
 /// </summary>
-public sealed class InstanceCommandActivator : IActivator
+public sealed class CommandInstanceActivator : IActivator
 {
     private readonly MethodInfo _method;
 
@@ -13,7 +13,7 @@ public sealed class InstanceCommandActivator : IActivator
     public MethodBase Target
         => _method;
 
-    internal InstanceCommandActivator(MethodInfo target)
+    internal CommandInstanceActivator(MethodInfo target)
     {
         _method = target;
     }

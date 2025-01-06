@@ -1,4 +1,4 @@
-﻿namespace Commands.Conditions;
+﻿namespace Commands;
 
 /// <summary>
 ///     An attribute that contains an evaluation method called when marked on top of a command signature, implementing <see cref="ConditionAttribute{T}"/>. This attribute will only be ran if the provided <see cref="ICallerContext"/> is an instance of <typeparamref name="TContext"/>, otherwise, returning true by default.

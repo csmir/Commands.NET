@@ -1,6 +1,4 @@
 ﻿using Commands.Builders;
-using Commands.Conditions;
-using System.Data;
 using System.Text;
 
 namespace Commands;
@@ -62,13 +60,13 @@ public sealed class Command : IComponent, ICommandSegment, IParameterCollection
     public bool HasParameters
         => Parameters.Length > 0;
 
-    internal Command(CommandGroup parent, StaticCommandActivator invoker, string[] names, bool hasContext, ComponentConfiguration options)
+    internal Command(CommandGroup parent, CommandStaticActivator invoker, string[] names, bool hasContext, ComponentConfiguration options)
         : this(parent, invoker, [], names, hasContext, options)
     {
 
     }
 
-    internal Command(CommandGroup parent, InstanceCommandActivator activator, string[] names, ComponentConfiguration configuration)
+    internal Command(CommandGroup parent, CommandInstanceActivator activator, string[] names, ComponentConfiguration configuration)
         : this(parent, activator, [], names, false, configuration)
     {
 
@@ -222,7 +220,7 @@ public sealed class Command : IComponent, ICommandSegment, IParameterCollection
 
         // If the activator is a delegate variant, the target of the activator is in most circumstances, a generated signature which is not reader-friendly.
         // We instead will simply append the word "Command" to the output.
-        if (Activator is DelegateCommandActivator)
+        if (Activator is CommandDelegateActivator)
             sb.Append("Command");
         else
             sb.Append(Activator.Target.Name);
@@ -279,7 +277,7 @@ public sealed class Command : IComponent, ICommandSegment, IParameterCollection
 
         var hasContext = executionDelegate.Method.HasContext();
 
-        return new Command(null, new DelegateCommandActivator(executionDelegate.Method, executionDelegate.Target, hasContext), conditions, names, hasContext, configuration);
+        return new Command(null, new CommandDelegateActivator(executionDelegate.Method, executionDelegate.Target, hasContext), conditions, names, hasContext, configuration);
     }
 
     /// <summary>

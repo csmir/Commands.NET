@@ -1,6 +1,4 @@
-﻿using Commands.Conversion;
-
-namespace Commands.Builders;
+﻿namespace Commands.Builders;
 
 /// <summary>
 ///     A builder model for a component configuration. This class cannot be inherited.

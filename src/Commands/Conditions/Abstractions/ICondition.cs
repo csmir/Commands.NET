@@ -1,7 +1,6 @@
-﻿using Commands.Builders;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
-namespace Commands.Conditions;
+namespace Commands;
 
 /// <summary>
 ///     A condition that is evaluated within the command execution pipeline, determining if a command can succeed or not.

@@ -1,6 +1,6 @@
 ﻿using Commands.Builders;
 
-namespace Commands.Conditions;
+namespace Commands;
 
 /// <summary>
 ///     Represents a condition that determines whether a command can execute or not.

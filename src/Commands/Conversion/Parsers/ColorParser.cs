@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Reflection;
 
-namespace Commands.Conversion;
+namespace Commands;
 
 /// <summary>
 ///     A parser that converts a string value to a <see cref="Color"/>.

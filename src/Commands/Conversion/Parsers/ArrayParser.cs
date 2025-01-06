@@ -1,4 +1,4 @@
-﻿namespace Commands.Conversion;
+﻿namespace Commands;
 
 internal sealed class ArrayParser(TypeParser underlyingParser) : TypeParser
 {

@@ -1,6 +1,4 @@
-﻿using Commands.Conversion;
-using System.Linq.Expressions;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Commands;
 
@@ -115,10 +113,10 @@ internal static class ComponentUtilities
                 {
                     var hasContext = method.HasContext();
 
-                    component = new Command(parent, new StaticCommandActivator(method, hasContext), names, hasContext, configuration);
+                    component = new Command(parent, new CommandStaticActivator(method, hasContext), names, hasContext, configuration);
                 }
                 else
-                    component = new Command(parent, new InstanceCommandActivator(method), names, configuration);
+                    component = new Command(parent, new CommandInstanceActivator(method), names, configuration);
 
                 yield return component;
             }
@@ -178,7 +176,7 @@ internal static class ComponentUtilities
             }
 
             if (complex)
-                arr[i] = new CommandConstructibleParameter(parameters[i], name, configuration);
+                arr[i] = new ConstructibleParameter(parameters[i], name, configuration);
             else
                 arr[i] = new CommandParameter(parameters[i], name, configuration);
         }
@@ -220,7 +218,7 @@ internal static class ComponentUtilities
 
         foreach (var parameter in arguments)
         {
-            if (parameter is CommandConstructibleParameter complexArgument)
+            if (parameter is ConstructibleParameter complexArgument)
             {
                 maxLength += complexArgument.MaxLength;
                 minLength += complexArgument.MinLength;
@@ -308,7 +306,7 @@ internal static class ComponentUtilities
                 break;
             }
 
-            if (argument is CommandConstructibleParameter complexParameter)
+            if (argument is ConstructibleParameter complexParameter)
             {
                 var result = await complexParameter.Parse(caller, args, options);
 

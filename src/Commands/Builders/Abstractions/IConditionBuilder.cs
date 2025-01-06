@@ -1,6 +1,4 @@
-﻿using Commands.Conditions;
-
-namespace Commands.Builders;
+﻿namespace Commands.Builders;
 
 /// <summary>
 ///     A builder model for an execution condition, which is an evaluation that is triggered based on the configured trigger moment, setting up the command to fail or succeed.

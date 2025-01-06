@@ -3,10 +3,11 @@
 namespace Commands;
 
 /// <summary>
-///     An invoker for static commands.
+///     An invoker for delegate commands.
 /// </summary>
-public sealed class StaticCommandActivator : IActivator
+public sealed class CommandDelegateActivator : IActivator
 {
+    private readonly object? _instance;
     private readonly bool _withContext;
     private readonly MethodInfo _method;
 
@@ -14,9 +15,10 @@ public sealed class StaticCommandActivator : IActivator
     public MethodBase Target
         => _method;
 
-    internal StaticCommandActivator(MethodInfo target, bool withContext)
+    internal CommandDelegateActivator(MethodInfo target, object? instance, bool withContext)
     {
         _withContext = withContext;
+        _instance = instance;
         _method = target;
     }
 
@@ -28,9 +30,9 @@ public sealed class StaticCommandActivator : IActivator
         {
             var context = new CommandContext<T>(caller, command!, options);
 
-            return Target.Invoke(null, [context, .. args]);
+            return Target.Invoke(_instance, [context, .. args]);
         }
 
-        return Target.Invoke(null, args);
+        return Target.Invoke(_instance, args);
     }
 }

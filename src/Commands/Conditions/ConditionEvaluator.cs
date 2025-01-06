@@ -1,4 +1,4 @@
-﻿namespace Commands.Conditions;
+﻿namespace Commands;
 
 /// <summary>
 ///     An evaluator that contains a set of conditions grouped by the evaluator type. This evaluator determines if the contained set of conditions is met.

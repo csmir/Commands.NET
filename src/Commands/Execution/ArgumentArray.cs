@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     Represents a mechanism for enumerating arguments while searching or parsing a command.

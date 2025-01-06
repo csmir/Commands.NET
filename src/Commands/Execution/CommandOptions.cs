@@ -1,7 +1,4 @@
-﻿using Commands.Conditions;
-using Commands.Conversion;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     A set of options for handling command queries and determining the workflow in the command scope. This class cannot be inherited.

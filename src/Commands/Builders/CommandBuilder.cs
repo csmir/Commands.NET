@@ -1,6 +1,4 @@
-﻿using Commands.Conditions;
-
-namespace Commands.Builders;
+﻿namespace Commands.Builders;
 
 /// <summary>
 ///     A builder model that represents the construction of a delegate based command. This class cannot be inherited.
@@ -186,7 +184,7 @@ public sealed class CommandBuilder : IComponentBuilder
 
         var hasContext = Handler.Method.HasContext();
 
-        return new Command(parent, new DelegateCommandActivator(Handler.Method, Handler.Target, hasContext), [.. Conditions.Select(x => x.Build())], [.. Names], hasContext, configuration);
+        return new Command(parent, new CommandDelegateActivator(Handler.Method, Handler.Target, hasContext), [.. Conditions.Select(x => x.Build())], [.. Names], hasContext, configuration);
     }
 
     /// <inheritdoc />

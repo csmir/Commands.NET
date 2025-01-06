@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Commands.Conversion;
+namespace Commands;
 
 internal sealed partial class TimeSpanParser : TypeParser<TimeSpan>
 {
