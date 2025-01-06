@@ -22,104 +22,120 @@ It provides a modular and intuitive API for registering and executing commands.
 A command is a method executed when a specific syntax is provided. 
 By creating a manager to contain said command, you can run it with the provided arguments.
 
-```cs
-using Commands;
+<details>
+    <summary>Example: Creating and running a Command.</summary>
+    ```cs
+    using Commands;
 
-var command = Command.Create(() => "Hello world!", "greet");
+    var command = Command.Create(() => "Hello world!", "greet");
 
-var manager = ComponentManager.Create(command);
+    var manager = ComponentManager.Create(command);
 
-manager.TryExecute(new ConsoleContext(), args);
+    manager.TryExecute(new ConsoleContext(), args);
 
-// dotnet run greet -> Hello world!
-```
+    // dotnet run greet -> Hello world!
+    ```
+</details>
 
 ### Creating Command Groups
 
 Command groups are named collections of commands or other command groups. 
 Groups allow for subcommand creation, where the group name is a category for its children.
 
-```cs
-using Commands;
+<details>
+    <summary>Example: Creating a Group.</summary>
+    ```cs
+    using Commands;
 
-var mathCommands = CommandGroup.Create("math");
+    var mathCommands = CommandGroup.Create("math");
 
-mathCommands.AddRange(
-    Command.Create((double number, int sumBy)      => number + sumBy, 
-        "sum", "add"), 
-    Command.Create((double number, int subtractBy) => number - subtractBy, 
-        "subtract", "sub"), 
-    Command.Create((double number, int multiplyBy) => number * multiplyBy, 
-        "multiply", "mul"), 
-    Command.Create((double number, int divideBy)   => number / divideBy, 
-        "divide", "div")
-);
+    mathCommands.AddRange(
+        Command.Create((double number, int sumBy)      => number + sumBy, 
+            "sum", "add"), 
+        Command.Create((double number, int subtractBy) => number - subtractBy, 
+            "subtract", "sub"), 
+        Command.Create((double number, int multiplyBy) => number * multiplyBy, 
+            "multiply", "mul"), 
+        Command.Create((double number, int divideBy)   => number / divideBy, 
+            "divide", "div")
+    );
 
-var manager = ComponentManager.Create(mathCommands);
+    var manager = ComponentManager.Create(mathCommands);
 
-manager.TryExecute(new ConsoleContext(), args);
+    manager.TryExecute(new ConsoleContext(), args);
 
-// dotnet run math sum 5 3 -> 8
-```
+    // dotnet run math sum 5 3 -> 8
+    ```
+</details>
 
 ### Creating Command Modules
 
 Command modules are classes that can contain commands or nested command modules, which themselves can also contain (sub)commands.
 
-```cs
-using Commands;
+<details>
+    <summary>Example: Creating a Module-based command.</summary>
+    ```cs
+    using Commands;
 
-public class HelpModule : CommandModule 
-{
-    [Name("help")]
-    public void Help()
+    public class HelpModule : CommandModule 
     {
-        var builder = new StringBuilder()
-            .AppendLine("Commands:");
+        [Name("help")]
+        public void Help()
+        {
+            var builder = new StringBuilder()
+                .AppendLine("Commands:");
 
-        foreach (var command in Manager!.GetCommands())
-            builder.AppendLine(command.GetFullName());
+            foreach (var command in Manager!.GetCommands())
+                builder.AppendLine(command.GetFullName());
 
-        Respond(builder.ToString());
+            Respond(builder.ToString());
+        }
     }
-}
 
-...
+    ...
 
-var helpCommands = CommandGroup.Create<HelpModule>();
+    var helpCommands = CommandGroup.Create<HelpModule>();
 
-var manager = ComponentManager.Create(mathCommands, helpCommands);
+    var manager = ComponentManager.Create(mathCommands, helpCommands);
 
-manager.TryExecute(new ConsoleContext(), args);
+    manager.TryExecute(new ConsoleContext(), args);
 
-// dotnet run help -> Commands: math sum <...> math subtract <...> math ...
-```
+    // dotnet run help -> Commands: math sum <...> math subtract <...> math ...
+    ```
+</details>
 
 ### Using Dependency Injection
 
 Commands.NET is designed to be compatible with dependency injection out of the box, propagating `IServiceProvider` throughout the execution flow.
 
-```cs
-using Commands;
-using Microsoft.Extensions.DependencyInjection;
+<details>
+    <summary>Example: Creating a DI-based manager.</summary>
+    ```cs
+    using Commands;
+    using Microsoft.Extensions.DependencyInjection;
 
-var services = new ServiceCollection()
-    .AddSingleton<MyService>()
-    .AddSingleton<ComponentManager>(ComponentManager.Create(mathCommands, helpCommands);
-    .BuildServiceProvider();
+    var services = new ServiceCollection()
+        .AddSingleton<MyService>()
+        .AddSingleton<ComponentManager>(ComponentManager.Create(mathCommands, helpCommands);
+        .BuildServiceProvider();
 
-var manager = services.GetRequiredService<ComponentManager>();
+    var manager = services.GetRequiredService<ComponentManager>();
 
-manager.TryExecute(new ConsoleContext(), args, new CommandOptions() { Services = services });
-```
+    manager.TryExecute(new ConsoleContext(), args, new CommandOptions() { Services = services });
+    ```
+</details>
 
 Modules can be injected directly from the provider. They themselves are considered transient services;
 
-```cs
-public class ServicedModule(MyService service) : CommandModule 
-{
-}
-```
+<details>
+    <summary>Example: Implementing a Service.</summary>
+    ```cs
+    using Commands;
+    public class ServicedModule(MyService service) : CommandModule 
+    {
+    }
+    ```
+</details>
 
 ## Samples
 
