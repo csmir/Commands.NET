@@ -96,6 +96,7 @@ public abstract class TypeParser
         var list = TryParseParser.CreateBaseParsers();
 
         list.Add(new TimeSpanParser());
+        list.Add(new ColorParser());
         list.Add(new ObjectParser());
         list.Add(new StringParser());
 

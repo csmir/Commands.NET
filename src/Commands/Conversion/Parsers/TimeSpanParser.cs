@@ -4,11 +4,11 @@ namespace Commands;
 
 internal sealed partial class TimeSpanParser : TypeParser<TimeSpan>
 {
-    private readonly Dictionary<string, Func<string, TimeSpan>> _callback;
+    private static readonly IReadOnlyDictionary<string, Func<string, TimeSpan>> _callback;
 
-    private readonly Regex _regex = new(@"(\d*)\s*([a-zA-Z]*)\s*(?:and|,)?\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex _regex = new(@"(\d*)\s*([a-zA-Z]*)\s*(?:and|,)?\s*", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public TimeSpanParser()
+    static TimeSpanParser()
     {
         _callback = new Dictionary<string, Func<string, TimeSpan>>
         {
