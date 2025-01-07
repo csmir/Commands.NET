@@ -1,15 +1,29 @@
-﻿namespace Commands;
+﻿using Commands.Conditions;
+
+namespace Commands;
 
 /// <summary>
-///     An <see cref="Exception"/> that is thrown when a command failed precondition validation. This class cannot be inherited.
+///     Represents an exception that is thrown when a condition fails to evaluate.
 /// </summary>
-/// <param name="message">The message that represents the reason of the exception being thrown.</param>
-/// <param name="innerException">An exception thrown by an inner operation, if present.</param>
-public sealed class ConditionException(string message, Exception? innerException = null)
-    : Exception(message, innerException)
+public sealed class ConditionException(IExecuteCondition condition, string reason, Exception? innerException = null)
+    : Exception(reason, innerException)
 {
-    const string CONDITION_FAILED = "A condition evaluation failed. View inner exception for more details.";
+    /// <summary>
+    ///     Gets the condition that caused the exception.
+    /// </summary>
+    public IExecuteCondition Condition { get; } = condition;
+}
 
-    internal static ConditionException ConditionFailed(Exception innerException)
-        => new(CONDITION_FAILED, innerException);
+/// <summary>
+///     Represents an exception that is thrown when one or more conditions failed to evaluate.
+/// </summary>
+public sealed class PipelineConditionException(Command command, Exception? innerException = null)
+    : Exception(MESSAGE, innerException)
+{
+    const string MESSAGE = "One or more conditions failed during evaluation.";
+
+    /// <summary>
+    ///     Gets the command that caused the exception.
+    /// </summary>
+    public Command Command { get; } = command;
 }

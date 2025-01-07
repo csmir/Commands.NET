@@ -45,22 +45,11 @@ public abstract class ExecuteCondition : IExecuteCondition
     public abstract ValueTask<ConditionResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken);
 
     /// <inheritdoc />
-    public ConditionResult Error(Exception exception)
-    {
-        Assert.NotNull(exception, nameof(exception));
-
-        if (exception is ConditionException conEx)
-            return ConditionResult.FromError(conEx);
-
-        return ConditionResult.FromError(ConditionException.ConditionFailed(exception));
-    }
-
-    /// <inheritdoc />
     public ConditionResult Error(string error)
     {
         Assert.NotNullOrEmpty(error, nameof(error));
 
-        return ConditionResult.FromError(new ConditionException(error));
+        return ConditionResult.FromError(new ConditionException(this, error));
     }
 
     /// <inheritdoc />

@@ -25,13 +25,6 @@ public interface ITypeParser
     /// <summary>
     ///     Creates a new <see cref="ParseResult"/> representing a failed evaluation.
     /// </summary>
-    /// <param name="exception">The exception that caused the evaluation to fail.</param>
-    /// <returns>A <see cref="ParseResult"/> representing the failed evaluation.</returns>
-    public ParseResult Error(Exception exception);
-
-    /// <summary>
-    ///     Creates a new <see cref="ParseResult"/> representing a failed evaluation.
-    /// </summary>
     /// <param name="error">The error that caused the evaluation to fail.</param>
     /// <returns>A <see cref="ParseResult"/> representing the failed evaluation.</returns>
     public ParseResult Error(string error);

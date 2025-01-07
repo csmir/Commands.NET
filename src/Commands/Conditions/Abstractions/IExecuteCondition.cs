@@ -26,13 +26,6 @@ public interface IExecuteCondition
     /// <summary>
     ///     Creates a new <see cref="ConditionResult"/> representing a failed evaluation.
     /// </summary>
-    /// <param name="exception">The exception that caused the evaluation to fail.</param>
-    /// <returns>A <see cref="ConditionResult"/> representing the failed evaluation.</returns>
-    public ConditionResult Error(Exception exception);
-
-    /// <summary>
-    ///     Creates a new <see cref="ConditionResult"/> representing a failed evaluation.
-    /// </summary>
     /// <param name="error">The error that caused the evaluation to fail.</param>
     /// <returns>A <see cref="ConditionResult"/> representing the failed evaluation.</returns>
     public ConditionResult Error(string error);

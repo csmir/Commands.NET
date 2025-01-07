@@ -7,7 +7,7 @@
 public readonly struct SearchResult : IExecuteResult
 {
     /// <summary>
-    ///     Gets the component that was discovered for this result.
+    ///     Gets the component that was discovered for this result, if any. If no component was found, this will be <see langword="null"/>.
     /// </summary>
     public IComponent? Component { get; }
 
@@ -33,11 +33,11 @@ public readonly struct SearchResult : IExecuteResult
     internal static SearchResult FromSuccess(IComponent component, int searchHeight)
         => new(component, searchHeight, null);
 
-    internal static SearchResult FromError(CommandGroup? module = null)
-        => new(module, 0, SearchException.SearchIncomplete());
+    internal static SearchResult FromError(CommandGroup group)
+        => new(group, 0, new CommandRouteIncompleteException(group));
 
     internal static SearchResult FromError()
-        => new(null, 0, SearchException.ComponentsNotFound());
+        => new(null, 0, new CommandNotFoundException());
 
     /// <inheritdoc />
     public override string ToString()

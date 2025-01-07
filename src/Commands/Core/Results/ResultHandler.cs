@@ -99,13 +99,13 @@ public abstract class ResultHandler
             case InvokeResult invoke:
                 return HandleInvocationFailed(caller, invoke, services, cancellationToken);
             case SearchResult search:
-                if (search.Component != null)
-                    return HandleSearchIncomplete(caller, search, services, cancellationToken);
+                if (search.Exception is CommandRouteIncompleteException)
+                    return HandleRouteIncomplete(caller, search, services, cancellationToken);
                 return HandleCommandNotFound(caller, search, services, cancellationToken);
-            case MatchResult match:
-                if (match.Arguments != null)
-                    return HandleConversionFailed(caller, match, services, cancellationToken);
-                return HandleArgumentMismatch(caller, match, services, cancellationToken);
+            case ParseResult parse:
+                if (parse.Exception is CommandOutOfRangeException)
+                    return HandleCommandOutOfRange(caller, parse, services, cancellationToken);
+                return HandleConversionFailed(caller, parse, services, cancellationToken);
             case ConditionResult condition:
                 return HandleConditionUnmet(caller, condition, services, cancellationToken);
             default:
@@ -190,7 +190,7 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleSearchIncomplete(
+    protected virtual ValueTask HandleRouteIncomplete(
         ICallerContext caller, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
@@ -202,8 +202,8 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleArgumentMismatch(
-        ICallerContext caller, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask HandleCommandOutOfRange(
+        ICallerContext caller, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
@@ -215,7 +215,7 @@ public abstract class ResultHandler
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
     protected virtual ValueTask HandleConversionFailed(
-        ICallerContext caller, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
+        ICallerContext caller, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>

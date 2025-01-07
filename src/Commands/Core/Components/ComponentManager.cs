@@ -131,7 +131,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
                 for (int i = 0; i < conversion.Length; i++)
                 {
                     if (!conversion[i].Success)
-                        result ??= MatchResult.FromError(command, conversion[i].Exception!);
+                        result ??= ParseResult.FromError(new PipelineParserException(command, conversion[i].Exception));
 
                     arguments[i] = conversion[i].Value;
                 }

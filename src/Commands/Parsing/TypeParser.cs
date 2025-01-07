@@ -41,22 +41,11 @@ public abstract class TypeParser : ITypeParser
         ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken);
 
     /// <inheritdoc />
-    public ParseResult Error(Exception exception)
-    {
-        Assert.NotNull(exception, nameof(exception));
-
-        if (exception is ParseException convertEx)
-            return ParseResult.FromError(convertEx);
-
-        return ParseResult.FromError(ParseException.ParseFailed(Type, exception));
-    }
-
-    /// <inheritdoc />
     public ParseResult Error(string error)
     {
         Assert.NotNullOrEmpty(error, nameof(error));
 
-        return ParseResult.FromError(new ParseException(error));
+        return ParseResult.FromError(new ParserException(this, error));
     }
 
     /// <inheritdoc />

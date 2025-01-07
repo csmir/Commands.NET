@@ -28,14 +28,6 @@ public readonly struct ConditionResult : IExecuteResult
     /// <summary>
     ///     Creates a new <see cref="ConditionResult"/> resembling a failed check operation.
     /// </summary>
-    /// <param name="reason">The reason why the check failed.</param>
-    /// <returns>A new result containing information about the failed operation.</returns>
-    public static ConditionResult FromError(string reason)
-        => new(new ConditionException(reason));
-
-    /// <summary>
-    ///     Creates a new <see cref="ConditionResult"/> resembling a failed check operation.
-    /// </summary>
     /// <param name="exception">The exception that contains the failure reason of this check.</param>
     /// <returns>A new result containing information about the failed operation.</returns>
     public static ConditionResult FromError(Exception exception)
