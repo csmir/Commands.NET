@@ -11,9 +11,9 @@
 		
 		<NoWarn>CA1822;IDE0130</NoWarn>
 
-		<AssemblyVersion>1.0</AssemblyVersion>
-		<PackageVersion>1.0.0</PackageVersion> <!--\-alpha.1-->
-		<FileVersion>1.0.0.0</FileVersion>
+		<AssemblyVersion>2.0</AssemblyVersion>
+		<PackageVersion>2.0.0-alpha.1</PackageVersion> <!--\-alpha.1-->
+		<FileVersion>2.0.0.0</FileVersion>
 
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
