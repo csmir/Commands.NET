@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     Represents an activator that can create an instance of a constructible type, being a parameter marked with <see cref="DeconstructAttribute"/>. This class cannot be inherited.

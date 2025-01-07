@@ -18,7 +18,7 @@ public interface IComponent : ICommandSegment, IEquatable<IComponent>
     public string[] Names { get; }
 
     /// <summary>
-    ///     Gets all evaluations that this component should do during the execution process, determined by a set of defined <see cref="ICondition"/>'s pointing at the component.
+    ///     Gets all evaluations that this component should do during the execution process, determined by a set of defined <see cref="IExecuteCondition"/>'s pointing at the component.
     /// </summary>
     /// <remarks>
     ///     When this property is called by a child component, this property will inherit all evaluations from the component's <see cref="Parent"/> component(s).

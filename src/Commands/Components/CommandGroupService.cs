@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     Reveals information about a service parameter.

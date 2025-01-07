@@ -1,8 +1,4 @@
-﻿
-global using System.Diagnostics;
-global using System.Diagnostics.CodeAnalysis;
-
-using Commands.Builders;
+﻿using Commands.Builders;
 
 namespace Commands;
 
@@ -174,7 +170,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     /// <returns>A newly created instance of <see cref="ComponentManager"/> which is able to discover and execute components based on provided input.</returns>
     public static ComponentManager Create(params IComponent[] components)
     {
-        var basicResultHandler = new DelegateResultHandler(async (ctx, res, serv) =>
+        var basicResultHandler = new DelegateResultHandler<ICallerContext>(async (ctx, res, serv) =>
         {
             if (ctx is AsyncCallerContext asyncCtx)
                 await asyncCtx.Respond(res);

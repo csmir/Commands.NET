@@ -13,7 +13,7 @@ public sealed class CommandGroupBuilder : IComponentBuilder
     public ICollection<string> Names { get; set; } = [];
 
     /// <inheritdoc />
-    public ICollection<IConditionBuilder> Conditions { get; set; } = [];
+    public ICollection<ExecuteCondition> Conditions { get; set; } = [];
 
     /// <summary>
     ///     Gets or sets a collection of components that are added to the group. This collection is used to build the group into a <see cref="CommandGroup"/> object.
@@ -194,76 +194,41 @@ public sealed class CommandGroupBuilder : IComponentBuilder
     }
 
     /// <summary>
-    ///     Replaces the current collection of conditions with the specified conditions. Conditions are used to determine if the group and subsequent commands can be executed.
+    ///     Replaces the current collection of conditions with the specified conditions.
     /// </summary>
     /// <param name="conditions">The conditions to add to the command execution flow.</param>
     /// <returns>The same <see cref="CommandGroupBuilder"/> for call-chaining.</returns>
-    public CommandGroupBuilder WithConditions(params IConditionBuilder[] conditions)
+    public CommandGroupBuilder WithConditions(params ExecuteCondition[] conditions)
     {
         Conditions = [.. conditions];
         return this;
     }
 
     /// <summary>
-    ///     Adds a condition to the builder. Conditions are used to determine if the group and subsequent commands can be executed.
+    ///     Adds a condition to the group.
     /// </summary>
     /// <param name="condition">The condition to add to the command execution flow.</param>
     /// <returns>The same <see cref="CommandGroupBuilder"/> for call-chaining.</returns>
-    public CommandGroupBuilder AddCondition(IConditionBuilder condition)
+    public CommandGroupBuilder AddCondition(ExecuteCondition condition)
     {
+        Assert.NotNull(condition, nameof(condition));
+
         Conditions.Add(condition);
         return this;
     }
 
     /// <summary>
-    ///     Adds a condition to the builder, which must succeed alongside other conditions with the same trigger created by this overload. Conditions are used to determine if the group and subsequent commands can be executed.
+    ///     Adds a condition to the group.
     /// </summary>
-    /// <remarks>
-    ///     This overload creates a new instance of the specified condition type and configures it using the provided <paramref name="configureCondition"/> delegate.
-    /// </remarks>
-    /// <param name="configureCondition">A configuration delegate that should configure the condition builder.</param>
-    /// <returns>The same <see cref="CommandGroupBuilder"/> for call-chaining.</returns>
-    public CommandGroupBuilder AddCondition(Action<ConditionBuilder<ANDEvaluator, ICallerContext>> configureCondition)
-        => AddCondition<ANDEvaluator, ICallerContext>(configureCondition);
-
-    /// <summary>
-    ///     Adds a condition to the builder. Conditions are used to determine if the group and subsequent commands can be executed.
-    /// </summary>
-    /// <remarks>
-    ///     This overload creates a new instance of the specified condition type and configures it using the provided <paramref name="configureCondition"/> delegate.
-    /// </remarks>
     /// <typeparam name="TEval">The evaluator type which should evaluate the condition alongside others of the same kind.</typeparam>
-    /// <param name="configureCondition">A configuration delegate that should configure the condition builder.</param>
+    /// <param name="executionHandler">A delegate that is responsible for executing the check.</param>
     /// <returns>The same <see cref="CommandGroupBuilder"/> for call-chaining.</returns>
-    public CommandGroupBuilder AddCondition<TEval>(Action<ConditionBuilder<TEval, ICallerContext>> configureCondition)
+    public CommandGroupBuilder AddCondition<TEval>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> executionHandler)
         where TEval : ConditionEvaluator, new()
     {
-        var condition = new ConditionBuilder<TEval, ICallerContext>();
+        Assert.NotNull(executionHandler, nameof(executionHandler));
 
-        configureCondition(condition);
-
-        return AddCondition(condition);
-    }
-
-    /// <summary>
-    ///     Adds a condition bound to the specified <typeparamref name="TContext"/> to the builder. Conditions are used to determine if the group and subsequent commands can be executed.
-    /// </summary>
-    /// <remarks>
-    ///     This overload creates a new instance of the specified condition type and configures it using the provided <paramref name="configureCondition"/> delegate.
-    /// </remarks>
-    /// <typeparam name="TEval">The evaluator type which should evaluate the condition alongside others of the same kind.</typeparam>
-    /// <typeparam name="TContext">The context type which this condition must receive in order to succeed.</typeparam>
-    /// <param name="configureCondition">A configuration delegate that should configure the condition builder.</param>
-    /// <returns>The same <see cref="CommandGroupBuilder"/> for call-chaining.</returns>
-    public CommandGroupBuilder AddCondition<TEval, TContext>(Action<ConditionBuilder<TEval, TContext>> configureCondition)
-        where TEval : ConditionEvaluator, new()
-        where TContext : ICallerContext
-    {
-        var condition = new ConditionBuilder<TEval, TContext>();
-
-        configureCondition(condition);
-
-        return AddCondition(condition);
+        return AddCondition(new DelegateExecuteCondition<TEval>(executionHandler));
     }
 
     /// <summary>
@@ -276,7 +241,7 @@ public sealed class CommandGroupBuilder : IComponentBuilder
     {
         Assert.Names(Names, configuration, true);
 
-        var groupInfo = new CommandGroup(parent, [.. Conditions.Select(x => x.Build())], [.. Names], configuration);
+        var groupInfo = new CommandGroup(parent, [.. Conditions], [.. Names], configuration);
 
         foreach (var component in Components)
         {

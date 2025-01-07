@@ -1,6 +1,4 @@
-﻿using System.Collections;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <inheritdoc cref="IComponentCollection"/>
 [DebuggerDisplay("Count = {Count}")]
@@ -13,6 +11,10 @@ public abstract class ComponentCollection : IComponentCollection
     /// <inheritdoc />
     public int Count
         => _components.Count;
+
+    /// <inheritdoc />
+    public int Depth
+        => this is CommandGroup group ? group.Position : 0;
 
     /// <inheritdoc />
     public bool IsReadOnly { get; }
@@ -115,7 +117,7 @@ public abstract class ComponentCollection : IComponentCollection
         {
             Assert.NotNull(component, nameof(component));
 
-            var yieldedResult = false;
+            var additionResult = false;
 
             if (!component.IsSearchable && component is CommandGroup componentIsGroup)
             {
@@ -124,24 +126,24 @@ public abstract class ComponentCollection : IComponentCollection
                 if (this is /* a */ ComponentManager) // Ingenius syntax, actually.
                 {
                     // Add the contents of the group to the collection, instead of the group itself.
-                    var anyChanged = AddRange([.. componentIsGroup]);
+                    var innerChanges = AddRange([.. componentIsGroup]);
 
                     // Consider the addition successful if the inner operation returned more than 0 changes.
-                    yieldedResult = anyChanged > 0;
+                    additionResult = innerChanges > 0;
                 }
                 else
                     throw new InvalidOperationException($"Nameless {nameof(CommandGroup)} instances can only be added to a {nameof(ComponentManager)}.");
             }
             else
             {
-                yieldedResult = copy.Add(component);
+                additionResult = copy.Add(component);
 
                 // When addition is successful, and this collection is a CommandGroup, bind the component to the group.
-                if (this is CommandGroup collectionIsGroup && yieldedResult)
+                if (this is CommandGroup collectionIsGroup && additionResult)
                     component.Bind(collectionIsGroup);
             }
 
-            hasChanged += yieldedResult ? 1 : 0;
+            hasChanged += additionResult ? 1 : 0;
         }
 
         if (hasChanged > 0)

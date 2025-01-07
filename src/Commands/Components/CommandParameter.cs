@@ -1,10 +1,8 @@
-﻿using System.Reflection;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <inheritdoc />
 [DebuggerDisplay("{ToString()}")]
-public sealed class CommandParameter : ICommandParameter, ICommandSegment
+public sealed class CommandParameter : ICommandParameter
 {
     /// <inheritdoc />
     public string Name { get; }
@@ -28,7 +26,7 @@ public sealed class CommandParameter : ICommandParameter, ICommandSegment
     public Attribute[] Attributes { get; }
 
     /// <inheritdoc />
-    public TypeParser Parser { get; }
+    public ITypeParser Parser { get; }
 
     /// <inheritdoc />
     public int Position { get; }
@@ -68,7 +66,9 @@ public sealed class CommandParameter : ICommandParameter, ICommandSegment
         else
             IsRemainder = false;
 
-        Parser = configuration.GetParser(Type);
+        // Assign the parser defined on the parameter if it exists, otherwise use the one defined in the configuration.
+        Parser = attributes.FirstOrDefault<ITypeParser>() ?? configuration.GetParser(Type);
+
         Attributes = attributes.ToArray();
 
         if (!string.IsNullOrEmpty(name))

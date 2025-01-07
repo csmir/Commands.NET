@@ -16,7 +16,7 @@ public sealed class ComponentConfigurationBuilder : IConfigurationBuilder
     {
         Assert.NotNull(parseAction, nameof(parseAction));
 
-        var parser = new DelegateParser<TConvertable>(parseAction);
+        var parser = new DelegateTypeParser<TConvertable>(parseAction);
 
         Parsers[parser.Type] = parser;
 

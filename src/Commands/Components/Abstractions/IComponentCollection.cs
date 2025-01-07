@@ -1,10 +1,18 @@
 ﻿namespace Commands;
 
 /// <summary>
-///     Represents a concurrent collection of components that can be searched and filtered based on their type.
+///     Represents a concurrent, recursive collection of components that can be searched and filtered based on their type.
 /// </summary>
 public interface IComponentCollection : ICollection<IComponent>, IEnumerable<IComponent>
 {
+    /// <summary>
+    ///     Gets the depth of the current collection, being how deeply nested it is in the component manager.
+    /// </summary>
+    /// <remarks>
+    ///     The depth of the root collection, being the <see cref="IExecutionProvider"/> implementing this collection, is 0.
+    /// </remarks>
+    public int Depth { get; }
+
     /// <summary>
     ///     Searches recursively through this and all subcollections for components that match the provided arguments.
     /// </summary>

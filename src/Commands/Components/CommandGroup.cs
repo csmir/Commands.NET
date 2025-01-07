@@ -7,7 +7,7 @@ namespace Commands;
 ///     Reveals information about a command module, hosting zero-or-more commands.
 /// </summary>
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
-public sealed class CommandGroup : ComponentCollection, IComponent, ICommandSegment
+public sealed class CommandGroup : ComponentCollection, IComponent
 {
     /// <inheritdoc />
     public CommandGroup? Parent { get; private set; }
@@ -45,10 +45,10 @@ public sealed class CommandGroup : ComponentCollection, IComponent, ICommandSegm
     public Type? Type { get; }
 
     /// <summary>
-    ///     Gets the depth of the module, being how deeply nested it is in the component manager.
+    ///     Gets the position of the module, being how deeply nested it is in the component manager.
     /// </summary>
-    public int Depth
-        => Parent?.Depth + 1 ?? 1;
+    public int Position
+        => Parent?.Position + 1 ?? 1;
 
     internal CommandGroup(
 #if NET8_0_OR_GREATER
@@ -63,7 +63,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent, ICommandSegm
         var attributes = type.GetAttributes(true);
 
         Attributes = attributes.ToArray();
-        Evaluators = ConditionEvaluator.CreateEvaluators(attributes.OfType<ICondition>()).Concat(parent?.Evaluators ?? []).ToArray();
+        Evaluators = ConditionEvaluator.CreateEvaluators(attributes.OfType<IExecuteCondition>()).Concat(parent?.Evaluators ?? []).ToArray();
 
         Names = names;
 
@@ -73,7 +73,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent, ICommandSegm
     }
 
     internal CommandGroup(
-        CommandGroup? parent, ICondition[] conditions, string[] names, ComponentConfiguration configuration)
+        CommandGroup? parent, IExecuteCondition[] conditions, string[] names, ComponentConfiguration configuration)
         : base(configuration.GetProperty("MakeModulesReadonly", false))
     {
         Parent = parent;
@@ -149,7 +149,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent, ICommandSegm
             SearchResult.FromError(this)
         };
 
-        var index = Depth;
+        var index = Position;
 
         foreach (var component in this)
         {

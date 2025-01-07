@@ -29,7 +29,7 @@ public interface ICommandParameter : ICommandSegment, IParameter
     /// <remarks>
     ///     Will be <see langword="null"/> if this parameter is <see cref="ConstructibleParameter"/>.
     /// </remarks>
-    public TypeParser? Parser { get; }
+    public ITypeParser? Parser { get; }
 
     /// <summary>
     ///     Attempts to convert the provided value to the target type of this parameter.

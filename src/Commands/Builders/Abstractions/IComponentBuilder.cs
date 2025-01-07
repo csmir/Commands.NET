@@ -13,7 +13,7 @@ public interface IComponentBuilder
     /// <summary>
     ///     Gets or sets the conditions necessary for the component to execute.
     /// </summary>
-    public ICollection<IConditionBuilder> Conditions { get; set; }
+    public ICollection<ExecuteCondition> Conditions { get; set; }
 
     /// <summary>
     ///     Builds a searchable component from the provided configuration.

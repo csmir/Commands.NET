@@ -44,7 +44,7 @@ public sealed class CommandOptions
     ///             Services, specifically those created as singleton or scoped to anything but a single command.
     ///         </item>
     ///         <item>
-    ///             Implementations of <see cref="TypeParser"/>, <see cref="TypeParser{T}"/>, <see cref="ConditionAttribute{T}"/> or <see cref="ConditionAttribute{TEval, TContext}"/>.
+    ///             Implementations of <see cref="TypeParser"/>, <see cref="TypeParser{T}"/>, <see cref="ExecuteConditionAttribute{T}"/> or <see cref="ExecuteConditionAttribute{TEval}"/>.
     ///         </item>
     ///         <item>
     ///             Mutable collections and objects with shared access. <see cref="ComponentCollection"/> implementations are concurrently accessible, not needing additional effort to make thread-safe.
@@ -57,7 +57,7 @@ public sealed class CommandOptions
     public bool AsynchronousExecution { get; set; } = false;
 
     /// <summary>
-    ///     Gets or sets whether the defined <see cref="ConditionAttribute{T}"/>'s for this execution should be ran.
+    ///     Gets or sets whether the defined <see cref="ExecuteConditionAttribute{T}"/>'s for this execution should be ran.
     /// </summary>
     /// <remarks>
     ///     Default: <see langword="false"/>

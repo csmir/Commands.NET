@@ -1,6 +1,6 @@
 ﻿namespace Commands.Samples;
 
-public sealed class RequireContextAttribute<T> : ConditionAttribute<ANDEvaluator>
+public sealed class RequireContextAttribute<T> : ExecuteConditionAttribute<ANDEvaluator>
     where T : ICallerContext
 {
     public override ValueTask<ConditionResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)

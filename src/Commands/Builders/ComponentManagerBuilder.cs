@@ -116,7 +116,7 @@ public sealed class ComponentManagerBuilder : IManagerBuilder
     public IManagerBuilder AddResultHandler(Action<ICallerContext, IExecuteResult, IServiceProvider> resultAction)
     {
         Assert.NotNull(resultAction, nameof(resultAction));
-        Handlers.Add(new DelegateResultHandler(resultAction));
+        Handlers.Add(new DelegateResultHandler<ICallerContext>(resultAction));
         return this;
     }
 
@@ -125,7 +125,7 @@ public sealed class ComponentManagerBuilder : IManagerBuilder
     {
         Assert.NotNull(resultAction, nameof(resultAction));
 
-        Handlers.Add(new DelegateResultHandler(resultAction));
+        Handlers.Add(new DelegateResultHandler<ICallerContext>(resultAction));
 
         return this;
     }

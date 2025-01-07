@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     An activator which initializes a target using its preferred initialization target.

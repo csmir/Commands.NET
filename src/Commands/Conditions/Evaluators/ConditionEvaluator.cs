@@ -8,7 +8,7 @@ public abstract class ConditionEvaluator
     /// <summary>
     ///     Gets or sets the conditions that are being evaluated.
     /// </summary>
-    public ICondition[] Conditions { get; set; } = [];
+    public IExecuteCondition[] Conditions { get; set; } = [];
 
     /// <summary>
     ///     Determines if the contained set of conditions is met.
@@ -21,13 +21,13 @@ public abstract class ConditionEvaluator
     public abstract ValueTask<ConditionResult> Evaluate(
         ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken);
 
-    internal static IEnumerable<ConditionEvaluator> CreateEvaluators(IEnumerable<ICondition> conditions)
+    internal static IEnumerable<ConditionEvaluator> CreateEvaluators(IEnumerable<IExecuteCondition> conditions)
     {
         // Group conditions by their evaluator implementation.
-        foreach (var conditionTypeGroup in conditions.GroupBy(x => x.GetEvalType()))
+        foreach (var conditionTypeGroup in conditions.GroupBy(x => x.EvaluatorType))
         {
             // We would prefer to take the group Key as the evaluator type, but thanks to DynamicallyAccessedMembers not being present on IGrouping.Key, we cannot.
-            var instance = (ConditionEvaluator)Activator.CreateInstance(conditionTypeGroup.First().GetEvalType())!;
+            var instance = (ConditionEvaluator)Activator.CreateInstance(conditionTypeGroup.First().EvaluatorType)!;
 
             instance.Conditions = [.. conditionTypeGroup];
 

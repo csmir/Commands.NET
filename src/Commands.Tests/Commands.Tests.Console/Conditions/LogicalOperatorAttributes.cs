@@ -1,6 +1,6 @@
 ﻿namespace Commands.Tests;
 
-public class ANDAttribute(bool pass) : ConditionAttribute<ANDEvaluator>
+public class ANDAttribute(bool pass) : ExecuteConditionAttribute<ANDEvaluator>
 {
     public override ValueTask<ConditionResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
     {
@@ -11,7 +11,7 @@ public class ANDAttribute(bool pass) : ConditionAttribute<ANDEvaluator>
     }
 }
 
-public class OR1Attribute(bool pass) : ConditionAttribute<OREvaluator>
+public class OR1Attribute(bool pass) : ExecuteConditionAttribute<OREvaluator>
 {
     public override ValueTask<ConditionResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
     {
@@ -22,7 +22,7 @@ public class OR1Attribute(bool pass) : ConditionAttribute<OREvaluator>
     }
 }
 
-public class OR2Attribute(bool pass) : ConditionAttribute<OREvaluator>
+public class OR2Attribute(bool pass) : ExecuteConditionAttribute<OREvaluator>
 {
     public override ValueTask<ConditionResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
     {

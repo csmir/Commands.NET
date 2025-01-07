@@ -15,7 +15,7 @@ public sealed class CommandBuilder : IComponentBuilder
     public ICollection<string> Names { get; set; } = [];
 
     /// <inheritdoc />
-    public ICollection<IConditionBuilder> Conditions { get; set; } = [];
+    public ICollection<ExecuteCondition> Conditions { get; set; } = [];
 
     /// <summary>
     ///     Gets or sets the delegate that is executed when the command is invoked.
@@ -104,22 +104,22 @@ public sealed class CommandBuilder : IComponentBuilder
     }
 
     /// <summary>
-    ///     Replaces the current collection of conditions with the specified conditions. Conditions are used to determine if the command can be executed.
+    ///     Replaces the current collection of conditions with the specified conditions.
     /// </summary>
     /// <param name="conditions">The conditions to add to the command execution flow.</param>
     /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
-    public CommandBuilder WithConditions(params IConditionBuilder[] conditions)
+    public CommandBuilder WithConditions(params ExecuteCondition[] conditions)
     {
         Conditions = [.. conditions];
         return this;
     }
 
     /// <summary>
-    ///     Adds a condition to the command. Conditions are used to determine if the command can be executed.
+    ///     Adds a condition to the command.
     /// </summary>
     /// <param name="condition">The condition to add to the command execution flow.</param>
     /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
-    public CommandBuilder AddCondition(IConditionBuilder condition)
+    public CommandBuilder AddCondition(ExecuteCondition condition)
     {
         Assert.NotNull(condition, nameof(condition));
 
@@ -128,47 +128,17 @@ public sealed class CommandBuilder : IComponentBuilder
     }
 
     /// <summary>
-    ///     Adds a condition to the command. Conditions are used to determine if the command can be executed.
+    ///     Adds a condition to the command.
     /// </summary>
-    /// <remarks>
-    ///     This overload creates a new instance of the specified condition type and configures it using the provided <paramref name="configureCondition"/> delegate.
-    /// </remarks>
     /// <typeparam name="TEval">The evaluator type which should evaluate the condition alongside others of the same kind.</typeparam>
-    /// <param name="configureCondition">A configuration delegate that should configure the condition builder.</param>
+    /// <param name="executionHandler">A delegate that is responsible for executing the check.</param>
     /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
-    public CommandBuilder AddCondition<TEval>(Action<ConditionBuilder<TEval, ICallerContext>> configureCondition)
+    public CommandBuilder AddCondition<TEval>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> executionHandler)
         where TEval : ConditionEvaluator, new()
     {
-        Assert.NotNull(configureCondition, nameof(configureCondition));
+        Assert.NotNull(executionHandler, nameof(executionHandler));
 
-        var condition = new ConditionBuilder<TEval, ICallerContext>();
-
-        configureCondition(condition);
-
-        return AddCondition(condition);
-    }
-
-    /// <summary>
-    ///     Adds a condition bound to the specified <typeparamref name="TContext"/> to the command. Conditions are used to determine if the command can be executed.
-    /// </summary>
-    /// <remarks>
-    ///     This overload creates a new instance of the specified condition type and configures it using the provided <paramref name="configureCondition"/> delegate.
-    /// </remarks>
-    /// <typeparam name="TEval">The evaluator type which should evaluate the condition alongside others of the same kind.</typeparam>
-    /// <typeparam name="TContext">The context type which this condition must receive in order to succeed.</typeparam>
-    /// <param name="configureCondition">A configuration delegate that should configure the condition builder.</param>
-    /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
-    public CommandBuilder AddCondition<TEval, TContext>(Action<ConditionBuilder<TEval, TContext>> configureCondition)
-        where TEval : ConditionEvaluator, new()
-        where TContext : ICallerContext
-    {
-        Assert.NotNull(configureCondition, nameof(configureCondition));
-
-        var condition = new ConditionBuilder<TEval, TContext>();
-
-        configureCondition(condition);
-
-        return AddCondition(condition);
+        return AddCondition(new DelegateExecuteCondition<TEval>(executionHandler));
     }
 
     /// <summary>
@@ -184,7 +154,7 @@ public sealed class CommandBuilder : IComponentBuilder
 
         var hasContext = Handler.Method.HasContext();
 
-        return new Command(parent, new CommandDelegateActivator(Handler.Method, Handler.Target, hasContext), [.. Conditions.Select(x => x.Build())], [.. Names], hasContext, configuration);
+        return new Command(parent, new CommandDelegateActivator(Handler.Method, Handler.Target, hasContext), [.. Conditions], [.. Names], hasContext, configuration);
     }
 
     /// <inheritdoc />

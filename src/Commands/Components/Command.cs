@@ -7,7 +7,7 @@ namespace Commands;
 ///     Contains information about a command that can be executed using an <see cref="IExecutionProvider"/>.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public sealed class Command : IComponent, ICommandSegment, IParameterCollection
+public sealed class Command : IComponent, IParameterCollection
 {
     /// <inheritdoc />
     public CommandGroup? Parent { get; private set; }
@@ -73,7 +73,7 @@ public sealed class Command : IComponent, ICommandSegment, IParameterCollection
     }
 
     internal Command(
-        CommandGroup? parent, IActivator invoker, ICondition[] conditions, string[] names, bool hasContext, ComponentConfiguration configuration)
+        CommandGroup? parent, IActivator invoker, IExecuteCondition[] conditions, string[] names, bool hasContext, ComponentConfiguration configuration)
     {
         var parameters = invoker.Target.BuildArguments(hasContext, configuration);
 
@@ -100,7 +100,7 @@ public sealed class Command : IComponent, ICommandSegment, IParameterCollection
         // 2: Attribute
         // 3: Parent
         Evaluators = ConditionEvaluator.CreateEvaluators(conditions)
-            .Concat(ConditionEvaluator.CreateEvaluators(attributes.OfType<ICondition>()))
+            .Concat(ConditionEvaluator.CreateEvaluators(attributes.OfType<IExecuteCondition>()))
             .Concat(parent?.Evaluators ?? [])
             .ToArray();
 
@@ -251,11 +251,11 @@ public sealed class Command : IComponent, ICommandSegment, IParameterCollection
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
 
-    /// <inheritdoc cref="Create(Delegate, string[], ICondition[], ComponentConfiguration?)"/>
+    /// <inheritdoc cref="Create(Delegate, string[], IExecuteCondition[], ComponentConfiguration?)"/>
     public static Command Create(Delegate executionDelegate, params string[] names)
         => Create(executionDelegate, names, []);
 
-    /// <inheritdoc cref="Create(Delegate, string[], ICondition[], ComponentConfiguration?)"/>
+    /// <inheritdoc cref="Create(Delegate, string[], IExecuteCondition[], ComponentConfiguration?)"/>
     public static Command Create(Delegate executionDelegate, string[] names, ComponentConfiguration? configuration = null)
         => Create(executionDelegate, names, [], configuration);
 
@@ -267,7 +267,7 @@ public sealed class Command : IComponent, ICommandSegment, IParameterCollection
     /// <param name="conditions">A set of conditions that should be evaluated before the command is executed.</param>
     /// <param name="configuration">The configuration that should be used to configure the built component.</param>
     /// <returns>A new instance of <see cref="Command"/> being an action that can be formed based on provided input.</returns>
-    public static Command Create(Delegate executionDelegate, string[] names, ICondition[] conditions, ComponentConfiguration? configuration = null)
+    public static Command Create(Delegate executionDelegate, string[] names, IExecuteCondition[] conditions, ComponentConfiguration? configuration = null)
     {
         Assert.NotNull(executionDelegate, nameof(executionDelegate));
 

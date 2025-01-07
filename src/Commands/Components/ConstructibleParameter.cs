@@ -1,12 +1,10 @@
-﻿using System.Reflection;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     Reveals information about a type with a defined complex constructor.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public class ConstructibleParameter : ICommandParameter, ICommandSegment, IParameterCollection
+public class ConstructibleParameter : ICommandParameter, IParameterCollection
 {
     /// <inheritdoc />
     public IActivator Activator { get; }
@@ -39,7 +37,7 @@ public class ConstructibleParameter : ICommandParameter, ICommandSegment, IParam
     public int MaxLength { get; }
 
     /// <inheritdoc />
-    public TypeParser? Parser { get; } = null;
+    public ITypeParser? Parser { get; } = null;
 
     /// <inheritdoc />
     public int Position { get; }

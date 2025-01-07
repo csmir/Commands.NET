@@ -21,11 +21,6 @@ public class FeatureRules
 
         CommandGroup.CreateBuilder();
 
-        // Condition:
-        new ConditionBuilder<ANDEvaluator, ICallerContext>();
-
-        CommandCondition.CreateBuilder<ANDEvaluator, ICallerContext>();
-
         // Configuration:
         new ComponentConfigurationBuilder();
 
@@ -59,11 +54,6 @@ public class FeatureRules
         CommandGroup.Create(["name"], null);
 
         CommandGroup.Create(typeof(Program));
-
-        // Conditions:
-        CommandCondition.Create<ANDEvaluator>((ctx, cmd, services) => ConditionResult.FromSuccess());
-
-        CommandCondition.Create<ANDEvaluator, ICallerContext>((ctx, cmd, services) => ConditionResult.FromSuccess());
 
         // Configuration:
         ComponentConfiguration.Create();

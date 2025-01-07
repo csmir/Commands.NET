@@ -3,7 +3,7 @@
 public class MutationModule : CommandModule
 {
     [Name("add-command")]
-    public Task MutateCurrentModule(string commandName, [Remainder] Delegate executionAction)
+    public Task MutateCurrentModule(string commandName, [Remainder, CSharpScriptParser] Delegate executionAction)
     {
         GetParent().Add(Command.Create(executionAction, commandName));
 
@@ -19,7 +19,7 @@ public class MutationModule : CommandModule
     }
 
     [Name("add-command-to-module")]
-    public Task MutateModule(string moduleName, string commandName, [Remainder] Delegate executionAction)
+    public Task MutateModule(string moduleName, string commandName, [Remainder, CSharpScriptParser] Delegate executionAction)
     {
         // From the parent, we can find the target module, being a CommandGroup.
         (GetParent().FirstOrDefault(x => x.Names.Contains(moduleName) && x is CommandGroup) as CommandGroup)!

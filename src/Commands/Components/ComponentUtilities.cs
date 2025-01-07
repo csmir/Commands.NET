@@ -1,11 +1,8 @@
-﻿using System.Reflection;
-
-namespace Commands;
+﻿namespace Commands;
 
 internal static class ComponentUtilities
 {
     internal static T? FirstOrDefault<T>(this IEnumerable<Attribute> attributes)
-        where T : Attribute
         => attributes.OfType<T>().FirstOrDefault();
 
     internal static bool Contains<T>(this IEnumerable<Attribute> attributes, bool allowMultipleMatches)
