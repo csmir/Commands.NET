@@ -29,13 +29,13 @@ All about handling command results and treating custom return types.
 
 ### 🛑 [[Using Execution Conditions|Conditions]]
 
-> `using Commands;`
+> `using Commands.Conditions;`
 
 Define your own checks to ensure commands will only run and succeed when they are allowed to.
 
 ### 📖 [[Type Parsing|Type-Parsing]]
 
-> `using Commands;`
+> `using Commands.Parsing;`
 
 Manage and create custom parsers for changing raw input into types.
 
@@ -44,8 +44,3 @@ Manage and create custom parsers for changing raw input into types.
 > `using Commands.Builders;`
 
 Understand the fluent builder API's and how they can be used to empower the end-user with customization.
-
-> [!NOTE]
-> Commands.NET is contained largely in a single namespace: `Commands`. 
-> Separate namespaces only exist when a feature is not strictly related to the core set of features. 
-> In future versions, these namespaces may be migrated to separate packages, depending on demand.

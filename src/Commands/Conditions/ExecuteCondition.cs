@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace Commands;
+﻿namespace Commands.Conditions;
 
 /// <summary>
 ///     Represents a delegate-based command condition.

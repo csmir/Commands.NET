@@ -1,4 +1,4 @@
-﻿namespace Commands;
+﻿namespace Commands.Conditions;
 
 /// <summary>
 ///     An attribute that contains an evaluation method called when marked on top of a command signature.

@@ -1,4 +1,4 @@
-﻿namespace Commands;
+﻿namespace Commands.Conditions;
 
 /// <summary>
 ///     A condition that is evaluated within the command execution pipeline, determining if a command can succeed or not.

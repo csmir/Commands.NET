@@ -10,7 +10,7 @@ All preconditions inherit `ExecuteConditionAttribute<TEvaluator>`, which in turn
 To start creating your own condition, you have to inherit `ExecuteConditionAttribute<TEvaluator>` on a class:
 
 ```cs
-using Commands;
+using Commands.Conditions;
 
 namespace Commands.Samples;
 
@@ -28,7 +28,7 @@ First of all, the restriction must be compared against.
 To define this, we will implement a constructor parameter, automatically resolved as an attribute parameter by the IDE or code editor:
 
 ```cs
-using Commands;
+using Commands.Conditions;
 
 namespace Commands.Samples;
 

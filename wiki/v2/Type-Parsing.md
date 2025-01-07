@@ -31,7 +31,7 @@ All global parsers inherit `TypeParser<T>` or `TypeParser`. To start creating yo
 > For the simplicity of this documentation, only the generic type is introduced here.
 
 ```cs
-using Commands;
+using Commands.Parsing;
 
 namespace Commands.Samples;
 

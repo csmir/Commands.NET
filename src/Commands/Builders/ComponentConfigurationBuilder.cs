@@ -1,4 +1,6 @@
-﻿namespace Commands.Builders;
+﻿using Commands.Parsing;
+
+namespace Commands.Builders;
 
 /// <summary>
 ///     A builder model for a component configuration. This class cannot be inherited.

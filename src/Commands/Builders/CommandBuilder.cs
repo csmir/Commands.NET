@@ -1,4 +1,6 @@
-﻿namespace Commands.Builders;
+﻿using Commands.Conditions;
+
+namespace Commands.Builders;
 
 /// <summary>
 ///     A builder model that represents the construction of a delegate based command. This class cannot be inherited.

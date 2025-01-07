@@ -1,4 +1,6 @@
-﻿namespace Commands.Tests;
+﻿using Commands.Conditions;
+
+namespace Commands.Tests;
 
 public class ANDAttribute(bool pass) : ExecuteConditionAttribute<ANDEvaluator>
 {

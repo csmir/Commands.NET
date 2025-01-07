@@ -26,8 +26,9 @@ public void Command(string arg1, int arg2, bool arg3)
 }
 ```
 
+> [!IMPORTANT] 
 > The library will automatically convert the input arguments to the parameter types, if possible. 
-If the conversion fails, the command will not be executed and return a `MatchResult` with an `Exception`.
+> If the conversion fails, the command will not be executed and return a `MatchResult` with an `Exception`.
 
 ## Nullable Parameters
 

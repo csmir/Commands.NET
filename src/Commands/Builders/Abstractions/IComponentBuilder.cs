@@ -1,4 +1,6 @@
-﻿namespace Commands.Builders;
+﻿using Commands.Conditions;
+
+namespace Commands.Builders;
 
 /// <summary>
 ///     A builder model for a searchable component.

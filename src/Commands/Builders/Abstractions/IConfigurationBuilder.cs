@@ -1,4 +1,6 @@
-﻿namespace Commands.Builders;
+﻿using Commands.Parsing;
+
+namespace Commands.Builders;
 
 /// <summary>
 ///     Represents a builder that creates read-only configuration models for creating executable components.

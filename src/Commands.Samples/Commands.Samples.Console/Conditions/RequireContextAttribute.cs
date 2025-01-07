@@ -1,4 +1,6 @@
-﻿namespace Commands.Samples;
+﻿using Commands.Conditions;
+
+namespace Commands.Samples;
 
 public sealed class RequireContextAttribute<T> : ExecuteConditionAttribute<ANDEvaluator>
     where T : ICallerContext

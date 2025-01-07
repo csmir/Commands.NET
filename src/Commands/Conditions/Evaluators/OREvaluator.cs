@@ -1,4 +1,4 @@
-﻿namespace Commands;
+﻿namespace Commands.Conditions;
 
 /// <summary>
 ///     An evaluator that contains a set of conditions based on OR operating logic, returning succesfully if any of the conditions are met. This class cannot be inherited.
