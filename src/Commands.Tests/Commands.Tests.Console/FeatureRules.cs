@@ -8,33 +8,33 @@ public class FeatureRules
     /// <summary>
     ///     Rule: Every builder type must have a static accessor and a parameterless constructor.
     /// </summary>
-    [SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "Tests")]
+    [SuppressMessage("Performance", "CA1806:Do not ignore method results", Justification = "Tests")]
     public static void Builders()
     {
         // Command:
-        var commandBuilder = new CommandBuilder();
+        new CommandBuilder();
 
-        var staticCommandBuilder = Command.CreateBuilder();
+        Command.CreateBuilder();
 
         // Group:
-        var commandGroupBuilder = new CommandGroupBuilder();
+        new CommandGroupBuilder();
 
-        var staticCommandGroupBuilder = CommandGroup.CreateBuilder();
+        CommandGroup.CreateBuilder();
 
         // Condition:
-        var conditionBuilder = new ConditionBuilder<ANDEvaluator, ICallerContext>();
+        new ConditionBuilder<ANDEvaluator, ICallerContext>();
 
-        var staticConditionBuilder = CommandCondition.CreateBuilder<ANDEvaluator, ICallerContext>();
+        CommandCondition.CreateBuilder<ANDEvaluator, ICallerContext>();
 
         // Configuration:
-        var configurationBuilder = new ComponentConfigurationBuilder();
+        new ComponentConfigurationBuilder();
 
-        var staticConfigurationBuilder = ComponentConfiguration.CreateBuilder();
+        ComponentConfiguration.CreateBuilder();
 
         // Manager:
-        var managerBuilder = new ComponentManagerBuilder();
+        new ComponentManagerBuilder();
 
-        var staticManagerBuilder = ComponentManager.CreateBuilder();
+        ComponentManager.CreateBuilder();
     }
 
     /// <summary>
@@ -43,40 +43,40 @@ public class FeatureRules
     public static void Immediate()
     {
         // Commands:
-        var command = Command.Create(() => { }, "name");
+        Command.Create(() => { }, "name");
 
-        var commandWithNames = Command.Create(() => { }, "name", "anothername");
+        Command.Create(() => { }, "name", "anothername");
 
-        var commandWithConfiguration = Command.Create(() => { }, ["name"], null);
+        Command.Create(() => { }, ["name"], null);
 
-        var commandWithConditionsAndConfiguration = Command.Create(() => { }, ["name"], [], null);
+        Command.Create(() => { }, ["name"], [], null);
 
         // Groups:
-        var group = CommandGroup.Create("name");
+        CommandGroup.Create("name");
 
-        var groupWithNames = CommandGroup.Create("name", "anothername");
+        CommandGroup.Create("name", "anothername");
 
-        var groupWithConfiguration = CommandGroup.Create(["name"], null);
+        CommandGroup.Create(["name"], null);
 
-        var groupWithTypeImplementation = CommandGroup.Create(typeof(Program));
+        CommandGroup.Create(typeof(Program));
 
         // Conditions:
-        var condition = CommandCondition.Create<ANDEvaluator>((ctx, cmd, services) => ConditionResult.FromSuccess());
+        CommandCondition.Create<ANDEvaluator>((ctx, cmd, services) => ConditionResult.FromSuccess());
 
-        var conditionWithContext = CommandCondition.Create<ANDEvaluator, ICallerContext>((ctx, cmd, services) => ConditionResult.FromSuccess());
+        CommandCondition.Create<ANDEvaluator, ICallerContext>((ctx, cmd, services) => ConditionResult.FromSuccess());
 
         // Configuration:
-        var configuration = ComponentConfiguration.Create();
+        ComponentConfiguration.Create();
 
-        var configurationWithParsers = ComponentConfiguration.Create(new TryParseParser<Version>(Version.TryParse), new TryParseParser<Guid>(Guid.TryParse));
+        ComponentConfiguration.Create(new TryParseParser<Version>(Version.TryParse), new TryParseParser<Guid>(Guid.TryParse));
 
-        var configurationWithParsersAndProperties = ComponentConfiguration.Create([], null);
+        ComponentConfiguration.Create([], null);
 
         // Manager:
-        var manager = ComponentManager.Create();
+        ComponentManager.Create();
 
-        var managerWithComponents = ComponentManager.Create([]);
+        ComponentManager.Create([]);
 
-        var managerWithComponentsAndHandlers = ComponentManager.Create([], []);
+        ComponentManager.Create([], []);
     }
 }
