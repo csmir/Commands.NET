@@ -19,11 +19,14 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     ///     Initializes a new instance of the <see cref="ComponentManager"/> class.
     /// </summary>
     /// <remarks>
-    ///     This constructor is dependency-injection friendly, allowing `Enumerable` services to be immediately injected from an <see cref="IServiceProvider"/>.
+    ///     This constructor is dependency-injection friendly, allowing <see cref="ResultHandler"/> service implementations to be injected from an <see cref="IServiceProvider"/>.
+    ///     To add components to this manager, approach it as an <see cref="ICollection{T}"/>.
     /// </remarks>
-    /// <param name="components">A collection of <see cref="IComponent"/> implementations that should be considered top-level.</param>
     /// <param name="handlers">A collection of <see cref="ResultHandler"/> implementations that should resolve command results by defined approaches.</param>
-    public ComponentManager(IEnumerable<IComponent> components, IEnumerable<ResultHandler> handlers)
+    public ComponentManager(IEnumerable<ResultHandler> handlers)
+        : this([], handlers) { }
+
+    internal ComponentManager(IEnumerable<IComponent> components, IEnumerable<ResultHandler> handlers)
         : base(false)
     {
         var topLevelComponents = new List<IComponent>();
