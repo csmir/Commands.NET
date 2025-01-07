@@ -9,11 +9,11 @@ public sealed class ParseException(string message, Exception? innerException = n
     : Exception(message, innerException)
 {
     const string PARSE_FAILED = $"A {nameof(TypeParser)} failed to parse the provided value as '{{0}}'.";
-    const string ARGUMENT_MISMATCH = "An argument mismatch occurred between the best target and the input value. Target length: {0}. Input count: {1}";
+    const string ARGUMENT_MISMATCH = "Provided input is out of range of the target. Min: {0}, Max: {1}, Input: {2}.";
 
     internal static ParseException ParseFailed(Type? type, Exception? innerException = null)
         => new(string.Format(PARSE_FAILED, type?.Name ?? "Unknown"), innerException);
 
-    internal static ParseException ArgumentMismatch(int cmdLength, int inputLength)
-        => new(string.Format(ARGUMENT_MISMATCH, cmdLength, inputLength));
+    internal static ParseException InputOutOfRange(int minlength, int maxlength, int inputLength)
+        => new(string.Format(ARGUMENT_MISMATCH, minlength, maxlength, inputLength));
 }

@@ -199,7 +199,7 @@ internal static class ComponentUtilities
             type = type.GetElementType()!;
 
             if (configuration.Parsers.TryGetValue(type, out parser))
-                return parser;
+                return ArrayParser.GetOrCreate(parser);
 
             if (type.IsEnum)
                 return EnumParser.GetOrCreate(type);
@@ -283,7 +283,7 @@ internal static class ComponentUtilities
         if (command.MaxLength > args.Length && command.MinLength <= args.Length)
             return await command.Parse(caller, args, options);
 
-        return [ParseResult.FromError(ParseException.ArgumentMismatch(command.MinLength, args.Length))];
+        return [ParseResult.FromError(ParseException.InputOutOfRange(command.MinLength, command.MaxLength, args.Length))];
     }
 
     internal static async ValueTask<ParseResult[]> Parse(this IParameterCollection provider, ICallerContext caller, ArgumentArray args, CommandOptions options)

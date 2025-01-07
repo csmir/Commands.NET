@@ -5,6 +5,7 @@
 [OR1(true)]
 public class ClassModule : CommandModule
 {
+    [TryInput("")]
     public void Run()
     {
         Respond(Command.Attributes.Length);

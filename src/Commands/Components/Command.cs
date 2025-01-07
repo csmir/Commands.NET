@@ -143,7 +143,8 @@ public sealed class Command : IComponent, IParameterCollection
     }
 
     /// <inheritdoc />
-    public string GetFullName()
+    /// <param name="includeArguments">Defines if the arguments of the command should be included in the output.</param>
+    public string GetFullName(bool includeArguments)
     {
         var sb = new StringBuilder();
 
@@ -159,7 +160,7 @@ public sealed class Command : IComponent, IParameterCollection
         else if (Name != null)
             sb.Append(Name);
 
-        if (HasParameters)
+        if (HasParameters && includeArguments)
         {
             foreach (var parameter in Parameters)
             {
@@ -170,6 +171,10 @@ public sealed class Command : IComponent, IParameterCollection
 
         return sb.ToString();
     }
+
+    /// <inheritdoc />
+    public string GetFullName()
+        => GetFullName(true);
 
     /// <inheritdoc />
     public float GetScore()
