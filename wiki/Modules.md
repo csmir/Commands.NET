@@ -41,8 +41,9 @@ public void Command(int arg1, int arg2)
 }
 ```
 
+> [!IMPORTANT] 
 > Overloads are executed in order of score. Score is calculated by length of a signature and the importance of each argument. 
-The `GetScore` method in `Command` reveals the score of a signature.
+> The `GetScore` method in `Command` reveals the score of a signature.
 
 ## Class commands
 
@@ -64,7 +65,9 @@ public class CommandClass : CommandModule
 }
 ```
 
-> By specifying `Ignore` on a method, it will not be considered a command. When it is specified on a class, the whole class will be ignored, including nested classes.
+> [!TIP]
+> By specifying `Ignore` on a method, it will not be considered a command. 
+> When it is specified on a class, the whole class will be ignored, including nested classes.
 
 ## Nesting commands
 
@@ -129,4 +132,6 @@ public class CommandClass : CommandModule
 }
 ```
 
-> The `CommandContext<T>` class is a wrapper for the execution state of the command. It contains the `ICallerContext` that executed the command, and the `Command` of the command.
+> [!NOTE]
+> The `CommandContext<T>` class is a wrapper for the execution state of the command. 
+> It contains the `ICallerContext` that executed the command, and the `Command` of the command.

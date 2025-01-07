@@ -61,13 +61,14 @@ public class CustomResultHandler : ResultHandler
 
 ```
 
-The `CommandNotFound` method is called when the search operation returns no commands or modules. By catching it here, we can send a custom response to the user that tried to invoke this command:
+The `CommandNotFound` method is called when the search operation returns no commands or modules. 
+By catching it here, we can send a custom response to the user that tried to invoke this command:
 
 ```cs
 ...
     protected override ValueTask CommandNotFound(ICallerContext caller, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        caller.Send("No commands or modules were found with your input.");
+        caller.Respond("No commands were found with your input.");
 
         return ValueTask.CompletedTask;
     }
@@ -84,6 +85,9 @@ Or, when using the builder pattern:
 ```cs
 builder.AddResultHandler(new CustomResultHandler());
 ```
+
+> [!NOTE]
+> `ResultHandler<TContext>` can be used to filter by a specific context type. This is useful when you want to handle results differently depending on the context.
 
 ## Complex Results
 
@@ -106,8 +110,12 @@ In this method, the `IExecuteResult` parameter can be cast to the specific resul
 
 ## Extended Implementations
 
-ResultHandler has a delegate-based implementation which can be used exclusively to handle *faulty* results. This is done by creating a new instance of `DelegateResultHandler`:
+ResultHandler has a delegate-based implementation which can be used exclusively to handle *faulty* results. 
+This is done by creating a new instance of `DelegateResultHandler<TContext>`:
 
 ```cs
-var handler = new DelegateResultHandler((ctx, result, services) => ...);
+var handler = new DelegateResultHandler<TContext>((ctx, result, services) => ...);
 ```
+
+Here, `TContext` is the `ICallerContext` implementation that this handler will handle. 
+If the context is not of a matching type, this handler will not be called.

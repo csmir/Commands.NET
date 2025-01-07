@@ -3,12 +3,11 @@
 namespace Commands;
 
 /// <summary>
-///     Represents a parser that invokes a delegate when parameter conversion of its type <typeparamref name="T"/> occurs. This class cannot be inherited.
+///     Represents a parser that invokes a delegate when parameter conversion of its type <typeparamref name="TConvertible"/> occurs. This class cannot be inherited.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
-public sealed class DelegateTypeParser<T>(
+public sealed class DelegateTypeParser<TConvertible>(
     Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> func)
-    : TypeParser<T>
+    : TypeParser<TConvertible>
 {
     /// <inheritdoc />
     public override ValueTask<ParseResult> Parse(ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
@@ -16,18 +15,18 @@ public sealed class DelegateTypeParser<T>(
 }
 
 /// <inheritdoc />
-/// <typeparam name="T">The type this <see cref="TypeParser{T}"/> should parse into.</typeparam>
-public abstract class TypeParser<T> : TypeParser
+/// <typeparam name="TConvertible">The type this <see cref="TypeParser{T}"/> should parse into.</typeparam>
+public abstract class TypeParser<TConvertible> : TypeParser
 {
     /// <inheritdoc />
-    public override Type Type { get; } = typeof(T);
+    public override Type Type { get; } = typeof(TConvertible);
 
     /// <summary>
     ///     Creates a new <see cref="ParseResult"/> representing a successful parse operation.
     /// </summary>
     /// <param name="value">The value parsed from a raw argument into the target type of this parser.</param>
     /// <returns>A <see cref="ParseResult"/> representing the successful parse operation.</returns>
-    public virtual ParseResult Success(T? value)
+    public virtual ParseResult Success(TConvertible? value)
         => base.Success(value);
 }
 

@@ -6,15 +6,15 @@ Conditions are checks that ensure that the command in scope is allowed to be exe
 
 ## Creating your Condition
 
-All preconditions inherit `ConditionAttribute`, which in turn inherits `Attribute`. 
-To start creating your own condition, you have to inherit `ConditionAttribute` on a class:
+All preconditions inherit `ExecuteConditionAttribute<TEvaluator>`, which in turn inherits `Attribute`. 
+To start creating your own condition, you have to inherit `ExecuteConditionAttribute<TEvaluator>` on a class:
 
 ```cs
 using Commands;
 
 namespace Commands.Samples;
 
-public class RequireOperatingSystemAttribute : ConditionAttribute<ANDEvaluator>
+public class RequireOperatingSystemAttribute : ExecuteConditionAttribute<ANDEvaluator>
 {
     public override ValueTask<CheckResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
     {
@@ -32,7 +32,7 @@ using Commands;
 
 namespace Commands.Samples;
 
-public class RequireOperatingSystemAttribute(PlatformID platform) : ConditionAttribute<ANDEvaluator>
+public class RequireOperatingSystemAttribute(PlatformID platform) : ExecuteConditionAttribute<ANDEvaluator>
 {
     public PlatformID Platform { get; } = platform;
 
@@ -47,21 +47,18 @@ Our focus goes to the `EvaluateAsync` method, which will run this check.
 
 ```cs
 ...
-    public override ValueTask<CheckResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
-    {
-        if (Environment.OSVersion.Platform == Platform)
-            return ValueTask.FromResult(Success());
+    if (Environment.OSVersion.Platform == Platform)
+        return Success();
 
-        return ValueTask.FromResult(Error("The platform does not support this operation."));
-    }
+    return Error("The platform does not support this operation.");
 ...
 ```
 
 That's it. With this done, we can look towards the application of our created condition.
 
-> [!NOTE]
-> Conditions can be extended to only execute when a certain context is provided.
-> To do so, implement `ConditionAttribute<TEval, TContext>` instead of `ConditionAttribute<TEval>`.
+> [!TIP]
+> `ExecuteCondition` is a 1:1 counterpart of the attribute-based implementation, serving as a variant for the runtime creation pattern. 
+> When using this pattern, `DelegateExecuteCondition` is also available.
 
 ## Using your Condition
 
@@ -100,7 +97,8 @@ public void Copy([Remainder] string toCopy)
 ...
 ```
 
-The conditions is now defined on this command, and will be called when this command is triggered. If the platform you run it on is indeed not Windows, it will fail.
+The conditions is now defined on this command, and will be called when this command is triggered. 
+If the platform you run it on is indeed not Windows, it will fail.
 
 ## Logical operations
 

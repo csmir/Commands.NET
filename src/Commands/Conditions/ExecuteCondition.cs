@@ -5,13 +5,12 @@ namespace Commands;
 /// <summary>
 ///     Represents a delegate-based command condition.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class DelegateExecuteCondition<
 #if NET8_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 #endif
-TEval>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> func) : ExecuteCondition<TEval>
-    where TEval : ConditionEvaluator, new()
+TEvaluator>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> func) : ExecuteCondition<TEvaluator>
+    where TEvaluator : ConditionEvaluator, new()
 {
     /// <inheritdoc />
     public override ValueTask<ConditionResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
@@ -23,14 +22,14 @@ public abstract class ExecuteCondition<
 #if NET8_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 # endif
-TEval> : ExecuteCondition
-    where TEval : ConditionEvaluator, new()
+TEvaluator> : ExecuteCondition
+    where TEvaluator : ConditionEvaluator, new()
 {
     /// <inheritdoc />
 #if NET8_0_OR_GREATER
     [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 #endif
-    public override Type EvaluatorType { get; } = typeof(TEval);
+    public override Type EvaluatorType { get; } = typeof(TEvaluator);
 }
 
 /// <summary>

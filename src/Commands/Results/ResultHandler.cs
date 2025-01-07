@@ -1,19 +1,19 @@
 ﻿namespace Commands;
 
 /// <summary>
-///     Represents a resolver that invokes a delegate when a result is encountered from a command implementing <typeparamref name="TCaller"/>. This class cannot be inherited.
+///     Represents a resolver that invokes a delegate when a result is encountered from a command implementing <typeparamref name="TContext"/>. This class cannot be inherited.
 /// </summary>
-public sealed class DelegateResultHandler<TCaller>
-    : ResultHandler<TCaller>
-    where TCaller : class, ICallerContext
+public sealed class DelegateResultHandler<TContext>
+    : ResultHandler<TContext>
+    where TContext : class, ICallerContext
 {
-    private readonly Func<TCaller, IExecuteResult, IServiceProvider, ValueTask> _resultDelegate;
+    private readonly Func<TContext, IExecuteResult, IServiceProvider, ValueTask> _resultDelegate;
 
     /// <summary>
     ///     Creates a new instance of <see cref="DelegateResultHandler{TCaller}"/> with the specified delegate.
     /// </summary>
     /// <param name="resultDelegate">An awaitable delegate intending to handle a command result.</param>
-    public DelegateResultHandler(Func<TCaller, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
+    public DelegateResultHandler(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
     {
         _resultDelegate = resultDelegate;
     }
@@ -22,7 +22,7 @@ public sealed class DelegateResultHandler<TCaller>
     ///     Creates a new instance of <see cref="DelegateResultHandler{TCaller}"/> with the specified delegate.
     /// </summary>
     /// <param name="resultDelegate">A void delegate intending to handle a command result.</param>
-    public DelegateResultHandler(Action<TCaller, IExecuteResult, IServiceProvider> resultDelegate)
+    public DelegateResultHandler(Action<TContext, IExecuteResult, IServiceProvider> resultDelegate)
     {
         _resultDelegate = (caller, result, services) =>
         {
@@ -32,7 +32,7 @@ public sealed class DelegateResultHandler<TCaller>
     }
 
     /// <inheritdoc />
-    public override ValueTask HandleResult(TCaller caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+    public override ValueTask HandleResult(TContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (result.Success && result is IValueResult value)
             return HandleSuccess(caller, value, services, cancellationToken);
@@ -47,22 +47,22 @@ public sealed class DelegateResultHandler<TCaller>
 /// <remarks>
 ///     Implementing this type allows you to treat result data and scope finalization of all commands executed by the provided <see cref="ICallerContext"/>, regardless on whether the command execution succeeded or not.
 /// </remarks>
-/// <typeparam name="TCaller"></typeparam>
-public abstract class ResultHandler<TCaller> : ResultHandler
-    where TCaller : class, ICallerContext
+/// <typeparam name="TContext"></typeparam>
+public abstract class ResultHandler<TContext> : ResultHandler
+    where TContext : class, ICallerContext
 {
     /// <inheritdoc cref="ResultHandler.HandleResult(ICallerContext, IExecuteResult, IServiceProvider, CancellationToken)"/>.
     /// <remarks>
-    ///     This method is only executed when the provided <paramref name="caller"/> is of type <typeparamref name="TCaller"/>.
+    ///     This method is only executed when the provided <paramref name="caller"/> is of type <typeparamref name="TContext"/>.
     /// </remarks>
-    public virtual ValueTask HandleResult(TCaller caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+    public virtual ValueTask HandleResult(TContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         => base.HandleResult(caller, result, services, cancellationToken);
 
     /// <inheritdoc />
     public override ValueTask HandleResult(
         ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (caller is TCaller typedCaller)
+        if (caller is TContext typedCaller)
             return HandleResult(typedCaller, result, services, cancellationToken);
 
         // If the caller is not of type T, return default, not handling the result.

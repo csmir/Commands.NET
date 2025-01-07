@@ -8,20 +8,20 @@
 ///     Custom implementations of <see cref="ExecuteConditionAttribute{T}"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
 ///     If multiple commands are found during matching, multiple sequences of preconditions will be ran to find a match that succeeds.
 /// </remarks>
-/// <typeparam name="TEval">The type of evaluator that will be used to determine the result of the evaluation.</typeparam>
+/// <typeparam name="TEvaluator">The type of evaluator that will be used to determine the result of the evaluation.</typeparam>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
 public abstract class ExecuteConditionAttribute<
 #if NET8_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 # endif
-TEval>() : Attribute, IExecuteCondition
-    where TEval : ConditionEvaluator, new()
+TEvaluator>() : Attribute, IExecuteCondition
+    where TEvaluator : ConditionEvaluator, new()
 {
     /// <inheritdoc />
 #if NET8_0_OR_GREATER
     [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 #endif
-    public Type EvaluatorType { get; } = typeof(TEval);
+    public Type EvaluatorType { get; } = typeof(TEvaluator);
 
     /// <inheritdoc />
     /// <remarks>

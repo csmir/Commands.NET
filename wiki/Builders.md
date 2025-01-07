@@ -6,7 +6,6 @@ This article will introduce the builder API's and how to use them.
 - [Component Manager](#component-manager)
 - [Commands](#commands)
 - [Command Groups](#command-groups)
-- [Conditions](#conditions)
 
 ## Component Configuration
 
@@ -140,10 +139,6 @@ builder.WithNames("command", "cmd");
 builder.AddName("command");
 ```
 
-### Defining Conditions
-
-Conditions are used to filter commands or groups. This builder is extended [here](#conditions).
-
 ### Building the Command
 
 After you have configured the builder, you can build it into a `Command` instance:
@@ -192,32 +187,4 @@ builder.AddName("group");
 After you have configured the builder, you can build it into a `CommandGroup` instance:
 ```cs
 var group = builder.Build();
-```
-
-## Conditions
-
-Condition builders are used to create conditions that can be used to filter commands or groups.
-
-These builders accept two generic parameters. A context, and an evaluator. 
-For more information on conditions and their constraints, see [[Conditions|Conditions]].
-
-To use this builder, you must first create an instance of it:
-```cs
-var builder = new ConditionBuilder<ANDEvaluator, ICallerContext>();
-```
-
-### Setting a Handler
-
-The `Handler` property is a delegate that is called when the condition is executed.
-
-To set the handler, use the `WithHandler` method:
-```cs
-builder.WithHandler((caller, command, services) => { });
-```
-
-### Building the Condition
-
-After you have configured the builder, you can build it into a `Condition` instance:
-```cs
-var condition = builder.Build();
 ```

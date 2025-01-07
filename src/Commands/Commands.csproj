@@ -12,7 +12,7 @@
 		<NoWarn>CA1822;IDE0130</NoWarn>
 
 		<AssemblyVersion>1.0</AssemblyVersion>
-		<PackageVersion>1.0.0</PackageVersion>
+		<PackageVersion>1.0.0</PackageVersion> <!--\-alpha.1-->
 		<FileVersion>1.0.0.0</FileVersion>
 
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>

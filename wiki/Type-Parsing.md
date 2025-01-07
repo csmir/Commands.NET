@@ -2,8 +2,9 @@ A `TypeParser` reads provided argument input in string format and try to convert
 Let's work on an example to learn how they work.
 
 - [Default Parsers](#default-parsers)
-- [Creating a Parser](#creating-your-parser)
-- [Using Parsers](#using-parser)
+- [Creating a Global Parser](#creating-a-global-parser)
+- [Using Global Parsers](#using-global-parser)
+- [Attribute-based Parsers](#attribute-based-parsers)
 - [Extended Implementations](#extended-implementations)
 
 ## Default Parsers
@@ -23,9 +24,9 @@ By default, the library provides parsers for the following types, without any ad
 In addition to creating a custom parser for unsupported types, you can also override these default parsers by registering your own parser for the type. 
 Any user-defined parsers will take precedence over the default parsers.
 
-## Creating a Parser
+## Creating a Global Parser
 
-All TypeParsers inherit `TypeParser<T>` or `TypeParser`. To start creating your parser, you have to inherit one of the two on a class.
+All global parsers inherit `TypeParser<T>` or `TypeParser`. To start creating your parser, you have to inherit one of the two on a class.
 
 > For the simplicity of this documentation, only the generic type is introduced here.
 
@@ -92,7 +93,7 @@ public class SystemTypeParser(bool caseIgnore) : TypeParser<Type>
     ...
 ```
 
-## Using Parsers
+## Using Global Parsers
 
 There is a variety of ways to configure your commands to use custom parsers. 
 Our focus will be on the `CommandConfiguration` class, which is the central point of configuration for the build pipeline.
@@ -121,12 +122,30 @@ Lastly, you can also create a module from its type, and use the customized confi
 var module = CommandGroup.Create<T>(configuration);
 ```
 
-## Extended Implementations
+## Attribute-based Parsers
 
-The library provides a few types which simplify the implementation of custom parsing logic. One of these, is `DelegateParser<T>`:
+Attribute parsers can be used on command parameters, requiring no additional configuration to be used. 
+These parsers implement `TypeParserAttribute<T>`, not having a non-generic counterpart.
+
+Attribute parsing works 1:1 with global parsers. All it takes, is exchanging `: TypeParser<T>` for `: TypeParserAttribute<T>`. 
+However, the manner in which they are used is different. 
+Assuming the `SystemTypeParser` as created above now inherits `TypeParserAttribute<Type>`, we can use it as follows:
 
 ```cs
-var parser = new DelegateParser<Assembly>((ctx, param, value, services) => ...);
+Command.Create(([SystemTypeParser(true)] Type type) => type.Name, "check-type");
+```
+```cs
+[Name("check-type")]
+public string CheckType([SystemTypeParser(true)] Type type) => type.Name;
+```
+
+## Extended Implementations
+
+The library provides a few global `TypeParser` implementations which simplify the implementation of custom parsing logic. 
+One of these, is `DelegateTypeParser<T>`:
+
+```cs
+var parser = new DelegateTypeParser<Assembly>((ctx, param, value, services) => ...);
 ```
 
 Additionally, a `TryParseParser` is available for types that implement `TryParse`:

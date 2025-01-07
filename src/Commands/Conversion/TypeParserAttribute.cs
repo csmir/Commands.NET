@@ -3,12 +3,12 @@
 /// <summary>
 ///     Provides a mechanism to mark command parameters with specified parsing logic, taking precedence over the default.
 /// </summary>
-/// <typeparam name="T">The type to parse into using this parser.</typeparam>
+/// <typeparam name="TConvertible">The type to parse into using this parser.</typeparam>
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
-public abstract class TypeParserAttribute<T> : Attribute, ITypeParser
+public abstract class TypeParserAttribute<TConvertible> : Attribute, ITypeParser
 {
     /// <inheritdoc />
-    public Type Type { get; } = typeof(T);
+    public Type Type { get; } = typeof(TConvertible);
 
     /// <inheritdoc />
     public abstract ValueTask<ParseResult> Parse(
