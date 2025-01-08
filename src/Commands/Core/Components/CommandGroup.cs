@@ -143,27 +143,22 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         => other is CommandGroup info && ReferenceEquals(this, info);
 
     /// <inheritdoc />
-    public override IEnumerable<SearchResult> Find(ArgumentArray args)
+    public override IEnumerable<KeyValuePair<int, IComponent>> Find(ArgumentArray args)
     {
-        var discovered = new List<SearchResult>()
-        {
-            SearchResult.FromError(this)
-        };
-
-        var index = Position;
+        List<KeyValuePair<int, IComponent>> discovered = [new(Position, this)];
 
         foreach (var component in this)
         {
             if (component.IsDefault)
-                discovered.Add(SearchResult.FromSuccess(component, index));
+                discovered.Add(new(Position, component));
 
-            if (!args.TryGetElementAt(index, out var value) || !component.Names.Contains(value))
+            if (!args.TryGetElementAt(Position, out var value) || !component.Names.Contains(value))
                 continue;
 
             if (component is CommandGroup group)
                 discovered.AddRange(group.Find(args));
             else
-                discovered.Add(SearchResult.FromSuccess(component, index + 1));
+                discovered.Add(new(Position + 1, component));
         }
 
         return discovered;

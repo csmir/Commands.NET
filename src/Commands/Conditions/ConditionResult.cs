@@ -1,4 +1,4 @@
-﻿namespace Commands;
+﻿namespace Commands.Conditions;
 
 /// <summary>
 ///     The result of a check operation within the command execution pipeline.
@@ -14,9 +14,7 @@ public readonly struct ConditionResult : IExecuteResult
         => Exception == null;
 
     private ConditionResult(Exception? exception)
-    {
-        Exception = exception;
-    }
+        => Exception = exception;
 
     /// <summary>
     ///     Creates a new <see cref="ConditionResult"/> resembling a successful check operation.

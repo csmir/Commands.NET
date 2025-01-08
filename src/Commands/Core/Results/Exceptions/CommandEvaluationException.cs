@@ -5,8 +5,8 @@ namespace Commands;
 /// <summary>
 ///     Represents an exception that is thrown when a condition fails to evaluate.
 /// </summary>
-public sealed class ConditionException(IExecuteCondition condition, string reason, Exception? innerException = null)
-    : Exception(reason, innerException)
+public sealed class ConditionException(IExecuteCondition condition, string reason)
+    : Exception(reason)
 {
     /// <summary>
     ///     Gets the condition that caused the exception.
@@ -17,11 +17,9 @@ public sealed class ConditionException(IExecuteCondition condition, string reaso
 /// <summary>
 ///     Represents an exception that is thrown when one or more conditions failed to evaluate.
 /// </summary>
-public sealed class PipelineConditionException(Command command, Exception? innerException = null)
-    : Exception(MESSAGE, innerException)
+public sealed class CommandEvaluationException(Command command, Exception? innerException = null)
+    : Exception(null, innerException)
 {
-    const string MESSAGE = "One or more conditions failed during evaluation.";
-
     /// <summary>
     ///     Gets the command that caused the exception.
     /// </summary>

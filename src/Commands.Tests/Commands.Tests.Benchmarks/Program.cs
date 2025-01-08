@@ -47,31 +47,31 @@ public class Program
 
     #region Object Creation Analysis
 
-    [Benchmark]
-    public void CommandCreate()
-    {
-        Command.Create(() => { }, "name");
-    }
+    //[Benchmark]
+    //public void CommandCreate()
+    //{
+    //    Command.Create(() => { }, "name");
+    //}
 
-    [Benchmark]
-    public void GroupCreate()
-    {
-        var group = CommandGroup.Create("name");
+    //[Benchmark]
+    //public void GroupCreate()
+    //{
+    //    var group = CommandGroup.Create("name");
 
-        group.Add(Command.Create(() => { }, "name"));
-    }
+    //    group.Add(Command.Create(() => { }, "name"));
+    //}
 
-    [Benchmark]
-    public void TypeGroupCreate()
-    {
-        CommandGroup.Create<CreationAnalysisModule>();
-    }
+    //[Benchmark]
+    //public void TypeGroupCreate()
+    //{
+    //    CommandGroup.Create<CreationAnalysisModule>();
+    //}
 
-    [Benchmark]
-    public void CreateArguments()
-    {
-        ArgumentArray.Read("command");
-    }
+    //[Benchmark]
+    //public void CreateArguments()
+    //{
+    //    ArgumentArray.Read("command");
+    //}
 
     #endregion
 

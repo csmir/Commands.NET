@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Commands.Testing;
+﻿namespace Commands.Testing;
 
 internal static class TestUtilities
 {
-    public static async ValueTask<TestResult> Test(this Command command, ICallerContext caller, ITestProvider provider, CommandOptions options)
+    internal static async ValueTask<TestResult> Test(this Command command, ICallerContext caller, ITestProvider provider, CommandOptions options)
     {
         // Create a new set of arguments by appending the arguments from the provider to the command's name. This should result in valid parameters for an ArgumentArray.
         var commandName = command.GetFullName(false)
@@ -25,51 +21,34 @@ internal static class TestUtilities
         for (var i = 0; i < parseResult.Length; i++)
         {
             if (parseResult[i].Success)
-            {
                 argumentObjects[i] = parseResult[i].Value;
-                continue;
-            }    
-
-            switch (parseResult[i].Exception)
-            {
-                case CommandOutOfRangeException:
-                    if (provider.ExpectedResult == TestResultType.MatchFailure)
-                        return TestResult.FromSuccess(provider.ExpectedResult);
-                    else
-                        return TestResult.FromError(provider.ExpectedResult, parseResult[i].Exception);
-                default:
-                    if (provider.ExpectedResult == TestResultType.ParseFailure)
-                        return TestResult.FromSuccess(provider.ExpectedResult);
-                    else
-                        return TestResult.FromError(provider.ExpectedResult, parseResult[i].Exception);
-            }
+            else
+                return provider.GetResult(parseResult[i]);
         }
 
         var runResult = await command.Run(caller, argumentObjects, options);
 
-        if (runResult.Success)
-        { 
-            if (provider.ExpectedResult == TestResultType.Success)
-                return TestResult.FromSuccess(provider.ExpectedResult);
-            else
-                return TestResult.FromError(provider.ExpectedResult, new InvalidOperationException("The command was expected to fail, but it succeeded."));
-        }
-        else
-        {
-            switch (runResult.Exception)
-            {
-                case PipelineConditionException:
-                    if (provider.ExpectedResult == TestResultType.ConditionFailure)
-                        return TestResult.FromSuccess(provider.ExpectedResult);
-                    else
-                        return TestResult.FromError(provider.ExpectedResult, runResult.Exception);
+        return provider.GetResult(runResult);
+    }
 
-                default:
-                    if (provider.ExpectedResult == TestResultType.InvocationFailure)
-                        return TestResult.FromSuccess(provider.ExpectedResult);
-                    else
-                        return TestResult.FromError(provider.ExpectedResult, runResult.Exception);
-            }
+    internal static TestResult GetResult(this ITestProvider provider, IExecuteResult result)
+    {
+        TestResult CompareReturn(TestResultType targetType, Exception exception)
+        {
+            return provider.ExpectedResult == targetType
+                ? TestResult.FromSuccess(provider.ExpectedResult)
+                : TestResult.FromError(targetType, exception);
         }
+
+        return result.Exception switch
+        {
+            null => CompareReturn(TestResultType.Success, new InvalidOperationException("The command was expected to fail, but it succeeded.")),
+
+            CommandParsingException    => CompareReturn(TestResultType.ParseFailure, result.Exception),
+            CommandEvaluationException => CompareReturn(TestResultType.ConditionFailure, result.Exception),
+            CommandOutOfRangeException => CompareReturn(TestResultType.MatchFailure, result.Exception),
+
+            _ => CompareReturn(TestResultType.InvocationFailure, result.Exception),
+        };
     }
 }

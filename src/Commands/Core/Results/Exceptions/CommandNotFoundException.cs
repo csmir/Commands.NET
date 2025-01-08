@@ -4,7 +4,7 @@
 ///     Represents an exception that is thrown when a command is not found.
 /// </summary>
 public sealed class CommandNotFoundException()
-    : Exception(MESSAGE)
+    : Exception
 {
-    const string MESSAGE = "No command was found with the provided input.";
+
 }

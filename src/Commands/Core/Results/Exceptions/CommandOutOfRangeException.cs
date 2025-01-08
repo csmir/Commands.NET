@@ -4,10 +4,8 @@
 ///     Represents an exception that is thrown when provided arguments are out of range of a command.
 /// </summary>
 public sealed class CommandOutOfRangeException(Command command, int argsLength) 
-    : Exception(string.Format(MESSAGE, argsLength, command))
+    : Exception
 {
-    const string MESSAGE = "Arguments length {0} is out of range of command: {1}";
-
     /// <summary>
     ///     Gets the command that caused the exception.
     /// </summary>

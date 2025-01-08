@@ -8,7 +8,10 @@ public readonly struct TestResult : IExecuteResult
     /// <summary>
     ///     The actual result of the test. If the test succeeded, this will be the same as <see cref="ITestProvider.ExpectedResult"/>.
     /// </summary>
-    public TestResultType ActualResult { get; }
+    /// <remarks>
+    ///     This value is <see langword="null"/> if the test succeeded as a whole.
+    /// </remarks>
+    public TestResultType? ActualResult { get; }
 
     /// <inheritdoc />
     public Exception? Exception { get; }
@@ -16,7 +19,7 @@ public readonly struct TestResult : IExecuteResult
     /// <inheritdoc />
     public bool Success { get; }
 
-    private TestResult(TestResultType actualResult, Exception? exception, bool success)
+    private TestResult(TestResultType? actualResult, Exception? exception, bool success)
     {
         ActualResult = actualResult;
         Exception = exception;

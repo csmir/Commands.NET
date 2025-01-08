@@ -1,4 +1,7 @@
-﻿namespace Commands;
+﻿using Commands.Conditions;
+using Commands.Parsing;
+
+namespace Commands;
 
 /// <summary>
 ///     Represents a resolver that invokes a delegate when a result is encountered from a command implementing <typeparamref name="TContext"/>. This class cannot be inherited.
@@ -34,8 +37,8 @@ public sealed class DelegateResultHandler<TContext>
     /// <inheritdoc />
     public override ValueTask HandleResult(TContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (result.Success && result is IValueResult value)
-            return HandleSuccess(caller, value, services, cancellationToken);
+        if (result.Success)
+            return HandleSuccess(caller, result, services, cancellationToken);
         else
             return _resultDelegate(caller, result, services);
     }
@@ -91,7 +94,7 @@ public abstract class ResultHandler
     public virtual ValueTask HandleResult(
         ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (result is IValueResult valueResult && valueResult.Success)
+        if (result is InvokeResult valueResult && valueResult.Success)
             return HandleSuccess(caller, valueResult, services, cancellationToken);
 
         switch (result)
@@ -129,7 +132,7 @@ public abstract class ResultHandler
     [UnconditionalSuppressMessage("AotAnalysis", "IL2075", Justification = "The availability of Task<> is ensured at compile-time.")]
 #endif
     protected async virtual ValueTask HandleSuccess(
-        ICallerContext caller, IValueResult result, IServiceProvider services, CancellationToken cancellationToken)
+        ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         async ValueTask Respond(object? obj)
         {
@@ -139,34 +142,34 @@ public abstract class ResultHandler
                 caller.Respond(obj);
         }
 
-        if (result is InvokeResult invokeResult)
+        if (result is not InvokeResult invokeResult)
+            return;
+
+        switch (invokeResult.ReturnValue)
         {
-            switch (invokeResult.Value)
-            {
-                case null: // (void)
-                    return;
+            case null: // (void)
+                return;
 
-                case Task task:
-                    await task;
+            case Task task:
+                await task;
 
-                    var taskType = task.GetType();
+                var taskType = task.GetType();
 
-                    // If the task is a generic task, and the result is not a void task result, get the result and respond with it. Unfortunately we cannot do a type comparison on VoidTaskResult, because it is an internal corelib struct.
-                    if (taskType.IsGenericType && taskType.GenericTypeArguments[0].Name != "VoidTaskResult")
-                    {
-                        _taskGetValue ??= taskType.GetProperty("Result")!.GetMethod;
+                // If the task is a generic task, and the result is not a void task result, get the result and respond with it. Unfortunately we cannot do a type comparison on VoidTaskResult, because it is an internal corelib struct.
+                if (taskType.IsGenericType && taskType.GenericTypeArguments[0].Name != "VoidTaskResult")
+                {
+                    _taskGetValue ??= taskType.GetProperty("Result")!.GetMethod;
 
-                        var output = _taskGetValue?.Invoke(task, null);
+                    var output = _taskGetValue?.Invoke(task, null);
 
-                        if (output != null)
-                            await Respond(output);
-                    }
-                    return;
+                    if (output != null)
+                        await Respond(output);
+                }
+                return;
 
-                case object obj:
-                    await Respond(obj);
-                    return;
-            }
+            case object obj:
+                await Respond(obj);
+                return;
         }
     }
 

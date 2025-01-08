@@ -23,7 +23,7 @@ public abstract class ComponentCollection : IComponentCollection
         => IsReadOnly = isReadOnly;
 
     /// <inheritdoc />
-    public abstract IEnumerable<SearchResult> Find(ArgumentArray args);
+    public abstract IEnumerable<KeyValuePair<int, IComponent>> Find(ArgumentArray args);
 
     /// <inheritdoc />
     public bool Contains(IComponent component)
