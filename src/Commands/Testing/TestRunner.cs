@@ -8,10 +8,10 @@ public class TestRunner<TContext> : TestRunner
     where TContext : ICallerContext, new()
 {
     /// <inheritdoc />
-    public override event Action<TestResult>? ResultReceived;
+    public override event Action<TestResult>? TestCompleted;
 
     /// <inheritdoc />
-    public override event Action<TestResult>? FailureReceived;
+    public override event Action<TestResult>? TestFailed;
 
     internal TestRunner(Dictionary<Command, IEnumerable<ITestProvider>> tests)
         : base(tests)
@@ -30,10 +30,10 @@ public class TestRunner<TContext> : TestRunner
             {
                 var result = await provider.Run(caller, test.Key);
 
-                ResultReceived?.Invoke(result);
+                TestCompleted?.Invoke(result);
 
                 if (!result.Success)
-                    FailureReceived?.Invoke(result);
+                    TestFailed?.Invoke(result);
             }
 
             CountCompleted++;
@@ -49,12 +49,12 @@ public abstract class TestRunner
     /// <summary>
     ///     Triggered when a test result is received.
     /// </summary>
-    public abstract event Action<TestResult>? ResultReceived;
+    public abstract event Action<TestResult>? TestCompleted;
 
     /// <summary>
     ///     Triggered when all tests on a command have been completed.
     /// </summary>
-    public abstract event Action<TestResult>? FailureReceived;
+    public abstract event Action<TestResult>? TestFailed;
 
     /// <summary>
     ///     Gets the number of tests present for this operation.
@@ -72,7 +72,7 @@ public abstract class TestRunner
     public IReadOnlyDictionary<Command, IEnumerable<ITestProvider>> Tests { get; }
 
     /// <summary>
-    ///     Starts all contained tests sequentially and posts their results to <see cref="ResultReceived"/>.
+    ///     Starts all contained tests sequentially and posts their results to <see cref="TestCompleted"/>.
     /// </summary>
     /// <param name="options">The options to use when running the tests.</param>
     /// <returns>An awaitable <see cref="Task"/> that represents testing operation.</returns>

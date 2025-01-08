@@ -9,7 +9,7 @@ var manager = ComponentManager.CreateBuilder()
 
 var testRunner = TestRunner.Create<TestCallerContext>(manager.GetCommands());
 
-testRunner.FailureReceived += (result) =>
+testRunner.TestFailed += (result) =>
 {
     throw new InvalidOperationException($"Failed to evaluate command {result.Command} with expected outcome {result.ExpectedResult}. Received {result.ActualResult}.", result.Exception);
 };
