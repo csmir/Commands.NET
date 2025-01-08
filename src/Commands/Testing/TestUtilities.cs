@@ -7,12 +7,15 @@ internal static class TestUtilities
         // Create a new set of arguments by appending the arguments from the provider to the command's name. This should result in valid parameters for an ArgumentArray.
         var commandName = command.GetFullName(false)
             .Split([' '], StringSplitOptions.RemoveEmptyEntries)
-            .Select(x => new KeyValuePair<string, object?>(x, null))
             .ToArray();
+
+        var fullName = string.IsNullOrWhiteSpace(provider.Arguments)
+            ? string.Join(" ", commandName)
+            : string.Join(" ", commandName) + ' ' + provider.Arguments;
 
         var parseIndex = commandName.Length;
 
-        var arguments = new ArgumentArray([.. commandName, ..provider.Arguments], StringComparer.OrdinalIgnoreCase);
+        var arguments = ArgumentArray.Read(fullName);
 
         var parseResult = await command.Parse(caller, parseIndex, arguments, options);
 
@@ -23,28 +26,28 @@ internal static class TestUtilities
             if (parseResult[i].Success)
                 argumentObjects[i] = parseResult[i].Value;
             else
-                return provider.GetResult(parseResult[i]);
+                return provider.GetResult(command, parseResult[i]);
         }
 
         var runResult = await command.Run(caller, argumentObjects, options);
 
-        return provider.GetResult(runResult);
+        return provider.GetResult(command, runResult);
     }
 
-    internal static TestResult GetResult(this ITestProvider provider, IExecuteResult result)
+    internal static TestResult GetResult(this ITestProvider provider, Command command, IExecuteResult result)
     {
         TestResult CompareReturn(TestResultType targetType, Exception exception)
         {
-            return provider.ExpectedResult == targetType
-                ? TestResult.FromSuccess(provider.ExpectedResult)
-                : TestResult.FromError(targetType, exception);
+            return provider.ShouldEvaluateTo == targetType
+                ? TestResult.FromSuccess(command, provider.ShouldEvaluateTo)
+                : TestResult.FromError(command, provider.ShouldEvaluateTo, targetType, exception);
         }
 
         return result.Exception switch
         {
             null => CompareReturn(TestResultType.Success, new InvalidOperationException("The command was expected to fail, but it succeeded.")),
 
-            CommandParsingException    => CompareReturn(TestResultType.ParseFailure, result.Exception),
+            ParserException            => CompareReturn(TestResultType.ParseFailure, result.Exception),
             CommandEvaluationException => CompareReturn(TestResultType.ConditionFailure, result.Exception),
             CommandOutOfRangeException => CompareReturn(TestResultType.MatchFailure, result.Exception),
 

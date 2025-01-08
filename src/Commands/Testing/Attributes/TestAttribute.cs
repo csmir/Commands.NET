@@ -3,14 +3,14 @@
 /// <summary>
 ///     An attribute that is used to define a test for a command.
 /// </summary>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-public class TestAttribute(TestResultType expectedResult = TestResultType.Success) : Attribute, ITestProvider
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
+public sealed class TestAttribute : Attribute, ITestProvider
 {
     /// <inheritdoc />
-    public TestResultType ExpectedResult { get; set; } = expectedResult;
+    public TestResultType ShouldEvaluateTo { get; set; } = TestResultType.Success;
 
     /// <inheritdoc />
-    public KeyValuePair<string, object?>[] Arguments { get; set; } = [];
+    public string Arguments { get; set; } = string.Empty;
 
     /// <inheritdoc />
     public ValueTask<TestResult> Run<T>(T caller, Command command, CommandOptions? options = null) 

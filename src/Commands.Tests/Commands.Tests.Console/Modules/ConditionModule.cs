@@ -1,4 +1,6 @@
-﻿namespace Commands.Tests;
+﻿using Commands.Testing;
+
+namespace Commands.Tests;
 
 public class ConditionModule : CommandModule
 {
@@ -6,7 +8,7 @@ public class ConditionModule : CommandModule
     // Grouped by OR, the command will succeed if any of the conditions are met. This scenario will succeed.
     [OR1(true)]
     [OR1(false)]
-    [TryInput("")]
+    [Test]
     public static string ConditionOR()
     {
         return "Success";
@@ -16,7 +18,7 @@ public class ConditionModule : CommandModule
     // Grouped by AND, the command will succeed if all of the conditions are met. This scenario will fail.
     [AND(true)]
     [AND(false)]
-    [TryInput("", true)]
+    [Test(ShouldEvaluateTo = TestResultType.ConditionFailure)]
     public static string ConditionAND()
     {
         return "Success";
@@ -29,7 +31,7 @@ public class ConditionModule : CommandModule
     // Grouped by AND. This scenario will succeed.
     [AND(true)]
     [AND(true)]
-    [TryInput("")]
+    [Test]
     public static string ConditionORAND()
     {
         return "Success";
@@ -40,7 +42,7 @@ public class ConditionModule : CommandModule
     [OR1(false)]
     [OR2(false)]
     [OR2(true)]
-    [TryInput("")]
+    [Test]
     public static string ConditionMultiOR()
     {
         return "Success";

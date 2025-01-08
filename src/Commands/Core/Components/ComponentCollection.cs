@@ -30,53 +30,53 @@ public abstract class ComponentCollection : IComponentCollection
         => _components.Contains(component);
 
     /// <inheritdoc />
-    public IEnumerable<IComponent> GetCommands(bool browseNestedComponents = true)
+    public IEnumerable<Command> GetCommands(bool browseNestedComponents = true)
         => GetCommands(_ => true, browseNestedComponents);
 
     /// <inheritdoc />
-    public IEnumerable<IComponent> GetCommands(Predicate<Command> predicate, bool browseNestedComponents = true)
+    public IEnumerable<Command> GetCommands(Predicate<Command> predicate, bool browseNestedComponents = true)
     {
         Assert.NotNull(predicate, nameof(predicate));
 
         if (!browseNestedComponents)
-            return _components.Where(x => x is Command cmd && predicate(cmd));
+            return _components.Where(x => x is Command cmd && predicate(cmd)).Cast<Command>();
 
-        List<IComponent> discovered = [];
+        List<Command> discovered = [];
 
         foreach (var component in _components)
         {
             if (component is Command command && predicate(command))
                 discovered.Add(command);
 
-            if (component is CommandGroup module)
-                discovered.AddRange(module.GetCommands(predicate, browseNestedComponents));
+            if (component is CommandGroup grp)
+                discovered.AddRange(grp.GetCommands(predicate, browseNestedComponents));
         }
 
         return discovered;
     }
 
     /// <inheritdoc />
-    public IEnumerable<IComponent> GetModules(bool browseNestedComponents = true)
-        => GetModules(_ => true, browseNestedComponents);
+    public IEnumerable<CommandGroup> GetGroups(bool browseNestedComponents = true)
+        => GetGroups(_ => true, browseNestedComponents);
 
     /// <inheritdoc />
-    public IEnumerable<IComponent> GetModules(Predicate<CommandGroup> predicate, bool browseNestedComponents = true)
+    public IEnumerable<CommandGroup> GetGroups(Predicate<CommandGroup> predicate, bool browseNestedComponents = true)
     {
         Assert.NotNull(predicate, nameof(predicate));
 
         if (!browseNestedComponents)
-            return _components.Where(x => x is CommandGroup grp && predicate(grp));
+            return _components.Where(x => x is CommandGroup grp && predicate(grp)).Cast<CommandGroup>();
 
-        List<IComponent> discovered = [];
+        List<CommandGroup> discovered = [];
 
         foreach (var component in _components)
         {
             if (component is CommandGroup grp)
             {
                 if (predicate(grp))
-                    discovered.Add(component);
+                    discovered.Add(grp);
 
-                discovered.AddRange(grp.GetModules(predicate, browseNestedComponents));
+                discovered.AddRange(grp.GetGroups(predicate, browseNestedComponents));
             }
         }
 
