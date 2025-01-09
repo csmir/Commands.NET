@@ -44,3 +44,9 @@ Manage and create custom parsers for changing raw input into types.
 > `using Commands.Builders;`
 
 Understand the fluent builder API's and how they can be used to empower the end-user with customization.
+
+### 🧪 [[Testing Commands|Testing]]
+
+> `using Commands.Testing;`
+
+Learn how to test commands and ensure they function as expected.

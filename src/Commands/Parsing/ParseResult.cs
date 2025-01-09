@@ -1,12 +1,14 @@
-﻿namespace Commands;
+﻿namespace Commands.Parsing;
 
 /// <summary>
 ///     The result of a convert operation within the command execution pipeline.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public readonly struct ParseResult : IValueResult
+public readonly struct ParseResult : IExecuteResult
 {
-    /// <inheritdoc />
+    /// <summary>
+    ///     Gets the value of the resulted operation.
+    /// </summary>
     public object? Value { get; }
 
     /// <inheritdoc />

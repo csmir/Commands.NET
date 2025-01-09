@@ -1,11 +1,13 @@
-﻿namespace Commands.Tests;
+﻿using Commands.Testing;
+
+namespace Commands.Tests;
 
 [Name("class-based", "cb")]
 [AND(true)]
 [OR1(true)]
 public class ClassModule : CommandModule
 {
-    [TryInput("")]
+    [Test]
     public void Run()
     {
         Respond(Command.Attributes.Length);
