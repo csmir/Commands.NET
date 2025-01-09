@@ -1,9 +1,11 @@
-﻿namespace Commands.Tests;
+﻿using Commands.Testing;
+
+namespace Commands.Tests;
 
 public class MutationModule : CommandModule
 {
     [Name("add-command")]
-    [TryInput("test-command () => { }")]
+    [Test(Arguments = "test-command () => { }")]
     public Task MutateCurrentModule(string commandName, [Remainder, CSharpScriptParser] Delegate executionAction)
     {
         GetParent().Add(Command.Create(executionAction, commandName));
@@ -12,7 +14,7 @@ public class MutationModule : CommandModule
     }
 
     [Name("add-module")]
-    [TryInput("test-module")]
+    [Test(Arguments = "test-module")]
     public Task MutateCurrentModule(string moduleName)
     {
         GetParent().Add(CommandGroup.Create(moduleName));

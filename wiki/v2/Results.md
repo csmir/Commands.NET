@@ -8,24 +8,42 @@ When handling results, the different types of results are handled by the `Result
 
 ## Result types
 
-Amongst the different types of results, the scenario is different for each variant:
+There are four different types of results that can be returned from the command pipeline. Between these results, the `IExecuteResult` interface is implemented. 
 
-> Each result implements a `Success` property, which is used to determine if the result was successful or not. 
-If `false`, the `Exception` property will contain the exception that was thrown, never being `null` on failure.
+> [!NOTE] Each result implements a `Success` property, which is used to determine if the result was successful or not. 
+> If `false`, the `Exception` property will contain the exception that was thrown.
 
-- `SearchResult` is returned in the search operation, containing discovered commands if any. It will return a failed result if:
-  - No commands or modules were found.
-  - A module was found, but no methods are available to execute.
+### SearchResult
 
-- `MatchResult` is returned in the match operation, containing the commands that are ready for execution if any. It will return a failed result if:
-  - An argument mismatch occurred between the command and the input.
-  - A type conversion between the input and the target type of an argument failed.
+`SearchResult` is returned when the discovery operation failed to yield result.
 
-- `ConditionResult` is returned in the condition evaluation, containing the result of the condition check. It will return a failed result if one or multiple conditions were unmet.
+When this result is received, the `Exception` property can contain one of two exceptions:
 
-- `InvokeResult` is returned when the command is finished executing, containing the result of the command. It will return a failed result if the command execution failed by errors thrown in the user's own codebase.
+- `CommandNotFoundException`: No commands or groups were found.
+- `CommandRouteIncompleteException`: A group was found, but no methods are available to execute.
 
-It is good to note that every `IExecuteResult` implementation overrides `ToString()` with a preformatted message to send to the user. This message can be sent to the user by-for example-calling `caller.Respond(result)`.
+### ParseResult
+
+`ParseResult` is returned from the parsing operation when the input could not be parsed into command parameters.
+
+When this result is received, the `Exception` property can contain one of two exceptions:
+
+- `CommandOutOfRangeException`: The provided arguments are out of range of the command.
+- `CommandParsingException`: A type conversion between the input and the target type of an argument failed. This exception holds the result of the first failed conversion.
+
+### ConditionResult
+
+`ConditionResult` is returned after condition evaluation if one or multiple conditions were unmet.
+
+Its `Exception` property contains a `CommandEvaluationException` which holds the result of the first failed condition.
+
+### InvokeResult
+
+`InvokeResult` is returned when the command is finished executing, containing the result of the command. 
+It will return a failed result if the command execution failed by errors thrown in the user's own codebase.
+
+> [!TIP] It is good to note that every `IExecuteResult` implementation overrides `ToString()` with a preformatted message to send to the user. 
+> This message can be sent to the user by-for example-calling `caller.Respond(result)`.
 
 ## Handling Results
 

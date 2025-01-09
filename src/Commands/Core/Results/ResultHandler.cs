@@ -1,4 +1,7 @@
-﻿namespace Commands;
+﻿using Commands.Conditions;
+using Commands.Parsing;
+
+namespace Commands;
 
 /// <summary>
 ///     Represents a resolver that invokes a delegate when a result is encountered from a command implementing <typeparamref name="TContext"/>. This class cannot be inherited.
@@ -34,8 +37,8 @@ public sealed class DelegateResultHandler<TContext>
     /// <inheritdoc />
     public override ValueTask HandleResult(TContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (result.Success && result is IValueResult value)
-            return HandleSuccess(caller, value, services, cancellationToken);
+        if (result.Success)
+            return HandleSuccess(caller, result, services, cancellationToken);
         else
             return _resultDelegate(caller, result, services);
     }
@@ -91,7 +94,7 @@ public abstract class ResultHandler
     public virtual ValueTask HandleResult(
         ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (result is IValueResult valueResult && valueResult.Success)
+        if (result is InvokeResult valueResult && valueResult.Success)
             return HandleSuccess(caller, valueResult, services, cancellationToken);
 
         switch (result)
@@ -99,13 +102,13 @@ public abstract class ResultHandler
             case InvokeResult invoke:
                 return HandleInvocationFailed(caller, invoke, services, cancellationToken);
             case SearchResult search:
-                if (search.Component != null)
-                    return HandleSearchIncomplete(caller, search, services, cancellationToken);
+                if (search.Exception is CommandRouteIncompleteException)
+                    return HandleRouteIncomplete(caller, search, services, cancellationToken);
                 return HandleCommandNotFound(caller, search, services, cancellationToken);
-            case MatchResult match:
-                if (match.Arguments != null)
-                    return HandleConversionFailed(caller, match, services, cancellationToken);
-                return HandleArgumentMismatch(caller, match, services, cancellationToken);
+            case ParseResult parse:
+                if (parse.Exception is CommandOutOfRangeException)
+                    return HandleCommandOutOfRange(caller, parse, services, cancellationToken);
+                return HandleConversionFailed(caller, parse, services, cancellationToken);
             case ConditionResult condition:
                 return HandleConditionUnmet(caller, condition, services, cancellationToken);
             default:
@@ -129,44 +132,44 @@ public abstract class ResultHandler
     [UnconditionalSuppressMessage("AotAnalysis", "IL2075", Justification = "The availability of Task<> is ensured at compile-time.")]
 #endif
     protected async virtual ValueTask HandleSuccess(
-        ICallerContext caller, IValueResult result, IServiceProvider services, CancellationToken cancellationToken)
+        ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         async ValueTask Respond(object? obj)
         {
             if (caller is AsyncCallerContext asyncCaller)
-                await asyncCaller.Respond(obj);
+                await asyncCaller.Respond(obj).ConfigureAwait(false);
             else
                 caller.Respond(obj);
         }
 
-        if (result is InvokeResult invokeResult)
+        if (result is not InvokeResult invokeResult)
+            return;
+
+        switch (invokeResult.ReturnValue)
         {
-            switch (invokeResult.Value)
-            {
-                case null: // (void)
-                    return;
+            case null: // (void)
+                return;
 
-                case Task task:
-                    await task;
+            case Task task:
+                await task.ConfigureAwait(false);
 
-                    var taskType = task.GetType();
+                var taskType = task.GetType();
 
-                    // If the task is a generic task, and the result is not a void task result, get the result and respond with it. Unfortunately we cannot do a type comparison on VoidTaskResult, because it is an internal corelib struct.
-                    if (taskType.IsGenericType && taskType.GenericTypeArguments[0].Name != "VoidTaskResult")
-                    {
-                        _taskGetValue ??= taskType.GetProperty("Result")!.GetMethod;
+                // If the task is a generic task, and the result is not a void task result, get the result and respond with it. Unfortunately we cannot do a type comparison on VoidTaskResult, because it is an internal corelib struct.
+                if (taskType.IsGenericType && taskType.GenericTypeArguments[0].Name != "VoidTaskResult")
+                {
+                    _taskGetValue ??= taskType.GetProperty("Result")!.GetMethod;
 
-                        var output = _taskGetValue?.Invoke(task, null);
+                    var output = _taskGetValue?.Invoke(task, null);
 
-                        if (output != null)
-                            await Respond(output);
-                    }
-                    return;
+                    if (output != null)
+                        await Respond(output).ConfigureAwait(false);
+                }
+                return;
 
-                case object obj:
-                    await Respond(obj);
-                    return;
-            }
+            case object obj:
+                await Respond(obj).ConfigureAwait(false);
+                return;
         }
     }
 
@@ -190,7 +193,7 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleSearchIncomplete(
+    protected virtual ValueTask HandleRouteIncomplete(
         ICallerContext caller, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
@@ -202,8 +205,8 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleArgumentMismatch(
-        ICallerContext caller, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask HandleCommandOutOfRange(
+        ICallerContext caller, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
@@ -215,7 +218,7 @@ public abstract class ResultHandler
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
     protected virtual ValueTask HandleConversionFailed(
-        ICallerContext caller, MatchResult result, IServiceProvider services, CancellationToken cancellationToken)
+        ICallerContext caller, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>

@@ -32,6 +32,7 @@ public class TestProvider : ITestProvider
     {
         Assert.NotNull(command, nameof(command));
         Assert.NotNull(arguments, nameof(arguments));
+        Assert.NotNull(shouldEvaluateTo, nameof(shouldEvaluateTo));
 
         if (shouldEvaluateTo > TestResultType.Success && shouldEvaluateTo < TestResultType.InvocationFailure)
             throw new ArgumentOutOfRangeException(nameof(shouldEvaluateTo), shouldEvaluateTo, "The provided value is not a valid test result type.");

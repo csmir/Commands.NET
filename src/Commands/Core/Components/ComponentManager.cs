@@ -1,4 +1,5 @@
 ﻿using Commands.Builders;
+using Commands.Parsing;
 
 namespace Commands;
 
@@ -49,21 +50,19 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     }
 
     /// <inheritdoc />
-    public override IEnumerable<SearchResult> Find(ArgumentArray args)
+    public override IEnumerable<KeyValuePair<int, IComponent>> Find(ArgumentArray args)
     {
-        List<SearchResult> discovered = [];
-
-        var index = 0;
+        List<KeyValuePair<int, IComponent>> discovered = [];
 
         foreach (var component in this)
         {
-            if (!args.TryGetElementAt(index, out var value) || !component.Names.Contains(value))
+            if (!args.TryGetElementAt(0, out var value) || !component.Names.Contains(value))
                 continue;
 
             if (component is CommandGroup group)
                 discovered.AddRange(group.Find(args));
             else
-                discovered.Add(SearchResult.FromSuccess(component, index + 1));
+                discovered.Add(new(1, component));
         }
 
         return discovered;
@@ -119,24 +118,24 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
 
         foreach (var search in searches)
         {
-            if (search.Component is Command command)
+            if (search.Value is Command command)
             {
                 // Reset the result if we're going to attempt to run a new command. We only output the last occurred error.
                 result = null;
 
-                var conversion = await command.Parse(caller, search.ParseIndex, args, options);
+                var conversion = await command.Parse(caller, search.Key, args, options).ConfigureAwait(false);
 
                 var arguments = new object?[conversion.Length];
 
                 for (int i = 0; i < conversion.Length; i++)
                 {
                     if (!conversion[i].Success)
-                        result ??= MatchResult.FromError(command, conversion[i].Exception!);
+                        result ??= ParseResult.FromError(new CommandParsingException(command, conversion[i].Exception));
 
                     arguments[i] = conversion[i].Value;
                 }
 
-                result ??= await command.Run(caller, arguments, options);
+                result ??= await command.Run(caller, arguments, options).ConfigureAwait(false);
 
                 if (!result.Success)
                     continue;
@@ -144,15 +143,15 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
                 break;
             }
 
-            result ??= search;
+            result ??= new SearchResult(new CommandRouteIncompleteException(search.Value));
         }
 
-        result ??= SearchResult.FromError();
+        result ??= new SearchResult(new CommandNotFoundException());
 
         if (_handlersAvailable)
         {
             foreach (var resolver in _handlers)
-                await resolver.HandleResult(caller, result, options.Services, options.CancellationToken);
+                await resolver.HandleResult(caller, result, options.Services, options.CancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -173,7 +172,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         var basicResultHandler = new DelegateResultHandler<ICallerContext>(async (ctx, res, serv) =>
         {
             if (ctx is AsyncCallerContext asyncCtx)
-                await asyncCtx.Respond(res);
+                await asyncCtx.Respond(res).ConfigureAwait(false);
             else
                 ctx.Respond(res);
         });

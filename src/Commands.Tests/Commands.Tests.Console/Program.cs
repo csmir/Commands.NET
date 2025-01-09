@@ -1,36 +1,23 @@
 ﻿using Commands;
-using Commands.Tests;
+using Commands.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
 var manager = ComponentManager.CreateBuilder()
     .WithTypes(typeof(Program).Assembly.GetExportedTypes())
-    .AddResultHandler<AutomatedContext>((c, r, s) =>
-    {
-        if (!c.ShouldFail)
-        {
-            Console.WriteLine($"Received {r.Exception}; Failed but should have succeeded. Input: {c.Input}");
-            return;
-        }
-    })
     .AddResultHandler<ConsoleContext>((c, r, s) => c.Respond(r))
     .Build();
 
-var commands = manager.GetCommands();
+var testRunner = TestRunner.Create<TestCallerContext>(manager.GetCommands());
 
-foreach (var command in commands.OfType<Command>())
+testRunner.TestFailed += (result) =>
 {
-    foreach (var input in command.Attributes.OfType<TryInputAttribute>())
-    {
-        var ctx = new AutomatedContext(input.Input, input.ShouldFail);
+    throw new InvalidOperationException($"Failed to evaluate command {result.Command} with expected outcome {result.ExpectedResult}. Received {result.ActualResult}.", result.Exception);
+};
 
-        var commandName = command.GetFullName(false);
+await testRunner.Run();
 
-        if (!string.IsNullOrEmpty(input.Input))
-            commandName += " " + input.Input;
-
-        manager.TryExecute(ctx, commandName);
-    }
-}
+if (testRunner.CountCompleted == testRunner.Count)
+    Console.WriteLine("All tests ran succesfully.");
 
 var services = new ServiceCollection()
     .AddSingleton(manager)

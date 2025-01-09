@@ -16,6 +16,8 @@ public class TestRunner<TContext> : TestRunner
     internal TestRunner(Dictionary<Command, ITestProvider[]> tests)
         : base(tests) { }
 
+    }
+
     /// <inheritdoc />
     public override async Task Run(CommandOptions? options = null)
     {
@@ -88,9 +90,21 @@ public abstract class TestRunner
     public static TestRunner Create(IEnumerable<Command> commands, params TestProvider[] runtimeDefinedTests)
         => Create<TestCallerContext>(commands, runtimeDefinedTests);
 
+    /// <inheritdoc cref="Create{T}(KeyValuePair{Command, IEnumerable{TestProvider}}[])"/>
+    public static TestRunner Create<T>(IEnumerable<Command> commands)
+        where T : ICallerContext, new()
+    {
+        Assert.NotNull(commands, nameof(commands));
+
+        var tests = commands.ToDictionary(x => x, x => x.Attributes.OfType<ITestProvider>());
+
+        return new TestRunner<T>(tests);
+    }
+
     /// <summary>
     ///     Runs all defined tests specified on the target command, using a newly created instance of <see cref="ICallerContext"/> that is recreated for each test.
     /// </summary>
+    /// <typeparam name="T">The type of <see cref="ICallerContext"/> to create for every test.</typeparam>
     /// <param name="commands">The commands that should be targetted to be tested.</param>
     /// <param name="runtimeDefinedTests">A collection of tests that are defined at runtime.</param>
     /// <returns>An awaitable <see cref="TestResult"/> containing the result of the test operation. If all tests succeeded, the underlying <see cref="TestResult.ActualResult"/> will be <see cref="TestResultType.Success"/>.</returns>

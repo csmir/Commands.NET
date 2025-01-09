@@ -1,9 +1,91 @@
 ﻿using Commands.Parsing;
+using System.ComponentModel;
 
 namespace Commands;
 
-internal static class ComponentUtilities
+/// <summary>
+///     Provides utilities for components.
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class ComponentUtilities
 {
+    /// <summary>
+    ///     Parses the command with the specified arguments.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static async ValueTask<ParseResult[]> Parse(this Command command, ICallerContext caller, int parseIndex, ArgumentArray args, CommandOptions options)
+    {
+        options.CancellationToken.ThrowIfCancellationRequested();
+
+        args.SetParseIndex(parseIndex);
+
+        if (!command.HasParameters && args.Length == 0)
+            return [];
+
+        if (command.MaxLength == args.Length)
+            return await command.Parse(caller, args, options).ConfigureAwait(false);
+
+        if (command.MaxLength <= args.Length && command.HasRemainder)
+            return await command.Parse(caller, args, options).ConfigureAwait(false);
+
+        if (command.MaxLength > args.Length && command.MinLength <= args.Length)
+            return await command.Parse(caller, args, options).ConfigureAwait(false);
+
+        return [ParseResult.FromError(new CommandOutOfRangeException(command, args.Length))];
+    }
+
+    internal static async ValueTask<ParseResult[]> Parse(this IParameterCollection provider, ICallerContext caller, ArgumentArray args, CommandOptions options)
+    {
+        options.CancellationToken.ThrowIfCancellationRequested();
+
+        var results = new ParseResult[provider.Parameters.Length];
+
+        for (int i = 0; i < provider.Parameters.Length; i++)
+        {
+            var argument = provider.Parameters[i];
+
+            if (argument.IsRemainder)
+            {
+                results[i] = await argument.Parse(caller, argument.IsCollection ? args.TakeRemaining(argument.Name!) : args.TakeRemaining(argument.Name!, options.RemainderSeparator), options.Services, options.CancellationToken).ConfigureAwait(false);
+
+                break;
+            }
+
+            if (argument is ConstructibleParameter complexParameter)
+            {
+                var result = await complexParameter.Parse(caller, args, options).ConfigureAwait(false);
+
+                if (result.All(x => x.Success))
+                {
+                    try
+                    {
+                        results[i] = ParseResult.FromSuccess(complexParameter.Activator.Invoke(caller, null, result.Select(x => x.Value).ToArray(), options));
+                    }
+                    catch (Exception ex)
+                    {
+                        results[i] = ParseResult.FromError(ex);
+                    }
+
+                    continue;
+                }
+
+                if (complexParameter.IsOptional)
+                    results[i] = ParseResult.FromSuccess(Type.Missing);
+
+                continue;
+            }
+
+            if (args.TryGetElement(argument.Name!, out var value))
+                results[i] = await argument.Parse(caller, value, options.Services, options.CancellationToken).ConfigureAwait(false);
+            else if (argument.IsOptional)
+                results[i] = ParseResult.FromSuccess(Type.Missing);
+            else
+                results[i] = ParseResult.FromError(new ArgumentNullException(argument.Name));
+        }
+
+        return results;
+    }
+
     internal static T? FirstOrDefault<T>(this IEnumerable<Attribute> attributes)
         => attributes.OfType<T>().FirstOrDefault();
 
@@ -265,78 +347,5 @@ internal static class ComponentUtilities
 
         if (!found)
             throw new InvalidOperationException($"{type} has no publically available constructors to use in creating instances of this type.");
-    }
-
-    internal static async ValueTask<ParseResult[]> Parse(this Command command, ICallerContext caller, int parseIndex, ArgumentArray args, CommandOptions options)
-    {
-        options.CancellationToken.ThrowIfCancellationRequested();
-
-        args.SetParseIndex(parseIndex);
-
-        if (!command.HasParameters && args.Length == 0)
-            return [];
-
-        if (command.MaxLength == args.Length)
-            return await command.Parse(caller, args, options);
-
-        if (command.MaxLength <= args.Length && command.HasRemainder)
-            return await command.Parse(caller, args, options);
-
-        if (command.MaxLength > args.Length && command.MinLength <= args.Length)
-            return await command.Parse(caller, args, options);
-
-        return [ParseResult.FromError(ParseException.InputOutOfRange(command.MinLength, command.MaxLength, args.Length))];
-    }
-
-    internal static async ValueTask<ParseResult[]> Parse(this IParameterCollection provider, ICallerContext caller, ArgumentArray args, CommandOptions options)
-    {
-        options.CancellationToken.ThrowIfCancellationRequested();
-
-        var results = new ParseResult[provider.Parameters.Length];
-
-        for (int i = 0; i < provider.Parameters.Length; i++)
-        {
-            var argument = provider.Parameters[i];
-
-            if (argument.IsRemainder)
-            {
-                results[i] = await argument.Parse(caller, argument.IsCollection ? args.TakeRemaining(argument.Name!) : args.TakeRemaining(argument.Name!, options.RemainderSeparator), options.Services, options.CancellationToken);
-
-                break;
-            }
-
-            if (argument is ConstructibleParameter complexParameter)
-            {
-                var result = await complexParameter.Parse(caller, args, options);
-
-                if (result.All(x => x.Success))
-                {
-                    try
-                    {
-                        results[i] = ParseResult.FromSuccess(complexParameter.Activator.Invoke(caller, null, result.Select(x => x.Value).ToArray(), options));
-                    }
-                    catch (Exception ex)
-                    {
-                        results[i] = ParseResult.FromError(ex);
-                    }
-
-                    continue;
-                }
-
-                if (complexParameter.IsOptional)
-                    results[i] = ParseResult.FromSuccess(Type.Missing);
-
-                continue;
-            }
-
-            if (args.TryGetElement(argument.Name!, out var value))
-                results[i] = await argument.Parse(caller, value, options.Services, options.CancellationToken);
-            else if (argument.IsOptional)
-                results[i] = ParseResult.FromSuccess(Type.Missing);
-            else
-                results[i] = ParseResult.FromError(new ArgumentNullException(argument.Name));
-        }
-
-        return results;
     }
 }

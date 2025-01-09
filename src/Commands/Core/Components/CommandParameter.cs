@@ -130,7 +130,7 @@ public sealed class CommandParameter : ICommandParameter
             if (IsNullable)
                 return ParseResult.FromSuccess(null);
 
-            return ParseResult.FromError(new ParseException("A null (or \"null\") value was attempted to be provided to a non-nullable command parameter."));
+            return ParseResult.FromError(new ParserException(Parser, "A null (or \"null\") value was attempted to be provided to a non-nullable command parameter."));
         }
 
         return Parser?.Parse(caller, this, value, services, cancellationToken) ?? ParseResult.FromSuccess(value.ToString());

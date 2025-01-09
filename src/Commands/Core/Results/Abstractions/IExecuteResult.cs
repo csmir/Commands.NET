@@ -14,9 +14,7 @@ public interface IExecuteResult
     public Exception? Exception { get; }
 
     /// <summary>
-    ///     Gets if the result was successful or not.
+    ///     Gets the result of the preceding operation.
     /// </summary>
-    /// <returns><see langword="true"/> if this result represents a successful operation, otherwise <see langword="false"/>.</returns>
-    /// <inheritdoc />
     public bool Success { get; }
 }

@@ -112,22 +112,22 @@ public sealed class Command : IComponent, IParameterCollection
     /// <summary>
     ///     Runs the execution steps for executing the command; Evaluating present conditions and invoking the command handler.
     /// </summary>
-    /// <typeparam name="T">The type of the <see cref="ICallerContext"/> provided to this command.</typeparam>
+    /// <typeparam name="TContext">The type of the <see cref="ICallerContext"/> provided to this command.</typeparam>
     /// <param name="caller">The instance of the <see cref="ICallerContext"/> provided to this command.</param>
     /// <param name="arguments">The arguments provided to this command.</param>
     /// <param name="options">A collection of options that determines pipeline logic.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> containing the result of the execution. If <see cref="IExecuteResult.Success"/> is <see langword="true"/>, the command has successfully been executed.</returns>
-    public async ValueTask<IExecuteResult> Run<T>(T caller, object?[] arguments, CommandOptions options)
-        where T : ICallerContext
+    public async ValueTask<IExecuteResult> Run<TContext>(TContext caller, object?[] arguments, CommandOptions options)
+        where TContext : ICallerContext
     {
         if (!options.SkipConditions)
         {
             foreach (var condition in Evaluators)
             {
-                var checkResult = await condition.Evaluate(caller, this, options.Services, options.CancellationToken);
+                var checkResult = await condition.Evaluate(caller, this, options.Services, options.CancellationToken).ConfigureAwait(false);
 
                 if (!checkResult.Success)
-                    return checkResult;
+                    return ConditionResult.FromError(new CommandEvaluationException(this, checkResult.Exception));
             }
         }
 
@@ -135,11 +135,11 @@ public sealed class Command : IComponent, IParameterCollection
         {
             var value = Activator.Invoke(caller, this, arguments, options);
 
-            return InvokeResult.FromSuccess(this, value);
+            return new InvokeResult(this, value, null);
         }
         catch (Exception exception)
         {
-            return InvokeResult.FromError(this, exception);
+            return new InvokeResult(this, null, exception);
         }
     }
 

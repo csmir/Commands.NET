@@ -1,4 +1,4 @@
-﻿namespace Commands;
+﻿namespace Commands.Conditions;
 
 /// <summary>
 ///     The result of a check operation within the command execution pipeline.
@@ -14,9 +14,7 @@ public readonly struct ConditionResult : IExecuteResult
         => Exception == null;
 
     private ConditionResult(Exception? exception)
-    {
-        Exception = exception;
-    }
+        => Exception = exception;
 
     /// <summary>
     ///     Creates a new <see cref="ConditionResult"/> resembling a successful check operation.
@@ -24,14 +22,6 @@ public readonly struct ConditionResult : IExecuteResult
     /// <returns>A new result containing information about the succeeded operation.</returns>
     public static ConditionResult FromSuccess()
         => new(null);
-
-    /// <summary>
-    ///     Creates a new <see cref="ConditionResult"/> resembling a failed check operation.
-    /// </summary>
-    /// <param name="reason">The reason why the check failed.</param>
-    /// <returns>A new result containing information about the failed operation.</returns>
-    public static ConditionResult FromError(string reason)
-        => new(new ConditionException(reason));
 
     /// <summary>
     ///     Creates a new <see cref="ConditionResult"/> resembling a failed check operation.

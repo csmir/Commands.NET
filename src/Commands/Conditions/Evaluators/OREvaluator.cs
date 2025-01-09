@@ -12,7 +12,7 @@ public sealed class OREvaluator : ConditionEvaluator
 
         foreach (var condition in Conditions)
         {
-            var result = await condition.Evaluate(caller, command, services, cancellationToken);
+            var result = await condition.Evaluate(caller, command, services, cancellationToken).ConfigureAwait(false);
 
             if (result.Success)
                 return result;
