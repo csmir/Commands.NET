@@ -16,8 +16,6 @@ public class TestRunner<TContext> : TestRunner
     internal TestRunner(Dictionary<Command, ITestProvider[]> tests)
         : base(tests) { }
 
-    }
-
     /// <inheritdoc />
     public override async Task Run(CommandOptions? options = null)
     {
@@ -89,17 +87,6 @@ public abstract class TestRunner
     /// <inheritdoc cref="Create{T}(IEnumerable{Command}, TestProvider[])"/>
     public static TestRunner Create(IEnumerable<Command> commands, params TestProvider[] runtimeDefinedTests)
         => Create<TestCallerContext>(commands, runtimeDefinedTests);
-
-    /// <inheritdoc cref="Create{T}(KeyValuePair{Command, IEnumerable{TestProvider}}[])"/>
-    public static TestRunner Create<T>(IEnumerable<Command> commands)
-        where T : ICallerContext, new()
-    {
-        Assert.NotNull(commands, nameof(commands));
-
-        var tests = commands.ToDictionary(x => x, x => x.Attributes.OfType<ITestProvider>());
-
-        return new TestRunner<T>(tests);
-    }
 
     /// <summary>
     ///     Runs all defined tests specified on the target command, using a newly created instance of <see cref="ICallerContext"/> that is recreated for each test.
