@@ -40,7 +40,7 @@ internal static class TestUtilities
 
         var arguments = ArgumentArray.Read(fullName);
 
-        var parseResult = await command.Parse(caller, parseIndex, arguments, options);
+        var parseResult = await command.Parse(caller, parseIndex, arguments, options).ConfigureAwait(false);
 
         var argumentObjects = new object?[parseResult.Length];
 
@@ -52,7 +52,7 @@ internal static class TestUtilities
                 return GetResult(ParseResult.FromError(new CommandParsingException(command, parseResult[i].Exception)));
         }
 
-        var runResult = await command.Run(caller, argumentObjects, options);
+        var runResult = await command.Run(caller, argumentObjects, options).ConfigureAwait(false);
 
         return GetResult(runResult);
     }

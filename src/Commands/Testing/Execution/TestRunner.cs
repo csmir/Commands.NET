@@ -28,7 +28,7 @@ public class TestRunner<TContext> : TestRunner
 
             foreach (var provider in test.Value)
             {
-                var result = await provider.Run(caller, test.Key);
+                var result = await provider.Run(caller, test.Key).ConfigureAwait(false);
 
                 TestCompleted?.Invoke(result);
 

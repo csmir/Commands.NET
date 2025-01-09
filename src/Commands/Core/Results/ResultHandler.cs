@@ -137,7 +137,7 @@ public abstract class ResultHandler
         async ValueTask Respond(object? obj)
         {
             if (caller is AsyncCallerContext asyncCaller)
-                await asyncCaller.Respond(obj);
+                await asyncCaller.Respond(obj).ConfigureAwait(false);
             else
                 caller.Respond(obj);
         }
@@ -151,7 +151,7 @@ public abstract class ResultHandler
                 return;
 
             case Task task:
-                await task;
+                await task.ConfigureAwait(false);
 
                 var taskType = task.GetType();
 
@@ -163,12 +163,12 @@ public abstract class ResultHandler
                     var output = _taskGetValue?.Invoke(task, null);
 
                     if (output != null)
-                        await Respond(output);
+                        await Respond(output).ConfigureAwait(false);
                 }
                 return;
 
             case object obj:
-                await Respond(obj);
+                await Respond(obj).ConfigureAwait(false);
                 return;
         }
     }

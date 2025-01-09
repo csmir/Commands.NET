@@ -124,7 +124,7 @@ public sealed class Command : IComponent, IParameterCollection
         {
             foreach (var condition in Evaluators)
             {
-                var checkResult = await condition.Evaluate(caller, this, options.Services, options.CancellationToken);
+                var checkResult = await condition.Evaluate(caller, this, options.Services, options.CancellationToken).ConfigureAwait(false);
 
                 if (!checkResult.Success)
                     return ConditionResult.FromError(new CommandEvaluationException(this, checkResult.Exception));

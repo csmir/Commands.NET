@@ -23,13 +23,13 @@ public static class ComponentUtilities
             return [];
 
         if (command.MaxLength == args.Length)
-            return await command.Parse(caller, args, options);
+            return await command.Parse(caller, args, options).ConfigureAwait(false);
 
         if (command.MaxLength <= args.Length && command.HasRemainder)
-            return await command.Parse(caller, args, options);
+            return await command.Parse(caller, args, options).ConfigureAwait(false);
 
         if (command.MaxLength > args.Length && command.MinLength <= args.Length)
-            return await command.Parse(caller, args, options);
+            return await command.Parse(caller, args, options).ConfigureAwait(false);
 
         return [ParseResult.FromError(new CommandOutOfRangeException(command, args.Length))];
     }
@@ -46,14 +46,14 @@ public static class ComponentUtilities
 
             if (argument.IsRemainder)
             {
-                results[i] = await argument.Parse(caller, argument.IsCollection ? args.TakeRemaining(argument.Name!) : args.TakeRemaining(argument.Name!, options.RemainderSeparator), options.Services, options.CancellationToken);
+                results[i] = await argument.Parse(caller, argument.IsCollection ? args.TakeRemaining(argument.Name!) : args.TakeRemaining(argument.Name!, options.RemainderSeparator), options.Services, options.CancellationToken).ConfigureAwait(false);
 
                 break;
             }
 
             if (argument is ConstructibleParameter complexParameter)
             {
-                var result = await complexParameter.Parse(caller, args, options);
+                var result = await complexParameter.Parse(caller, args, options).ConfigureAwait(false);
 
                 if (result.All(x => x.Success))
                 {
@@ -76,7 +76,7 @@ public static class ComponentUtilities
             }
 
             if (args.TryGetElement(argument.Name!, out var value))
-                results[i] = await argument.Parse(caller, value, options.Services, options.CancellationToken);
+                results[i] = await argument.Parse(caller, value, options.Services, options.CancellationToken).ConfigureAwait(false);
             else if (argument.IsOptional)
                 results[i] = ParseResult.FromSuccess(Type.Missing);
             else

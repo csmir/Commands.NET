@@ -20,7 +20,7 @@ internal sealed class ArrayParser(TypeParser underlyingParser) : TypeParser
         {
             var item = array.GetValue(i);
 
-            var result = await underlyingParser.Parse(caller, argument, item, services, cancellationToken);
+            var result = await underlyingParser.Parse(caller, argument, item, services, cancellationToken).ConfigureAwait(false);
 
             if (!result.Success)
                 return Error($"Failed to convert an array element. Expected: '{underlyingParser.Type.Name}', got: '{item}'. At: '{argument.Name}', Index: '{i}'");

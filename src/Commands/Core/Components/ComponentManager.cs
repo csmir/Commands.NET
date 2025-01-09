@@ -123,7 +123,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
                 // Reset the result if we're going to attempt to run a new command. We only output the last occurred error.
                 result = null;
 
-                var conversion = await command.Parse(caller, search.Key, args, options);
+                var conversion = await command.Parse(caller, search.Key, args, options).ConfigureAwait(false);
 
                 var arguments = new object?[conversion.Length];
 
@@ -135,7 +135,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
                     arguments[i] = conversion[i].Value;
                 }
 
-                result ??= await command.Run(caller, arguments, options);
+                result ??= await command.Run(caller, arguments, options).ConfigureAwait(false);
 
                 if (!result.Success)
                     continue;
@@ -151,7 +151,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         if (_handlersAvailable)
         {
             foreach (var resolver in _handlers)
-                await resolver.HandleResult(caller, result, options.Services, options.CancellationToken);
+                await resolver.HandleResult(caller, result, options.Services, options.CancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -172,7 +172,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         var basicResultHandler = new DelegateResultHandler<ICallerContext>(async (ctx, res, serv) =>
         {
             if (ctx is AsyncCallerContext asyncCtx)
-                await asyncCtx.Respond(res);
+                await asyncCtx.Respond(res).ConfigureAwait(false);
             else
                 ctx.Respond(res);
         });
