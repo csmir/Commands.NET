@@ -39,7 +39,7 @@ public abstract class ComponentCollection : IComponentCollection
         Assert.NotNull(predicate, nameof(predicate));
 
         if (!browseNestedComponents)
-            return _components.Where(x => x is Command cmd && predicate(cmd)).Cast<Command>();
+            return _components.OfType<Command>().Where(x => predicate(x));
 
         List<Command> discovered = [];
 
@@ -65,7 +65,7 @@ public abstract class ComponentCollection : IComponentCollection
         Assert.NotNull(predicate, nameof(predicate));
 
         if (!browseNestedComponents)
-            return _components.Where(x => x is CommandGroup grp && predicate(grp)).Cast<CommandGroup>();
+            return _components.OfType<CommandGroup>().Where(x => predicate(x));
 
         List<CommandGroup> discovered = [];
 

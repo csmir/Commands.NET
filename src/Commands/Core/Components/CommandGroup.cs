@@ -139,10 +139,6 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         => obj is ICommandSegment scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
     /// <inheritdoc />
-    public bool Equals(IComponent? other)
-        => other is CommandGroup info && ReferenceEquals(this, info);
-
-    /// <inheritdoc />
     public override IEnumerable<KeyValuePair<int, IComponent>> Find(ArgumentArray args)
     {
         List<KeyValuePair<int, IComponent>> discovered = [new(Position, this)];
@@ -191,14 +187,6 @@ public sealed class CommandGroup : ComponentCollection, IComponent
 
         return sb.ToString();
     }
-
-    /// <inheritdoc />
-    public override bool Equals(object? obj)
-        => obj is CommandGroup info && ReferenceEquals(this, info);
-
-    /// <inheritdoc />
-    public override int GetHashCode()
-        => base.GetHashCode();
 
     // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
     void IComponent.Bind(CommandGroup parent)

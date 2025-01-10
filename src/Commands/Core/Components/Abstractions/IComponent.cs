@@ -6,7 +6,7 @@ namespace Commands;
 /// <summary>
 ///     Reveals information about a conditional component, needing validation in order to become part of execution.
 /// </summary>
-public interface IComponent : ICommandSegment, IEquatable<IComponent>
+public interface IComponent : ICommandSegment
 {
     /// <summary>
     ///     Gets the parent group of this component. This property can be <see langword="null"/>.
