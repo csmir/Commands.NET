@@ -63,7 +63,7 @@ public sealed class CommandParameter : ICommandParameter
         else
             IsOptional = false;
 
-        if (attributes.Contains<RemainderAttribute>(false) || attributes.Contains<ParamArrayAttribute>(false))
+        if (attributes.Contains<RemainderAttribute>() || attributes.Contains<ParamArrayAttribute>())
             IsRemainder = true;
         else
             IsRemainder = false;
@@ -107,16 +107,6 @@ public sealed class CommandParameter : ICommandParameter
 
         return score;
     }
-
-    /// <inheritdoc />
-    public bool HasAttribute<T>()
-        where T : Attribute
-        => Attributes.Contains<T>(true);
-
-    /// <inheritdoc />
-    public T? GetAttribute<T>(T? defaultValue = default)
-        where T : Attribute
-        => Attributes.FirstOrDefault<T>() ?? defaultValue;
 
     /// <inheritdoc />
     public ValueTask<ParseResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)

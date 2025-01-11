@@ -5,7 +5,7 @@ namespace Commands.Tests;
 public class MutationModule : CommandModule
 {
     [Name("add-command")]
-    [Test(Arguments = "test-command () => { }")]
+    [Test(Arguments = "test-command () => \"test\"")]
     public Task MutateCurrentModule(string commandName, [Remainder, CSharpScriptParser] Delegate executionAction)
     {
         GetParent().Add(Command.Create(executionAction, commandName));

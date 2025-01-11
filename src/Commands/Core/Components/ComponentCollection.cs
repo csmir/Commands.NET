@@ -13,17 +13,13 @@ public abstract class ComponentCollection : IComponentCollection
         => _components.Count;
 
     /// <inheritdoc />
-    public int Depth
-        => this is CommandGroup group ? group.Position : 0;
-
-    /// <inheritdoc />
     public bool IsReadOnly { get; }
 
     internal ComponentCollection(bool isReadOnly)
         => IsReadOnly = isReadOnly;
 
     /// <inheritdoc />
-    public abstract IEnumerable<KeyValuePair<int, IComponent>> Find(ArgumentArray args);
+    public abstract IEnumerable<IComponent> Find(ArgumentArray args);
 
     /// <inheritdoc />
     public bool Contains(IComponent component)
@@ -39,7 +35,7 @@ public abstract class ComponentCollection : IComponentCollection
         Assert.NotNull(predicate, nameof(predicate));
 
         if (!browseNestedComponents)
-            return _components.OfType<Command>().Where(x => predicate(x));
+            return _components.OfType(predicate);
 
         List<Command> discovered = [];
 
@@ -65,7 +61,7 @@ public abstract class ComponentCollection : IComponentCollection
         Assert.NotNull(predicate, nameof(predicate));
 
         if (!browseNestedComponents)
-            return _components.OfType<CommandGroup>().Where(x => predicate(x));
+            return _components.OfType(predicate);
 
         List<CommandGroup> discovered = [];
 

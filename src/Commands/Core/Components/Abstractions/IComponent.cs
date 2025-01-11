@@ -42,6 +42,11 @@ public interface IComponent : ICommandSegment
     public bool IsDefault { get; }
 
     /// <summary>
+    ///     Gets the position of the component, being how deeply nested it is in the component manager.
+    /// </summary>
+    public int Position { get; }
+
+    /// <summary>
     ///     Sets the parent group of the component, if it is not yet set.
     /// </summary>
     /// <param name="parent">The new parent group of the component.</param>

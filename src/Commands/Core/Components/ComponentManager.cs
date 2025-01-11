@@ -50,9 +50,9 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     }
 
     /// <inheritdoc />
-    public override IEnumerable<KeyValuePair<int, IComponent>> Find(ArgumentArray args)
+    public override IEnumerable<IComponent> Find(ArgumentArray args)
     {
-        List<KeyValuePair<int, IComponent>> discovered = [];
+        List<IComponent> discovered = [];
 
         foreach (var component in this)
         {
@@ -62,7 +62,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
             if (component is CommandGroup group)
                 discovered.AddRange(group.Find(args));
             else
-                discovered.Add(new(1, component));
+                discovered.Add(component);
         }
 
         return discovered;
@@ -114,28 +114,13 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
 
         IExecuteResult? result = null;
 
-        var searches = Find(args);
+        var components = Find(args);
 
-        foreach (var search in searches)
+        foreach (var component in components)
         {
-            if (search.Value is Command command)
+            if (component is Command command)
             {
-                // Reset the result if we're going to attempt to run a new command. We only output the last occurred error.
-                result = null;
-
-                var conversion = await command.Parse(caller, search.Key, args, options).ConfigureAwait(false);
-
-                var arguments = new object?[conversion.Length];
-
-                for (int i = 0; i < conversion.Length; i++)
-                {
-                    if (!conversion[i].Success)
-                        result ??= ParseResult.FromError(new CommandParsingException(command, conversion[i].Exception));
-
-                    arguments[i] = conversion[i].Value;
-                }
-
-                result ??= await command.Run(caller, arguments, options).ConfigureAwait(false);
+                result = await command.Run(caller, args, options).ConfigureAwait(false);
 
                 if (!result.Success)
                     continue;
@@ -143,7 +128,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
                 break;
             }
 
-            result ??= new SearchResult(new CommandRouteIncompleteException(search.Value));
+            result ??= new SearchResult(new CommandRouteIncompleteException(component));
         }
 
         result ??= new SearchResult(new CommandNotFoundException());

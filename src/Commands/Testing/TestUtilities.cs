@@ -1,6 +1,4 @@
-﻿using Commands.Parsing;
-
-namespace Commands.Testing;
+﻿namespace Commands.Testing;
 
 internal static class TestUtilities
 {
@@ -27,32 +25,13 @@ internal static class TestUtilities
             };
         }
 
-        // Create a new set of arguments by appending the arguments from the provider to the command's name. This should result in valid parameters for an ArgumentArray.
-        var commandName = command.GetFullName(false)
-            .Split([' '], StringSplitOptions.RemoveEmptyEntries)
-            .ToArray();
-
         var fullName = string.IsNullOrWhiteSpace(provider.Arguments)
-            ? string.Join(" ", commandName)
-            : string.Join(" ", commandName) + ' ' + provider.Arguments;
-
-        var parseIndex = commandName.Length;
+            ? command.GetFullName(false)
+            : command.GetFullName(false) + ' ' + provider.Arguments;
 
         var arguments = ArgumentArray.Read(fullName);
 
-        var parseResult = await command.Parse(caller, parseIndex, arguments, options).ConfigureAwait(false);
-
-        var argumentObjects = new object?[parseResult.Length];
-
-        for (var i = 0; i < parseResult.Length; i++)
-        {
-            if (parseResult[i].Success)
-                argumentObjects[i] = parseResult[i].Value;
-            else
-                return GetResult(ParseResult.FromError(new CommandParsingException(command, parseResult[i].Exception)));
-        }
-
-        var runResult = await command.Run(caller, argumentObjects, options).ConfigureAwait(false);
+        var runResult = await command.Run(caller, arguments, options).ConfigureAwait(false);
 
         return GetResult(runResult);
     }

@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 var manager = ComponentManager.CreateBuilder()
     .WithTypes(typeof(Program).Assembly.GetExportedTypes())
-    .AddResultHandler<ConsoleContext>((c, r, s) => c.Respond(r))
+    .AddResultHandler<ConsoleContext>((c, r, s) => c.Respond(r.Exception?.InnerException != null ? r.Exception.InnerException : r.Exception))
     .Build();
 
 var testRunner = TestRunner.Create<TestCallerContext>(manager.GetCommands());

@@ -132,3 +132,14 @@ public class ServicedModule(MyService service) : CommandModule
 - [Commands.Samples.Hosting](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Hosting)
   - Integrating Commands.NET into the .NET Generic Host infrastructure.
 
+## Benchmarks
+
+| Method          | Mean      | Error    | StdDev   | Gen0   | Allocated |
+|---------------- |----------:|---------:|---------:|-------:|----------:|
+| FindCommands    |  61.88 ns | 0.657 ns | 0.615 ns | 0.0381 |     240 B |
+| RunCommand      | 232.08 ns | 1.505 ns | 1.257 ns | 0.1287 |     808 B |
+| RunCommandAsync | 224.92 ns | 1.409 ns | 1.249 ns | 0.1287 |     808 B |
+
+> Ran on 12th Gen Intel(R) Core(TM) i7-1255U
+
+*This chart can be reproduced at any time by running [Commands.Tests.Benchmarks](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Tests/Commands.Tests.Benchmarks).*
