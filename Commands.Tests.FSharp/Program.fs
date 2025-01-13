@@ -1,10 +1,9 @@
-﻿open Commands;
-open System;
+﻿open Commands
+open System
 
-open ExecutionDependencies;
+open ExecutionDependencies
 
-let handler = new DelegateResultHandler<ICallerContext>(
-    Action<ICallerContext, IExecuteResult, IServiceProvider>(fun (context: ICallerContext) (result: IExecuteResult) (services: IServiceProvider) -> printfn "%A" result))
+let handler = new DelegateResultHandler<ICallerContext>(ResultProcessor.Process())
 
 let command = Command.Create(Func<string>(fun () -> "Hello world"), [| "hello" |])
 
