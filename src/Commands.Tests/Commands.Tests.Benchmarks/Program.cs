@@ -32,7 +32,7 @@ public class Program
     {
         var services = new ServiceCollection()
             .AddSingleton(ComponentManager.CreateBuilder()
-                .WithTypes(typeof(Program).Assembly.GetTypes())
+                .AddType<CreationAnalysisModule>()
                 .AddCommand("command", () => { })
                 .Build())
             .BuildServiceProvider();
@@ -47,31 +47,31 @@ public class Program
 
     #region Object Creation Analysis
 
-    //[Benchmark]
-    //public void CommandCreate()
-    //{
-    //    Command.Create(() => { }, "name");
-    //}
+    [Benchmark]
+    public void CommandCreate()
+    {
+        Command.Create(() => { }, "name");
+    }
 
-    //[Benchmark]
-    //public void GroupCreate()
-    //{
-    //    var group = CommandGroup.Create("name");
+    [Benchmark]
+    public void GroupCreate()
+    {
+        var group = CommandGroup.Create("name");
 
-    //    group.Add(Command.Create(() => { }, "name"));
-    //}
+        group.Add(Command.Create(() => { }, "name"));
+    }
 
-    //[Benchmark]
-    //public void TypeGroupCreate()
-    //{
-    //    CommandGroup.Create<CreationAnalysisModule>();
-    //}
+    [Benchmark]
+    public void TypeGroupCreate()
+    {
+        CommandGroup.Create<CreationAnalysisModule>();
+    }
 
-    //[Benchmark]
-    //public void CreateArguments()
-    //{
-    //    ArgumentArray.Read("command");
-    //}
+    [Benchmark]
+    public void CreateArguments()
+    {
+        ArgumentArray.Read("command");
+    }
 
     #endregion
 
@@ -86,19 +86,14 @@ public class Program
     [Benchmark]
     public void RunCommand()
     {
-        _components.TryExecute(new BenchmarkCaller(), "command");
+        _components.TryExecute(new BenchmarkCallerContext(), "command");
     }
 
     [Benchmark]
     public Task RunCommandAsync()
     {
-        return _components.TryExecuteAsync(new BenchmarkCaller(), "command");
+        return _components.TryExecuteAsync(new BenchmarkCallerContext(), "command");
     }
 
     #endregion
-
-    public class BenchmarkCaller : ICallerContext
-    {
-        public void Respond(object? response) { }
-    }
 }

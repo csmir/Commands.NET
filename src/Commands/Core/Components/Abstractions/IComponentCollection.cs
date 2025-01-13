@@ -6,19 +6,11 @@
 public interface IComponentCollection : ICollection<IComponent>, IEnumerable<IComponent>
 {
     /// <summary>
-    ///     Gets the depth of the current collection, being how deeply nested it is in the component manager.
-    /// </summary>
-    /// <remarks>
-    ///     The depth of the root collection, being the <see cref="IExecutionProvider"/> implementing this collection, is 0.
-    /// </remarks>
-    public int Depth { get; }
-
-    /// <summary>
     ///     Searches recursively through this and all subcollections for components that match the provided arguments.
     /// </summary>
     /// <param name="args">The arguments to base the search operation on.</param>
     /// <returns>A lazily evaluated enumerable containing the discovered commands of this operation.</returns>
-    public abstract IEnumerable<KeyValuePair<int, IComponent>> Find(ArgumentArray args);
+    public abstract IEnumerable<IComponent> Find(ArgumentArray args);
 
     /// <summary>
     ///     Filters all components in the current collection that are of <see cref="Command"/>.

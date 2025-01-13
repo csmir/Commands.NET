@@ -13,22 +13,21 @@ public class TestRunner<TContext> : TestRunner
     /// <inheritdoc />
     public override event Action<TestResult>? TestFailed;
 
-    internal TestRunner(Dictionary<Command, IEnumerable<ITestProvider>> tests)
-        : base(tests)
-    {
-
-    }
+    internal TestRunner(Dictionary<Command, ITestProvider[]> tests)
+        : base(tests) { }
 
     /// <inheritdoc />
     public override async Task Run(CommandOptions? options = null)
     {
+        options ??= new CommandOptions();
+
         foreach (var test in Tests)
         {
             var caller = new TContext();
 
             foreach (var provider in test.Value)
             {
-                var result = await provider.Run(caller, test.Key).ConfigureAwait(false);
+                var result = await test.Key.Test(caller, provider, options);
 
                 TestCompleted?.Invoke(result);
 
@@ -69,7 +68,7 @@ public abstract class TestRunner
     /// <summary>
     ///     Gets a collection of commands and tests that are to be ran for that command.
     /// </summary>
-    public IReadOnlyDictionary<Command, IEnumerable<ITestProvider>> Tests { get; }
+    public IReadOnlyDictionary<Command, ITestProvider[]> Tests { get; }
 
     /// <summary>
     ///     Starts all contained tests sequentially and posts their results to <see cref="TestCompleted"/>.
@@ -78,40 +77,41 @@ public abstract class TestRunner
     /// <returns>An awaitable <see cref="Task"/> that represents testing operation.</returns>
     public abstract Task Run(CommandOptions? options = null);
 
-    internal TestRunner(Dictionary<Command, IEnumerable<ITestProvider>> tests)
+    internal TestRunner(Dictionary<Command, ITestProvider[]> tests)
     {
         Tests = tests;
         Count = tests.Count;
         CountCompleted = 0;
     }
 
-    /// <inheritdoc cref="Create{T}(KeyValuePair{Command, IEnumerable{TestProvider}}[])"/>
-    public static TestRunner Create<T>(params Command[] commands)
-        where T : ICallerContext, new()
-        => Create<T>(commands.AsEnumerable());
-
-    /// <inheritdoc cref="Create{T}(KeyValuePair{Command, IEnumerable{TestProvider}}[])"/>
-    public static TestRunner Create<T>(IEnumerable<Command> commands)
-        where T : ICallerContext, new()
-    {
-        Assert.NotNull(commands, nameof(commands));
-
-        var tests = commands.ToDictionary(x => x, x => x.Attributes.OfType<ITestProvider>());
-
-        return new TestRunner<T>(tests);
-    }
+    /// <inheritdoc cref="Create{T}(IEnumerable{Command}, TestProvider[])"/>
+    public static TestRunner Create(IEnumerable<Command> commands, params TestProvider[] runtimeDefinedTests)
+        => Create<TestCallerContext>(commands, runtimeDefinedTests);
 
     /// <summary>
     ///     Runs all defined tests specified on the target command, using a newly created instance of <see cref="ICallerContext"/> that is recreated for each test.
     /// </summary>
     /// <typeparam name="T">The type of <see cref="ICallerContext"/> to create for every test.</typeparam>
     /// <param name="commands">The commands that should be targetted to be tested.</param>
+    /// <param name="runtimeDefinedTests">A collection of tests that are defined at runtime.</param>
     /// <returns>An awaitable <see cref="TestResult"/> containing the result of the test operation. If all tests succeeded, the underlying <see cref="TestResult.ActualResult"/> will be <see cref="TestResultType.Success"/>.</returns>
-    public static TestRunner Create<T>(params KeyValuePair<Command, IEnumerable<TestProvider>>[] commands)
+    public static TestRunner Create<T>(IEnumerable<Command> commands, params TestProvider[] runtimeDefinedTests)
         where T : ICallerContext, new()
     {
         Assert.NotNull(commands, nameof(commands));
 
-        return new TestRunner<T>(commands.ToDictionary(x => x.Key, x => x.Key.Attributes.OfType<ITestProvider>().Concat(x.Value)));
+        var tests = commands.ToDictionary(x => x, x => x.Attributes.OfType<ITestProvider>().ToArray());
+
+        var runtimeDefined = runtimeDefinedTests.GroupBy(x => x.Command);
+
+        foreach (var group in runtimeDefined)
+        {
+            if (tests.TryGetValue(group.Key, out var value))
+                tests[group.Key] = [.. value, .. group];
+            else
+                tests[group.Key] = [.. group];
+        }
+
+        return new TestRunner<T>(tests);
     }
 }

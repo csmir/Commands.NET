@@ -1,5 +1,6 @@
 ﻿using Commands.Builders;
 using Commands.Conditions;
+using Commands.Parsing;
 using System.Text;
 
 namespace Commands;
@@ -61,6 +62,10 @@ public sealed class Command : IComponent, IParameterCollection
     public bool HasParameters
         => Parameters.Length > 0;
 
+    /// <inheritdoc />
+    public int Position
+        => (Parent?.Position ?? 0) + (Name == null ? 0 : 1);
+
     internal Command(CommandGroup parent, CommandStaticActivator invoker, string[] names, bool hasContext, ComponentConfiguration options)
         : this(parent, invoker, [], names, hasContext, options)
     {
@@ -114,12 +119,35 @@ public sealed class Command : IComponent, IParameterCollection
     /// </summary>
     /// <typeparam name="TContext">The type of the <see cref="ICallerContext"/> provided to this command.</typeparam>
     /// <param name="caller">The instance of the <see cref="ICallerContext"/> provided to this command.</param>
-    /// <param name="arguments">The arguments provided to this command.</param>
+    /// <param name="args">The arguments to parse into valid command arguments.</param>
     /// <param name="options">A collection of options that determines pipeline logic.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> containing the result of the execution. If <see cref="IExecuteResult.Success"/> is <see langword="true"/>, the command has successfully been executed.</returns>
-    public async ValueTask<IExecuteResult> Run<TContext>(TContext caller, object?[] arguments, CommandOptions options)
+    public async ValueTask<IExecuteResult> Run<TContext>(TContext caller, ArgumentArray args, CommandOptions options)
         where TContext : ICallerContext
     {
+        args.SetParseIndex(Position);
+
+        object?[] parameters;
+
+        if (!HasParameters && args.Length == 0)
+            parameters = [];
+        else if (MaxLength == args.Length || (MaxLength <= args.Length && HasRemainder) || (MaxLength > args.Length && MinLength <= args.Length))
+        {
+            var arguments = await this.Parse(caller, args, options).ConfigureAwait(false);
+
+            parameters = new object[arguments.Length];
+
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                if (!arguments[i].Success)
+                    return ParseResult.FromError(new CommandParsingException(this, arguments[i].Exception));
+
+                parameters[i] = arguments[i].Value;
+            }
+        }
+        else
+            return ParseResult.FromError(new CommandOutOfRangeException(this, args.Length));
+
         if (!options.SkipConditions)
         {
             foreach (var condition in Evaluators)
@@ -133,7 +161,7 @@ public sealed class Command : IComponent, IParameterCollection
 
         try
         {
-            var value = Activator.Invoke(caller, this, arguments, options);
+            var value = Activator.Invoke(caller, this, parameters, options);
 
             return new InvokeResult(this, value, null);
         }
@@ -143,7 +171,7 @@ public sealed class Command : IComponent, IParameterCollection
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="GetFullName()" />
     /// <param name="includeArguments">Defines if the arguments of the command should be included in the output.</param>
     public string GetFullName(bool includeArguments)
     {
@@ -191,22 +219,8 @@ public sealed class Command : IComponent, IParameterCollection
     }
 
     /// <inheritdoc />
-    public bool HasAttribute<T>()
-        where T : Attribute
-        => Attributes.Contains<T>(true);
-
-    /// <inheritdoc />
-    public T? GetAttribute<T>(T? defaultValue = default)
-        where T : Attribute
-        => Attributes.FirstOrDefault<T>() ?? defaultValue;
-
-    /// <inheritdoc />
     public int CompareTo(object? obj)
         => obj is ICommandSegment scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
-
-    /// <inheritdoc />
-    public bool Equals(IComponent? other)
-        => other is Command info && ReferenceEquals(this, info);
 
     /// <inheritdoc />
     public override string ToString()
@@ -244,14 +258,6 @@ public sealed class Command : IComponent, IParameterCollection
 
         return sb.ToString();
     }
-
-    /// <inheritdoc />
-    public override bool Equals(object? obj)
-        => obj is Command info && ReferenceEquals(this, info);
-
-    /// <inheritdoc />
-    public override int GetHashCode()
-        => base.GetHashCode();
 
     // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
     void IComponent.Bind(CommandGroup parent)

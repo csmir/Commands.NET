@@ -11,7 +11,7 @@ public class HelpModule : CommandModule
 
         foreach (var command in commands)
         {
-            var description = command.GetAttribute<DescriptionAttribute>()?.Description ?? "No description available.";
+            var description = command.Attributes.FirstOrDefault<DescriptionAttribute>()?.Description ?? "No description available.";
 
             await Respond(command.GetFullName());
             await Respond(description);

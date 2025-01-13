@@ -1,5 +1,6 @@
 ﻿using Commands.Builders;
 using Commands.Parsing;
+using Commands.Testing;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Commands.Tests;
@@ -69,5 +70,8 @@ public class FeatureRules
         ComponentManager.Create([]);
 
         ComponentManager.Create([], []);
+
+        // TestRunner:
+        TestRunner.Create([]);
     }
 }

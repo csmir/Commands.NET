@@ -1,38 +1,57 @@
 ﻿using Commands.Parsing;
-using System.ComponentModel;
 
 namespace Commands;
 
 /// <summary>
-///     Provides utilities for components.
+///     Provides a set of helper functions for working with components.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public static class ComponentUtilities
 {
     /// <summary>
-    ///     Parses the command with the specified arguments.
+    ///     Gets the first entry of the specified type, or <see langword="null"/> if it does not exist.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public static async ValueTask<ParseResult[]> Parse(this Command command, ICallerContext caller, int parseIndex, ArgumentArray args, CommandOptions options)
+    /// <typeparam name="T">The type to filter.</typeparam>
+    /// <param name="values"></param>
+    /// <returns>The first occurrence of <typeparamref name="T"/> in the collection if any exists, otherwise <see langword="null"/>.</returns>
+    public static T? FirstOrDefault<T>(this IEnumerable values)
+        => values.OfType<T>().FirstOrDefault();
+
+    /// <summary>
+    ///     Checks if the collection contains an instance of the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type to filter.</typeparam>
+    /// <param name="values"></param>
+    /// <returns><see langword="true"/> if a any <typeparamref name="T"/> was found, otherwise <see langword="false"/>.</returns>
+    public static bool Contains<T>(this IEnumerable values)
     {
-        options.CancellationToken.ThrowIfCancellationRequested();
+        foreach (var entry in values)
+        {
+            if (entry is T)
+                return true;
+        }
 
-        args.SetParseIndex(parseIndex);
-
-        if (!command.HasParameters && args.Length == 0)
-            return [];
-
-        if (command.MaxLength == args.Length)
-            return await command.Parse(caller, args, options).ConfigureAwait(false);
-
-        if (command.MaxLength <= args.Length && command.HasRemainder)
-            return await command.Parse(caller, args, options).ConfigureAwait(false);
-
-        if (command.MaxLength > args.Length && command.MinLength <= args.Length)
-            return await command.Parse(caller, args, options).ConfigureAwait(false);
-
-        return [ParseResult.FromError(new CommandOutOfRangeException(command, args.Length))];
+        return false;
     }
+
+    /// <summary>
+    ///     Gets all instances of the specified type, matching the provided predicate.
+    /// </summary>
+    /// <typeparam name="T">The type to filter.</typeparam>
+    /// <param name="values"></param>
+    /// <param name="predicate">The predicate which determines whether the component can be returned or not.</param>
+    /// <returns>A new <see cref="IEnumerable{T}"/> containing all legible values of <typeparamref name="T"/> in the initial collection.</returns>
+    public static IEnumerable<T> OfType<T>(this IEnumerable values, Predicate<T> predicate)
+    {
+        foreach (var entry in values)
+        {
+            if (entry is T tEntry && predicate(tEntry))
+                yield return tEntry;
+        }
+    }
+
+    #region Internal Helpers
+
+    #region Execution
 
     internal static async ValueTask<ParseResult[]> Parse(this IParameterCollection provider, ICallerContext caller, ArgumentArray args, CommandOptions options)
     {
@@ -86,33 +105,9 @@ public static class ComponentUtilities
         return results;
     }
 
-    internal static T? FirstOrDefault<T>(this IEnumerable<Attribute> attributes)
-        => attributes.OfType<T>().FirstOrDefault();
+    #endregion
 
-    internal static bool Contains<T>(this IEnumerable<Attribute> attributes, bool allowMultipleMatches)
-    {
-        var found = false;
-        foreach (var entry in attributes)
-        {
-            if (entry is T)
-            {
-                if (!allowMultipleMatches)
-                {
-                    if (!found)
-                        found = true;
-                    else
-                        return false;
-                }
-                else
-                {
-                    found = true;
-                    break;
-                }
-            }
-        }
-
-        return found;
-    }
+    #region Building
 
     internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
         => provider.GetCustomAttributes(inherit).OfType<Attribute>();
@@ -348,4 +343,8 @@ public static class ComponentUtilities
         if (!found)
             throw new InvalidOperationException($"{type} has no publically available constructors to use in creating instances of this type.");
     }
+
+    #endregion
+
+    #endregion
 }

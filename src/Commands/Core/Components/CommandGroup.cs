@@ -45,11 +45,9 @@ public sealed class CommandGroup : ComponentCollection, IComponent
 #endif
     public Type? Type { get; }
 
-    /// <summary>
-    ///     Gets the position of the module, being how deeply nested it is in the component manager.
-    /// </summary>
+    /// <inheritdoc />
     public int Position
-        => Parent?.Position + 1 ?? 1;
+        => (Parent?.Position ?? 0) + (Name == null ? 0 : 1);
 
     internal CommandGroup(
 #if NET8_0_OR_GREATER
@@ -125,40 +123,28 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     }
 
     /// <inheritdoc />
-    public bool HasAttribute<T>()
-        where T : Attribute
-        => Attributes.Contains<T>(true);
-
-    /// <inheritdoc />
-    public T? GetAttribute<T>(T? defaultValue = default)
-        where T : Attribute
-        => Attributes.FirstOrDefault<T>() ?? defaultValue;
-
-    /// <inheritdoc />
     public int CompareTo(object? obj)
         => obj is ICommandSegment scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
 
     /// <inheritdoc />
-    public bool Equals(IComponent? other)
-        => other is CommandGroup info && ReferenceEquals(this, info);
-
-    /// <inheritdoc />
-    public override IEnumerable<KeyValuePair<int, IComponent>> Find(ArgumentArray args)
+    public override IEnumerable<IComponent> Find(ArgumentArray args)
     {
-        List<KeyValuePair<int, IComponent>> discovered = [new(Position, this)];
+        List<IComponent> discovered = [this];
 
         foreach (var component in this)
         {
             if (component.IsDefault)
-                discovered.Add(new(Position, component));
-
-            if (!args.TryGetElementAt(Position, out var value) || !component.Names.Contains(value))
-                continue;
-
-            if (component is CommandGroup group)
-                discovered.AddRange(group.Find(args));
+                discovered.Add(component);
             else
-                discovered.Add(new(Position + 1, component));
+            {
+                if (!args.TryGetElementAt(Position, out var value) || !component.Names.Contains(value))
+                    continue;
+
+                if (component is CommandGroup group)
+                    discovered.AddRange(group.Find(args));
+                else
+                    discovered.Add(component);
+            }
         }
 
         return discovered;
@@ -191,14 +177,6 @@ public sealed class CommandGroup : ComponentCollection, IComponent
 
         return sb.ToString();
     }
-
-    /// <inheritdoc />
-    public override bool Equals(object? obj)
-        => obj is CommandGroup info && ReferenceEquals(this, info);
-
-    /// <inheritdoc />
-    public override int GetHashCode()
-        => base.GetHashCode();
 
     // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
     void IComponent.Bind(CommandGroup parent)

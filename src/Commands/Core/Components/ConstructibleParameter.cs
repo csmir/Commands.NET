@@ -126,16 +126,6 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
     }
 
     /// <inheritdoc />
-    public bool HasAttribute<T>()
-        where T : Attribute
-        => Attributes.Contains<T>(true);
-
-    /// <inheritdoc />
-    public T? GetAttribute<T>(T? defaultValue = default)
-        where T : Attribute
-        => Attributes.FirstOrDefault<T>() ?? defaultValue;
-
-    /// <inheritdoc />
     public ValueTask<ParseResult> Parse(ICallerContext caller, object? value, IServiceProvider services, CancellationToken cancellationToken)
         => throw new NotSupportedException("Complex arguments do not support parsing.");
 
