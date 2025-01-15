@@ -3,8 +3,6 @@ When handling results, the different types of results are handled by the `Result
 
 - [Result Types](#result-types)
 - [Handling Results](#handling-results)
-- [Complex Results](#complex-results)
-- [Extended Implementations](#extended-implementations)
 
 ## Result types
 
@@ -47,7 +45,20 @@ It will return a failed result if the command execution failed by errors thrown 
 
 ## Handling Results
 
-`ResultHandler` implementations are used to handle the different types of results. It is possible to define multiple custom result resolvers of your own make.
+`ResultHandler` implementations are used to handle the different types of results. It is possible to define multiple custom handlers of your own make.
+
+### Delegate Implementations
+
+ResultHandler has a delegate-based implementation which can be used exclusively to handle *faulty* results:
+
+```cs
+var handler = ResultHandler.Create<TContext>((ctx, result, services) => ...);
+```
+
+Here, `TContext` is the `ICallerContext` implementation that this handler will handle. 
+If the context is not of a matching type, this handler will not be called.
+
+### Class-based Implementations
 
 Like conversion and conditions, to begin writing our own handling logic, we need to implement the abstract type:
 
@@ -106,34 +117,3 @@ builder.AddResultHandler(new CustomResultHandler());
 
 > [!NOTE]
 > `ResultHandler<TContext>` can be used to filter by a specific context type. This is useful when you want to handle results differently depending on the context.
-
-## Complex Results
-
-When it is necessary to catch all results, or filter by a more complex condition than the default protected methods, the `HandleResult` method can be overridden.
-
-```cs
-using Commands;
-
-namespace Commands.Samples;
-
-public class CustomResultHandler : ResultHandler
-{
-	public override ValueTask HandleResult(ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
-	{
-	}
-}
-```
-
-In this method, the `IExecuteResult` parameter can be cast to the specific result type, and the logic can be implemented to handle the result accordingly.
-
-## Extended Implementations
-
-ResultHandler has a delegate-based implementation which can be used exclusively to handle *faulty* results. 
-This is done by creating a new instance of `DelegateResultHandler<TContext>`:
-
-```cs
-var handler = new DelegateResultHandler<TContext>((ctx, result, services) => ...);
-```
-
-Here, `TContext` is the `ICallerContext` implementation that this handler will handle. 
-If the context is not of a matching type, this handler will not be called.

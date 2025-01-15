@@ -1,109 +1,109 @@
 Conditions are checks that ensure that the command in scope is allowed to be executed and report success. 
 
-- [Creating your Condition](#creating-your-condition)
-- [Using your Condition](#using-your-condition)
-- [Logical operations](#logical-operations)
+- [Creating a Condition](#creating-a-condition)
+- [Applying a Condition](#applying-a-condition)
+- [Creating an Evaluator](#creating-an-evaluator)
 
-## Creating your Condition
+## Creating a Condition
 
-All preconditions inherit `ExecuteConditionAttribute<TEvaluator>`, which in turn inherits `Attribute`. 
-To start creating your own condition, you have to inherit `ExecuteConditionAttribute<TEvaluator>` on a class:
+Conditions are based on evaluators. 
+`ConditionEvaluator` implementations like `OREvaluator` and `ANDEvaluator` use logical operations to evaluate conditions, grouping them together per implementation of `ConditionEvaluator`.
+
+For the following examples, `ANDEvaluator` will be used. This means that all conditions must return success for the command to be executed.
+
+### Functional Pattern
+
+```cs
+var condition = ExecuteCondition.Create((ctx, cmd, services) => ...);
+```
+
+The creation pattern handles conditions as `ValueTask<ConditionResult>` where `ConditionResult.FromError()` or `ConditionResult.FromSuccess()` can be used to return the result. 
+`ConditionResult` implicitly converts to `ValueTask<T>`.
+
+### Declarative Pattern
 
 ```cs
 using Commands.Conditions;
 
-namespace Commands.Samples;
-
-public class RequireOperatingSystemAttribute : ExecuteConditionAttribute<ANDEvaluator>
+public class CustomCondition : ExecuteCondition<ANDCondition>
 {
-    public override ValueTask<CheckResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
-    {
-    }
+	public ValueTask<ConditionResult> Evaluate(ICallerContext context, Command command, IServiceProvider services)
+	{
+		// Your condition logic here
+	}
 }
 ```
 
-With this class defined, and the method that will operate the evaluation being implemented, we can now write our code which defines the succession and failure conditions.
+The declarative pattern implements shorthand access to `ConditionResult` using the exposed `Error()` and `Success()` methods.
 
-First of all, the restriction must be compared against. 
-To define this, we will implement a constructor parameter, automatically resolved as an attribute parameter by the IDE or code editor:
+### Attribute Pattern
 
 ```cs
 using Commands.Conditions;
 
-namespace Commands.Samples;
-
-public class RequireOperatingSystemAttribute(PlatformID platform) : ExecuteConditionAttribute<ANDEvaluator>
+public class CustomConditionAttribute : ExecuteConditionAttribute<ANDCondition>
 {
-    public PlatformID Platform { get; } = platform;
-
-    public override ValueTask<CheckResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
-    {
-    }
+	public ValueTask<ConditionResult> Evaluate(ICallerContext context, Command command, IServiceProvider services)
+	{
+		// Your condition logic here
+	}
 }
 ```
 
-After this has been defined, the `Platform` property can be used to evaluate the current operating system against. 
-Our focus goes to the `EvaluateAsync` method, which will run this check.
+The attribute pattern is exclusive to the module-based command system. 
+This pattern writes similar to `ExecuteCondition` implementations, also allowing shorthand calls to be used.
+
+## Applying a Condition
+
+### Functional Pattern & Declarative Pattern
 
 ```cs
-...
-    if (Environment.OSVersion.Platform == Platform)
-        return Success();
-
-    return Error("The platform does not support this operation.");
-...
+var command = Command.Create(() => { }, ["name"], [condition, new CustomCondition()]);
 ```
 
-That's it. With this done, we can look towards the application of our created condition.
+```cs
+var group = CommandGroup.Create(["name"], [condition, new CustomCondition()]);
+```
 
-> [!TIP]
-> `ExecuteCondition` is a 1:1 counterpart of the attribute-based implementation, serving as a variant for the runtime creation pattern. 
-> When using this pattern, `DelegateExecuteCondition` is also available.
+Conditions exposed to `CommandGroup` are passed to every `Command` and `CommandGroup` added to it.
 
-## Using your Condition
-
-After you have written your condition, it is time to use it. Let's define a command that depends on the operating system to run.
+### Attribute Pattern
 
 ```cs
-[Command("copy")]
-public void Copy([Remainder] string toCopy)
+[Name("command")]
+[CustomCondition]
+public void Command()
 {
-    Process clipboardExecutable = new()
-    {
-        StartInfo = new ProcessStartInfo
-        {
-            RedirectStandardInput = true,
-            FileName = "clip",
-        }
-    };
-    clipboardExecutable.Start();
-
-    clipboardExecutable.StandardInput.Write(toCopy);
-    clipboardExecutable.StandardInput.Close();
-
-    Console.Writeline("Succesfully copied the content to your clipboard.");
 }
 ```
 
-This method will use the Windows clip executable to copy a string onto your clipboard. 
-Though, this clipboard approach does not work on MacOS or Linux, so we have to make sure the command is executed on windows.
+Conditions are applied to the command by adding the attribute to the method. 
+Modules can also be decorated with conditions, which will be applied to all commands and nested modules within the module.
 
-To do this, all we have to do is add `[RequireOperatingSystem(PlatformID.Win32NT)]` above the method, like so:
+## Creating an Evaluator
+
+Evaluators are used to group conditions together. These are always defined declaratively.
 
 ```cs
-[Command("copy")]
-[RequireOperatingSystem(PlatformID.Win32NT)]
-public void Copy([Remainder] string toCopy)
-...
+using Commands.Conditions;
+
+public class NANDEvaluator : ConditionEvaluator
+{
+	public override ValueTask<ConditionResult> Evaluate(ICallerContext context, Command command, IServiceProvider services)
+	{
+		ConditionResult? falseResult = null;
+
+		foreach (var condition in Conditions)
+		{
+			var result = await condition.Evaluate(context, command, services);
+			if (!result.Success)
+			{
+				falseResult = result;
+				break;
+			}
+		}
+
+		return falseResult != null ? ConditionResult.FromSuccess() : ConditionResult.FromError("All conditions succeeded, causing the NAND operator to return false.");
+	}
+}
 ```
-
-The conditions is now defined on this command, and will be called when this command is triggered. 
-If the platform you run it on is indeed not Windows, it will fail.
-
-## Logical operations
-
-Conditions can be combined with logical operations. This can be done by adding multiple conditions to a command, and defining the logical operation in the condition you defined. There are two standard types:
-
-- `OREvaluator`: This will return success if any of the conditions implementing `OREvaluator` succeed.
-
-- `ANDEvaluator`: This will return success if all of the conditions implementing `ANDEvaluator` succeed.
