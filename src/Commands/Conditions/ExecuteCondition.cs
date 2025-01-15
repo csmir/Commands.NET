@@ -53,14 +53,14 @@ public abstract class ExecuteCondition : IExecuteCondition
     public ConditionResult Success()
         => ConditionResult.FromSuccess();
 
-    public static ExecuteConditionProperties<T> Define<T>()
+    public static ExecuteConditionProperties<T> From<T>()
         where T : ConditionEvaluator, new()
         => new();
 
-    public static ExecuteConditionProperties<T> Define<T>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> executionDelegate)
+    public static ExecuteConditionProperties<T> From<T>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> executionDelegate)
         where T : ConditionEvaluator, new()
         => new ExecuteConditionProperties<T>().Delegate(executionDelegate);
 
-    public static ExecuteConditionProperties Define(ExecuteCondition condition)
+    public static ExecuteConditionProperties From(ExecuteCondition condition)
         => new(condition);
 }

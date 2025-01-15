@@ -7,9 +7,9 @@ using Microsoft.Extensions.Logging;
 await Host.CreateDefaultBuilder(args)
     .ConfigureServices(configure =>
     {
-        var properties = ComponentManager.Define()
+        var properties = ComponentManager.From()
             .Types(typeof(Program).Assembly.GetExportedTypes())
-            .Handler(ResultHandler.Define<HostedCallerContext>()
+            .Handler(ResultHandler.From<HostedCallerContext>()
                 .Delegate((c, r, s) => c.Respond(r.Exception?.InnerException != null ? r.Exception.InnerException : r.Exception)));
 
         configure.AddSingleton((services) => properties.ToManager());

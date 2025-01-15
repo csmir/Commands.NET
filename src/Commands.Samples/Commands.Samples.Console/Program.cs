@@ -2,23 +2,23 @@
 using Commands.Parsing;
 using Commands.Samples;
 
-var properties = ComponentManager.Define();
+var properties = ComponentManager.From();
 
-properties.Configuration(ComponentConfiguration.Define()
-    .Parser(TypeParser.Define(new SystemTypeParser(true)))
-    .Parser(TypeParser.Define<Version>().Delegate(Version.TryParse)));
+properties.Configuration(ComponentConfiguration.From()
+    .Parser(TypeParser.From(new SystemTypeParser(true)))
+    .Parser(TypeParser.From<Version>().Delegate(Version.TryParse)));
 
-properties.Handler(ResultHandler.Define<ConsoleCallerContext>()
+properties.Handler(ResultHandler.From<ConsoleCallerContext>()
     .Delegate((caller, result, services) => caller.Respond(result)));
 
 properties.Types(typeof(Program).Assembly.GetExportedTypes());
 
-properties.Component(CommandGroup.Define()
+properties.Component(CommandGroup.From()
     .Name("greet")
-    .Component(Command.Define()
+    .Component(Command.From()
         .Name("self")
         .Handler((CommandContext<ConsoleCallerContext> ctx) => $"Hello, {ctx.Caller.Name}"))
-    .Component(Command.Define()
+    .Component(Command.From()
         .Name("another")
         .Handler((string name) => $"Hello, {name}")));
 

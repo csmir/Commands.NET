@@ -235,19 +235,19 @@ public abstract class ResultHandler
 
     #endregion
 
-    public static ResultHandlerProperties<T> Define<T>()
+    public static ResultHandlerProperties<T> From<T>()
         where T : class, ICallerContext
         => new();
 
-    public static ResultHandlerProperties<T> Define<T>(Func<T, IExecuteResult, IServiceProvider, ValueTask> handler)
+    public static ResultHandlerProperties<T> From<T>(Func<T, IExecuteResult, IServiceProvider, ValueTask> handler)
         where T : class, ICallerContext
         => new ResultHandlerProperties<T>().Delegate(handler);
 
-    public static ResultHandlerProperties<T> Define<T>(Action<T, IExecuteResult, IServiceProvider> handler)
+    public static ResultHandlerProperties<T> From<T>(Action<T, IExecuteResult, IServiceProvider> handler)
         where T : class, ICallerContext
         => new ResultHandlerProperties<T>().Delegate(handler);
 
-    public static ResultHandlerProperties Define(ResultHandler handler)
+    public static ResultHandlerProperties From(ResultHandler handler)
         => new(handler);
 
 }

@@ -53,6 +53,6 @@ public sealed class ComponentConfiguration
     public IEnumerable<IComponent> CreateComponents(params DynamicType[] types)
         => ComponentUtilities.BuildGroups(this, types, null, false);
 
-    public static ComponentConfigurationProperties Define()
+    public static ComponentConfigurationProperties From()
         => new();
 }

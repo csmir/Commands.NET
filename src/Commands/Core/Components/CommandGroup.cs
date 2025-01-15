@@ -181,9 +181,9 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
 
-    public static CommandGroupProperties Define()
+    public static CommandGroupProperties From()
         => new();
 
-    public static CommandGroupProperties Define(params string[] names)
+    public static CommandGroupProperties From(params string[] names)
         => new CommandGroupProperties().Names(names);
 }

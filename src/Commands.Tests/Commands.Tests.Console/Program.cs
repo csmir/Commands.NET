@@ -2,12 +2,12 @@
 using Commands.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
-var manager = ComponentManager.Define()
+var manager = ComponentManager.From()
     .Types(typeof(Program).Assembly.GetExportedTypes())
-    .Handler(ResultHandler.Define<ICallerContext>((c, r, s) => c.Respond(r.Exception?.InnerException != null ? r.Exception.InnerException : r.Exception)))
+    .Handler(ResultHandler.From<ICallerContext>((c, r, s) => c.Respond(r.Exception?.InnerException != null ? r.Exception.InnerException : r.Exception)))
     .ToManager();
 
-var testRunner = TestRunner.Define<TestCallerContext>()
+var testRunner = TestRunner.From<TestCallerContext>()
     .Commands(manager.GetCommands().ToArray())
     .ToRunner();
 

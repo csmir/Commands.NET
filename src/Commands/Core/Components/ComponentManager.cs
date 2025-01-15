@@ -117,6 +117,6 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         }
     }
 
-    public static ComponentManagerProperties Define()
+    public static ComponentManagerProperties From()
         => new();
 }

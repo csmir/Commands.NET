@@ -31,9 +31,9 @@ public class Program
     public Program()
     {
         var services = new ServiceCollection()
-            .AddSingleton(ComponentManager.Define()
+            .AddSingleton(ComponentManager.From()
                 .Type<CreationAnalysisModule>()
-                .Component(Command.Define(() => { }, "command"))
+                .Component(Command.From(() => { }, "command"))
                 .ToManager())
             .BuildServiceProvider();
 

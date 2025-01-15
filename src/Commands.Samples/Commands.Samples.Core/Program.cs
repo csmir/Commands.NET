@@ -2,18 +2,18 @@
 using Commands;
 using Commands.Samples;
 
-var exit = Command.Define("exit")
+var exit = Command.From("exit")
     .Handler(() => Environment.Exit(0));
 
-var mathCommands = CommandGroup.Define("math")
+var mathCommands = CommandGroup.From("math")
     .Components(
-        Command.Define(Sum, "sum", "add"),
-        Command.Define(Subtract, "subtract", "sub"),
-        Command.Define(Multiply, "multiply", "mul"),
-        Command.Define(Divide, "divide", "div")
+        Command.From(Sum, "sum", "add"),
+        Command.From(Subtract, "subtract", "sub"),
+        Command.From(Multiply, "multiply", "mul"),
+        Command.From(Divide, "divide", "div")
     );
 
-var manager = ComponentManager.Define()
+var manager = ComponentManager.From()
     .Components(exit, mathCommands)
     .Type<HelpModule>()
     .ToManager();

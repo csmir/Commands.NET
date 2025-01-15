@@ -262,12 +262,12 @@ public sealed class Command : IComponent, IParameterCollection
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
 
-    public static CommandProperties Define()
+    public static CommandProperties From()
         => new();
 
-    public static CommandProperties Define(params string[] names)
+    public static CommandProperties From(params string[] names)
         => new CommandProperties().Names(names);
 
-    public static CommandProperties Define(Delegate executionDelegate, params string[] names)
+    public static CommandProperties From(Delegate executionDelegate, params string[] names)
         => new CommandProperties().Handler(executionDelegate).Names(names);
 }

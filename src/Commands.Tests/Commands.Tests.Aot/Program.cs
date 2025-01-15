@@ -1,9 +1,9 @@
 ﻿using Commands;
 using Commands.Tests;
 
-var manager = ComponentManager.Define()
+var manager = ComponentManager.From()
     .Type<Module>()
-    .Handler(ResultHandler.Define<ICallerContext>((c, res, serv) => c.Respond(res)))
+    .Handler(ResultHandler.From<ICallerContext>((c, res, serv) => c.Respond(res)))
     .ToManager();
 
 while (true)

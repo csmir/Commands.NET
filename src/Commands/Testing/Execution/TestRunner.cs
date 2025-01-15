@@ -84,7 +84,7 @@ public abstract class TestRunner
         CountCompleted = 0;
     }
 
-    public static TestRunnerProperties<T> Define<T>()
+    public static TestRunnerProperties<T> From<T>()
         where T : ICallerContext, new()
         => new();
 }

@@ -74,15 +74,15 @@ public abstract class TypeParser : ITypeParser
         return list;
     }
 
-    public static TypeParserProperties<T> Define<T>()
+    public static TypeParserProperties<T> From<T>()
         => new();
 
-    public static TypeParserProperties<T> Define<T>(Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> executionDelegate)
+    public static TypeParserProperties<T> From<T>(Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> executionDelegate)
         => new TypeParserProperties<T>().Delegate(executionDelegate);
 
-    public static TypeParserProperties<T> Define<T>(TryParseParser<T>.ParseDelegate executionDelegate)
+    public static TypeParserProperties<T> From<T>(TryParseParser<T>.ParseDelegate executionDelegate)
         => new TypeParserProperties<T>().Delegate(executionDelegate);
 
-    public static TypeParserProperties Define(TypeParser parser)
+    public static TypeParserProperties From(TypeParser parser)
         => new(parser);
 }
