@@ -1,7 +1,4 @@
-﻿using Commands.Builders;
-using Commands.Parsing;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     A concurrent implementation of the mechanism that allows commands to be executed using a provided set of arguments. This class cannot be inherited.
@@ -139,45 +136,4 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
                 await resolver.HandleResult(caller, result, options.Services, options.CancellationToken).ConfigureAwait(false);
         }
     }
-
-    /// <summary>
-    ///     Creates a new empty instance of a <see cref="ComponentManager"/> with a default result handler.
-    /// </summary>
-    /// <returns>A newly created instance of <see cref="ComponentManager"/> which is able to discover and execute components based on provided input.</returns>
-    public static ComponentManager Create()
-        => Create([]);
-
-    /// <summary>
-    ///     Creates a new instance of a <see cref="ComponentManager"/> with a default result handler.
-    /// </summary>
-    /// <param name="components">A collection of top-level components that should be prepared for execution by the created manager.</param>
-    /// <returns>A newly created instance of <see cref="ComponentManager"/> which is able to discover and execute components based on provided input.</returns>
-    public static ComponentManager Create(params IComponent[] components)
-    {
-        var basicResultHandler = new DelegateResultHandler<ICallerContext>(async (ctx, res, serv) =>
-        {
-            if (ctx is AsyncCallerContext asyncCtx)
-                await asyncCtx.Respond(res).ConfigureAwait(false);
-            else
-                ctx.Respond(res);
-        });
-
-        return Create(components, [basicResultHandler]);
-    }
-
-    /// <summary>
-    ///     Creates a new instance of a <see cref="ComponentManager"/> with the provided result handlers.
-    /// </summary>
-    /// <param name="components">A collection of top-level components that should be prepared for execution by the created manager.</param>
-    /// <param name="resultHandlers">A collection of result handlers, responsible for resolving execution results.</param>
-    /// <returns>A newly created instance of <see cref="ComponentManager"/> which is able to discover and execute components based on provided input.</returns>
-    public static ComponentManager Create(IEnumerable<IComponent> components, ResultHandler[] resultHandlers)
-        => new(components, resultHandlers);
-
-    /// <summary>
-    ///     Creates a builder that is responsible for setting up all required variables to create, search and run commands from a <see cref="ComponentManager"/>.
-    /// </summary>
-    /// <returns>A new instance of <see cref="ComponentManagerBuilder"/> that builds into a new instance of the <see cref="ComponentManager"/>.</returns>
-    public static IManagerBuilder CreateBuilder()
-        => new ComponentManagerBuilder();
 }

@@ -31,10 +31,10 @@ public class Program
     public Program()
     {
         var services = new ServiceCollection()
-            .AddSingleton(ComponentManager.CreateBuilder()
-                .AddType<CreationAnalysisModule>()
-                .AddCommand("command", () => { })
-                .Build())
+            //.AddSingleton(ComponentManager.CreateBuilder()
+            //    .AddType<CreationAnalysisModule>()
+            //    .AddCommand("command", () => { })
+            //    .Build())
             .BuildServiceProvider();
 
         _components = services.GetRequiredService<ComponentManager>();
@@ -50,21 +50,21 @@ public class Program
     [Benchmark]
     public void CommandCreate()
     {
-        Command.Create(() => { }, "name");
+        //Command.Create(() => { }, "name");
     }
 
     [Benchmark]
     public void GroupCreate()
     {
-        var group = CommandGroup.Create("name");
+        //var group = CommandGroup.Create("name");
 
-        group.Add(Command.Create(() => { }, "name"));
+        //group.Add(Command.Create(() => { }, "name"));
     }
 
     [Benchmark]
     public void TypeGroupCreate()
     {
-        CommandGroup.Create<CreationAnalysisModule>();
+        //CommandGroup.Create<CreationAnalysisModule>();
     }
 
     [Benchmark]

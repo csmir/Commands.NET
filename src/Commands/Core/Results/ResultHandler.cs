@@ -244,21 +244,4 @@ public abstract class ResultHandler
     protected virtual ValueTask HandleUnknownResult(
         ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
-
-    /// <inheritdoc cref="Create{TContext}(Action{TContext, IExecuteResult, IServiceProvider})"/>
-    public static ResultHandler Create<TContext>(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
-        where TContext : class, ICallerContext
-        => new DelegateResultHandler<TContext>(resultDelegate);
-
-    /// <summary>
-    ///     Creates a new implementation of <see cref="ResultHandler"/> with the specified delegate, handling faulty results that are returned by the <see cref="ComponentManager"/> this instance is given to.
-    /// </summary>
-    /// <remarks>
-    ///     This implementation of <see cref="ResultHandler"/> will only be triggered if the provided context is an implementation of <typeparamref name="TContext"/>.
-    /// </remarks>
-    /// <param name="resultDelegate">A delegate responsible for handling faulty results returned by the <see cref="ComponentManager"/>.</param>
-    /// <returns>A new implementation of <see cref="ResultHandler"/>.</returns>
-    public static ResultHandler Create<TContext>(Action<TContext, IExecuteResult, IServiceProvider> resultDelegate)
-        where TContext : class, ICallerContext
-        => new DelegateResultHandler<TContext>(resultDelegate);
 }

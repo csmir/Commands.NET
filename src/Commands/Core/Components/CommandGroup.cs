@@ -1,5 +1,4 @@
-﻿using Commands.Builders;
-using Commands.Conditions;
+﻿using Commands.Conditions;
 using System.Text;
 
 namespace Commands;
@@ -181,67 +180,4 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
-
-    /// <inheritdoc cref="Create(string[], ComponentConfiguration?)"/>
-    public static CommandGroup Create(params string[] names)
-        => Create(names, null);
-
-    /// <summary>
-    ///    Creates a new empty command group from the provided names and configuration.
-    /// </summary>
-    /// <param name="names">A set of names by which the command group will be able to be discovered. If this group is added to a <see cref="ComponentManager"/> (making it a top-level component), no names need to be provided.</param>
-    /// <param name="configuration">The configuration that should be used to configure the built component.</param>
-    /// <returns>A new <b>empty</b> instance of <see cref="CommandGroup"/>, able to be mutated using exposed API's.</returns>
-    public static CommandGroup Create(string[] names, ComponentConfiguration? configuration = null)
-    {
-        configuration ??= ComponentConfiguration.Default;
-
-        Assert.NotNull(names, nameof(names));
-        Assert.Names(names, configuration, true);
-
-        return new CommandGroup(null, [], names, configuration);
-    }
-
-    /// <inheritdoc cref="Create(Type, ComponentConfiguration?)"/>
-    /// <typeparam name="T">A type implementing <see cref="CommandModule"/> or <see cref="CommandModule{T}"/>.</typeparam>
-    public static CommandGroup Create<
-#if NET8_0_OR_GREATER
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
-#endif
-    T>(ComponentConfiguration? configuration = null)
-        where T : CommandModule
-        => Create(typeof(T), configuration);
-
-    /// <summary>
-    ///     Creates a new command group from the provided type and configuration. If the provided type is a nested type, it will not be considered nested for the creation of this <see cref="CommandGroup"/>.
-    /// </summary>
-    /// <param name="type">A type implementing <see cref="CommandModule"/> or <see cref="CommandModule{T}"/>.</param>
-    /// <param name="configuration">The configuration that should be used to configure the built component.</param>
-    /// <returns>A new instance of <see cref="CommandGroup"/> containing all discovered commands, subgroups and subcommands within the provided type.</returns>
-    public static CommandGroup Create(
-#if NET8_0_OR_GREATER
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
-#endif
-        Type type, ComponentConfiguration? configuration = null)
-    {
-        configuration ??= ComponentConfiguration.Default;
-
-        Assert.NotNull(type, nameof(type));
-
-        if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
-            throw new ArgumentException($"Type must be non-abstract, fully implemented, and assignable to {nameof(CommandModule)} to be considered a valid group.", nameof(type));
-
-        var names = type.GetAttributes(false).FirstOrDefault<NameAttribute>()?.Names ?? [];
-
-        Assert.Names(names, configuration, true);
-
-        return new CommandGroup(type, null, names, configuration);
-    }
-
-    /// <summary>
-    ///     Creates a new <see cref="CommandGroupBuilder"/> which can be built into a new instance of <see cref="CommandGroup"/>.
-    /// </summary>
-    /// <returns>A new instance of <see cref="CommandGroupBuilder"/> containing API's to configure a <see cref="CommandGroup"/> with specified behavior.</returns>
-    public static CommandGroupBuilder CreateBuilder()
-        => new();
 }

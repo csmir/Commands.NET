@@ -1,5 +1,4 @@
-﻿using Commands.Builders;
-using Commands.Conditions;
+﻿using Commands.Conditions;
 using Commands.Parsing;
 using System.Text;
 
@@ -262,40 +261,4 @@ public sealed class Command : IComponent, IParameterCollection
     // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
-
-    /// <inheritdoc cref="Create(Delegate, string[], IExecuteCondition[], ComponentConfiguration?)"/>
-    public static Command Create(Delegate executionDelegate, params string[] names)
-        => Create(executionDelegate, names, []);
-
-    /// <inheritdoc cref="Create(Delegate, string[], IExecuteCondition[], ComponentConfiguration?)"/>
-    public static Command Create(Delegate executionDelegate, string[] names, ComponentConfiguration? configuration = null)
-        => Create(executionDelegate, names, [], configuration);
-
-    /// <summary>
-    ///     Creates a new command from a delegate. This command will be considered top-level until it is added manually to a <see cref="CommandGroup"/>.
-    /// </summary>
-    /// <param name="executionDelegate">The delegate which contains an action executed when the command is triggered by a caller.</param>
-    /// <param name="names">A set of names by which the command will be able to be executed.</param>
-    /// <param name="conditions">A set of conditions that should be evaluated before the command is executed.</param>
-    /// <param name="configuration">The configuration that should be used to configure the built component.</param>
-    /// <returns>A new instance of <see cref="Command"/> being an action that can be formed based on provided input.</returns>
-    public static Command Create(Delegate executionDelegate, string[] names, IExecuteCondition[] conditions, ComponentConfiguration? configuration = null)
-    {
-        Assert.NotNull(executionDelegate, nameof(executionDelegate));
-
-        configuration ??= ComponentConfiguration.Default;
-
-        Assert.Names(names, configuration, false);
-
-        var hasContext = executionDelegate.Method.HasContext();
-
-        return new Command(null, new CommandDelegateActivator(executionDelegate.Method, executionDelegate.Target, hasContext), conditions, names, hasContext, configuration);
-    }
-
-    /// <summary>
-    ///     Creates a new <see cref="CommandBuilder"/> which can be built into a new instance of <see cref="Command"/>.
-    /// </summary>
-    /// <returns>A new instance of <see cref="CommandBuilder"/> containing API's to configure a <see cref="Command"/> with specified behavior.</returns>
-    public static CommandBuilder CreateBuilder()
-        => new();
 }

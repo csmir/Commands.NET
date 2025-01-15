@@ -50,24 +50,6 @@ public abstract class TypeParser : ITypeParser
         => ParseResult.FromSuccess(value);
 
     /// <summary>
-    ///     Creates a new <see cref="TypeParser"/> implementation which invokes the provided delegate when parsing occurs.
-    /// </summary>
-    /// <typeparam name="TConvertible">The type this parser should convert to.</typeparam>
-    /// <param name="parseDelegate">The delegate responsible for parsing the received object into a new instance of <typeparamref name="TConvertible"/>.</param>
-    /// <returns>A new implementation of <see cref="TypeParser"/> capable of parsing the received object into a new instance of <typeparamref name="TConvertible"/>.</returns>
-    public static TypeParser Create<TConvertible>(Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> parseDelegate)
-        => new DelegateTypeParser<TConvertible>(parseDelegate);
-
-    /// <summary>
-    ///     Creates a new <see cref="TypeParser"/> implementation which invokes the provided delegate when parsing occurs, expecting a TryParse pattern to be provided.
-    /// </summary>
-    /// <typeparam name="TConvertible">The type this parser should convert to.</typeparam>
-    /// <param name="parseDelegate">The delegate responsible for parsing the received object into a new instance of <typeparamref name="TConvertible"/>.</param>
-    /// <returns>A new implementation of <see cref="TypeParser"/> capable of parsing the received object into a new instance of <typeparamref name="TConvertible"/> using a TryParse pattern.</returns>
-    public static TypeParser Create<TConvertible>(TryParseParser<TConvertible>.ParseDelegate parseDelegate)
-        => new TryParseParser<TConvertible>(parseDelegate);
-
-    /// <summary>
     ///     Creates a collection of default <see cref="TypeParser"/> implementations.
     /// </summary>
     /// <remarks>

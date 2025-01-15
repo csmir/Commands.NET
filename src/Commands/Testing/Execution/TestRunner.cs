@@ -83,35 +83,4 @@ public abstract class TestRunner
         Count = tests.Count;
         CountCompleted = 0;
     }
-
-    /// <inheritdoc cref="Create{T}(IEnumerable{Command}, TestProvider[])"/>
-    public static TestRunner Create(IEnumerable<Command> commands, params TestProvider[] runtimeDefinedTests)
-        => Create<TestCallerContext>(commands, runtimeDefinedTests);
-
-    /// <summary>
-    ///     Runs all defined tests specified on the target command, using a newly created instance of <see cref="ICallerContext"/> that is recreated for each test.
-    /// </summary>
-    /// <typeparam name="T">The type of <see cref="ICallerContext"/> to create for every test.</typeparam>
-    /// <param name="commands">The commands that should be targetted to be tested.</param>
-    /// <param name="runtimeDefinedTests">A collection of tests that are defined at runtime.</param>
-    /// <returns>An awaitable <see cref="TestResult"/> containing the result of the test operation. If all tests succeeded, the underlying <see cref="TestResult.ActualResult"/> will be <see cref="TestResultType.Success"/>.</returns>
-    public static TestRunner Create<T>(IEnumerable<Command> commands, params TestProvider[] runtimeDefinedTests)
-        where T : ICallerContext, new()
-    {
-        Assert.NotNull(commands, nameof(commands));
-
-        var tests = commands.ToDictionary(x => x, x => x.Attributes.OfType<ITestProvider>().ToArray());
-
-        var runtimeDefined = runtimeDefinedTests.GroupBy(x => x.Command);
-
-        foreach (var group in runtimeDefined)
-        {
-            if (tests.TryGetValue(group.Key, out var value))
-                tests[group.Key] = [.. value, .. group];
-            else
-                tests[group.Key] = [.. group];
-        }
-
-        return new TestRunner<T>(tests);
-    }
 }
