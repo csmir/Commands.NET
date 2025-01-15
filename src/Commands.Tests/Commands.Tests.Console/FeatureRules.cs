@@ -1,4 +1,5 @@
 ﻿using Commands.Builders;
+using Commands.Conditions;
 using Commands.Parsing;
 using Commands.Testing;
 using System.Diagnostics.CodeAnalysis;
@@ -39,6 +40,17 @@ public class FeatureRules
     /// </summary>
     public static void Immediate()
     {
+        // Parsers:
+        TypeParser.Create<Version>(Version.TryParse);
+
+        TypeParser.Create<Version>((c, p, o, s) => ParseResult.FromSuccess(o));
+
+        // Results:
+        ResultHandler.Create<ICallerContext>((c, r, s) => { });
+
+        // Conditions:
+        ExecuteCondition.Create<ANDEvaluator>((c, m, s) => ConditionResult.FromSuccess());
+
         // Commands:
         Command.Create(() => { }, "name");
 
@@ -60,7 +72,7 @@ public class FeatureRules
         // Configuration:
         ComponentConfiguration.Create();
 
-        ComponentConfiguration.Create(new TryParseParser<Version>(Version.TryParse), new TryParseParser<Guid>(Guid.TryParse));
+        ComponentConfiguration.Create(TypeParser.Create<Version>(Version.TryParse), TypeParser.Create<Guid>(Guid.TryParse));
 
         ComponentConfiguration.Create([], null);
 
@@ -71,7 +83,7 @@ public class FeatureRules
 
         ComponentManager.Create([], []);
 
-        // TestRunner:
+        // Tests:
         TestRunner.Create([]);
     }
 }

@@ -3,28 +3,17 @@ using Commands.Parsing;
 
 namespace Commands;
 
-/// <summary>
-///     Represents a resolver that invokes a delegate when a result is encountered from a command implementing <typeparamref name="TContext"/>. This class cannot be inherited.
-/// </summary>
-public sealed class DelegateResultHandler<TContext>
+internal sealed class DelegateResultHandler<TContext>
     : ResultHandler<TContext>
     where TContext : class, ICallerContext
 {
     private readonly Func<TContext, IExecuteResult, IServiceProvider, ValueTask> _resultDelegate;
 
-    /// <summary>
-    ///     Creates a new instance of <see cref="DelegateResultHandler{TCaller}"/> with the specified delegate.
-    /// </summary>
-    /// <param name="resultDelegate">An awaitable delegate intending to handle a command result.</param>
     public DelegateResultHandler(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
     {
         _resultDelegate = resultDelegate;
     }
 
-    /// <summary>
-    ///     Creates a new instance of <see cref="DelegateResultHandler{TCaller}"/> with the specified delegate.
-    /// </summary>
-    /// <param name="resultDelegate">A void delegate intending to handle a command result.</param>
     public DelegateResultHandler(Action<TContext, IExecuteResult, IServiceProvider> resultDelegate)
     {
         _resultDelegate = (caller, result, services) =>
@@ -34,7 +23,6 @@ public sealed class DelegateResultHandler<TContext>
         };
     }
 
-    /// <inheritdoc />
     public override ValueTask HandleResult(TContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (result.Success)
@@ -256,4 +244,21 @@ public abstract class ResultHandler
     protected virtual ValueTask HandleUnknownResult(
         ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
+
+    /// <inheritdoc cref="Create{TContext}(Action{TContext, IExecuteResult, IServiceProvider})"/>
+    public static ResultHandler Create<TContext>(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
+        where TContext : class, ICallerContext
+        => new DelegateResultHandler<TContext>(resultDelegate);
+
+    /// <summary>
+    ///     Creates a new implementation of <see cref="ResultHandler"/> with the specified delegate, handling faulty results that are returned by the <see cref="ComponentManager"/> this instance is given to.
+    /// </summary>
+    /// <remarks>
+    ///     This implementation of <see cref="ResultHandler"/> will only be triggered if the provided context is an implementation of <typeparamref name="TContext"/>.
+    /// </remarks>
+    /// <param name="resultDelegate">A delegate responsible for handling faulty results returned by the <see cref="ComponentManager"/>.</param>
+    /// <returns>A new implementation of <see cref="ResultHandler"/>.</returns>
+    public static ResultHandler Create<TContext>(Action<TContext, IExecuteResult, IServiceProvider> resultDelegate)
+        where TContext : class, ICallerContext
+        => new DelegateResultHandler<TContext>(resultDelegate);
 }
