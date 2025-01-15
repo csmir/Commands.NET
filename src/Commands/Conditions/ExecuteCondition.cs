@@ -53,13 +53,14 @@ public abstract class ExecuteCondition : IExecuteCondition
     public ConditionResult Success()
         => ConditionResult.FromSuccess();
 
-    /// <summary>
-    ///     Creates a new <see cref="ExecuteCondition"/> from the provided delegate.
-    /// </summary>
-    /// <typeparam name="TEval">The evaluator type which will group this evaluation together with other evaluations of the same <typeparamref name="TEval"/> implementation.</typeparam>
-    /// <param name="evaluationDelegate">The delegate which will run when this condition is requested during pre-execution evaluation of a command.</param>
-    /// <returns>A new implementation of <see cref="ExecuteCondition"/> representing the created condition.</returns>
-    public static ExecuteCondition Create<TEval>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> evaluationDelegate)
-        where TEval : ConditionEvaluator, new()
-        => new DelegateExecuteCondition<TEval>(evaluationDelegate);
+    public static ExecuteConditionProperties<T> Define<T>()
+        where T : ConditionEvaluator, new()
+        => new();
+
+    public static ExecuteConditionProperties<T> Define<T>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> executionDelegate)
+        where T : ConditionEvaluator, new()
+        => new ExecuteConditionProperties<T>().Delegate(executionDelegate);
+
+    public static ExecuteConditionProperties Define(ExecuteCondition condition)
+        => new(condition);
 }

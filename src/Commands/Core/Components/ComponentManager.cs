@@ -18,28 +18,8 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     /// </remarks>
     /// <param name="handlers">A collection of <see cref="ResultHandler"/> implementations that should resolve command results by defined approaches.</param>
     public ComponentManager(IEnumerable<ResultHandler> handlers)
-        : this([], handlers) { }
-
-    internal ComponentManager(IEnumerable<IComponent> components, IEnumerable<ResultHandler> handlers)
         : base(false)
     {
-        var topLevelComponents = new List<IComponent>();
-
-        foreach (var component in components)
-        {
-            if (component.IsSearchable)
-                topLevelComponents.Add(component);
-
-            else if (component is ComponentCollection collection)
-            {
-                collection.Bind(this);
-
-                topLevelComponents.AddRange(collection);
-            }
-        }
-
-        Push(topLevelComponents.OrderByDescending(x => x.GetScore()));
-
         var arr = handlers.ToArray();
 
         _handlersAvailable = arr.Length > 0;
@@ -136,4 +116,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
                 await resolver.HandleResult(caller, result, options.Services, options.CancellationToken).ConfigureAwait(false);
         }
     }
+
+    public static ComponentManagerProperties Define()
+        => new();
 }

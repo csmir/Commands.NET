@@ -83,4 +83,8 @@ public abstract class TestRunner
         Count = tests.Count;
         CountCompleted = 0;
     }
+
+    public static TestRunnerProperties<T> Define<T>()
+        where T : ICallerContext, new()
+        => new();
 }

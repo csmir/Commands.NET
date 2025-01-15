@@ -115,20 +115,29 @@ public abstract class ComponentCollection : IComponentCollection
 
             var additionResult = false;
 
-            if (!component.IsSearchable && component is CommandGroup componentIsGroup)
+            if (!component.IsSearchable)
             {
                 // When the component is a command group and the group has no name, it should be a root group.
                 // However, it is only possible to be a root group if the current collection is a manager.
-                if (this is /* a */ ComponentManager) // Ingenius syntax, actually.
+                if (this is ComponentManager manager)
                 {
-                    // Add the contents of the group to the collection, instead of the group itself.
-                    var innerChanges = AddRange([.. componentIsGroup]);
+                    if (component is CommandGroup componentIsGroup)
+                    {
+                        // Add the contents of the group to the collection, instead of the group itself.
+                        var innerChanges = AddRange([.. componentIsGroup]);
 
-                    // Consider the addition successful if the inner operation returned more than 0 changes.
-                    additionResult = innerChanges > 0;
+                        // Consider the addition successful if the inner operation returned more than 0 changes.
+                        additionResult = innerChanges > 0;
+
+                        // When the addition is successful, bind the group to the manager. This makes it so that when the group is mutated, the manager is also mutated.
+                        if (additionResult)
+                            manager.Bind(componentIsGroup);
+                    }
+                    else
+                        throw new InvalidOperationException($"{nameof(Command)} instances without names can only be added to a {nameof(CommandGroup)}.");
                 }
-                else
-                    throw new InvalidOperationException($"Nameless {nameof(CommandGroup)} instances can only be added to a {nameof(ComponentManager)}.");
+                else if (component is CommandGroup)
+                    throw new InvalidOperationException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ComponentManager)}.");
             }
             else
             {

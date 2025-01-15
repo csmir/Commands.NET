@@ -71,7 +71,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     }
 
     internal CommandGroup(
-        CommandGroup? parent, IExecuteCondition[] conditions, string[] names, ComponentConfiguration configuration)
+        CommandGroup? parent, IEnumerable<ExecuteCondition> conditions, string[] names, ComponentConfiguration configuration)
         : base(configuration.GetProperty("MakeModulesReadonly", false))
     {
         Parent = parent;
@@ -180,4 +180,10 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
+
+    public static CommandGroupProperties Define()
+        => new();
+
+    public static CommandGroupProperties Define(params string[] names)
+        => new CommandGroupProperties().Names(names);
 }

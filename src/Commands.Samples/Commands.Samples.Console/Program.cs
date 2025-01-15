@@ -2,23 +2,27 @@
 using Commands.Parsing;
 using Commands.Samples;
 
-//var manager = ComponentManager.CreateBuilder()
-//    .ConfigureComponents(configure =>
-//    {
-//        configure.AddParser(new SystemTypeParser(caseIgnore: true));
-//        configure.AddParser(new TryParseParser<Version>(Version.TryParse));
-//    })
-//    .AddResultHandler((caller, result, services) => caller.Respond(result))
-//    .WithTypes(typeof(Program).Assembly.GetExportedTypes())
-//    .AddCommandGroup(x => x
-//        .WithNames("greet")
-//        .AddCommand(x => x
-//            .WithNames("self")
-//            .WithHandler((CommandContext<ConsoleCallerContext> ctx) => $"Hello, {ctx.Caller.Name}"))
-//        .AddCommand(x => x
-//            .WithNames("another")
-//            .WithHandler((string name) => $"Hello, {name}")))
-//    .Build();
+var properties = ComponentManager.Define();
+
+properties.Configuration(ComponentConfiguration.Define()
+    .Parser(TypeParser.Define(new SystemTypeParser(true)))
+    .Parser(TypeParser.Define<Version>().Delegate(Version.TryParse)));
+
+properties.Handler(ResultHandler.Define<ConsoleCallerContext>()
+    .Delegate((caller, result, services) => caller.Respond(result)));
+
+properties.Types(typeof(Program).Assembly.GetExportedTypes());
+
+properties.Component(CommandGroup.Define()
+    .Name("greet")
+    .Component(Command.Define()
+        .Name("self")
+        .Handler((CommandContext<ConsoleCallerContext> ctx) => $"Hello, {ctx.Caller.Name}"))
+    .Component(Command.Define()
+        .Name("another")
+        .Handler((string name) => $"Hello, {name}")));
+
+var manager = properties.ToManager();
 
 while (true)
 {
@@ -26,5 +30,5 @@ while (true)
 
     var caller = new ConsoleCallerContext(name: "Pete");
 
-    //manager.TryExecute(caller, input);
+    manager.TryExecute(caller, input);
 }

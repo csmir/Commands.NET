@@ -31,10 +31,10 @@ public class Program
     public Program()
     {
         var services = new ServiceCollection()
-            //.AddSingleton(ComponentManager.CreateBuilder()
-            //    .AddType<CreationAnalysisModule>()
-            //    .AddCommand("command", () => { })
-            //    .Build())
+            .AddSingleton(ComponentManager.Define()
+                .Type<CreationAnalysisModule>()
+                .Component(Command.Define(() => { }, "command"))
+                .ToManager())
             .BuildServiceProvider();
 
         _components = services.GetRequiredService<ComponentManager>();

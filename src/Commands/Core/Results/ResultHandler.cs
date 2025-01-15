@@ -3,25 +3,11 @@ using Commands.Parsing;
 
 namespace Commands;
 
-internal sealed class DelegateResultHandler<TContext>
+internal sealed class DelegateResultHandler<TContext>(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
     : ResultHandler<TContext>
     where TContext : class, ICallerContext
 {
-    private readonly Func<TContext, IExecuteResult, IServiceProvider, ValueTask> _resultDelegate;
-
-    public DelegateResultHandler(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
-    {
-        _resultDelegate = resultDelegate;
-    }
-
-    public DelegateResultHandler(Action<TContext, IExecuteResult, IServiceProvider> resultDelegate)
-    {
-        _resultDelegate = (caller, result, services) =>
-        {
-            resultDelegate(caller, result, services);
-            return default;
-        };
-    }
+    private readonly Func<TContext, IExecuteResult, IServiceProvider, ValueTask> _resultDelegate = resultDelegate;
 
     public override ValueTask HandleResult(TContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
@@ -161,6 +147,8 @@ public abstract class ResultHandler
         }
     }
 
+    #region Result Types
+
     /// <summary>
     ///     Holds the evaluation data of a search operation where a command is not found from the provided match.
     /// </summary>
@@ -244,4 +232,22 @@ public abstract class ResultHandler
     protected virtual ValueTask HandleUnknownResult(
         ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
+
+    #endregion
+
+    public static ResultHandlerProperties<T> Define<T>()
+        where T : class, ICallerContext
+        => new();
+
+    public static ResultHandlerProperties<T> Define<T>(Func<T, IExecuteResult, IServiceProvider, ValueTask> handler)
+        where T : class, ICallerContext
+        => new ResultHandlerProperties<T>().Delegate(handler);
+
+    public static ResultHandlerProperties<T> Define<T>(Action<T, IExecuteResult, IServiceProvider> handler)
+        where T : class, ICallerContext
+        => new ResultHandlerProperties<T>().Delegate(handler);
+
+    public static ResultHandlerProperties Define(ResultHandler handler)
+        => new(handler);
+
 }

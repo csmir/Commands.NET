@@ -13,7 +13,8 @@ public sealed class ComponentConfiguration
     /// <remarks>
     ///     This instance contains no properties, and only implements the default parsers created by <see cref="TypeParser.CreateDefaults"/>.
     /// </remarks>
-    public static ComponentConfiguration Default { get; } = new([], []);
+    public static ComponentConfiguration Default
+        => ComponentConfigurationProperties.Default.ToConfiguration();
 
     /// <summary>
     ///     Gets a collection of properties that are used to store additional information explicitly important during the build process.
@@ -25,15 +26,10 @@ public sealed class ComponentConfiguration
     /// </summary>
     public IReadOnlyDictionary<Type, TypeParser> Parsers { get; }
 
-    internal ComponentConfiguration(IEnumerable<TypeParser> parsers, IEnumerable<KeyValuePair<object, object>> properties)
+    internal ComponentConfiguration(Dictionary<Type, TypeParser> parsers, Dictionary<object, object> properties)
     {
-        var baseParsers = TypeParser.CreateDefaults().ToDictionary(x => x.Type, x => x);
-
-        foreach (var parser in parsers)
-            baseParsers[parser.Type] = parser;
-
-        Parsers = baseParsers;
-        Properties = properties.ToDictionary(x => x.Key, x => x.Value);
+        Parsers = parsers;
+        Properties = properties;
     }
 
     /// <summary>
@@ -56,4 +52,7 @@ public sealed class ComponentConfiguration
     /// <returns>A lazily evaluated collection of <see cref="IComponent"/> implementations, being either <see cref="Command"/> or <see cref="CommandGroup"/> depending on if a method or a type was resolved.</returns>
     public IEnumerable<IComponent> CreateComponents(params DynamicType[] types)
         => ComponentUtilities.BuildGroups(this, types, null, false);
+
+    public static ComponentConfigurationProperties Define()
+        => new();
 }

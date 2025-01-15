@@ -65,8 +65,8 @@ public sealed class Command : IComponent, IParameterCollection
     public int Position
         => (Parent?.Position ?? 0) + (Name == null ? 0 : 1);
 
-    internal Command(CommandGroup parent, CommandStaticActivator invoker, string[] names, bool hasContext, ComponentConfiguration options)
-        : this(parent, invoker, [], names, hasContext, options)
+    internal Command(CommandGroup parent, CommandStaticActivator invoker, string[] names, bool hasContext, ComponentConfiguration configuration)
+        : this(parent, invoker, [], names, hasContext, configuration)
     {
 
     }
@@ -78,7 +78,7 @@ public sealed class Command : IComponent, IParameterCollection
     }
 
     internal Command(
-        CommandGroup? parent, IActivator invoker, IExecuteCondition[] conditions, string[] names, bool hasContext, ComponentConfiguration configuration)
+        CommandGroup? parent, IActivator invoker, IEnumerable<ExecuteCondition> conditions, string[] names, bool hasContext, ComponentConfiguration configuration)
     {
         var parameters = invoker.Target.BuildArguments(hasContext, configuration);
 
@@ -261,4 +261,13 @@ public sealed class Command : IComponent, IParameterCollection
     // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
+
+    public static CommandProperties Define()
+        => new();
+
+    public static CommandProperties Define(params string[] names)
+        => new CommandProperties().Names(names);
+
+    public static CommandProperties Define(Delegate executionDelegate, params string[] names)
+        => new CommandProperties().Handler(executionDelegate).Names(names);
 }

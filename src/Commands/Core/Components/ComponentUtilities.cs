@@ -187,7 +187,7 @@ public static class ComponentUtilities
                 Command? component;
                 if (method.IsStatic)
                 {
-                    var hasContext = method.HasContext();
+                    var hasContext = method.HasContextProvider();
 
                     component = new Command(parent, new CommandStaticActivator(method, hasContext), names, hasContext, configuration);
                 }
@@ -260,7 +260,7 @@ public static class ComponentUtilities
         return arr;
     }
 
-    internal static bool HasContext(this MethodBase method)
+    internal static bool HasContextProvider(this MethodBase method)
         => method.GetParameters().Length > 0 && method.GetParameters()[0].ParameterType.IsGenericType && method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>);
 
     internal static TypeParser GetParser(this ComponentConfiguration configuration, Type type)
