@@ -47,30 +47,23 @@ It will return a failed result if the command execution failed by errors thrown 
 
 `ResultHandler` implementations are used to handle the different types of results. It is possible to define multiple custom handlers of your own make.
 
-### Delegate Implementations
-
-ResultHandler has a delegate-based implementation which can be used exclusively to handle *faulty* results:
+### Functional Pattern
 
 ```cs
-var handler = ResultHandler.Create<TContext>((ctx, result, services) => ...);
+var handler = ResultHandler.For<TContext>().Delegate((ctx, result, services) => ...);
 ```
 
 Here, `TContext` is the `ICallerContext` implementation that this handler will handle. 
 If the context is not of a matching type, this handler will not be called.
 
-### Class-based Implementations
-
-Like conversion and conditions, to begin writing our own handling logic, we need to implement the abstract type:
+### Declarative Pattern
 
 ```cs
 using Commands;
 
-namespace Commands.Samples;
-
 public class CustomHandler : ResultHandler
 {
 }
-
 ```
 
 Unlike other customizable pipeline components, the `Evaluate` method in the `ResultHandler` implementation is not abstract. 
@@ -79,8 +72,6 @@ It is possible to filter your implementation by certain results, exclusively fai
 ```cs
 using Commands;
 
-namespace Commands.Samples;
-
 public class CustomResultHandler : ResultHandler
 {
     protected override ValueTask CommandNotFound(ICallerContext caller, SearchResult result, string errorReason, IServiceProvider services, CancellationToken cancellationToken)
@@ -88,16 +79,16 @@ public class CustomResultHandler : ResultHandler
         // Your response logic here
     }
 }
-
 ```
 
-The `CommandNotFound` method is called when the search operation returns no commands or modules.
+The `CommandNotFound` method is called when the search operation returns no commands or groups.
 
 When you have succesfully constructed the logic for handling the result, you can pass it along when creating a new `ComponentManager`:
 
 ```cs
-var manager = ComponentManager.From().Handler(new CustomResultHandler());
+var manager = ComponentManager.With.Handler(new CustomResultHandler()).Create();
 ```
 
 > [!NOTE]
-> `ResultHandler<TContext>` can be used to filter by a specific context type. This is useful when you want to handle results differently depending on the context.
+> `ResultHandler<TContext>` can be used to filter by a specific context type. 
+> This is useful when you want to handle results differently depending on the context.

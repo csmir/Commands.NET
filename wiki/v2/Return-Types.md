@@ -1,7 +1,7 @@
 Every command can have a different return type, from another. In order to handle the possible scenarios in which a developer might find themselves, the library tries to resolve as many as possible.
 
 - [Basic Return Types](#basic-return-types)
-- [Customizing Return Type Handling](#customizing-return-type-handling)
+- [Custom Return Type Handling](#custom-return-type-handling)
 
 ## Basic Return Types
 
@@ -17,7 +17,7 @@ Amongst basic return types, the library supports:
 When returning `void`, the library will not send a response to the caller.
 
 ```cs
-Command.Create(() => { });
+Command.From(() => { }, "void");
 ```
 ```cs
 // 'void' is valid
@@ -30,7 +30,7 @@ public void GetVoid()
 When returning `string`, `T` or `object` the library will send the return value to the caller.
 
 ```cs
-Command.Create(() => "string");
+Command.From(() => "string", "string");
 ```
 ```cs
 // 'string' is valid
@@ -42,7 +42,7 @@ public string GetString()
 ```
 
 ```cs
-Command.Create(() => new object());
+Command.From(() => new object(), "object");
 ```
 ```cs
 // 'object' is valid
@@ -56,7 +56,7 @@ public object GetObject()
 When returning `Task`, the library will await the task. If the task returns a value, it *will* be sent to the caller. If there is no value, the library will not send a response.
 
 ```cs
-Command.Create(() => Task.CompletedTask);
+Command.From(() => Task.CompletedTask, "task");
 ```
 ```cs
 // 'task' is valid
@@ -79,16 +79,12 @@ This is useful for handling custom return types, or for changing the default beh
 ```cs
 using Commands;
 
-namespace Commands.Samples;
-
 public class CustomResultHandler : ResultHandler
 {
     public override ValueTask HandleSuccess(ICallerContext caller, IValueResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (result.Value is int i)
-        {
             caller.Respond($"The number is {i}");
-        }
     }
 }
 ```

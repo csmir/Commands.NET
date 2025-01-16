@@ -2,10 +2,8 @@ A `TypeParser` reads provided argument input in string format and try to convert
 Let's work on an example to learn how they work.
 
 - [Default Parsers](#default-parsers)
-- [Creating a Global Parser](#creating-a-global-parser)
-- [Using Global Parsers](#using-global-parser)
-- [Attribute-based Parsers](#attribute-based-parsers)
-- [Extended Implementations](#extended-implementations)
+- [Creating a Parser](#creating-a-parser)
+- [Applying a Parser](#applying-a-parser)
 
 ## Default Parsers
 
@@ -24,132 +22,69 @@ By default, the library provides parsers for the following types, without any ad
 In addition to creating a custom parser for unsupported types, you can also override these default parsers by registering your own parser for the type. 
 Any user-defined parsers will take precedence over the default parsers.
 
-## Creating a Global Parser
+## Creating a Parser
 
-All global parsers inherit `TypeParser<T>` or `TypeParser`. To start creating your parser, you have to inherit one of the two on a class.
+### Functional Pattern
 
-> For the simplicity of this documentation, only the generic type is introduced here.
+```cs
+var parser = TypeParser.For<Type>().Delegate((ctx, param, value, services) => ...);
+```
+
+The creation pattern handles conditions as `ValueTask<ParseResult>` where `ParseResult.FromError()` or `ParseResult.FromSuccess()` can be used to return the result. 
+`ParseResult` implicitly converts to `ValueTask<T>`.
+
+### Declarative Pattern
 
 ```cs
 using Commands.Parsing;
 
-namespace Commands.Samples;
-
-public class SystemTypeParser : TypeParser<Type>
+public class CustomTypeParser : TypeParser<Type>
 {
     public override ValueTask<ParseResult> Parse(
         ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
+        // Your parsing logic here.
     }
 }
-
 ```
 
-With this class defined and the method that will operate the evaluation being implemented, we can now write our code which defines the succession and failure conditions. 
-In case of success, we also need to pass in the parsed object that the TypeParser expects to see returned.
+The declarative pattern implements shorthand access to `ParseResult` using the exposed `Error()` and `Success()` methods.
+
+### Attribute Pattern
 
 ```cs
-...
+using Commands.Parsing;
+
+public class CustomTypeParserAttribute : TypeParserAttribute<Type>
+{
     public override ValueTask<ParseResult> Parse(
         ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
-        try
-        {
-            var typeSrc = Type.GetType(
-                typeName: value?.ToString() ?? "",
-                throwOnError: true,
-                ignoreCase: true);
-
-            return Success(typeSrc);
-        }
-        catch (Exception ex)
-        {
-            return Error($"A type with name '{value}' was not found within the current assembly. Did you provide the type's full name, including its namespace?");
-        }
+        // Your parsing logic here.
     }
-...
-```
-
-With the logic defined, we can also add options in the parser, for example by customizing how `ignoreCase` is configured in the `Type` search:
-
-```cs
-...
-public class SystemTypeParser(bool caseIgnore) : TypeParser<Type>
-{
-    private readonly bool _caseIgnore = caseIgnore;
-        
-    ...
 }
-...
 ```
+
+The attribute pattern writes similar to `ExecuteCondition` implementations, also allowing shorthand calls to be used.
+
+## Applying a Parser
+
+### Functional Pattern & Declarative Pattern
 
 ```cs
-
-    ...
-        var typeSrc = Type.GetType(
-            typeName: value, 
-            throwOnError: true, 
-            ignoreCase: _caseIgnore);
-    ...
-```
-
-## Using Global Parsers
-
-There is a variety of ways to configure your commands to use custom parsers. 
-Our focus will be on the `CommandConfiguration` class, which is the central point of configuration for the build pipeline.
-
-There are two ways to include a custom parser in the configuration:
-```cs
-var configuration = ComponentConfiguration.Create(new SystemTypeParser(true));
+ComponentConfiguration.With.Parser(parser);
 ```
 ```cs
-var configuration = ComponentConfiguration.CreateBuilder().AddParser(new SystemTypeParser(true)).Build();
+ComponentConfiguration.With.Parser(new CustomTypeParser());
 ```
 
-With this configuration, API's that consume its instance will now have access to the custom parser. One example, is creating a component with a normally unsupported type, and use the customized configuration to support it.
-```cs
-var command = Command.Create((Type type) => type.Name, ["check-type"], configuration);
-```
-
-Another example, is browsing the configuration for all available components, including all commands that require the custom parser.
-If there is a command that requires the parser, and it is not defined, this method will throw an exception.
-```cs
-var componentsInAssembly = configuration.CreateComponents(Assembly.GetExecutingAssembly().GetExportedTypes());
-```
-
-Lastly, you can also create a module from its type, and use the customized configuration to support defined commands that implement `System.Type`.
-```cs
-var module = CommandGroup.Create<T>(configuration);
-```
-
-## Attribute-based Parsers
-
-Attribute parsers can be used on command parameters, requiring no additional configuration to be used. 
-These parsers implement `TypeParserAttribute<T>`, not having a non-generic counterpart.
-
-Attribute parsing works 1:1 with global parsers. All it takes, is exchanging `: TypeParser<T>` for `: TypeParserAttribute<T>`. 
-However, the manner in which they are used is different. 
-Assuming the `SystemTypeParser` as created above now inherits `TypeParserAttribute<Type>`, we can use it as follows:
+### Attribute Pattern
 
 ```cs
-Command.Create(([SystemTypeParser(true)] Type type) => type.Name, "check-type");
-```
-```cs
-[Name("check-type")]
-public string CheckType([SystemTypeParser(true)] Type type) => type.Name;
-```
-
-## Extended Implementations
-
-The library provides a few global `TypeParser` implementations which simplify the implementation of custom parsing logic. 
-One of these, is `DelegateTypeParser<T>`:
-
-```cs
-var parser = new DelegateTypeParser<Assembly>((ctx, param, value, services) => ...);
+[Name("command")]
+public void Command([CustomTypeParser] Type type)
+{
+}
 ```
 
-Additionally, a `TryParseParser` is available for types that implement `TryParse`:
-
-```cs
-var parser = new TryParseParser<int>(int.TryParse);
-```
+Attribute based parsers are applied to the parameter of a command. `Deconstruct` parameters do not support parsing.

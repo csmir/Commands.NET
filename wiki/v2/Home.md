@@ -7,13 +7,13 @@ For this claim to have any value, a great deal is done to help a developer write
 
 > `using Commands;`
 
-Learn about the modular-API, a scaleable approach with extended features.
+Learn about the modular-API, a scaleable approach to command declaration with strongly typed classes and methods.
 
 ### 📝 [[Parameter Types|Parameter-Types]]
 
 > `using Commands;`
 
-Learn about the different parameter types that can be used in commands.
+Learn about the different parameter types that can be used for commands.
 
 ### 📦 [[Return Types|Return-Types]]
 
@@ -38,12 +38,6 @@ Define your own checks to ensure commands will only run and succeed when they ar
 > `using Commands.Parsing;`
 
 Manage and create custom parsers for changing raw input into types.
-
-### 🏗️ [[Builder API's|Builders]]
-
-> `using Commands.Builders;`
-
-Understand the fluent builder API's and how they can be used to empower the end-user with customization.
 
 ### 🧪 [[Testing Commands|Testing]]
 

@@ -27,9 +27,9 @@ By creating a manager to contain said command, you can run it with the provided 
 ```cs
 using Commands;
 
-var command = Command.Create(() => "Hello world!", "greet");
+var command = Command.From(() => "Hello world!", "greet");
 
-var manager = ComponentManager.Create(command);
+var manager = ComponentManager.With.Component(command).Create();
 
 manager.TryExecute(new ConsoleContext(), args);
 
@@ -44,20 +44,19 @@ Groups allow for subcommand creation, where the group name is a category for its
 ```cs
 using Commands;
 
-var mathCommands = CommandGroup.Create("math");
+var mathCommands = CommandGroup.From("math")
+    .Components(
+        Command.From((double number, int sumBy)      => number + sumBy, 
+            "sum", "add"), 
+        Command.From((double number, int subtractBy) => number - subtractBy, 
+            "subtract", "sub"), 
+        Command.From((double number, int multiplyBy) => number * multiplyBy, 
+            "multiply", "mul"), 
+        Command.From((double number, int divideBy)   => number / divideBy, 
+            "divide", "div")
+    );
 
-mathCommands.AddRange(
-    Command.Create((double number, int sumBy)      => number + sumBy, 
-        "sum", "add"), 
-    Command.Create((double number, int subtractBy) => number - subtractBy, 
-        "subtract", "sub"), 
-    Command.Create((double number, int multiplyBy) => number * multiplyBy, 
-        "multiply", "mul"), 
-    Command.Create((double number, int divideBy)   => number / divideBy, 
-        "divide", "div")
-);
-
-var manager = ComponentManager.Create(mathCommands);
+var manager = ComponentManager.With.Components(mathCommands).Create();
 
 manager.TryExecute(new ConsoleContext(), args);
 
@@ -90,7 +89,7 @@ public class HelpModule : CommandModule
 
 var helpCommands = CommandGroup.Create<HelpModule>();
 
-var manager = ComponentManager.Create(mathCommands, helpCommands);
+var manager = ComponentManager.With.Component(mathCommands).Type<HelpModule>().Create();
 
 manager.TryExecute(new ConsoleContext(), args);
 
@@ -105,9 +104,11 @@ Commands.NET is designed to be compatible with dependency injection out of the b
 using Commands;
 using Microsoft.Extensions.DependencyInjection;
 
+...
+
 var services = new ServiceCollection()
     .AddSingleton<MyService>()
-    .AddSingleton<ComponentManager>(ComponentManager.Create(mathCommands, helpCommands);
+    .AddSingleton<ComponentManager>(ComponentManager.With.Component(mathCommands).Type<HelpModule>());
     .BuildServiceProvider();
 
 var manager = services.GetRequiredService<ComponentManager>();
