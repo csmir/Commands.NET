@@ -8,7 +8,7 @@ public sealed class ExecuteConditionProperties<
 #if NET8_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 #endif
-    T> : IExecuteConditionProperties
+T> : IExecuteConditionProperties
     where T : ConditionEvaluator, new()
 {
     private Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>>? _delegate;

@@ -18,7 +18,7 @@ public sealed class CommandProperties : IComponentProperties
     public CommandProperties()
     {
         _conditions = [];
-        _names      = [];
+        _names = [];
 
         _delegate = null;
     }

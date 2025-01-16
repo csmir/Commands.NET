@@ -12,7 +12,7 @@ public readonly struct SearchResult : IExecuteResult
     /// <inheritdoc />
     public bool Success { get; } = false;
 
-    internal SearchResult(Exception exception) 
+    internal SearchResult(Exception exception)
         => Exception = exception;
 
     /// <inheritdoc />

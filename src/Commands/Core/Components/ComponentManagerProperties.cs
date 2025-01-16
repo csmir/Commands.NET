@@ -18,8 +18,8 @@ public sealed class ComponentManagerProperties
     public ComponentManagerProperties()
     {
         _dynamicTypes = [];
-        _components   = [];
-        _handlers     = [];
+        _components = [];
+        _handlers = [];
 
         _configuration = null;
     }
@@ -57,7 +57,7 @@ public sealed class ComponentManagerProperties
 #if NET8_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
-        T>()
+    T>()
         where T : CommandModule
     {
         return Type(new DynamicType(typeof(T)));
@@ -189,7 +189,7 @@ public sealed class ComponentManagerProperties
         var manager = new ComponentManager(handlers);
 
         manager.AddRange([
-            .. _components.Select(component => component.Create(configuration: configuration)), 
+            .. _components.Select(component => component.Create(configuration: configuration)),
             .. ComponentUtilities.BuildGroups(configuration, _dynamicTypes, null, false)
             ]);
 

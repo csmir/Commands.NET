@@ -18,7 +18,7 @@ public sealed class CommandGroupProperties : IComponentProperties
     {
         _conditions = [];
         _components = [];
-        _names      = [];
+        _names = [];
     }
 
     /// <summary>

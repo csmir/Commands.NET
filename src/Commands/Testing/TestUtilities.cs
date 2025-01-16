@@ -17,7 +17,7 @@ internal static class TestUtilities
             {
                 null => CompareReturn(TestResultType.Success, new InvalidOperationException("The command was expected to fail, but it succeeded.")),
 
-                CommandParsingException    => CompareReturn(TestResultType.ParseFailure, result.Exception),
+                CommandParsingException => CompareReturn(TestResultType.ParseFailure, result.Exception),
                 CommandEvaluationException => CompareReturn(TestResultType.ConditionFailure, result.Exception),
                 CommandOutOfRangeException => CompareReturn(TestResultType.MatchFailure, result.Exception),
 

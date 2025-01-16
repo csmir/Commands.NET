@@ -1,5 +1,4 @@
-﻿using Commands.Testing;
-using System.Text;
+﻿using System.Text;
 
 namespace Commands.Samples;
 

@@ -10,6 +10,6 @@ let manager
     = ComponentManager.From()
         .Component(command)
         .Handler(handler)
-        .ToManager()
+        .Create()
 
 manager.TryExecute<LocalCallerContext>(new LocalCallerContext(), "hello")
