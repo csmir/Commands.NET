@@ -110,27 +110,30 @@ public abstract class ComponentCollection : IComponentCollection
     /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
     public int AddRange(params IComponent[] components)
     {
-        StartWrite(out var copy);
+        ThrowIfImmutable();
 
-        var mutations = 0;
-
-        // We do not use HashSet<T>.SymmetricExceptWith because we are already validating the components in the internal handler.
-        // This is important, because we should not rebind components if we are not adding them.
-        //
-        // On another note, this method approaches the set via an elementary foreach clause anyway, it is not revolutionary.
-        foreach (var component in ValidateAddition(components))
-            mutations += copy.Add(component) ? 1 : 0;
-
-        if (mutations > 0)
+        lock (_components)
         {
-            _mutateParent?.Invoke(components, false);
+            var copy = new HashSet<IComponent>(_components);
 
-            CommitWrite([.. copy.OrderByDescending(x => x.GetScore())]);
+            var mutations = 0;
+
+            // We do not use HashSet<T>.SymmetricExceptWith because we are already validating the components in the internal handler.
+            // This is important, because we should not rebind components if we are not adding them.
+            //
+            // On another note, this method approaches the set via an elementary foreach clause anyway, it is not revolutionary.
+            foreach (var component in ValidateAddition(components))
+                mutations += copy.Add(component) ? 1 : 0;
+
+            if (mutations > 0)
+            {
+                _mutateParent?.Invoke(components, false);
+
+                _components = [.. copy.OrderByDescending(x => x.GetScore())];
+            }
+
+            return mutations;
         }
-        else
-            CancelWrite();
-
-        return mutations;
     }
     
     /// <inheritdoc />
@@ -142,38 +145,34 @@ public abstract class ComponentCollection : IComponentCollection
     /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
     public int RemoveRange(params IComponent[] components)
     {
-        StartWrite(out var copy);
+        ThrowIfImmutable();
 
-        var mutations = 0;
-
-        foreach (var component in components)
+        lock (_components)
         {
-            Assert.NotNull(component, nameof(component));
+            var mutations = 0;
 
-            mutations += copy.Remove(component) ? 1 : 0;
+            foreach (var component in components)
+            {
+                Assert.NotNull(component, nameof(component));
+
+                mutations += _components.Remove(component) ? 1 : 0;
+            }
+
+            if (mutations > 0)
+                _mutateParent?.Invoke(components, true);
+
+            return mutations;
         }
-
-        if (mutations > 0)
-        {
-            _mutateParent?.Invoke(components, true);
-
-            CommitWrite(copy);
-        }
-        else
-            CancelWrite();
-
-        return mutations;
     }
 
     /// <inheritdoc />
     /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
     public void Clear()
     {
-        StartWrite(out var copy);
+        ThrowIfImmutable();
 
-        copy.Clear();
-
-        CommitWrite(copy);
+        lock (_components)
+            _components.Clear();
     }
 
     /// <inheritdoc />
@@ -249,28 +248,12 @@ public abstract class ComponentCollection : IComponentCollection
             AddRange(components);
     }
 
-    // Requests write access to the locked resource.
-    private void StartWrite(out HashSet<IComponent> mutableCopy)
+    // Throws an exception if the collection is marked as read-only.
+    private void ThrowIfImmutable()
     {
         if (IsReadOnly)
             throw new InvalidOperationException("This collection has been marked as read-only and cannot be mutated.");
-
-        _lock.Wait();
-
-        mutableCopy = new HashSet<IComponent>(_components);
     }
-
-    // Ends write access to the collection, exchanges it, and releases the lock. GC should clean up the old collection when it is no longer held by any references.
-    private void CommitWrite(HashSet<IComponent> mutatedCopy)
-    {
-        Interlocked.Exchange(ref _components, mutatedCopy);
-
-        _lock.Release();
-    }
-
-    // Cancels the write operation and releases the lock.
-    private void CancelWrite()
-        => _lock.Release();
 
     // Binds the parent collection to the child collection.
     private void Bind(ComponentCollection collection)
