@@ -112,10 +112,10 @@ public abstract class ComponentCollection : IComponentCollection
     {
         ThrowIfImmutable();
 
-        var mutations = 0;
-
         lock (_components)
         {
+            var mutations = 0;
+
             var copy = new HashSet<IComponent>(_components);
 
             // We do not use HashSet<T>.SymmetricExceptWith because we are already validating the components in the internal handler.
@@ -131,9 +131,9 @@ public abstract class ComponentCollection : IComponentCollection
 
                 _components = [.. copy.OrderByDescending(x => x.GetScore())];
             }
-        }
 
-        return mutations;
+            return mutations;
+        }
     }
     
     /// <inheritdoc />
@@ -147,10 +147,10 @@ public abstract class ComponentCollection : IComponentCollection
     {
         ThrowIfImmutable();
 
-        var mutations = 0;
-
         lock (_components)
         {
+            var mutations = 0;
+
             var copy = new HashSet<IComponent>(_components);
 
             foreach (var component in components)
@@ -166,9 +166,9 @@ public abstract class ComponentCollection : IComponentCollection
 
                 _components = copy;
             }
-        }
 
-        return mutations;
+            return mutations;
+        }
     }
 
     /// <inheritdoc />
