@@ -48,4 +48,12 @@ public readonly struct DynamicType
 #endif
         Type type)
         => new(type);
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => obj is DynamicType other && Value == other.Value;
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+        => Value.GetHashCode();
 }

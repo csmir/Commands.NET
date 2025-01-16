@@ -262,12 +262,20 @@ public sealed class Command : IComponent, IParameterCollection
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
 
+    /// <inheritdoc cref="From(Delegate, string[])"/>
     public static CommandProperties From()
         => new();
 
+    /// <inheritdoc cref="From(Delegate, string[])"/>
     public static CommandProperties From(params string[] names)
         => new CommandProperties().Names(names);
 
+    /// <summary>
+    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="Command"/>.
+    /// </summary>
+    /// <param name="executionDelegate">The command body that should be executed when this command is invoked.</param>
+    /// <param name="names">A set of names this command be discovered by.</param>
+    /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static CommandProperties From(Delegate executionDelegate, params string[] names)
-        => new CommandProperties().Handler(executionDelegate).Names(names);
+        => new CommandProperties().Delegate(executionDelegate).Names(names);
 }

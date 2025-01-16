@@ -1,16 +1,27 @@
 ﻿namespace Commands;
 
-public sealed class ResultHandlerProperties<T> : ResultHandlerProperties
+/// <summary>
+///     A set of conditions of a result handler.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public sealed class ResultHandlerProperties<T> : IResultHandlerProperties
     where T : class, ICallerContext
 {
     private Func<T, IExecuteResult, IServiceProvider, ValueTask>? _delegate;
 
+    /// <summary>
+    ///     Creates a new instance of <see cref="ResultHandlerProperties{T}"/>.
+    /// </summary>
     public ResultHandlerProperties()
-        : base(null!) // Assign null as we do not use the underlying logic
     {
         _delegate = null;
     }
 
+    /// <summary>
+    ///     Sets the delegate that will be executed when the result handler is invoked.
+    /// </summary>
+    /// <param name="executionDelegate">The delegate to set.</param>
+    /// <returns>The same <see cref="ResultHandlerProperties{T}"/> for call-chaining.</returns>
     public ResultHandlerProperties<T> Delegate(Action<T, IExecuteResult, IServiceProvider> executionDelegate)
     {
         Assert.NotNull(executionDelegate, nameof(executionDelegate));
@@ -24,6 +35,11 @@ public sealed class ResultHandlerProperties<T> : ResultHandlerProperties
         return this;
     }
 
+    /// <summary>
+    ///     Sets the delegate that will be executed when the result handler is invoked.
+    /// </summary>
+    /// <param name="executionDelegate">The delegate to set.</param>
+    /// <returns>The same <see cref="ResultHandlerProperties{T}"/> for call-chaining.</returns>
     public ResultHandlerProperties<T> Delegate(Func<T, IExecuteResult, IServiceProvider, ValueTask> executionDelegate)
     {
         Assert.NotNull(executionDelegate, nameof(executionDelegate));
@@ -33,7 +49,8 @@ public sealed class ResultHandlerProperties<T> : ResultHandlerProperties
         return this;
     }
 
-    public override ResultHandler ToHandler()
+    /// <inheritdoc />
+    public ResultHandler ToHandler()
     {
         Assert.NotNull(_delegate, nameof(_delegate));
 
@@ -41,7 +58,7 @@ public sealed class ResultHandlerProperties<T> : ResultHandlerProperties
     }
 }
 
-public class ResultHandlerProperties
+internal readonly struct ResultHandlerProperties : IResultHandlerProperties
 {
     private readonly ResultHandler _handler;
 
@@ -50,6 +67,6 @@ public class ResultHandlerProperties
         _handler = handler;
     }
 
-    public virtual ResultHandler ToHandler()
+    public ResultHandler ToHandler()
         => _handler;
 }

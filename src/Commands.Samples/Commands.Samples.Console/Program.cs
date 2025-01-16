@@ -5,22 +5,17 @@ using Commands.Samples;
 var properties = ComponentManager.From();
 
 properties.Configuration(ComponentConfiguration.From()
-    .Parser(TypeParser.From(new SystemTypeParser(true)))
-    .Parser(TypeParser.From<Version>().Delegate(Version.TryParse)));
+    .Parser(new SystemTypeParser(true))
+    .Parser(TypeParser.From<Version>(Version.TryParse)));
 
-properties.Handler(ResultHandler.From<ConsoleCallerContext>()
-    .Delegate((caller, result, services) => caller.Respond(result)));
+properties.Handler(ResultHandler.From<ConsoleCallerContext>((caller, result, services) => caller.Respond(result.GetMessage())));
 
 properties.Types(typeof(Program).Assembly.GetExportedTypes());
 
-properties.Component(CommandGroup.From()
-    .Name("greet")
-    .Component(Command.From()
-        .Name("self")
-        .Handler((CommandContext<ConsoleCallerContext> ctx) => $"Hello, {ctx.Caller.Name}"))
-    .Component(Command.From()
-        .Name("another")
-        .Handler((string name) => $"Hello, {name}")));
+properties.Component(CommandGroup.From("greet")
+    .Components(
+        Command.From((CommandContext<ConsoleCallerContext> ctx) => $"Hello, {ctx.Caller.Name}"),
+        Command.From((string name) => $"Hello, {name}", "another")));
 
 var manager = properties.ToManager();
 

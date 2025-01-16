@@ -8,7 +8,7 @@ public class MutationModule : CommandModule
     [Test(Arguments = "test-command () => \"test\"")]
     public Task MutateCurrentModule(string commandName, [Remainder, CSharpScriptParser] Delegate executionAction)
     {
-        //GetParent().Add(Command.Create(executionAction, commandName));
+        GetParent().Add(Command.From(executionAction, commandName).ToComponent());
 
         return Respond("Command added.");
     }
@@ -17,7 +17,7 @@ public class MutationModule : CommandModule
     [Test(Arguments = "test-module")]
     public Task MutateCurrentModule(string moduleName)
     {
-        //GetParent().Add(CommandGroup.Create(moduleName));
+        GetParent().Add(CommandGroup.From(moduleName).ToComponent());
 
         return Respond("Module added.");
     }
@@ -26,8 +26,8 @@ public class MutationModule : CommandModule
     public Task MutateModule(string moduleName, string commandName, [Remainder, CSharpScriptParser] Delegate executionAction)
     {
         // From the parent, we can find the target module, being a CommandGroup.
-        //(GetParent().FirstOrDefault(x => x.Names.Contains(moduleName) && x is CommandGroup) as CommandGroup)!
-        //    .Add(Command.Create(executionAction, [commandName]));
+        (GetParent().FirstOrDefault(x => x.Names.Contains(moduleName) && x is CommandGroup) as CommandGroup)!
+            .Add(Command.From(executionAction, [commandName]).ToComponent());
 
         return Respond("Command added to submodule.");
     }

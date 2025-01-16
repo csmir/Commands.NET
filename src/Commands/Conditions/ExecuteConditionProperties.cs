@@ -1,22 +1,31 @@
-﻿using System.ComponentModel;
+﻿namespace Commands.Conditions;
 
-namespace Commands.Conditions;
-
+/// <summary>
+///     A set of properties of an execute condition.
+/// </summary>
+/// <typeparam name="T">The evaluator type this condition should be evaluated by.</typeparam>
 public sealed class ExecuteConditionProperties<
 #if NET8_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 #endif
-    T> : ExecuteConditionProperties
+    T> : IExecuteConditionProperties
     where T : ConditionEvaluator, new()
 {
     private Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>>? _delegate;
 
+    /// <summary>
+    ///     Creates a new <see cref="ExecuteConditionProperties{T}"/> instance.
+    /// </summary>
     public ExecuteConditionProperties()
-        : base(null!) // Assign null as we do not use the underlying logic
     {
         _delegate = null;
     }
 
+    /// <summary>
+    ///     Sets the delegate that will be executed when the condition is evaluated.
+    /// </summary>
+    /// <param name="executionDelegate">The delegate to set.</param>
+    /// <returns>The same <see cref="ExecuteConditionProperties{T}"/> for call-chaining.</returns>
     public ExecuteConditionProperties<T> Delegate(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> executionDelegate)
     {
         Assert.NotNull(executionDelegate, nameof(executionDelegate));
@@ -26,7 +35,8 @@ public sealed class ExecuteConditionProperties<
         return this;
     }
 
-    public override ExecuteCondition ToCondition()
+    /// <inheritdoc />
+    public ExecuteCondition ToCondition()
     {
         Assert.NotNull(_delegate, nameof(_delegate));
 
@@ -34,7 +44,7 @@ public sealed class ExecuteConditionProperties<
     }
 }
 
-public class ExecuteConditionProperties
+internal readonly struct ExecuteConditionProperties : IExecuteConditionProperties
 {
     private readonly ExecuteCondition _condition;
 
@@ -43,6 +53,6 @@ public class ExecuteConditionProperties
         _condition = condition;
     }
 
-    public virtual ExecuteCondition ToCondition()
+    public ExecuteCondition ToCondition()
         => _condition;
 }

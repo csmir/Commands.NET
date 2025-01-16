@@ -3,7 +3,7 @@ using Commands;
 using Commands.Samples;
 
 var exit = Command.From("exit")
-    .Handler(() => Environment.Exit(0));
+    .Delegate(() => Environment.Exit(0));
 
 var mathCommands = CommandGroup.From("math")
     .Components(

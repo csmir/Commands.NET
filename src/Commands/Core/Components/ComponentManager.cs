@@ -9,15 +9,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     private readonly bool _handlersAvailable;
     private readonly ResultHandler[] _handlers;
 
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="ComponentManager"/> class.
-    /// </summary>
-    /// <remarks>
-    ///     This constructor is dependency-injection friendly, allowing <see cref="ResultHandler"/> service implementations to be injected from an <see cref="IServiceProvider"/>.
-    ///     To add components to this manager, approach it as an <see cref="ICollection{T}"/>.
-    /// </remarks>
-    /// <param name="handlers">A collection of <see cref="ResultHandler"/> implementations that should resolve command results by defined approaches.</param>
-    public ComponentManager(IEnumerable<ResultHandler> handlers)
+    internal ComponentManager(IEnumerable<ResultHandler> handlers)
         : base(false)
     {
         var arr = handlers.ToArray();
@@ -117,6 +109,10 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         }
     }
 
+    /// <summary>
+    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="ComponentManager"/>.
+    /// </summary>
+    /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static ComponentManagerProperties From()
         => new();
 }

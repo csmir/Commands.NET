@@ -43,16 +43,9 @@ public sealed class ComponentConfiguration
         => Properties.TryGetValue(key, out var value) && value is T tValue ? tValue : defaultValue;
 
     /// <summary>
-    ///     Recursively searches through all the provided types and contained nested types to find all implementations of <see cref="CommandModule"/> or <see cref="CommandModule{T}"/>.
+    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="ComponentConfiguration"/>.
     /// </summary>
-    /// <remarks>
-    ///     The provided types do not have to be implementations of a module type, as this operation ignores types that are not. Supplying <see cref="Assembly.GetTypes"/> -or other implicitly sourced type collections- is valid.
-    /// </remarks>
-    /// <param name="types">A collection of <see cref="DynamicType"/> which accepts <see cref="Type"/>, which could, or should, contain command modules.</param>
-    /// <returns>A lazily evaluated collection of <see cref="IComponent"/> implementations, being either <see cref="Command"/> or <see cref="CommandGroup"/> depending on if a method or a type was resolved.</returns>
-    public IEnumerable<IComponent> CreateComponents(params DynamicType[] types)
-        => ComponentUtilities.BuildGroups(this, types, null, false);
-
+    /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static ComponentConfigurationProperties From()
         => new();
 }

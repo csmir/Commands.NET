@@ -181,9 +181,16 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
 
+
+    /// <inheritdoc cref="From(string[])"/>
     public static CommandGroupProperties From()
         => new();
 
+    /// <summary>
+    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="CommandGroup"/>.
+    /// </summary>
+    /// <param name="names">A set of names this group be discovered by.</param>
+    /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static CommandGroupProperties From(params string[] names)
         => new CommandGroupProperties().Names(names);
 }

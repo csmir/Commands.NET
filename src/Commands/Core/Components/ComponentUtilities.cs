@@ -112,7 +112,7 @@ public static class ComponentUtilities
     internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
         => provider.GetCustomAttributes(inherit).OfType<Attribute>();
 
-    internal static IEnumerable<CommandGroup> BuildGroups(this ComponentConfiguration configuration, DynamicType[] types, CommandGroup? parent, bool isNested)
+    internal static IEnumerable<CommandGroup> BuildGroups(this ComponentConfiguration configuration, IEnumerable<DynamicType> types, CommandGroup? parent, bool isNested)
     {
         Assert.NotNull(types, nameof(types));
 

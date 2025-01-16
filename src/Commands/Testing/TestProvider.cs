@@ -22,21 +22,9 @@ public class TestProvider : ITestProvider
     }
 
     /// <summary>
-    ///     Creates a new test provider with the specified arguments and expected result.
+    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="TestProvider"/>.
     /// </summary>
-    /// <param name="command">The command that should be tested.</param>
-    /// <param name="shouldEvaluateTo">The expected result of the evaluation. The test will fail if the outcome is different from this value.</param>
-    /// <param name="arguments">A string that should be parsed into valid (or invalid) command input.</param>
-    /// <returns>A newly created instance of <see cref="TestProvider"/>.</returns>
-    public ITestProvider Create(Command command, TestResultType shouldEvaluateTo, string? arguments = null)
-    {
-        Assert.NotNull(command, nameof(command));
-        Assert.NotNull(arguments, nameof(arguments));
-        Assert.NotNull(shouldEvaluateTo, nameof(shouldEvaluateTo));
-
-        if (shouldEvaluateTo > TestResultType.Success && shouldEvaluateTo < TestResultType.InvocationFailure)
-            throw new ArgumentOutOfRangeException(nameof(shouldEvaluateTo), shouldEvaluateTo, "The provided value is not a valid test result type.");
-
-        return new TestProvider(command, arguments ?? string.Empty, shouldEvaluateTo);
-    }
+    /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
+    public static TestProviderProperties From()
+        => new();
 }

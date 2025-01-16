@@ -53,14 +53,17 @@ public abstract class ExecuteCondition : IExecuteCondition
     public ConditionResult Success()
         => ConditionResult.FromSuccess();
 
+    /// <inheritdoc cref="From{T}(Func{ICallerContext, Command, IServiceProvider, ValueTask{ConditionResult}})"/>
     public static ExecuteConditionProperties<T> From<T>()
         where T : ConditionEvaluator, new()
         => new();
 
+    /// <summary>
+    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="ExecuteCondition"/>.
+    /// </summary>
+    /// <param name="executionDelegate">The delegate that should be executed when the condition is invoked.</param>
+    /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static ExecuteConditionProperties<T> From<T>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> executionDelegate)
         where T : ConditionEvaluator, new()
         => new ExecuteConditionProperties<T>().Delegate(executionDelegate);
-
-    public static ExecuteConditionProperties From(ExecuteCondition condition)
-        => new(condition);
 }

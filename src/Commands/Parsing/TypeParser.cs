@@ -74,15 +74,19 @@ public abstract class TypeParser : ITypeParser
         return list;
     }
 
+    /// <inheritdoc cref="From{T}(TryParseParser{T}.ParseDelegate)"/>
     public static TypeParserProperties<T> From<T>()
         => new();
 
+    /// <inheritdoc cref="From{T}(TryParseParser{T}.ParseDelegate)"/>
     public static TypeParserProperties<T> From<T>(Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> executionDelegate)
         => new TypeParserProperties<T>().Delegate(executionDelegate);
 
+    /// <summary>
+    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="TypeParser"/>.
+    /// </summary>
+    /// <param name="executionDelegate">The delegate that should be executed when the parser is invoked.</param>
+    /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static TypeParserProperties<T> From<T>(TryParseParser<T>.ParseDelegate executionDelegate)
         => new TypeParserProperties<T>().Delegate(executionDelegate);
-
-    public static TypeParserProperties From(TypeParser parser)
-        => new(parser);
 }
