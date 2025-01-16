@@ -149,17 +149,22 @@ public abstract class ComponentCollection : IComponentCollection
 
         lock (_components)
         {
+            var copy = new HashSet<IComponent>(_components);
             var mutations = 0;
 
             foreach (var component in components)
             {
                 Assert.NotNull(component, nameof(component));
 
-                mutations += _components.Remove(component) ? 1 : 0;
+                mutations += copy.Remove(component) ? 1 : 0;
             }
 
             if (mutations > 0)
+            {
                 _mutateParent?.Invoke(components, true);
+
+                _components = copy;
+            }
 
             return mutations;
         }
@@ -172,7 +177,7 @@ public abstract class ComponentCollection : IComponentCollection
         ThrowIfImmutable();
 
         lock (_components)
-            _components.Clear();
+            _components = [];
     }
 
     /// <inheritdoc />
