@@ -262,8 +262,10 @@ public sealed class Command : IComponent, IParameterCollection
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
 
+    #region Initializers
+
     /// <inheritdoc cref="From(Delegate, string[])"/>
-    public static CommandProperties From()
+    public static CommandProperties With
         => new();
 
     /// <inheritdoc cref="From(Delegate, string[])"/>
@@ -278,4 +280,6 @@ public sealed class Command : IComponent, IParameterCollection
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static CommandProperties From(Delegate executionDelegate, params string[] names)
         => new CommandProperties().Delegate(executionDelegate).Names(names);
+
+    #endregion
 }

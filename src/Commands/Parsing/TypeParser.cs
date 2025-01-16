@@ -49,33 +49,10 @@ public abstract class TypeParser : ITypeParser
     public ParseResult Success(object? value)
         => ParseResult.FromSuccess(value);
 
-    /// <summary>
-    ///     Creates a collection of default <see cref="TypeParser"/> implementations.
-    /// </summary>
-    /// <remarks>
-    ///     This collection returns parsers for:
-    ///     <list type="bullet">
-    ///         <item>All BCL types (<see href="https://learn.microsoft.com/en-us/dotnet/standard/class-library-overview#system-namespace"/>).</item>
-    ///         <item><see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="TimeSpan"/> and <see cref="Guid"/>.</item>
-    ///         <item><see cref="Enum"/> implementations for which no custom parser exists.</item>
-    ///     </list>
-    ///     <i>Collections implementing <see cref="Array"/> are converted by their respective element types, and not the types themselves.</i>
-    /// </remarks>
-    /// <returns>An <see cref="IEnumerable{T}"/> containing a range of <see cref="TypeParser"/>'s for all types listed above.</returns>
-    public static IEnumerable<TypeParser> CreateDefaults()
-    {
-        var list = TryParseParser.CreateBaseParsers();
-
-        list.Add(new TimeSpanParser());
-        list.Add(new ColorParser());
-        list.Add(new ObjectParser());
-        list.Add(new StringParser());
-
-        return list;
-    }
+    #region Initializers
 
     /// <inheritdoc cref="From{T}(TryParseParser{T}.ParseDelegate)"/>
-    public static TypeParserProperties<T> From<T>()
+    public static TypeParserProperties<T> For<T>()
         => new();
 
     /// <inheritdoc cref="From{T}(TryParseParser{T}.ParseDelegate)"/>
@@ -89,4 +66,17 @@ public abstract class TypeParser : ITypeParser
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static TypeParserProperties<T> From<T>(TryParseParser<T>.ParseDelegate executionDelegate)
         => new TypeParserProperties<T>().Delegate(executionDelegate);
+    internal static IEnumerable<TypeParser> CreateDefaults()
+    {
+        var list = TryParseParser.CreateBaseParsers();
+
+        list.Add(new TimeSpanParser());
+        list.Add(new ColorParser());
+        list.Add(new ObjectParser());
+        list.Add(new StringParser());
+
+        return list;
+    }
+
+    #endregion
 }

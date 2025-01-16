@@ -5,7 +5,7 @@
 /// </summary>
 public sealed class TestProviderProperties
 {
-    private string _arguments;
+    private string? _arguments;
     private Command? _command;
     private TestResultType _result;
 
@@ -14,7 +14,6 @@ public sealed class TestProviderProperties
     /// </summary>
     public TestProviderProperties()
     {
-        _arguments = string.Empty;
         _command = null;
         _result = TestResultType.Success;
     }
@@ -38,10 +37,8 @@ public sealed class TestProviderProperties
     /// </summary>
     /// <param name="arguments">The arguments to set.</param>
     /// <returns>The same <see cref="TestProviderProperties"/> for call-chaining.</returns>
-    public TestProviderProperties Arguments(string arguments)
+    public TestProviderProperties Arguments(string? arguments)
     {
-        Assert.NotNullOrEmpty(arguments, nameof(arguments));
-
         _arguments = arguments;
 
         return this;
@@ -63,10 +60,10 @@ public sealed class TestProviderProperties
     ///     Converts the properties to a new instance of <see cref="TestProvider"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="TestProvider"/>.</returns>
-    public TestProvider ToTest()
+    public TestProvider Create()
     {
         Assert.NotNull(_command, nameof(_command));
 
-        return new TestProvider(_command!, _arguments, _result);
+        return new TestProvider(_command!, _arguments ?? string.Empty, _result);
     }
 }

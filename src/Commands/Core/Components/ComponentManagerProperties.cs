@@ -178,18 +178,18 @@ public sealed class ComponentManagerProperties
     ///     Converts this set of properties to a new instance of <see cref="ComponentManager"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="ComponentManager"/>.</returns>
-    public ComponentManager ToManager()
+    public ComponentManager Create()
     {
         _configuration ??= ComponentConfigurationProperties.Default;
 
-        var configuration = _configuration.ToConfiguration();
+        var configuration = _configuration.Create();
 
-        var handlers = _handlers.Select(handler => handler.ToHandler());
+        var handlers = _handlers.Select(handler => handler.Create());
 
         var manager = new ComponentManager(handlers);
 
         manager.AddRange([
-            .. _components.Select(component => component.ToComponent(configuration: configuration)), 
+            .. _components.Select(component => component.Create(configuration: configuration)), 
             .. ComponentUtilities.BuildGroups(configuration, _dynamicTypes, null, false)
             ]);
 

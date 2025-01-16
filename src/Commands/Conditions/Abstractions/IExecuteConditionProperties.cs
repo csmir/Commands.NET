@@ -9,5 +9,5 @@ public interface IExecuteConditionProperties
     ///     Converts the properties to an instance of <see cref="ExecuteCondition"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="ExecuteCondition"/>.</returns>
-    public ExecuteCondition ToCondition();
+    public ExecuteCondition Create();
 }

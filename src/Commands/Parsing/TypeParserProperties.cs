@@ -49,7 +49,7 @@ public sealed class TypeParserProperties<T> : ITypeParserProperties
     }
 
     /// <inheritdoc />
-    public TypeParser ToParser()
+    public TypeParser Create()
     {
         if (_tryParseDelegate is not null)
             return new TryParseParser<T>(_tryParseDelegate!);
@@ -72,7 +72,7 @@ internal readonly struct TypeParserProperties : ITypeParserProperties
         _parser = parser;
     }
 
-    public TypeParser ToParser()
+    public TypeParser Create()
         => _parser;
 
     Type ITypeParserProperties.GetParserType()

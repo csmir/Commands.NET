@@ -244,8 +244,10 @@ public abstract class ResultHandler
 
     #endregion
 
+    #region Initializers
+
     /// <inheritdoc cref="From{T}(Action{T, IExecuteResult, IServiceProvider})"/>
-    public static ResultHandlerProperties<T> From<T>()
+    public static ResultHandlerProperties<T> For<T>()
         where T : class, ICallerContext
         => new();
 
@@ -262,4 +264,6 @@ public abstract class ResultHandler
     public static ResultHandlerProperties<T> From<T>(Action<T, IExecuteResult, IServiceProvider> executionDelegate)
         where T : class, ICallerContext
         => new ResultHandlerProperties<T>().Delegate(executionDelegate);
+
+    #endregion
 }

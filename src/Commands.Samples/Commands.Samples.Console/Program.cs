@@ -17,7 +17,7 @@ properties.Component(CommandGroup.From("greet")
         Command.From((CommandContext<ConsoleCallerContext> ctx) => $"Hello, {ctx.Caller.Name}"),
         Command.From((string name) => $"Hello, {name}", "another")));
 
-var manager = properties.ToManager();
+var manager = properties.Create();
 
 while (true)
 {

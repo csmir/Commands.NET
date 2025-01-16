@@ -5,11 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 var manager = ComponentManager.From()
     .Types(typeof(Program).Assembly.GetExportedTypes())
     .Handler(ResultHandler.From<ICallerContext>((c, r, s) => c.Respond(r.Exception?.InnerException != null ? r.Exception.InnerException : r.Exception)))
-    .ToManager();
+    .Create();
 
-var testRunner = TestRunner.From<TestCallerContext>()
+var testRunner = TestRunner.For<TestCallerContext>()
     .Commands(manager.GetCommands().ToArray())
-    .ToRunner();
+    .Create();
 
 testRunner.TestFailed += (result) =>
 {

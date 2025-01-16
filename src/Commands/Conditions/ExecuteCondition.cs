@@ -53,8 +53,10 @@ public abstract class ExecuteCondition : IExecuteCondition
     public ConditionResult Success()
         => ConditionResult.FromSuccess();
 
+    #region Initializers
+
     /// <inheritdoc cref="From{T}(Func{ICallerContext, Command, IServiceProvider, ValueTask{ConditionResult}})"/>
-    public static ExecuteConditionProperties<T> From<T>()
+    public static ExecuteConditionProperties<T> For<T>()
         where T : ConditionEvaluator, new()
         => new();
 
@@ -66,4 +68,6 @@ public abstract class ExecuteCondition : IExecuteCondition
     public static ExecuteConditionProperties<T> From<T>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> executionDelegate)
         where T : ConditionEvaluator, new()
         => new ExecuteConditionProperties<T>().Delegate(executionDelegate);
+
+    #endregion
 }

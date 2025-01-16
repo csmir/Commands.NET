@@ -84,11 +84,15 @@ public abstract class TestRunner
         CountCompleted = 0;
     }
 
+    #region Initializers
+
     /// <summary>
     ///     Defines a collection of properties to configure and convert into a new instance of <see cref="TestRunner{TContext}"/>.
     /// </summary>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static TestRunnerProperties<T> From<T>()
+    public static TestRunnerProperties<T> For<T>()
         where T : ICallerContext, new()
         => new();
+
+    #endregion
 }

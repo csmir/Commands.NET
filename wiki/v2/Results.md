@@ -83,36 +83,20 @@ namespace Commands.Samples;
 
 public class CustomResultHandler : ResultHandler
 {
-    protected override ValueTask CommandNotFound(ICallerContext caller, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected override ValueTask CommandNotFound(ICallerContext caller, SearchResult result, string errorReason, IServiceProvider services, CancellationToken cancellationToken)
     {
+        // Your response logic here
     }
 }
 
 ```
 
-The `CommandNotFound` method is called when the search operation returns no commands or modules. 
-By catching it here, we can send a custom response to the user that tried to invoke this command:
-
-```cs
-...
-    protected override ValueTask CommandNotFound(ICallerContext caller, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
-    {
-        caller.Respond("No commands were found with your input.");
-
-        return ValueTask.CompletedTask;
-    }
-...
-```
+The `CommandNotFound` method is called when the search operation returns no commands or modules.
 
 When you have succesfully constructed the logic for handling the result, you can pass it along when creating a new `ComponentManager`:
 
 ```cs
-var manager = ComponentManager.Create([], new CustomResultHandler());
-```
-
-Or, when using the builder pattern:
-```cs
-builder.AddResultHandler(new CustomResultHandler());
+var manager = ComponentManager.From().Handler(new CustomResultHandler());
 ```
 
 > [!NOTE]

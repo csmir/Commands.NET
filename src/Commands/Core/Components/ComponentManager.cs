@@ -109,10 +109,19 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         }
     }
 
+    #region Initializers
+
+    /// <inheritdoc cref="From(IComponentProperties[])"/>
+    public static ComponentManagerProperties With
+        => new();
+
     /// <summary>
     ///     Defines a collection of properties to configure and convert into a new instance of <see cref="ComponentManager"/>.
     /// </summary>
+    /// <param name="components">The components to add.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static ComponentManagerProperties From()
-        => new();
+    public static ComponentManagerProperties From(params IComponentProperties[] components)
+        => new ComponentManagerProperties().Components(components);
+
+    #endregion
 }

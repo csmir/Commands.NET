@@ -16,7 +16,7 @@ This article introduces how to use various parameter types in commands.
 By default, non-optional parameters are considered a required argument, without any special syntax. They are converted to, from a single input argument.
 
 ```cs
-Command.Create((string arg1, int arg2, bool arg3) => { });
+Command.From((string arg1, int arg2, bool arg3) => { });
 ```
 ```cs
 // 'command arg1 2 true' is valid
@@ -35,7 +35,7 @@ public void Command(string arg1, int arg2, bool arg3)
 Nullable parameters are supported, and are considered non-optional arguments that accept `null` as a value.
 
 ```cs
-Command.Create((string arg1, int? arg2, bool arg3) => { });
+Command.From((string arg1, int? arg2, bool arg3) => { });
 ```
 ```cs
 // 'command arg1 null true' is valid
@@ -50,7 +50,7 @@ public void Command(string arg1, int? arg2, bool arg3)
 Optional parameters are supported, and are considered optional arguments that can be omitted. 
 
 ```cs
-Command.Create((string arg1, int arg2 = 2, bool arg3 = true) => { });
+Command.From((string arg1, int arg2 = 2, bool arg3 = true) => { });
 ```
 ```cs
 // 'command arg1' is valid
@@ -83,7 +83,7 @@ public class ConstructedType
 These parameters are specified with the `Deconstruct` attribute.
 
 ```cs
-Command.Create(([Deconstruct] ConstructedType complex) => { });
+Command.From(([Deconstruct] ConstructedType complex) => { });
 ```
 ```cs
 // 'command arg1 2 true' is valid
@@ -107,7 +107,7 @@ Remainder parameters behave differently depending on the type of the parameter:
 - If the parameter is any implementation of `Array`, it will consume all remaining arguments as an array of `T`.
 
 ```cs
-Command.Create((string arg1, [Remainder] string arg2) => { });
+Command.From((string arg1, [Remainder] string arg2) => { });
 ```
 ```cs
 // 'command 1 2 3 4 5 6' is valid
@@ -122,7 +122,7 @@ public void Command(params int[] args)
 Parameters can be named by using the `Name` attribute. This is useful for commands that have camel-case parameter names, but should have lowercase naming to the caller.
 
 ```cs
-Command.Create(([Name("arg1")] string Arg1, [Name("arg2")] int Arg2, [Name("arg3")] bool Arg3) => { });
+Command.From(([Name("arg1")] string Arg1, [Name("arg2")] int Arg2, [Name("arg3")] bool Arg3) => { });
 ```
 ```cs
 // 'command arg1 2 arg3' is valid

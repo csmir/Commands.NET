@@ -1,10 +1,10 @@
 ﻿using Commands;
 using Commands.Tests;
 
-var manager = ComponentManager.From()
+var manager = ComponentManager.With
     .Type<Module>()
     .Handler(ResultHandler.From<ICallerContext>((c, res, serv) => c.Respond(res)))
-    .ToManager();
+    .Create();
 
 while (true)
     manager.TryExecute(new Module.CallerContext(), Console.ReadLine()!);

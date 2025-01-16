@@ -14,7 +14,7 @@ For the following examples, `ANDEvaluator` will be used. This means that all con
 ### Functional Pattern
 
 ```cs
-var condition = ExecuteCondition.Create((ctx, cmd, services) => ...);
+var condition = ExecuteCondition.From((ctx, cmd, services) => ...);
 ```
 
 The creation pattern handles conditions as `ValueTask<ConditionResult>` where `ConditionResult.FromError()` or `ConditionResult.FromSuccess()` can be used to return the result. 
@@ -58,11 +58,11 @@ This pattern writes similar to `ExecuteCondition` implementations, also allowing
 ### Functional Pattern & Declarative Pattern
 
 ```cs
-var command = Command.Create(() => { }, ["name"], [condition, new CustomCondition()]);
+var command = Command.From(() => { }, "name").Condition(condition);
 ```
 
 ```cs
-var group = CommandGroup.Create(["name"], [condition, new CustomCondition()]);
+var group = CommandGroup.From("name").Condition(condition).Condition(new CustomCondition());
 ```
 
 Conditions exposed to `CommandGroup` are passed to every `Command` and `CommandGroup` added to it.

@@ -11,11 +11,6 @@ public sealed class ComponentConfigurationProperties
     private readonly Dictionary<object, object> _properties;
 
     /// <summary>
-    ///     Defines a default set of properties which will serve as the implementation when no other configuration is provided to component creation.
-    /// </summary>
-    public static ComponentConfigurationProperties Default { get; } = new();
-
-    /// <summary>
     ///     Creates a new instance of <see cref="ComponentConfigurationProperties"/>.
     /// </summary>
     public ComponentConfigurationProperties()
@@ -104,13 +99,22 @@ public sealed class ComponentConfigurationProperties
     ///     Converts the properties to a new instance of <see cref="ComponentConfiguration"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="ComponentConfiguration"/>.</returns>
-    public ComponentConfiguration ToConfiguration()
+    public ComponentConfiguration Create()
     {
         var baseParsers = TypeParser.CreateDefaults().ToDictionary(x => x.Type);
 
         foreach (var kvp in _parsers)
-            baseParsers[kvp.Key] = kvp.Value.ToParser();
+            baseParsers[kvp.Key] = kvp.Value.Create();
 
         return new ComponentConfiguration(baseParsers, _properties);
     }
+
+    #region Initializers
+
+    /// <summary>
+    ///     Defines a default set of properties which will serve as the implementation when no other configuration is provided to component creation.
+    /// </summary>
+    public static ComponentConfigurationProperties Default { get; } = new();
+
+    #endregion
 }

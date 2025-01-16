@@ -21,10 +21,21 @@ public class TestProvider : ITestProvider
         ShouldEvaluateTo = shouldEvaluateTo;
     }
 
+    #region Initializers
+
+    /// <inheritdoc cref="From(Command, string?, TestResultType)"/>
+    public static TestProviderProperties With
+        => new();
+
     /// <summary>
     ///     Defines a collection of properties to configure and convert into a new instance of <see cref="TestProvider"/>.
     /// </summary>
+    /// <param name="command">The command to test.</param>
+    /// <param name="arguments">The arguments to test with.</param>
+    /// <param name="testResult">The result to test for.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static TestProviderProperties From()
-        => new();
+    public static TestProviderProperties From(Command command, string? arguments = null, TestResultType testResult = TestResultType.Success)
+        => new TestProviderProperties().Command(command).Arguments(arguments).Result(testResult);
+
+    #endregion
 }

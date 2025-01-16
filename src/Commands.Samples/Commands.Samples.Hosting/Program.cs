@@ -7,12 +7,11 @@ using Microsoft.Extensions.Logging;
 await Host.CreateDefaultBuilder(args)
     .ConfigureServices(configure =>
     {
-        var properties = ComponentManager.From()
+        var properties = ComponentManager.With
             .Types(typeof(Program).Assembly.GetExportedTypes())
-            .Handler(ResultHandler.From<HostedCallerContext>()
-                .Delegate((c, r, s) => c.Respond(r.Exception?.InnerException != null ? r.Exception.InnerException : r.Exception)));
+            .Handler(ResultHandler.From<HostedCallerContext>((c, r, s) => c.Respond(r.GetMessage())));
 
-        configure.AddSingleton((services) => properties.ToManager());
+        configure.AddSingleton((services) => properties.Create());
         configure.AddHostedService<Listener>();
     })
     .ConfigureLogging(configure =>

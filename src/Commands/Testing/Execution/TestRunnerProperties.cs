@@ -77,11 +77,11 @@ public sealed class TestRunnerProperties<T>
     ///     Converts the properties to a new instance of <see cref="TestRunner{TContext}"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="TestRunner{TContext}"/>.</returns>
-    public TestRunner<T> ToRunner()
+    public TestRunner<T> Create()
     {
         var tests = _commands.ToDictionary(x => x, x => x.Attributes.OfType<ITestProvider>().ToArray());
 
-        var runtimeDefined = _tests.Select(x => x.ToTest()).GroupBy(x => x.Command);
+        var runtimeDefined = _tests.Select(x => x.Create()).GroupBy(x => x.Command);
 
         foreach (var group in runtimeDefined)
         {

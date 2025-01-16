@@ -36,7 +36,7 @@ public sealed class ExecuteConditionProperties<
     }
 
     /// <inheritdoc />
-    public ExecuteCondition ToCondition()
+    public ExecuteCondition Create()
     {
         Assert.NotNull(_delegate, nameof(_delegate));
 
@@ -53,6 +53,6 @@ internal readonly struct ExecuteConditionProperties : IExecuteConditionPropertie
         _condition = condition;
     }
 
-    public ExecuteCondition ToCondition()
+    public ExecuteCondition Create()
         => _condition;
 }

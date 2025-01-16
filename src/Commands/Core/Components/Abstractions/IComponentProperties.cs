@@ -14,5 +14,5 @@ public interface IComponentProperties
     /// <param name="parent">The parent object of this group. If left as null, the group will not inherit any configured values of said parent, such as conditions.</param>
     /// <param name="configuration">The configuration object to configure this object during creation.</param>
     /// <returns>A new implementation of <see cref="IComponent"/>.</returns>
-    public IComponent ToComponent(CommandGroup? parent = null, ComponentConfiguration? configuration = null);
+    public IComponent Create(CommandGroup? parent = null, ComponentConfiguration? configuration = null);
 }

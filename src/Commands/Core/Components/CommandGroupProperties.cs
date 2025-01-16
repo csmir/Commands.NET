@@ -136,15 +136,15 @@ public sealed class CommandGroupProperties : IComponentProperties
     /// <param name="parent">The parent object of this group. If left as null, the group will not inherit any configured values of said parent, such as conditions.</param>
     /// <param name="configuration">The configuration object to configure this object during creation.</param>
     /// <returns>A new instance of <see cref="CommandGroup"/>.</returns>
-    public IComponent ToComponent(CommandGroup? parent = null, ComponentConfiguration? configuration = null)
+    public IComponent Create(CommandGroup? parent = null, ComponentConfiguration? configuration = null)
     {
         configuration ??= ComponentConfiguration.Default;
 
-        var conditionsToAdd = _conditions.Select(condition => condition.ToCondition());
+        var conditionsToAdd = _conditions.Select(condition => condition.Create());
 
         var group = new CommandGroup(parent, conditionsToAdd, [.. _names], configuration);
 
-        var itemsToAdd = _components.Select(component => component.ToComponent(group, configuration));
+        var itemsToAdd = _components.Select(component => component.Create(group, configuration));
 
         group.AddRange([.. itemsToAdd]);
 
