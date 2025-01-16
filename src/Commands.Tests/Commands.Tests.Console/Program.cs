@@ -5,6 +5,12 @@ using Microsoft.Extensions.DependencyInjection;
 var manager = ComponentManager.From()
     .Types(typeof(Program).Assembly.GetExportedTypes())
     .Handler(ResultHandler.From<ICallerContext>((c, r, s) => c.Respond(r.Exception?.InnerException != null ? r.Exception.InnerException : r.Exception)))
+    .Component(Command.From((CommandContext<ConsoleContext> c) =>
+    {
+        foreach (var command in c.Manager!.GetCommands())
+            c.Respond(command.ToString());
+
+    }, "help"))
     .Create();
 
 var testRunner = TestRunner.For<TestCallerContext>()

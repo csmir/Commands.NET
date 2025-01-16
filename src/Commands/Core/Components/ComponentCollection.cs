@@ -6,7 +6,9 @@ public abstract class ComponentCollection : IComponentCollection
 {
     private Action<IComponent[], bool>? _mutateParent;
 
-    private HashSet<IComponent> _components = [];
+    private HashSet<IComponent> _components;
+
+    private readonly SemaphoreSlim _lock;
 
     /// <inheritdoc />
     public int Count
@@ -16,7 +18,12 @@ public abstract class ComponentCollection : IComponentCollection
     public bool IsReadOnly { get; }
 
     internal ComponentCollection(bool isReadOnly)
-        => IsReadOnly = isReadOnly;
+    {
+        IsReadOnly = isReadOnly;
+
+        _lock = new(1, 1);
+        _components = [];
+    }
 
     /// <inheritdoc />
     public abstract IEnumerable<IComponent> Find(ArgumentArray args);
@@ -103,67 +110,29 @@ public abstract class ComponentCollection : IComponentCollection
     /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
     public int AddRange(params IComponent[] components)
     {
-        ThrowIfLocked();
+        StartWrite(out var copy);
 
-        var hasChanged = 0;
+        var mutations = 0;
 
-        var copy = new HashSet<IComponent>(_components);
+        // We do not use HashSet<T>.SymmetricExceptWith because we are already validating the components in the internal handler.
+        // This is important, because we should not rebind components if we are not adding them.
+        //
+        // On another note, this method approaches the set via an elementary foreach clause anyway, it is not revolutionary.
+        foreach (var component in ValidateAddition(components))
+            mutations += copy.Add(component) ? 1 : 0;
 
-        foreach (var component in components)
+        if (mutations > 0)
         {
-            Assert.NotNull(component, nameof(component));
-
-            var additionResult = false;
-
-            if (!component.IsSearchable)
-            {
-                // When the component is a command group and the group has no name, it should be a root group.
-                // However, it is only possible to be a root group if the current collection is a manager.
-                if (this is ComponentManager manager)
-                {
-                    if (component is CommandGroup componentIsGroup)
-                    {
-                        // Add the contents of the group to the collection, instead of the group itself.
-                        var innerChanges = AddRange([.. componentIsGroup]);
-
-                        // Consider the addition successful if the inner operation returned more than 0 changes.
-                        additionResult = innerChanges > 0;
-
-                        // When the addition is successful, bind the group to the manager. This makes it so that when the group is mutated, the manager is also mutated.
-                        if (additionResult)
-                            manager.Bind(componentIsGroup);
-                    }
-                    else
-                        throw new InvalidOperationException($"{nameof(Command)} instances without names can only be added to a {nameof(CommandGroup)}.");
-                }
-                else if (component is CommandGroup)
-                    throw new InvalidOperationException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ComponentManager)}.");
-            }
-            else
-            {
-                additionResult = copy.Add(component);
-
-                // When addition is successful, and this collection is a CommandGroup, bind the component to the group.
-                if (this is CommandGroup collectionIsGroup && additionResult)
-                    component.Bind(collectionIsGroup);
-            }
-
-            hasChanged += additionResult ? 1 : 0;
-        }
-
-        if (hasChanged > 0)
-        {
-            // Notify the top-level collection that a mutation has occurred. This will add, and re-sort the components.
             _mutateParent?.Invoke(components, false);
 
-            var orderedCopy = new HashSet<IComponent>(copy.OrderByDescending(x => x.GetScore()));
-
-            Interlocked.Exchange(ref _components, orderedCopy);
+            CommitWrite([.. copy.OrderByDescending(x => x.GetScore())]);
         }
+        else
+            CancelWrite();
 
-        return hasChanged;
+        return mutations;
     }
-
+    
     /// <inheritdoc />
     /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
     public bool Remove(IComponent component)
@@ -173,35 +142,38 @@ public abstract class ComponentCollection : IComponentCollection
     /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
     public int RemoveRange(params IComponent[] components)
     {
-        ThrowIfLocked();
+        StartWrite(out var copy);
 
-        var copy = new HashSet<IComponent>(_components);
-        var removed = 0;
+        var mutations = 0;
 
         foreach (var component in components)
         {
             Assert.NotNull(component, nameof(component));
 
-            removed += copy.Remove(component) ? 1 : 0;
+            mutations += copy.Remove(component) ? 1 : 0;
         }
 
-        if (removed > 0)
+        if (mutations > 0)
         {
             _mutateParent?.Invoke(components, true);
 
-            Interlocked.Exchange(ref _components, copy);
+            CommitWrite(copy);
         }
+        else
+            CancelWrite();
 
-        return removed;
+        return mutations;
     }
 
     /// <inheritdoc />
     /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
     public void Clear()
     {
-        ThrowIfLocked();
+        StartWrite(out var copy);
 
-        Interlocked.Exchange(ref _components, []);
+        copy.Clear();
+
+        CommitWrite(copy);
     }
 
     /// <inheritdoc />
@@ -212,11 +184,61 @@ public abstract class ComponentCollection : IComponentCollection
     public IEnumerator<IComponent> GetEnumerator()
         => _components.GetEnumerator();
 
-    internal void Bind(ComponentCollection collection)
-        => _mutateParent = collection.MutateFromChild;
-
     internal void Push(IEnumerable<IComponent> components)
         => _components = [.. components];
+
+    // Returns which of the provided components should be added to the collection.
+    private List<IComponent> ValidateAddition(IEnumerable<IComponent> components)
+    {
+        var discovered = new List<IComponent>();
+
+        foreach (var component in components)
+        {
+            Assert.NotNull(component, nameof(component));
+
+            if (_components.Contains(component))
+                continue;
+
+            if (this is ComponentManager manager)
+            {
+                // When a component is not searchable it means it has no names. Between a manager and a group, a different restriction applies to how this should be done.
+                if (!component.IsSearchable)
+                {
+                    // Anything added to the manager should be considered top-level.
+                    // Because a command realistically can never be executed if it has no name, we reject it from being added.
+                    if (component is not CommandGroup group)
+                        throw new InvalidOperationException($"{nameof(Command)} instances without names can only be added to a {nameof(CommandGroup)}.");
+
+                    discovered.AddRange(ValidateAddition([.. group]));
+
+                    // By binding a top-level group without a name to the manager, the manager will be notified of any changes made so it can update its state.
+                    group.Bind(manager);
+                }
+                else
+                    discovered.Add(component);
+            }
+
+            if (this is CommandGroup collection)
+            {
+                if (!component.IsSearchable)
+                {
+                    // Anything added to a group should be considered nested.
+                    // Because of the nature of this design, we want to avoid folding anything but top level. This means that nested groups must be named.
+                    if (component is not Command)
+                        throw new InvalidOperationException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ComponentManager)}.");
+
+                    discovered.Add(component);
+                }
+                else
+                    discovered.Add(component);
+
+                // We always ensure the parent of the component is bound when it is added, ensuring that the component is able to access global state.
+                component.Bind(collection);
+            }
+        }
+
+        return discovered;
+    }
 
     // Mutates the parent collection from the child collection, if bind is called by the parent collection.
     private void MutateFromChild(IComponent[] components, bool removing)
@@ -227,12 +249,32 @@ public abstract class ComponentCollection : IComponentCollection
             AddRange(components);
     }
 
-    // Throws an exception if the collection is marked as read-only.
-    private void ThrowIfLocked()
+    // Requests write access to the locked resource.
+    private void StartWrite(out HashSet<IComponent> mutableCopy)
     {
         if (IsReadOnly)
             throw new InvalidOperationException("This collection has been marked as read-only and cannot be mutated.");
+
+        _lock.Wait();
+
+        mutableCopy = new HashSet<IComponent>(_components);
     }
+
+    // Ends write access to the collection, exchanges it, and releases the lock. GC should clean up the old collection when it is no longer held by any references.
+    private void CommitWrite(HashSet<IComponent> mutatedCopy)
+    {
+        Interlocked.Exchange(ref _components, mutatedCopy);
+
+        _lock.Release();
+    }
+
+    // Cancels the write operation and releases the lock.
+    private void CancelWrite()
+        => _lock.Release();
+
+    // Binds the parent collection to the child collection.
+    private void Bind(ComponentCollection collection)
+        => _mutateParent = collection.MutateFromChild;
 
     void ICollection<IComponent>.Add(IComponent item)
         => Add(item);

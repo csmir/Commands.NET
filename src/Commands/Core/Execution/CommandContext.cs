@@ -26,6 +26,11 @@ public class CommandContext<T>(T caller, Command command, CommandOptions options
     public Command Command { get; } = command;
 
     /// <summary>
+    ///     Gets the <see cref="ComponentManager"/> that triggered the command, if this command was invoked from one.
+    /// </summary>
+    public ComponentManager? Manager => Options.Manager;
+
+    /// <summary>
     ///     Sends a response to the caller of the command.
     /// </summary>
     /// <param name="message">A message to send to the caller.</param>
