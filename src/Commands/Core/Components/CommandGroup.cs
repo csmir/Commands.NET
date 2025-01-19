@@ -53,7 +53,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
         Type type, CommandGroup? parent, string[] names, ComponentConfiguration configuration)
-        : base(configuration.GetProperty("MakeModulesReadonly", false))
+        : base()
     {
         Parent = parent;
         Type = type;
@@ -71,14 +71,19 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     }
 
     internal CommandGroup(
-        CommandGroup? parent, IEnumerable<ExecuteCondition> conditions, string[] names, ComponentConfiguration configuration)
-        : base(configuration.GetProperty("MakeModulesReadonly", false))
+        CommandGroup? parent, IEnumerable<ExecuteCondition> conditions, string[] names)
+        : base()
     {
         Parent = parent;
 
-        Attributes = [];
-        Evaluators = ConditionEvaluator.CreateEvaluators(conditions).Concat(parent?.Evaluators ?? []).ToArray();
+        var currentConditions = ConditionEvaluator.CreateEvaluators(conditions);
 
+        if (parent != null)
+            Evaluators = [.. currentConditions, .. parent.Evaluators];
+        else
+            Evaluators = [.. currentConditions];
+
+        Attributes = [];
         Names = names;
     }
 
@@ -110,8 +115,10 @@ public sealed class CommandGroup : ComponentCollection, IComponent
 
         var score = 1.0f;
 
-        foreach (var component in this)
-            score += component.GetScore();
+        var enumerator = GetSpanEnumerator();
+
+        while (enumerator.MoveNext())
+            score += enumerator.Current!.GetScore();
 
         if (Name != Type?.Name)
             score += 1.0f;
@@ -122,27 +129,29 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     }
 
     /// <inheritdoc />
-    public int CompareTo(object? obj)
-        => obj is ICommandSegment scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
+    public int CompareTo(IComponent? component)
+        => GetScore().CompareTo(component?.GetScore());
 
     /// <inheritdoc />
     public override IEnumerable<IComponent> Find(ArgumentArray args)
     {
         List<IComponent> discovered = [this];
 
-        foreach (var component in this)
+        var enumerator = GetSpanEnumerator();
+
+        while (enumerator.MoveNext())
         {
-            if (component.IsDefault)
-                discovered.Add(component);
+            if (enumerator.Current.IsDefault)
+                discovered.Add(enumerator.Current);
             else
             {
-                if (!args.TryGetElementAt(Position, out var value) || !component.Names.Contains(value))
+                if (!args.TryGetElementAt(Position, out var value) || !enumerator.Current.Names.Contains(value))
                     continue;
 
-                if (component is CommandGroup group)
+                if (enumerator.Current is CommandGroup group)
                     discovered.AddRange(group.Find(args));
                 else
-                    discovered.Add(component);
+                    discovered.Add(enumerator.Current);
             }
         }
 
@@ -180,6 +189,9 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
+
+    int IComparable.CompareTo(object? obj)
+        => obj is IComponent component ? CompareTo(component) : -1;
 
     #region Initializers
 

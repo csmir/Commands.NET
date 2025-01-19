@@ -132,12 +132,8 @@ public sealed class CommandProperties : IComponentProperties
     {
         Assert.NotNull(_delegate, nameof(_delegate));
 
-        configuration ??= ComponentConfiguration.Default;
-
         var conditionsToAdd = _conditions.Select(condition => condition.Create());
 
-        var delegateHasContext = _delegate!.Method.HasContextProvider();
-
-        return new Command(parent, new CommandDelegateActivator(_delegate.Method, _delegate.Target, delegateHasContext), conditionsToAdd, [.. _names], delegateHasContext, configuration);
+        return new Command(parent, new CommandDelegateActivator(_delegate!), conditionsToAdd, [.. _names], configuration ?? ComponentConfiguration.Empty);
     }
 }

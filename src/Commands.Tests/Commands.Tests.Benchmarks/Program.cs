@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Immutable;
 
 namespace Commands.Tests;
 
@@ -47,40 +48,34 @@ public class Program
 
     #region Object Creation Analysis
 
-    [Benchmark]
-    public void CommandCreate()
-    {
-        //Command.Create(() => { }, "name");
-    }
+    //[Benchmark]
+    //public void CommandCreate()
+    //{
+    //    Command.From(() => { }, "name").Create();
+    //}
 
-    [Benchmark]
-    public void GroupCreate()
-    {
-        //var group = CommandGroup.Create("name");
-
-        //group.Add(Command.Create(() => { }, "name"));
-    }
-
-    [Benchmark]
-    public void TypeGroupCreate()
-    {
-        //CommandGroup.Create<CreationAnalysisModule>();
-    }
+    //[Benchmark]
+    //public void GroupCreate()
+    //{
+    //    CommandGroup.From("name").Create();
+    //}
 
     [Benchmark]
     public void CreateArguments()
     {
-        ArgumentArray.Read("command");
+        ArgumentArray.From("command");
     }
 
     #endregion
 
     #region Pipeline Analysis
 
+    private static readonly ArgumentArray _args = ArgumentArray.From("command");
+
     [Benchmark]
     public void FindCommands()
     {
-        _components.Find(new ArgumentArray(["command"]));
+        _components.Find(_args);
     }
 
     [Benchmark]

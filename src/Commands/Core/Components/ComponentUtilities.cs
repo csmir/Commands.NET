@@ -186,11 +186,7 @@ public static class ComponentUtilities
             {
                 Command? component;
                 if (method.IsStatic)
-                {
-                    var hasContext = method.HasContextProvider();
-
-                    component = new Command(parent, new CommandStaticActivator(method, hasContext), names, hasContext, configuration);
-                }
+                    component = new Command(parent, new CommandStaticActivator(method), names, configuration);
                 else
                     component = new Command(parent, new CommandInstanceActivator(method), names, configuration);
 

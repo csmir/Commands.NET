@@ -11,21 +11,20 @@ internal sealed class ArrayParser(TypeParser underlyingParser) : TypeParser
 #endif
     public override async ValueTask<ParseResult> Parse(ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (value is not object[] array)
+        if (value is not IEnumerable<object> input)
             return Error($"The provided value is not an array. Expected: '{Type.Name}', got: '{value}'. At: '{argument.Name}'");
 
-        var instance = Array.CreateInstance(Type, array.Length);
+        var instance = Array.CreateInstance(Type, input.Count());
 
-        for (var i = 0; i < array.Length; i++)
+        var counter = 0;
+        foreach (var item in input)
         {
-            var item = array.GetValue(i);
-
             var result = await underlyingParser.Parse(caller, argument, item, services, cancellationToken).ConfigureAwait(false);
 
             if (!result.Success)
-                return Error($"Failed to convert an array element. Expected: '{underlyingParser.Type.Name}', got: '{item}'. At: '{argument.Name}', Index: '{i}'");
+                return Error($"Failed to convert an array element. Expected: '{underlyingParser.Type.Name}', got: '{item}'. At: '{argument.Name}', Index: '{counter}'");
 
-            instance.SetValue(result.Value, i);
+            instance.SetValue(result.Value, counter++);
         }
 
         return Success(instance);

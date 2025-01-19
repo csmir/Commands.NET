@@ -29,7 +29,7 @@ internal static class TestUtilities
             ? command.GetFullName(false)
             : command.GetFullName(false) + ' ' + provider.Arguments;
 
-        var arguments = ArgumentArray.Read(fullName);
+        var arguments = ArgumentArray.From(fullName);
 
         var runResult = await command.Run(caller, arguments, options).ConfigureAwait(false);
 

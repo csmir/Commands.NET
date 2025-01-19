@@ -50,8 +50,7 @@ public sealed class ComponentConfiguration
     /// <summary>
     ///     Gets a default configuration that can be used as a fallback when no configuration is provided.
     /// </summary>
-    public static ComponentConfiguration Default
-        => ComponentConfigurationProperties.Default.Create();
+    internal static ComponentConfiguration Empty = new([], []);
 
     #endregion
 }

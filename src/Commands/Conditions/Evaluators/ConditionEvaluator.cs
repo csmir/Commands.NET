@@ -23,6 +23,9 @@ public abstract class ConditionEvaluator
 
     internal static IEnumerable<ConditionEvaluator> CreateEvaluators(IEnumerable<IExecuteCondition> conditions)
     {
+        if (!conditions.Any())
+            yield break;
+
         // Group conditions by their evaluator implementation.
         foreach (var conditionTypeGroup in conditions.GroupBy(x => x.EvaluatorType))
         {

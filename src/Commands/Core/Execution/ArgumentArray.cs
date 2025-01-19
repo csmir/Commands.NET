@@ -18,7 +18,7 @@ public struct ArgumentArray
     private int _remaindingLength;
     private int _index = 0;
 
-    private readonly string[] _unnamedArgs;
+    private readonly List<string> _unnamedArgs;
     private readonly Dictionary<string, object?> _namedArgs;
 
     /// <summary>
@@ -32,7 +32,7 @@ public struct ArgumentArray
     /// </summary>
     /// <param name="args">The range of named arguments to enumerate in this set.</param>
     /// <param name="comparer">The comparer to evaluate keys in the inner named dictionary.</param>
-    public ArgumentArray(KeyValuePair<string, object?>[] args, StringComparer comparer)
+    public ArgumentArray(StringComparer? comparer, IEnumerable<KeyValuePair<string, object?>> args)
     {
         _namedArgs = new(comparer);
 
@@ -40,33 +40,28 @@ public struct ArgumentArray
 
         foreach (var kvp in args)
         {
-            Assert.NotNull(kvp.Key, nameof(kvp.Key));
-
             if (kvp.Value == null)
                 unnamedFill.Add(kvp.Key);
             else
                 _namedArgs[kvp.Key] = kvp.Value;
         }
 
-        _unnamedArgs = [.. unnamedFill];
-        _remaindingLength = _unnamedArgs.Length + _namedArgs.Count;
+        _unnamedArgs = unnamedFill;
+        _remaindingLength = _unnamedArgs.Count + _namedArgs.Count;
     }
 
     /// <summary>
-    ///     Creates a new <see cref="ArgumentArray"/> from a set of unnamed arguments.
+    ///     Creates a new empty <see cref="ArgumentArray"/>.
     /// </summary>
-    /// <param name="args">The range of unnamed arguments to enumerate in this set.</param>
-    public ArgumentArray(string[] args)
+    public ArgumentArray()
     {
-        _namedArgs = [];
-
-        _unnamedArgs = args;
-        _remaindingLength = _unnamedArgs.Length;
+        _namedArgs        = [];
+        _unnamedArgs      = [];
+        _remaindingLength = 0;
     }
 
     /// <summary>
-    ///     Makes an attempt to retrieve the next argument in the set. If a named argument is found, it will be removed from the set and returned. 
-    ///     If an unnamed argument is found, it will be returned and the currently observed index will be incremented to return the next unnamed argument on the next try.
+    ///     Makes an attempt to retrieve the next argument in the set.
     /// </summary>
     /// <param name="parameterName">The name of the command parameter that this set attempts to match to.</param>
     /// <param name="value">The value returned when an item is discovered in the set.</param>
@@ -80,7 +75,7 @@ public struct ArgumentArray
         if (_namedArgs.TryGetValue(parameterName, out value!))
             return true;
 
-        if (_index >= _unnamedArgs.Length)
+        if (_index >= _unnamedArgs.Count)
             return false;
 
         value = _unnamedArgs[_index++];
@@ -100,7 +95,7 @@ public struct ArgumentArray
     public readonly bool TryGetElementAt(int index, out string? value)
 #endif
     {
-        if (index < _unnamedArgs.Length)
+        if (index < _unnamedArgs.Count)
         {
             value = _unnamedArgs[index];
             return true;
@@ -125,18 +120,12 @@ public struct ArgumentArray
     ///     Takes the remaining unnamed arguments in the set into an array which is used by Collector arguments.
     /// </summary>
     /// <returns>An array of objects that represent the remaining arguments of this enumerator.</returns>
-    public readonly object[] TakeRemaining(string parameterName)
+    public readonly IEnumerable<object> TakeRemaining(string parameterName)
     {
         if (_namedArgs.TryGetValue(parameterName, out var value))
-#if NET8_0_OR_GREATER
-            return [value!, .. _unnamedArgs[_index..]];
-
-        return _unnamedArgs[_index..];
-#else
             return [value!, .. _unnamedArgs.Skip(_index)];
 
-        return _unnamedArgs.Skip(_index).ToArray();
-#endif
+        return _unnamedArgs.Skip(_index);
     }
 
     internal void SetParseIndex(int index)
@@ -145,13 +134,18 @@ public struct ArgumentArray
         _remaindingLength = Length - index;
     }
 
-    /// <inheritdoc cref="Read(string, char[], StringComparer?)"/>
-    public static ArgumentArray Read(string? input, StringComparer? comparer = null)
-        => Read(input, [' '], comparer);
+    /// <inheritdoc cref="From(string, char[], StringComparer?)"/>
+    public static ArgumentArray From(string? input, StringComparer? comparer = null)
+        => From(input, [' '], comparer);
 
-    /// <inheritdoc cref="Read(string, char[], StringComparer?)"/>
-    public static ArgumentArray Read(string[] input, StringComparer? comparer = null)
-        => new([.. ReadInternal(input)], comparer ?? StringComparer.OrdinalIgnoreCase);
+    /// <inheritdoc cref="From(string, char[], StringComparer?)"/>
+    public static ArgumentArray From(string[] input, StringComparer? comparer = null)
+    {
+        if (input.Length == 0)
+            return new();
+        
+        return new(comparer, ReadInternal(input));
+    }
 
     /// <summary>
     ///     Reads the provided <paramref name="input"/> into an array of command arguments. This method will never throw, always returning a new <see cref="ArgumentArray"/>.
@@ -180,19 +174,21 @@ public struct ArgumentArray
     /// <returns>
     ///     An array of arguments that can be used to search for a command or parse into a method.
     /// </returns>
-    public static ArgumentArray Read(string? input, char[] separators, StringComparer? comparer = null)
+    public static ArgumentArray From(string? input, char[] separators, StringComparer? comparer = null)
     {
         if (string.IsNullOrWhiteSpace(input))
-            return new([]);
+            return new();
 
-        return new([.. ReadInternal(input!.Split(separators))], comparer ?? StringComparer.OrdinalIgnoreCase);
+        var split = input!.Split(separators);
+
+        if (split.Length == 0)
+            return new();
+
+        return new(comparer, ReadInternal(split));
     }
 
-    private static IEnumerable<KeyValuePair<string, object?>> ReadInternal(params string[] input)
+    private static IEnumerable<KeyValuePair<string, object?>> ReadInternal(string[] input)
     {
-        if (input is null || input.Length is 0)
-            yield break;
-
         if (input.Length is 1)
         {
             yield return new(input[0], null);

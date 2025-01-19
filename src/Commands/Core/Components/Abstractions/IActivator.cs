@@ -11,6 +11,11 @@ public interface IActivator
     public MethodBase Target { get; }
 
     /// <summary>
+    ///     Gets if the activator has to provide a context to the method as the first parameter.
+    /// </summary>
+    public bool HasContext { get; }
+
+    /// <summary>
     ///     Invokes the target of this <see cref="IActivator"/> with the provided values.
     /// </summary>
     /// <param name="caller">The caller requesting an instance of the component.</param>

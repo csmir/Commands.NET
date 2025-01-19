@@ -65,22 +65,22 @@ public sealed class Command : IComponent, IParameterCollection
     public int Position
         => (Parent?.Position ?? 0) + (Name == null ? 0 : 1);
 
-    internal Command(CommandGroup parent, CommandStaticActivator invoker, string[] names, bool hasContext, ComponentConfiguration configuration)
-        : this(parent, invoker, [], names, hasContext, configuration)
+    internal Command(CommandGroup parent, CommandStaticActivator invoker, string[] names, ComponentConfiguration configuration)
+        : this(parent, invoker, [], names, configuration)
     {
 
     }
 
     internal Command(CommandGroup parent, CommandInstanceActivator activator, string[] names, ComponentConfiguration configuration)
-        : this(parent, activator, [], names, false, configuration)
+        : this(parent, activator, [], names, configuration)
     {
 
     }
 
     internal Command(
-        CommandGroup? parent, IActivator invoker, IEnumerable<ExecuteCondition> conditions, string[] names, bool hasContext, ComponentConfiguration configuration)
+        CommandGroup? parent, IActivator invoker, IEnumerable<ExecuteCondition> conditions, string[] names, ComponentConfiguration configuration)
     {
-        var parameters = invoker.Target.BuildArguments(hasContext, configuration);
+        var parameters = invoker.Target.BuildArguments(invoker.HasContext, configuration);
 
         (MinLength, MaxLength) = parameters.GetLength();
 
@@ -218,8 +218,8 @@ public sealed class Command : IComponent, IParameterCollection
     }
 
     /// <inheritdoc />
-    public int CompareTo(object? obj)
-        => obj is ICommandSegment scoreable ? GetScore().CompareTo(scoreable.GetScore()) : -1;
+    public int CompareTo(IComponent? component)
+        => GetScore().CompareTo(component?.GetScore());
 
     /// <inheritdoc />
     public override string ToString()
@@ -261,6 +261,9 @@ public sealed class Command : IComponent, IParameterCollection
     // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
     void IComponent.Bind(CommandGroup parent)
         => Parent ??= parent;
+
+    int IComparable.CompareTo(object? obj)
+        => obj is IComponent component ? CompareTo(component) : -1;
 
     #region Initializers
 

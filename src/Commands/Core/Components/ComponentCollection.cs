@@ -1,28 +1,21 @@
-﻿namespace Commands;
+﻿
+namespace Commands;
 
 /// <inheritdoc cref="IComponentCollection"/>
 [DebuggerDisplay("Count = {Count}")]
 public abstract class ComponentCollection : IComponentCollection
 {
+    private IComponent[] _items;
+
     private Action<IComponent[], bool>? _mutateParent;
-
-    private HashSet<IComponent> _components;
-
-    private readonly SemaphoreSlim _lock;
 
     /// <inheritdoc />
     public int Count
-        => _components.Count;
+        => _items.Length;
 
-    /// <inheritdoc />
-    public bool IsReadOnly { get; }
-
-    internal ComponentCollection(bool isReadOnly)
+    internal ComponentCollection()
     {
-        IsReadOnly = isReadOnly;
-
-        _lock = new(1, 1);
-        _components = [];
+        _items = [];
     }
 
     /// <inheritdoc />
@@ -30,7 +23,7 @@ public abstract class ComponentCollection : IComponentCollection
 
     /// <inheritdoc />
     public bool Contains(IComponent component)
-        => _components.Contains(component);
+        => _items.Contains(component);
 
     /// <inheritdoc />
     public IEnumerable<Command> GetCommands(bool browseNestedComponents = true)
@@ -42,11 +35,11 @@ public abstract class ComponentCollection : IComponentCollection
         Assert.NotNull(predicate, nameof(predicate));
 
         if (!browseNestedComponents)
-            return _components.OfType(predicate);
+            return _items.OfType(predicate);
 
         List<Command> discovered = [];
 
-        foreach (var component in _components)
+        foreach (var component in _items)
         {
             if (component is Command command && predicate(command))
                 discovered.Add(command);
@@ -68,11 +61,11 @@ public abstract class ComponentCollection : IComponentCollection
         Assert.NotNull(predicate, nameof(predicate));
 
         if (!browseNestedComponents)
-            return _components.OfType(predicate);
+            return _items.OfType(predicate);
 
         List<CommandGroup> discovered = [];
 
-        foreach (var component in _components)
+        foreach (var component in _items)
         {
             if (component is CommandGroup grp)
             {
@@ -90,7 +83,7 @@ public abstract class ComponentCollection : IComponentCollection
     public int CountAll()
     {
         var sum = 0;
-        foreach (var component in _components)
+        foreach (var component in _items)
         {
             if (component is CommandGroup grp)
                 sum += grp.CountAll();
@@ -102,56 +95,53 @@ public abstract class ComponentCollection : IComponentCollection
     }
 
     /// <inheritdoc />
-    /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
     public bool Add(IComponent component)
         => AddRange(component) > 0;
 
     /// <inheritdoc />
-    /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
     public int AddRange(params IComponent[] components)
     {
-        ThrowIfImmutable();
+        if (components.Length == 0)
+            return 0;
 
-        lock (_components)
+        lock (_items)
         {
-            var mutations = 0;
+            var additions = ValidateAddition(components);
 
-            var copy = new HashSet<IComponent>(_components);
-
-            // We do not use HashSet<T>.SymmetricExceptWith because we are already validating the components in the internal handler.
-            // This is important, because we should not rebind components if we are not adding them.
-            //
-            // On another note, this method approaches the set via an elementary foreach clause anyway, it is not revolutionary.
-            foreach (var component in ValidateAddition(components))
-                mutations += copy.Add(component) ? 1 : 0;
-
-            if (mutations > 0)
+            if (additions.Count > 0)
             {
-                _mutateParent?.Invoke(components, false);
+                var copy = new IComponent[_items.Length + additions.Count];
 
-                _components = [.. copy.OrderByDescending(x => x.GetScore())];
+                _items.CopyTo(copy, 0);
+
+                for (int i = 0; i < additions.Count; i++)
+                    copy[_items.Length + i] = additions[i];
+
+                Array.Sort(copy);
+
+                _mutateParent?.Invoke(components, false);
+                _items = copy;
             }
 
-            return mutations;
+            return additions.Count;
         }
     }
     
     /// <inheritdoc />
-    /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
     public bool Remove(IComponent component)
         => RemoveRange(component) > 0;
 
     /// <inheritdoc />
-    /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
     public int RemoveRange(params IComponent[] components)
     {
-        ThrowIfImmutable();
+        if (components.Length == 0)
+            return 0;
 
-        lock (_components)
+        lock (_items)
         {
             var mutations = 0;
 
-            var copy = new HashSet<IComponent>(_components);
+            var copy = new List<IComponent>(_items);
 
             foreach (var component in components)
             {
@@ -163,8 +153,7 @@ public abstract class ComponentCollection : IComponentCollection
             if (mutations > 0)
             {
                 _mutateParent?.Invoke(components, true);
-
-                _components = copy;
+                _items = [..copy];
             }
 
             return mutations;
@@ -172,25 +161,27 @@ public abstract class ComponentCollection : IComponentCollection
     }
 
     /// <inheritdoc />
-    /// <exception cref="InvalidOperationException">Thrown when the collection is marked as read-only.</exception>
     public void Clear()
     {
-        ThrowIfImmutable();
-
-        lock (_components)
-            _components = [];
+        lock (_items)
+            _items = [];
     }
 
     /// <inheritdoc />
     public void CopyTo(IComponent[] array, int arrayIndex)
-        => _components.CopyTo(array, arrayIndex);
+        => _items.CopyTo(array, arrayIndex);
 
     /// <inheritdoc />
     public IEnumerator<IComponent> GetEnumerator()
-        => _components.GetEnumerator();
+        => new StateEnumerator(this);
 
+    // Gets an stale enumerator which copies the current state of the collection into a span and iterates it.
+    internal SpanStateEnumerator GetSpanEnumerator()
+        => new(this);
+
+    // Pushes a new collection of components to the current collection. This addition is unsafe, doing no validations, and should only be done during initialization.
     internal void Push(IEnumerable<IComponent> components)
-        => _components = [.. components];
+        => _items = [.. components];
 
     // Returns which of the provided components should be added to the collection.
     private List<IComponent> ValidateAddition(IEnumerable<IComponent> components)
@@ -201,7 +192,7 @@ public abstract class ComponentCollection : IComponentCollection
         {
             Assert.NotNull(component, nameof(component));
 
-            if (_components.Contains(component))
+            if (_items.Contains(component))
                 continue;
 
             if (this is ComponentManager manager)
@@ -214,7 +205,7 @@ public abstract class ComponentCollection : IComponentCollection
                     if (component is not CommandGroup group)
                         throw new InvalidOperationException($"{nameof(Command)} instances without names can only be added to a {nameof(CommandGroup)}.");
 
-                    discovered.AddRange(ValidateAddition([.. group]));
+                    discovered.AddRange(ValidateAddition(group._items));
 
                     // By binding a top-level group without a name to the manager, the manager will be notified of any changes made so it can update its state.
                     group.Bind(manager);
@@ -254,20 +245,104 @@ public abstract class ComponentCollection : IComponentCollection
             AddRange(components);
     }
 
-    // Throws an exception if the collection is marked as read-only.
-    private void ThrowIfImmutable()
-    {
-        if (IsReadOnly)
-            throw new InvalidOperationException("This collection has been marked as read-only and cannot be mutated.");
-    }
-
     // Binds the parent collection to the child collection.
     private void Bind(ComponentCollection collection)
         => _mutateParent = collection.MutateFromChild;
 
-    void ICollection<IComponent>.Add(IComponent item)
-        => Add(item);
-
     IEnumerator IEnumerable.GetEnumerator()
         => GetEnumerator();
+
+    /// <summary>
+    ///     An enumerator for the current state of the collection.
+    /// </summary>
+    /// <remarks>
+    ///     This enumerator does not reflect changes made to the collection after the enumerator was created, nor does it reject iterations after modifications to the root collection.
+    /// </remarks>
+    public struct StateEnumerator : IEnumerator<IComponent>
+    {
+        private readonly IComponent[] _items;
+        private int _index;
+        private IComponent? _current;
+
+        /// <inheritdoc />
+        public IComponent Current
+            => _current!;
+
+        internal StateEnumerator(ComponentCollection collection)
+        {
+            _items = new IComponent[collection._items.Length];
+            _index = 0;
+            _current = default;
+
+            collection._items.CopyTo(_items, 0);
+        }
+
+        /// <inheritdoc />
+        public bool MoveNext()
+        {
+            if (_index < _items.Length)
+            {
+                _current = _items[_index];
+                _index++;
+                return true;
+            }
+            _index = _items.Length;
+            _current = default;
+            return false;
+        }
+
+        /// <inheritdoc />
+        public void Reset()
+        {
+            _index = 0;
+            _current = default;
+        }
+
+        /// <inheritdoc />
+        public readonly void Dispose() { }
+
+        object IEnumerator.Current
+            => Current;
+    }
+
+    internal ref struct SpanStateEnumerator
+    {
+        private readonly Span<IComponent> _items;
+
+        private int _index;
+
+        // We convert this to a non-nullable so we do not need to propagate null checks all over the codebase.
+        public IComponent Current;
+
+        internal SpanStateEnumerator(ComponentCollection collection)
+        {
+            _index = 0;
+            Current = null!;
+
+            _items = collection._items.AsSpan();
+        }
+
+        /// <inheritdoc />
+        public bool MoveNext()
+        {
+            if (_index < _items.Length)
+            {
+                Current = _items[_index];
+                _index++;
+                return true;
+            }
+
+            _index = _items.Length;
+            Current = null!;
+
+            return false;
+        }
+
+        /// <inheritdoc />
+        public void Reset()
+        {
+            _index = 0;
+            Current = null!;
+        }
+    }
 }

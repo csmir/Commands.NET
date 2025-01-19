@@ -11,6 +11,10 @@ public sealed class ConstructibleParameterActivator : IActivator
     public MethodBase Target
         => _ctor;
 
+    /// <inheritdoc />
+    public bool HasContext
+        => false;
+
     internal ConstructibleParameterActivator(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]

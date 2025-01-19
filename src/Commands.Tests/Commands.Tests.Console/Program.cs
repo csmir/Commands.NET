@@ -35,7 +35,7 @@ while (true)
 {
     var input = Console.ReadLine();
 
-    var values = ArgumentArray.Read(input);
+    var values = ArgumentArray.From(input);
 
     using var scope = services.CreateScope();
 

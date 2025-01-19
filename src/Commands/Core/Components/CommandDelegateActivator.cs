@@ -6,25 +6,28 @@
 public sealed class CommandDelegateActivator : IActivator
 {
     private readonly object? _instance;
-    private readonly bool _withContext;
     private readonly MethodInfo _method;
 
     /// <inheritdoc />
     public MethodBase Target
         => _method;
 
-    internal CommandDelegateActivator(MethodInfo target, object? instance, bool withContext)
+    /// <inheritdoc />
+    public bool HasContext { get; }
+
+    internal CommandDelegateActivator(Delegate target)
     {
-        _withContext = withContext;
-        _instance = instance;
-        _method = target;
+        HasContext = target.Method.HasContextProvider();
+
+        _instance = target.Target;
+        _method = target.Method;
     }
 
     /// <inheritdoc />
     public object? Invoke<T>(T caller, Command? command, object?[] args, CommandOptions options)
         where T : ICallerContext
     {
-        if (_withContext)
+        if (HasContext)
         {
             var context = new CommandContext<T>(caller, command!, options);
 

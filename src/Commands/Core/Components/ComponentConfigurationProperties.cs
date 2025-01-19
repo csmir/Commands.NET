@@ -15,7 +15,7 @@ public sealed class ComponentConfigurationProperties
     /// </summary>
     public ComponentConfigurationProperties()
     {
-        _parsers = [];
+        _parsers = TypeParser.CreateDefaults().ToDictionary(x => x.Type, x => new TypeParserProperties(x) as ITypeParserProperties);
         _properties = [];
     }
 
@@ -101,7 +101,7 @@ public sealed class ComponentConfigurationProperties
     /// <returns>A new instance of <see cref="ComponentConfiguration"/>.</returns>
     public ComponentConfiguration Create()
     {
-        var baseParsers = TypeParser.CreateDefaults().ToDictionary(x => x.Type);
+        var baseParsers = new Dictionary<Type, TypeParser>();
 
         foreach (var kvp in _parsers)
             baseParsers[kvp.Key] = kvp.Value.Create();

@@ -3,7 +3,7 @@
 /// <summary>
 ///     Represents a concurrent, recursive collection of components that can be searched and filtered based on their type.
 /// </summary>
-public interface IComponentCollection : ICollection<IComponent>, IEnumerable<IComponent>
+public interface IComponentCollection : IEnumerable<IComponent>
 {
     /// <summary>
     ///     Searches recursively through this and all subcollections for components that match the provided arguments.
@@ -60,7 +60,7 @@ public interface IComponentCollection : ICollection<IComponent>, IEnumerable<ICo
     /// </summary>
     /// <param name="component">The component to be removed from the collection.</param>
     /// <returns><see langword="true"/> if the component was removed; Otherwise, <see langword="false"/>.</returns>
-    public new bool Remove(IComponent component);
+    public bool Remove(IComponent component);
 
     /// <summary>
     ///     Removes all provided components from the current collection.
@@ -74,5 +74,5 @@ public interface IComponentCollection : ICollection<IComponent>, IEnumerable<ICo
     /// </summary>
     /// <param name="component">The component to be added to the group.</param>
     /// <returns><see langword="true"/> if the component was added; Otherwise, <see langword="false"/>.</returns>
-    public new bool Add(IComponent component);
+    public bool Add(IComponent component);
 }

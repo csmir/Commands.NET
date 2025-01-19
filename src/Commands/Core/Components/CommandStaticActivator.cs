@@ -5,16 +5,19 @@
 /// </summary>
 public sealed class CommandStaticActivator : IActivator
 {
-    private readonly bool _withContext;
     private readonly MethodInfo _method;
 
     /// <inheritdoc />
     public MethodBase Target
         => _method;
 
-    internal CommandStaticActivator(MethodInfo target, bool withContext)
+    /// <inheritdoc />
+    public bool HasContext { get; }
+
+    internal CommandStaticActivator(MethodInfo target)
     {
-        _withContext = withContext;
+        HasContext = target.HasContextProvider();
+
         _method = target;
     }
 
@@ -22,7 +25,7 @@ public sealed class CommandStaticActivator : IActivator
     public object? Invoke<T>(T caller, Command? command, object?[] args, CommandOptions options)
         where T : ICallerContext
     {
-        if (_withContext)
+        if (HasContext)
         {
             var context = new CommandContext<T>(caller, command!, options);
 

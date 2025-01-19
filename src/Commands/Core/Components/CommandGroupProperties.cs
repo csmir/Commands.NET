@@ -18,7 +18,7 @@ public sealed class CommandGroupProperties : IComponentProperties
     {
         _conditions = [];
         _components = [];
-        _names = [];
+        _names      = [];
     }
 
     /// <summary>
@@ -138,15 +138,10 @@ public sealed class CommandGroupProperties : IComponentProperties
     /// <returns>A new instance of <see cref="CommandGroup"/>.</returns>
     public IComponent Create(CommandGroup? parent = null, ComponentConfiguration? configuration = null)
     {
-        configuration ??= ComponentConfiguration.Default;
+        var group = new CommandGroup(parent, _conditions.Count > 0 ? _conditions.Select(condition => condition.Create()) : [], [.. _names]);
 
-        var conditionsToAdd = _conditions.Select(condition => condition.Create());
-
-        var group = new CommandGroup(parent, conditionsToAdd, [.. _names], configuration);
-
-        var itemsToAdd = _components.Select(component => component.Create(group, configuration));
-
-        group.AddRange([.. itemsToAdd]);
+        if (_components.Count != 0)
+            group.AddRange(_components.Select(component => component.Create(group, configuration)).ToArray());
 
         return group;
     }

@@ -11,6 +11,10 @@ public sealed class CommandInstanceActivator : IActivator
     public MethodBase Target
         => _method;
 
+    /// <inheritdoc />
+    public bool HasContext
+        => false;
+
     internal CommandInstanceActivator(MethodInfo target)
     {
         _method = target;

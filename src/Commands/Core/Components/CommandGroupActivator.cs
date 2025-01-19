@@ -16,6 +16,10 @@ public sealed class CommandGroupActivator : IActivator
     public MethodBase Target
         => _ctor;
 
+    /// <inheritdoc />
+    public bool HasContext
+        => false;
+
     internal CommandGroupActivator(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]

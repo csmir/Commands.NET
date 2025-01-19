@@ -10,7 +10,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     private readonly ResultHandler[] _handlers;
 
     internal ComponentManager(IEnumerable<ResultHandler> handlers)
-        : base(false)
+        : base()
     {
         var arr = handlers.ToArray();
 
@@ -23,15 +23,18 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     {
         List<IComponent> discovered = [];
 
-        foreach (var component in this)
+        var enumerator = GetSpanEnumerator();
+
+        while (enumerator.MoveNext())
         {
-            if (!args.TryGetElementAt(0, out var value) || !component.Names.Contains(value))
+            if (!args.TryGetElementAt(0, out var value) || !enumerator.Current.Names.Contains(value))
                 continue;
 
-            if (component is CommandGroup group)
+            if (enumerator.Current is CommandGroup group)
                 discovered.AddRange(group.Find(args));
+
             else
-                discovered.Add(component);
+                discovered.Add(enumerator.Current);
         }
 
         return discovered;
@@ -40,12 +43,12 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     /// <inheritdoc />
     public void TryExecute<T>(T caller, string? args, CommandOptions? options = null)
         where T : ICallerContext
-        => TryExecute(caller, ArgumentArray.Read(args), options);
+        => TryExecute(caller, ArgumentArray.From(args), options);
 
     /// <inheritdoc />
     public void TryExecute<T>(T caller, string[] args, CommandOptions? options = null)
         where T : ICallerContext
-        => TryExecuteAsync(caller, ArgumentArray.Read(args), options).Wait();
+        => TryExecuteAsync(caller, ArgumentArray.From(args), options).Wait();
 
     /// <inheritdoc />
     public void TryExecute<T>(T caller, ArgumentArray args, CommandOptions? options = null)
@@ -55,12 +58,12 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     /// <inheritdoc />
     public Task TryExecuteAsync<T>(T caller, string? args, CommandOptions? options = null)
         where T : ICallerContext
-        => TryExecuteAsync(caller, ArgumentArray.Read(args), options);
+        => TryExecuteAsync(caller, ArgumentArray.From(args), options);
 
     /// <inheritdoc />
     public Task TryExecuteAsync<T>(T caller, string[] args, CommandOptions? options = null)
         where T : ICallerContext
-        => TryExecuteAsync(caller, ArgumentArray.Read(args), options);
+        => TryExecuteAsync(caller, ArgumentArray.From(args), options);
 
     /// <inheritdoc />
     public Task TryExecuteAsync<T>(T caller, ArgumentArray args, CommandOptions? options = null)
