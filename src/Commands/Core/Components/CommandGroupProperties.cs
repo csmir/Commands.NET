@@ -138,7 +138,7 @@ public sealed class CommandGroupProperties : IComponentProperties
     /// <returns>A new instance of <see cref="CommandGroup"/>.</returns>
     public IComponent Create(CommandGroup? parent = null, ComponentConfiguration? configuration = null)
     {
-        var group = new CommandGroup(parent, _conditions.Count > 0 ? _conditions.Select(condition => condition.Create()) : [], [.. _names]);
+        var group = new CommandGroup(_conditions.Count > 0 ? _conditions.Select(condition => condition.Create()) : [], _names, parent);
 
         if (_components.Count != 0)
             group.AddRange(_components.Select(component => component.Create(group, configuration)).ToArray());

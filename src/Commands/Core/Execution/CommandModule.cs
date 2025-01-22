@@ -21,7 +21,7 @@ public abstract class CommandModule<T> : CommandModule
 }
 
 /// <summary>
-///     The base type required for writing commands using Commands.NET. This type can be derived from freely, to extend or implement modular command functionality. 
+///     The base type required for writing modular commands using Commands.NET. This type can be derived from freely, to extend or implement functionality. 
 ///     All modules are transient. They are injected and instantiated when command methods run, being disposed on return.
 /// </summary>
 /// <remarks>

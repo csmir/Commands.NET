@@ -1,15 +1,21 @@
 ﻿namespace Commands.Conditions;
 
-internal sealed class DelegateExecuteCondition<
+
+/// <summary>
+///     A delegate-based condition that determines whether a command can execute or not.
+/// </summary>
+/// <typeparam name="TEvaluator">The evaluator type which should wrap this condition.</typeparam>
+/// <param name="checkDelegate">The delegate that is triggered when a check is done during command execution to determine if the command can execute or not.</param>
+public sealed class DelegateExecuteCondition<
 #if NET8_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 #endif
-TEvaluator>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> func) : ExecuteCondition<TEvaluator>
+TEvaluator>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> checkDelegate) : ExecuteCondition<TEvaluator>
     where TEvaluator : ConditionEvaluator, new()
 {
     /// <inheritdoc />
     public override ValueTask<ConditionResult> Evaluate(ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken)
-        => func(caller, command, services);
+        => checkDelegate(caller, command, services);
 }
 
 /// <inheritdoc />

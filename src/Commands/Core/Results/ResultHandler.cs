@@ -3,12 +3,21 @@ using Commands.Parsing;
 
 namespace Commands;
 
-internal sealed class DelegateResultHandler<TContext>(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
+/// <summary>
+///     A delegate-based handler for post-execution processes.
+/// </summary>
+/// <remarks>
+///     This implementation of <see cref="ResultHandler"/> allows you to define a delegate that will be executed when the command execution is completed. This delegate is only executed if the command failed.
+/// </remarks>
+/// <typeparam name="TContext">The context type this handler should cover.</typeparam>
+/// <param name="resultDelegate">The delegate that will handle the failed execution result.</param>
+public sealed class DelegateResultHandler<TContext>(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
     : ResultHandler<TContext>
     where TContext : class, ICallerContext
 {
     private readonly Func<TContext, IExecuteResult, IServiceProvider, ValueTask> _resultDelegate = resultDelegate;
 
+    /// <inheritdoc />
     public override ValueTask HandleResult(TContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (result.Success)
@@ -24,7 +33,7 @@ internal sealed class DelegateResultHandler<TContext>(Func<TContext, IExecuteRes
 /// <remarks>
 ///     Implementing this type allows you to treat result data and scope finalization of all commands executed by the provided <see cref="ICallerContext"/>, regardless on whether the command execution succeeded or not.
 /// </remarks>
-/// <typeparam name="TContext"></typeparam>
+/// <typeparam name="TContext">The context type this handler should cover.</typeparam>
 public abstract class ResultHandler<TContext> : ResultHandler
     where TContext : class, ICallerContext
 {

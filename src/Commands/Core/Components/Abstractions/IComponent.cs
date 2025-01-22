@@ -27,6 +27,11 @@ public interface IComponent : ICommandSegment, IComparable<IComponent>
     public ConditionEvaluator[] Evaluators { get; }
 
     /// <summary>
+    ///     Gets if the component should be ignored during the execution process.
+    /// </summary>
+    public bool Ignore { get; }
+
+    /// <summary>
     ///     Gets the invocation target of this component.
     /// </summary>
     public IActivator? Activator { get; }

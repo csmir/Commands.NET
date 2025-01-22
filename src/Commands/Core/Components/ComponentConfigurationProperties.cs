@@ -15,7 +15,7 @@ public sealed class ComponentConfigurationProperties
     /// </summary>
     public ComponentConfigurationProperties()
     {
-        _parsers = TypeParser.CreateDefaults().ToDictionary(x => x.Type, x => new TypeParserProperties(x) as ITypeParserProperties);
+        _parsers    = [];
         _properties = [];
     }
 

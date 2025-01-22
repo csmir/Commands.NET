@@ -130,10 +130,8 @@ public sealed class CommandProperties : IComponentProperties
     /// <returns>A new instance of <see cref="Command"/>.</returns>
     public IComponent Create(CommandGroup? parent = null, ComponentConfiguration? configuration = null)
     {
-        Assert.NotNull(_delegate, nameof(_delegate));
-
         var conditionsToAdd = _conditions.Select(condition => condition.Create());
 
-        return new Command(parent, new CommandDelegateActivator(_delegate!), conditionsToAdd, [.. _names], configuration ?? ComponentConfiguration.Empty);
+        return new Command(_delegate!, conditionsToAdd, _names, configuration, parent);
     }
 }

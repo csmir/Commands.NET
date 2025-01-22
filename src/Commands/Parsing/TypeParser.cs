@@ -1,12 +1,17 @@
 ﻿namespace Commands.Parsing;
 
-internal sealed class DelegateTypeParser<TConvertible>(
-    Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> func)
+/// <summary>
+///     A delegate-based type parser that can be used to parse a type from a raw argument.
+/// </summary>
+/// <typeparam name="TConvertible">The target type of the parser.</typeparam>
+/// <param name="parseDelegate">The execution delegate which will be triggered when a value is to be converted to the provided argument.</param>
+public sealed class DelegateTypeParser<TConvertible>(
+    Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> parseDelegate)
     : TypeParser<TConvertible>
 {
     /// <inheritdoc />
     public override ValueTask<ParseResult> Parse(ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
-        => func(caller, argument, value, services);
+        => parseDelegate(caller, argument, value, services);
 }
 
 /// <inheritdoc />

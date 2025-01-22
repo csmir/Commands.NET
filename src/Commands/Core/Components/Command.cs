@@ -26,6 +26,9 @@ public sealed class Command : IComponent, IParameterCollection
     public ConditionEvaluator[] Evaluators { get; }
 
     /// <inheritdoc />
+    public bool Ignore { get; }
+
+    /// <inheritdoc />
     public ICommandParameter[] Parameters { get; }
 
     /// <inheritdoc />
@@ -65,26 +68,56 @@ public sealed class Command : IComponent, IParameterCollection
     public int Position
         => (Parent?.Position ?? 0) + (Name == null ? 0 : 1);
 
-    internal Command(CommandGroup parent, CommandStaticActivator invoker, string[] names, ComponentConfiguration configuration)
-        : this(parent, invoker, [], names, configuration)
-    {
+    /// <summary>
+    ///     Initializes a new instance of <see cref="Command"/> with the provided execution delegate, conditions, names, configuration, and parent group.
+    /// </summary>
+    /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
+    /// <param name="names">The names used to discover this command during execution.</param>
+    /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
+    /// <param name="group">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
+    public Command(Delegate executionDelegate, IEnumerable<string> names, ComponentConfiguration? configuration = null, CommandGroup? group = null)
+        : this(executionDelegate, [], names, configuration, group) { }
 
+    /// <summary>
+    ///     Initializes a new instance of <see cref="Command"/> with the provided execution delegate, conditions, names, configuration, and parent group.
+    /// </summary>
+    /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
+    /// <param name="conditions">The conditions bound to the command, which will determine whether it can execute or not.</param>
+    /// <param name="names">The names used to discover this command during execution.</param>
+    /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
+    /// <param name="group">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
+    public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, IEnumerable<string> names, ComponentConfiguration? configuration = null, CommandGroup? group = null)
+        : this(new CommandDelegateActivator(executionDelegate), group, conditions, configuration ?? ComponentConfiguration.Empty)
+    {
+        Names = names.ToArray();
+        Ignore = false;
     }
 
-    internal Command(CommandGroup parent, CommandInstanceActivator activator, string[] names, ComponentConfiguration configuration)
-        : this(parent, activator, [], names, configuration)
+    /// <summary>
+    ///     Initializes a new instance of <see cref="Command"/> with the provided execution method, configuration, and parent group.
+    /// </summary>
+    /// <param name="executionMethod">The method to run when the command is executed.</param>
+    /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
+    /// <param name="group">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
+    public Command(MethodInfo executionMethod, ComponentConfiguration? configuration = null, CommandGroup? group = null)
+        : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), group, [], configuration ?? ComponentConfiguration.Empty)
     {
-
+        Names = Attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
+        Ignore = Attributes.Contains<IgnoreAttribute>();
     }
 
-    internal Command(
-        CommandGroup? parent, IActivator invoker, IEnumerable<ExecuteCondition> conditions, string[] names, ComponentConfiguration configuration)
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+    private Command(IActivator activator, CommandGroup? parent, IEnumerable<ExecuteCondition> conditions, ComponentConfiguration configuration)
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
-        var parameters = invoker.Target.BuildArguments(invoker.HasContext, configuration);
+        var parameters = ComponentUtilities.BuildArguments(activator, configuration);
+        var attributes = activator.Target.GetAttributes(true);
+
+        Attributes = attributes.ToArray();
+        Parent = parent;
+        Activator = activator;
 
         (MinLength, MaxLength) = parameters.GetLength();
-
-        Names = names;
 
         for (var i = 0; i < parameters.Length; i++)
         {
@@ -94,20 +127,10 @@ public sealed class Command : IComponent, IParameterCollection
                 throw new NotSupportedException("Remainder arguments must be the last argument in the method signature.");
         }
 
-        Activator = invoker;
-        Parent = parent;
-
-        var attributes = invoker.Target.GetAttributes(true);
-
-        Attributes = attributes.ToArray();
-
         // 1: Runtime
         // 2: Attribute
         // 3: Parent
-        Evaluators = ConditionEvaluator.CreateEvaluators(conditions)
-            .Concat(ConditionEvaluator.CreateEvaluators(attributes.OfType<IExecuteCondition>()))
-            .Concat(parent?.Evaluators ?? [])
-            .ToArray();
+        Evaluators = [.. ConditionEvaluator.CreateEvaluators(conditions), .. ConditionEvaluator.CreateEvaluators(attributes.OfType<IExecuteCondition>()), .. parent?.Evaluators ?? []];
 
         Parameters = parameters;
         HasRemainder = parameters.Any(x => x.IsRemainder);

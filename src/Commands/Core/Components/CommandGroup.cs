@@ -25,6 +25,9 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     public ConditionEvaluator[] Evaluators { get; }
 
     /// <inheritdoc />
+    public bool Ignore { get; }
+
+    /// <inheritdoc />
     public string? Name
         => Names.Length > 0 ? Names[0] : null;
 
@@ -48,30 +51,21 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     public int Position
         => (Parent?.Position ?? 0) + (Name == null ? 0 : 1);
 
-    internal CommandGroup(
-#if NET8_0_OR_GREATER
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
-#endif
-        Type type, CommandGroup? parent, string[] names, ComponentConfiguration configuration)
-        : base()
-    {
-        Parent = parent;
-        Type = type;
+    /// <summary>
+    ///     Initializes a new instance of <see cref="CommandGroup"/> using the specified conditions, names and parent group.
+    /// </summary>
+    /// <param name="names">The names used to discover this group during execution.</param>
+    /// <param name="parent">The parent of this group, if any. Irrespective of this value being set, the group can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
+    public CommandGroup(IEnumerable<string> names, CommandGroup? parent = null)
+        : this([], names, parent) { }
 
-        var attributes = type.GetAttributes(true);
-
-        Attributes = attributes.ToArray();
-        Evaluators = ConditionEvaluator.CreateEvaluators(attributes.OfType<IExecuteCondition>()).Concat(parent?.Evaluators ?? []).ToArray();
-
-        Names = names;
-
-        Activator = new CommandGroupActivator(type);
-
-        Push(configuration.BuildNestedComponents(this).OrderByDescending(x => x.GetScore()));
-    }
-
-    internal CommandGroup(
-        CommandGroup? parent, IEnumerable<ExecuteCondition> conditions, string[] names)
+    /// <summary>
+    ///     Initializes a new instance of <see cref="CommandGroup"/> using the specified conditions, names and parent group.
+    /// </summary>
+    /// <param name="conditions">The conditions bound to the group, which will determine whether underlying commands can be executed or not.</param>
+    /// <param name="names">The names used to discover this group during execution.</param>
+    /// <param name="parent">The parent of this group, if any. Irrespective of this value being set, the group can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
+    public CommandGroup(IEnumerable<ExecuteCondition> conditions, IEnumerable<string> names, CommandGroup? parent = null)
         : base()
     {
         Parent = parent;
@@ -83,8 +77,53 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         else
             Evaluators = [.. currentConditions];
 
+        Ignore = false;
         Attributes = [];
-        Names = names;
+        Names = names.ToArray();
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of <see cref="CommandGroup"/> using the specified type and parent group.
+    /// </summary>
+    /// <param name="type">The implementation of <see cref="CommandModule"/> that holds commands to be executed.</param>
+    /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
+    /// <param name="parent">The parent of this group, if any. Irrespective of this value being set, the group can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
+    /// <exception cref="InvalidCastException">The provided type is not an implementation of <see cref="CommandModule"/>.</exception>
+    public CommandGroup(
+#if NET8_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
+#endif
+        Type type, ComponentConfiguration? configuration = null, CommandGroup ? parent = null)
+        : base()
+    {
+        if (!type.IsImplementationOfModule())
+            throw new InvalidCastException($"The provided type is not an implementation of {nameof(CommandModule)}.");
+
+        Parent = parent;
+        Type = type;
+
+        var attributes = type.GetAttributes(true);
+
+        Attributes = attributes.ToArray();
+
+        var currentConditions = ConditionEvaluator.CreateEvaluators(attributes.OfType<IExecuteCondition>());
+
+        if (parent != null)
+            Evaluators = [.. currentConditions, .. parent.Evaluators];
+        else
+            Evaluators = [.. currentConditions];
+
+        Ignore = attributes.Contains<IgnoreAttribute>();
+        Names = attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
+
+        Activator = new CommandGroupActivator(type);
+
+        if (!Ignore)
+        {
+            var components = ComponentUtilities.BuildNestedComponents(configuration ?? ComponentConfiguration.Empty, this);
+
+            AddRange(components);
+        }
     }
 
     /// <inheritdoc />

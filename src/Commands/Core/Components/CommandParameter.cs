@@ -1,4 +1,5 @@
 ﻿using Commands.Parsing;
+using System.Xml.Linq;
 
 namespace Commands;
 
@@ -38,7 +39,7 @@ public sealed class CommandParameter : ICommandParameter
         => Type.IsArray;
 
     internal CommandParameter(
-        ParameterInfo parameterInfo, string? name, ComponentConfiguration configuration)
+        ParameterInfo parameterInfo, ComponentConfiguration configuration)
     {
         ExposedType = parameterInfo.ParameterType;
 
@@ -73,10 +74,7 @@ public sealed class CommandParameter : ICommandParameter
 
         Attributes = attributes.ToArray();
 
-        if (!string.IsNullOrEmpty(name))
-            Name = name!;
-        else
-            Name = parameterInfo.Name ?? "";
+        Name = attributes.FirstOrDefault<NameAttribute>()?.Name ?? parameterInfo.Name ?? "";
     }
 
     /// <inheritdoc />

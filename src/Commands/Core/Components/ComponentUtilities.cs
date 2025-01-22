@@ -112,7 +112,13 @@ public static class ComponentUtilities
     internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
         => provider.GetCustomAttributes(inherit).OfType<Attribute>();
 
-    internal static IEnumerable<CommandGroup> BuildGroups(this ComponentConfiguration configuration, IEnumerable<DynamicType> types, CommandGroup? parent, bool isNested)
+    internal static bool HasContextProvider(this MethodBase method)
+        => method.GetParameters().Length > 0 && method.GetParameters()[0].ParameterType.IsGenericType && method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>);
+
+    internal static bool IsImplementationOfModule(this Type type)
+        => typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters;
+
+    internal static IEnumerable<CommandGroup> BuildGroups(ComponentConfiguration configuration, IEnumerable<DynamicType> types, CommandGroup? parent, bool isNested)
     {
         Assert.NotNull(types, nameof(types));
 
@@ -123,141 +129,84 @@ public static class ComponentUtilities
             if (!isNested && type.IsNested)
                 continue;
 
-            if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
-                continue;
+            CommandGroup? group;
 
-            var names = Array.Empty<string>();
-
-            var ignore = false;
-            foreach (var attribute in type.GetCustomAttributes(true))
+            try
             {
-                if (attribute is NameAttribute nameAttr)
-                {
-                    // Validate names. Nested groups are invalid if they have no names, so we invert the nested flag to not permit this.
-                    Assert.Names(nameAttr.Names, configuration, !isNested);
-
-                    names = nameAttr.Names;
-
-                    continue;
-                }
-
-                if (attribute is IgnoreAttribute)
-                {
-                    ignore = true;
-                    break;
-                }
+                group = new CommandGroup(type, configuration, parent);
+            }
+            catch
+            {
+                // This will throw if the type does not implement CommandModule. We can safely ignore this.
+                continue;
             }
 
-            // Nested groups are invalid if they have no names.
-            if (!ignore && (!isNested || names.Length > 0))
-                yield return new CommandGroup(type, parent, names, configuration);
+            if (group != null && !group.Ignore)
+                yield return group;
         }
     }
 
-    internal static IEnumerable<IComponent> BuildCommands(this ComponentConfiguration configuration, CommandGroup parent, bool isNested)
+    internal static IEnumerable<IComponent> BuildCommands(ComponentConfiguration configuration, CommandGroup parent)
     {
         var members = parent.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
 
         foreach (var method in members)
         {
-            var names = Array.Empty<string>();
+            var command = new Command(method, configuration, parent);
 
-            var ignore = false;
-            foreach (var attribute in method.GetCustomAttributes(true))
-            {
-                if (attribute is NameAttribute nameAttr)
-                {
-                    // Validate names. Nested commands are valid if they have no names.
-                    Assert.Names(nameAttr.Names, configuration, isNested);
+            if (command.Ignore)
+                continue;
 
-                    names = nameAttr.Names;
-                    continue;
-                }
-
-                if (attribute is IgnoreAttribute)
-                {
-                    ignore = true;
-                    break;
-                }
-            }
-
-            // Nested commands are valid if they have no names.
-            if (!ignore && (isNested || names.Length > 0))
-            {
-                Command? component;
-                if (method.IsStatic)
-                    component = new Command(parent, new CommandStaticActivator(method), names, configuration);
-                else
-                    component = new Command(parent, new CommandInstanceActivator(method), names, configuration);
-
-                yield return component;
-            }
+            yield return command;
         }
     }
 
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL2062", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
 #endif
-    internal static IEnumerable<IComponent> BuildNestedComponents(this ComponentConfiguration configuration, CommandGroup parent)
+    internal static IEnumerable<IComponent> BuildNestedComponents(ComponentConfiguration configuration, CommandGroup parent)
     {
         Assert.NotNull(parent, nameof(parent));
 
         if (parent.Type == null)
             return [];
 
-        var commands = configuration.BuildCommands(parent, parent.Names.Length > 0);
+        var commands = BuildCommands(configuration, parent);
 
         try
         {
             var nestedTypes = parent.Type.GetNestedTypes(BindingFlags.Public);
 
-            var groups = configuration.BuildGroups([.. nestedTypes], parent, true);
+            var groups = BuildGroups(configuration, [.. nestedTypes], parent, true);
 
             return commands.Concat(groups);
         }
         catch
         {
+            // Do nothing, we can't access nested types.
             return commands;
-            // Do nothing, we simply cannot get the nested types.
         }
     }
 
-    internal static ICommandParameter[] BuildArguments(this MethodBase method, bool withContext, ComponentConfiguration configuration)
+    internal static ICommandParameter[] BuildArguments(IActivator activator, ComponentConfiguration configuration)
     {
-        var parameters = method.GetParameters();
+        var parameters = activator.Target.GetParameters();
 
-        if (withContext)
+        if (activator.HasContext)
             parameters = parameters.Skip(1).ToArray();
 
         var arr = new ICommandParameter[parameters.Length];
 
         for (var i = 0; i < parameters.Length; i++)
         {
-            var complex = false;
-            var name = string.Empty;
-            foreach (var attr in parameters[i].GetCustomAttributes())
-            {
-                if (attr is DeconstructAttribute)
-                    complex = true;
-
-                if (attr is NameAttribute names)
-                {
-                    // names is not supported for parameters.
-                    name = names.Name;
-                }
-            }
-
-            if (complex)
-                arr[i] = new ConstructibleParameter(parameters[i], name, configuration);
+            if (parameters[i].GetCustomAttributes().Contains<DeconstructAttribute>())
+                arr[i] = new ConstructibleParameter(parameters[i], configuration);
             else
-                arr[i] = new CommandParameter(parameters[i], name, configuration);
+                arr[i] = new CommandParameter(parameters[i], configuration);
         }
 
         return arr;
     }
-
-    internal static bool HasContextProvider(this MethodBase method)
-        => method.GetParameters().Length > 0 && method.GetParameters()[0].ParameterType.IsGenericType && method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>);
 
     internal static TypeParser GetParser(this ComponentConfiguration configuration, Type type)
     {

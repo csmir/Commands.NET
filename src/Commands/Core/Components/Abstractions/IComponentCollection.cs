@@ -53,7 +53,7 @@ public interface IComponentCollection : IEnumerable<IComponent>
     /// </summary>
     /// <param name="components">The components to be added to the collection.</param>
     /// <returns>The number of added components, being 0 if no records were added.</returns>
-    public int AddRange(params IComponent[] components);
+    public int AddRange(IEnumerable<IComponent> components);
 
     /// <summary>
     ///     Removes a component from the current collection if it exists.
@@ -67,7 +67,7 @@ public interface IComponentCollection : IEnumerable<IComponent>
     /// </summary>
     /// <param name="components">The components to be removed from the collection.</param>
     /// <returns>The number of removed components, being 0 if no commands were removed.</returns>
-    public int RemoveRange(params IComponent[] components);
+    public int RemoveRange(IEnumerable<IComponent> components);
 
     /// <summary>
     ///     Adds a component to the current collection.

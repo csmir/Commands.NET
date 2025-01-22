@@ -1,10 +1,14 @@
 ﻿using Commands;
 using Commands.Tests;
 
-var manager = ComponentManager.With
-    .Type<Module>()
-    .Handler(ResultHandler.From<ICallerContext>((c, res, serv) => c.Respond(res)))
-    .Create();
+var manager = new ComponentManager([new DelegateResultHandler<Module.CallerContext>((c, r, s) => { c.Respond(r); return ValueTask.CompletedTask; })])
+{
+    new CommandGroup(["delegate"])
+    {
+        new Command(() => "Working", ["work"])
+    },
+    new CommandGroup(typeof(Module), new ComponentConfiguration())
+};
 
 while (true)
     manager.TryExecute(new Module.CallerContext(), Console.ReadLine()!);

@@ -7,7 +7,7 @@ public abstract class ComponentCollection : IComponentCollection
 {
     private IComponent[] _items;
 
-    private Action<IComponent[], bool>? _mutateParent;
+    private Action<IEnumerable<IComponent>, bool>? _mutateParent;
 
     /// <inheritdoc />
     public int Count
@@ -96,14 +96,11 @@ public abstract class ComponentCollection : IComponentCollection
 
     /// <inheritdoc />
     public bool Add(IComponent component)
-        => AddRange(component) > 0;
+        => AddRange([component]) > 0;
 
     /// <inheritdoc />
-    public int AddRange(params IComponent[] components)
+    public int AddRange(IEnumerable<IComponent> components)
     {
-        if (components.Length == 0)
-            return 0;
-
         lock (_items)
         {
             var additions = ValidateAddition(components);
@@ -129,14 +126,11 @@ public abstract class ComponentCollection : IComponentCollection
     
     /// <inheritdoc />
     public bool Remove(IComponent component)
-        => RemoveRange(component) > 0;
+        => RemoveRange([component]) > 0;
 
     /// <inheritdoc />
-    public int RemoveRange(params IComponent[] components)
+    public int RemoveRange(IEnumerable<IComponent> components)
     {
-        if (components.Length == 0)
-            return 0;
-
         lock (_items)
         {
             var mutations = 0;
@@ -178,10 +172,6 @@ public abstract class ComponentCollection : IComponentCollection
     // Gets an stale enumerator which copies the current state of the collection into a span and iterates it.
     internal SpanStateEnumerator GetSpanEnumerator()
         => new(this);
-
-    // Pushes a new collection of components to the current collection. This addition is unsafe, doing no validations, and should only be done during initialization.
-    internal void Push(IEnumerable<IComponent> components)
-        => _items = [.. components];
 
     // Returns which of the provided components should be added to the collection.
     private List<IComponent> ValidateAddition(IEnumerable<IComponent> components)
@@ -237,7 +227,7 @@ public abstract class ComponentCollection : IComponentCollection
     }
 
     // Mutates the parent collection from the child collection, if bind is called by the parent collection.
-    private void MutateFromChild(IComponent[] components, bool removing)
+    private void MutateFromChild(IEnumerable<IComponent> components, bool removing)
     {
         if (removing)
             RemoveRange(components);

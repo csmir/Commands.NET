@@ -9,7 +9,11 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     private readonly bool _handlersAvailable;
     private readonly ResultHandler[] _handlers;
 
-    internal ComponentManager(IEnumerable<ResultHandler> handlers)
+    /// <summary>
+    ///     Initializes a new instance of <see cref="ComponentManager"/> with the specified handlers.
+    /// </summary>
+    /// <param name="handlers">A collection of handlers for post-execution processing of retrieved command input.</param>
+    public ComponentManager(IEnumerable<ResultHandler> handlers)
         : base()
     {
         var arr = handlers.ToArray();

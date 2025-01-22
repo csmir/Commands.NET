@@ -17,9 +17,26 @@ public sealed class ComponentConfiguration
     /// </summary>
     public IReadOnlyDictionary<Type, TypeParser> Parsers { get; }
 
-    internal ComponentConfiguration(Dictionary<Type, TypeParser> parsers, Dictionary<object, object> properties)
+    /// <summary>
+    ///     Creates a new instance of <see cref="ComponentConfiguration"/>.
+    /// </summary>
+    public ComponentConfiguration()
+        : this([], [])
     {
-        Parsers = parsers;
+
+    }
+
+    /// <summary>
+    ///     Creates a new instance of <see cref="ComponentConfiguration"/> with the provided parsers and properties.
+    /// </summary>
+    public ComponentConfiguration(Dictionary<Type, TypeParser> parsers, Dictionary<object, object> properties)
+    {
+        var baseParsers = TypeParser.CreateDefaults().ToDictionary(x => x.Type);
+
+        foreach (var parser in parsers)
+            baseParsers[parser.Key] = parser.Value;
+
+        Parsers = baseParsers;
         Properties = properties;
     }
 

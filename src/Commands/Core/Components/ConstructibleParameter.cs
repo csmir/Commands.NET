@@ -60,7 +60,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
     [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
 #endif
     internal ConstructibleParameter(
-        ParameterInfo parameterInfo, string? name, ComponentConfiguration configuration)
+        ParameterInfo parameterInfo, ComponentConfiguration configuration)
     {
         var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
         var attributes = parameterInfo.GetAttributes(false);
@@ -85,7 +85,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
 
         Activator = new ConstructibleParameterActivator(Type);
 
-        var parameters = Activator.Target.BuildArguments(false, configuration);
+        var parameters = ComponentUtilities.BuildArguments(Activator, configuration);
 
         if (parameters.Length == 0)
             throw new NotSupportedException($"Complex argument of type {Type} must have at least one parameter.");
@@ -98,10 +98,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
 
         ExposedType = parameterInfo.ParameterType;
 
-        if (!string.IsNullOrEmpty(name))
-            Name = name!;
-        else
-            Name = parameterInfo.Name ?? "";
+        Name = attributes.FirstOrDefault<NameAttribute>()?.Name ?? parameterInfo.Name ?? "";
     }
 
     /// <inheritdoc />

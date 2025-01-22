@@ -15,12 +15,14 @@ public sealed class CommandDelegateActivator : IActivator
     /// <inheritdoc />
     public bool HasContext { get; }
 
-    internal CommandDelegateActivator(Delegate target)
+    internal CommandDelegateActivator(Delegate executionDelegate)
     {
-        HasContext = target.Method.HasContextProvider();
+        Assert.NotNull(executionDelegate, nameof(executionDelegate));
 
-        _instance = target.Target;
-        _method = target.Method;
+        HasContext = executionDelegate.Method.HasContextProvider();
+
+        _instance = executionDelegate.Target;
+        _method = executionDelegate.Method;
     }
 
     /// <inheritdoc />
