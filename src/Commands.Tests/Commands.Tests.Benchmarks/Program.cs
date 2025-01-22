@@ -48,17 +48,17 @@ public class Program
 
     #region Object Creation Analysis
 
-    //[Benchmark]
-    //public void CommandCreate()
-    //{
-    //    Command.From(() => { }, "name").Create();
-    //}
+    [Benchmark]
+    public void CommandCreate()
+    {
+        Command.From(() => { }, "name").Create();
+    }
 
-    //[Benchmark]
-    //public void GroupCreate()
-    //{
-    //    CommandGroup.From("name").Create();
-    //}
+    [Benchmark]
+    public void GroupCreate()
+    {
+        CommandGroup.From("name").Create();
+    }
 
     [Benchmark]
     public void CreateArguments()
