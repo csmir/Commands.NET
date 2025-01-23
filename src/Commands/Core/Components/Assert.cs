@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Commands;
 
@@ -12,6 +13,7 @@ public sealed class Assert
     ///     Validates that the specified argument is not null.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void NotNull(object? argument, string argumentExpression)
     {
 #if NET8_0_OR_GREATER
@@ -26,6 +28,7 @@ public sealed class Assert
     ///     Validates that the specified argument is not null or empty.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void NotNullOrEmpty(string? argument, string argumentExpression)
     {
 #if NET8_0_OR_GREATER

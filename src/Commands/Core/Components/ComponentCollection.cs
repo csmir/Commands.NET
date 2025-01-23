@@ -327,12 +327,5 @@ public abstract class ComponentCollection : IComponentCollection
 
             return false;
         }
-
-        /// <inheritdoc />
-        public void Reset()
-        {
-            _index = 0;
-            Current = null!;
-        }
     }
 }
