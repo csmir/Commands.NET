@@ -75,7 +75,7 @@ public sealed class Command : IComponent, IParameterCollection
     /// <param name="names">The names used to discover this command during execution.</param>
     /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
     /// <param name="group">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
-    public Command(Delegate executionDelegate, IEnumerable<string> names, ComponentConfiguration? configuration = null, CommandGroup? group = null)
+    public Command(Delegate executionDelegate, string[] names, ComponentConfiguration? configuration = null, CommandGroup? group = null)
         : this(executionDelegate, [], names, configuration, group) { }
 
     /// <summary>
@@ -86,10 +86,10 @@ public sealed class Command : IComponent, IParameterCollection
     /// <param name="names">The names used to discover this command during execution.</param>
     /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
     /// <param name="group">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
-    public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, IEnumerable<string> names, ComponentConfiguration? configuration = null, CommandGroup? group = null)
+    public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, ComponentConfiguration? configuration = null, CommandGroup? group = null)
         : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), group, conditions, configuration ?? ComponentConfiguration.Empty)
     {
-        Names = names.ToArray();
+        Names = names;
         Ignore = false;
     }
 

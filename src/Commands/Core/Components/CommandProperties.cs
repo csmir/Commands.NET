@@ -132,6 +132,6 @@ public sealed class CommandProperties : IComponentProperties
     {
         var conditionsToAdd = _conditions.Select(condition => condition.Create());
 
-        return new Command(_delegate!, conditionsToAdd, _names, configuration, parent);
+        return new Command(_delegate!, conditionsToAdd, [.. _names], configuration, parent);
     }
 }
