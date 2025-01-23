@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Text.RegularExpressions;
 
 namespace Commands;
 
@@ -15,8 +14,12 @@ public sealed class Assert
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static void NotNull(object? argument, string argumentExpression)
     {
+#if NET8_0_OR_GREATER
+        ArgumentNullException.ThrowIfNull(argument, argumentExpression);
+#else
         if (argument == null)
             throw new ArgumentNullException(argumentExpression);
+#endif
     }
 
     /// <summary>
@@ -25,7 +28,12 @@ public sealed class Assert
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static void NotNullOrEmpty(string? argument, string argumentExpression)
     {
+#if NET8_0_OR_GREATER
+        ArgumentException.ThrowIfNullOrEmpty(argument, argumentExpression);
+#else
+
         if (string.IsNullOrEmpty(argument))
             throw new ArgumentException("The argument must not be null or empty.", argumentExpression);
+#endif
     }
 }
