@@ -87,7 +87,7 @@ public sealed class Command : IComponent, IParameterCollection
     /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
     /// <param name="group">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
     public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, IEnumerable<string> names, ComponentConfiguration? configuration = null, CommandGroup? group = null)
-        : this(new CommandDelegateActivator(executionDelegate), group, conditions, configuration ?? ComponentConfiguration.Empty)
+        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), group, conditions, configuration ?? ComponentConfiguration.Empty)
     {
         Names = names.ToArray();
         Ignore = false;
@@ -260,12 +260,7 @@ public sealed class Command : IComponent, IParameterCollection
             sb.Append('.');
         }
 
-        // If the activator is a delegate variant, the target of the activator is in most circumstances, a generated signature which is not reader-friendly.
-        // We instead will simply append the word "Command" to the output.
-        if (Activator is CommandDelegateActivator)
-            sb.Append("Command");
-        else
-            sb.Append(Activator.Target.Name);
+        sb.Append(Activator.Target.Name);
 
         if (Name != null)
         {

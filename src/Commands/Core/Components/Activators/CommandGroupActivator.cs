@@ -1,41 +1,30 @@
 ﻿namespace Commands;
 
-/// <summary>
-///     An invoker that invokes a command group constructor.
-/// </summary>
-public sealed class CommandGroupActivator : IActivator
+internal readonly struct CommandGroupActivator : IActivator
 {
     private readonly ConstructorInfo _ctor;
+    private readonly CommandGroupService[] _services;
 
-    /// <summary>
-    ///     Gets a collection of services for the group.
-    /// </summary>
-    public CommandGroupService[] Services { get; }
-
-    /// <inheritdoc />
     public MethodBase Target
         => _ctor;
 
-    /// <inheritdoc />
     public bool HasContext
         => false;
 
-    internal CommandGroupActivator(
+    public CommandGroupActivator(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif
         Type type)
     {
-        var ctors = type.GetAvailableConstructors();
-
-        _ctor = ctors.First();
+        _ctor = type.GetAvailableConstructor();
 
         var parameters = _ctor.GetParameters();
 
-        Services = new CommandGroupService[parameters.Length];
+        _services = new CommandGroupService[parameters.Length];
 
         for (var i = 0; i < parameters.Length; i++)
-            Services[i] = new CommandGroupService(parameters[i]);
+            _services[i] = new CommandGroupService(parameters[i]);
     }
 
     /// <inheritdoc />
@@ -46,10 +35,10 @@ public sealed class CommandGroupActivator : IActivator
 
         if (obj == null)
         {
-            var services = new object?[Services.Length];
-            for (int i = 0; i < Services.Length; i++)
+            var services = new object?[_services.Length];
+            for (int i = 0; i < _services.Length; i++)
             {
-                var parameter = Services[i];
+                var parameter = _services[i];
 
                 var service = options.Services.GetService(parameter.Type);
 

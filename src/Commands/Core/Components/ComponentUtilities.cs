@@ -256,37 +256,24 @@ public static class ComponentUtilities
         return new(minLength, maxLength);
     }
 
-    internal static IEnumerable<ConstructorInfo> GetAvailableConstructors(
+    internal static ConstructorInfo GetAvailableConstructor(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif
-        this Type type, bool allowMultipleMatches = false)
+        this Type type)
     {
         var ctors = type.GetConstructors()
             .OrderByDescending(x => x.GetParameters().Length);
 
-        var found = false;
         foreach (var ctor in ctors)
         {
             if (ctor.GetCustomAttributes().Any(attr => attr is IgnoreAttribute))
                 continue;
 
-            if (!allowMultipleMatches)
-            {
-                if (!found)
-                {
-                    found = true;
-                    yield return ctor;
-                }
-                else
-                    yield break;
-            }
-
-            yield return ctor;
+            return ctor;
         }
 
-        if (!found)
-            throw new InvalidOperationException($"{type} has no publically available constructors to use in creating instances of this type.");
+        throw new InvalidOperationException($"{type} has no publically available constructors to use in creating instances of this type.");
     }
 
     #endregion
