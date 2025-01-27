@@ -52,14 +52,12 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     ///     Initializes a new instance of <see cref="CommandGroup"/> using the specified conditions, names and parent group.
     /// </summary>
     /// <param name="names">The names used to discover this group during execution.</param>
-    /// <param name="parent">The parent of this group, if any. Irrespective of this value being set, the group can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
-    public CommandGroup(IEnumerable<string> names, CommandGroup? parent = null)
+    public CommandGroup(string[] names)
         : base()
     {
-        Parent = parent;
         Ignore = false;
         Attributes = [];
-        Names = names.ToArray();
+        Names = names;
     }
 
     /// <summary>
@@ -73,7 +71,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
-        Type type, CommandGroup? parent = null, ComponentConfiguration ? configuration = null)
+        Type type, CommandGroup? parent = null, ComponentConfiguration? configuration = null)
         : base()
     {
         if (!type.IsImplementationOfModule())

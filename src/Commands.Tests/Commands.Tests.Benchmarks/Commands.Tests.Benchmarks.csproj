@@ -10,12 +10,10 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Commands\Commands.csproj" />
-    <ProjectReference Include="..\Commands.Tests.Console\Commands.Tests.Console.csproj" />
   </ItemGroup>
 
 </Project>

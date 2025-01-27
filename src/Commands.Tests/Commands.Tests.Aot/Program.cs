@@ -7,7 +7,7 @@ var manager = new ComponentManager([new DelegateResultHandler<Module.CallerConte
     {
         new Command(() => "Working", ["work"])
     },
-    new CommandGroup(typeof(Module), new ComponentConfiguration())
+    new CommandGroup(typeof(Module), configuration: new ComponentConfiguration())
 };
 
 while (true)

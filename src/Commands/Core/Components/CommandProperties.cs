@@ -125,21 +125,12 @@ public sealed class CommandProperties : IComponentProperties
     /// <summary>
     ///     Converts the properties into a new instance of <see cref="Command"/> which implements all configured values.
     /// </summary>
-    /// <param name="parent">The parent object of this group. If left as null, the group will not inherit any configured values of said parent, such as conditions.</param>
     /// <param name="configuration">The configuration object to configure this object during creation.</param>
     /// <returns>A new instance of <see cref="Command"/>.</returns>
-    public IComponent Create(CommandGroup? parent = null, ComponentConfiguration? configuration = null)
+    public IComponent Create(ComponentConfiguration? configuration = null)
     {
         var conditionsToAdd = _conditions.Select(condition => condition.Create());
 
-        return new Command(_delegate!, conditionsToAdd, _names, parent, configuration);
-    }
-
-    // A private version of the create method that allows for additional conditions to be added from the parent group.
-    internal IComponent Create(IEnumerable<ExecuteCondition> conditions, CommandGroup? parent = null, ComponentConfiguration? configuration = null)
-    {
-        var conditionsToAdd = _conditions.Select(condition => condition.Create()).Concat(conditions);
-
-        return new Command(_delegate!, conditionsToAdd, _names, parent, configuration);
+        return new Command(_delegate!, conditionsToAdd, [.. _names], configuration);
     }
 }
