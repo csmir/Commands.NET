@@ -56,4 +56,12 @@ public readonly struct DynamicType
     /// <inheritdoc />
     public override int GetHashCode()
         => Value.GetHashCode();
+
+    /// <inheritdoc />
+    public static bool operator ==(DynamicType left, DynamicType right)
+        => left.Equals(right);
+
+    /// <inheritdoc />
+    public static bool operator !=(DynamicType left, DynamicType right)
+        => !left.Equals(right);
 }

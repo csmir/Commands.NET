@@ -38,9 +38,9 @@ public class Program
 
     [Benchmark] public void FindCommands() => _components.Find(_args);
 
-    [Benchmark] public void RunCommand() => _components.TryExecute(new BenchmarkCallerContext(), "command");
+    [Benchmark] public void RunCommand() => _components.TryExecute(new BenchmarkCallerContext());
 
-    [Benchmark] public Task RunCommandAsync() => _components.TryExecuteAsync(new BenchmarkCallerContext(), "command");
+    [Benchmark] public Task RunCommandAsync() => _components.TryExecuteAsync(new BenchmarkCallerContext());
 
     [Benchmark] public ComponentManager CollectionCreate() => [];
 

@@ -1,46 +1,25 @@
 ﻿using Commands;
 using Commands.Testing;
-using Microsoft.Extensions.DependencyInjection;
 
 var manager = ComponentManager.From()
     .Types(typeof(Program).Assembly.GetExportedTypes())
-    .Handler(ResultHandler.From<ICallerContext>((c, r, s) => c.Respond(r.Exception?.InnerException != null ? r.Exception.InnerException : r.Exception)))
-    .Component(Command.From((CommandContext<ConsoleContext> c) =>
-    {
-        foreach (var command in c.Manager!.GetCommands())
-            c.Respond(command.ToString());
+    .Handler(ResultHandler.From<ICallerContext>((c, r, s) => c.Respond(r.Unfold())))
+    .Component(
+        Command.From((CommandContext<ConsoleContext> c) => 
+        {
+            foreach (var command in c.Manager!.GetCommands())
+                c.Respond(command);
 
-    }, "help"))
+        }, "help"))
     .Create();
 
-var testRunner = TestRunner.For<TestCallerContext>()
-    .Commands(manager.GetCommands().ToArray())
+var testRunner = TestRunner.From(manager.GetCommands().ToArray())
     .Create();
 
-testRunner.TestFailed += (result) =>
-{
-    throw new InvalidOperationException($"Failed to evaluate command {result.Command} with expected outcome {result.ExpectedResult}. Received {result.ActualResult}.", result.Exception);
-};
+var results = await testRunner.Run((str) => new TestContext(str));
 
-await testRunner.Run();
-
-if (testRunner.CountCompleted == testRunner.Count)
+if (results.Count(x => x.Success) == testRunner.Count)
     Console.WriteLine("All tests ran succesfully.");
 
-var services = new ServiceCollection()
-    .AddSingleton(manager)
-    .BuildServiceProvider();
-
 while (true)
-{
-    var input = Console.ReadLine();
-
-    var values = ArgumentArray.From(input);
-
-    using var scope = services.CreateScope();
-
-    manager.TryExecute(new ConsoleContext(), values, new()
-    {
-        Services = scope.ServiceProvider
-    });
-}
+    manager.TryExecute(new ConsoleContext(Console.ReadLine()));

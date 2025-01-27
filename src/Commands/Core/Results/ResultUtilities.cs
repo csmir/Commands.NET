@@ -13,7 +13,7 @@ public static class ResultUtilities
     /// </summary>
     /// <param name="result">The result for which an exception occurred.</param>
     /// <returns>The message of the innermost exception this result contains. <see langword="null"/> if no exception is present on the result.</returns>
-    public static string? GetMessage(this IExecuteResult result)
+    public static Exception? Unfold(this IExecuteResult result)
     {
         static Exception Unfold(Exception exception)
         {
@@ -24,7 +24,7 @@ public static class ResultUtilities
         }
 
         if (result.Exception != null)
-            return Unfold(result.Exception).Message;
+            return Unfold(result.Exception);
 
         return null;
     }

@@ -9,6 +9,11 @@
 public interface ICallerContext
 {
     /// <summary>
+    ///     The arguments that were provided to the command for which this context was created.
+    /// </summary>
+    public ArgumentArray Arguments { get; }
+
+    /// <summary>
     ///     Sends a response to the caller.
     /// </summary>
     /// <param name="message">The response to send.</param>

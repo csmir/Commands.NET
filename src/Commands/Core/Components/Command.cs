@@ -156,12 +156,13 @@ public sealed class Command : IComponent, IParameterCollection
     /// </summary>
     /// <typeparam name="TContext">The type of the <see cref="ICallerContext"/> provided to this command.</typeparam>
     /// <param name="caller">The instance of the <see cref="ICallerContext"/> provided to this command.</param>
-    /// <param name="args">The arguments to parse into valid command arguments.</param>
     /// <param name="options">A collection of options that determines pipeline logic.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> containing the result of the execution. If <see cref="IExecuteResult.Success"/> is <see langword="true"/>, the command has successfully been executed.</returns>
-    public async ValueTask<IExecuteResult> Run<TContext>(TContext caller, ArgumentArray args, CommandOptions options)
+    public async ValueTask<IExecuteResult> Run<TContext>(TContext caller, CommandOptions options)
         where TContext : ICallerContext
     {
+        var args = caller.Arguments;
+
         args.SetParseIndex(Position);
 
         object?[] parameters;

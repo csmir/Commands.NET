@@ -1,9 +1,7 @@
 ﻿open Commands
 open System
 
-open ExecutionDependencies
-
-let handler = ResultHandler.From(Action<LocalCallerContext, IExecuteResult, IServiceProvider>(fun (context: LocalCallerContext) (result: IExecuteResult) (services: IServiceProvider) -> printfn "%A" result))
+let handler = ResultHandler.From(Action<ConsoleContext, IExecuteResult, IServiceProvider>(fun (context: ConsoleContext) (result: IExecuteResult) (services: IServiceProvider) -> printfn "%A" result))
 let command = Command.From(Func<string>(fun () -> "Hello world"), "hello")
 
 let manager 
@@ -12,4 +10,4 @@ let manager
         .Handler(handler)
         .Create()
 
-manager.TryExecute<LocalCallerContext>(new LocalCallerContext(), "hello")
+manager.TryExecute<ConsoleContext>(new ConsoleContext("hello")) |> ignore

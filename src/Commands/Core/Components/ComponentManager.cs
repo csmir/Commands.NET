@@ -43,70 +43,50 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     }
 
     /// <inheritdoc />
-    public void TryExecute<T>(T caller, string? args, CommandOptions? options = null)
-        where T : ICallerContext
-        => TryExecute(caller, ArgumentArray.From(args), options);
+    public IExecuteResult TryExecute<TContext>(TContext context, CommandOptions? options = null)
+        where TContext : ICallerContext
+        => TryExecuteAsync(context, options).GetAwaiter().GetResult();
 
     /// <inheritdoc />
-    public void TryExecute<T>(T caller, string[] args, CommandOptions? options = null)
-        where T : ICallerContext
-        => TryExecuteAsync(caller, ArgumentArray.From(args), options).Wait();
-
-    /// <inheritdoc />
-    public void TryExecute<T>(T caller, ArgumentArray args, CommandOptions? options = null)
-        where T : ICallerContext
-        => TryExecuteAsync(caller, args, options).Wait();
-
-    /// <inheritdoc />
-    public Task TryExecuteAsync<T>(T caller, string? args, CommandOptions? options = null)
-        where T : ICallerContext
-        => TryExecuteAsync(caller, ArgumentArray.From(args), options);
-
-    /// <inheritdoc />
-    public Task TryExecuteAsync<T>(T caller, string[] args, CommandOptions? options = null)
-        where T : ICallerContext
-        => TryExecuteAsync(caller, ArgumentArray.From(args), options);
-
-    /// <inheritdoc />
-    public Task TryExecuteAsync<T>(T caller, ArgumentArray args, CommandOptions? options = null)
-        where T : ICallerContext
+    public Task<IExecuteResult> TryExecuteAsync<TContext>(TContext context, CommandOptions? options = null)
+        where TContext : ICallerContext
     {
         options ??= new CommandOptions();
 
-        var task = ExecutePipelineTask(caller, args, options);
-        
-        task.ContinueWith(async task =>
+        var task = ExecutePipelineTask(context, options);
+
+        if (_handlersAvailable)
         {
-            var result = await task;
-
-            if (_handlersAvailable)
+            task.ContinueWith(async task =>
             {
+                var result = await task;
+
                 foreach (var handler in _handlers)
-                    await handler.HandleResult(caller, result, options.Services, options.CancellationToken).ConfigureAwait(false);
-            }
+                    await handler.HandleResult(context, result, options.Services, options.CancellationToken).ConfigureAwait(false);
 
-        }, options.CancellationToken);
+            }, options.CancellationToken);
+        }
 
-        if (options.AsynchronousExecution)
-            return Task.CompletedTask;
+        //if (options.AsynchronousExecution)
+        //    return Task.CompletedTask;
 
         return task;
     }
 
-    private async Task<IExecuteResult> ExecutePipelineTask<T>(T caller, ArgumentArray args, CommandOptions options)
-        where T : ICallerContext
+    private async Task<IExecuteResult> ExecutePipelineTask<TContext>(TContext caller, CommandOptions options)
+        where TContext : ICallerContext
     {
         options.Manager = this;
 
         IExecuteResult? result = null;
 
-        var components = Find(args);
+        var components = Find(caller.Arguments);
 
         foreach (var component in components)
         {
             if (component is Command command)
             {
-                result = await command.Run(caller, args, options).ConfigureAwait(false);
+                result = await command.Run(caller, options).ConfigureAwait(false);
 
                 if (!result.Success)
                     continue;

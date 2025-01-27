@@ -95,7 +95,7 @@ public abstract class ResultHandler
         if (result is InvokeResult valueResult && valueResult.Success)
             return HandleSuccess(caller, valueResult, services, cancellationToken);
 
-        var message = result.GetMessage()!; // On failure, the exception message is always present.
+        var message = result.Unfold()!; // On failure, the exception message is always present.
 
         switch (result)
         {
@@ -183,7 +183,7 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleCommandNotFound(ICallerContext caller, SearchResult result, string errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask HandleCommandNotFound(ICallerContext caller, SearchResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
@@ -195,7 +195,7 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleRouteIncomplete(ICallerContext caller, SearchResult result, string errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask HandleRouteIncomplete(ICallerContext caller, SearchResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
@@ -207,7 +207,7 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleCommandOutOfRange(ICallerContext caller, ParseResult result, string errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask HandleCommandOutOfRange(ICallerContext caller, ParseResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
@@ -219,7 +219,7 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleConversionFailed(ICallerContext caller, ParseResult result, string errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask HandleConversionFailed(ICallerContext caller, ParseResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
@@ -231,7 +231,7 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleConditionUnmet(ICallerContext caller, ConditionResult result, string errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask HandleConditionUnmet(ICallerContext caller, ConditionResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
@@ -243,7 +243,7 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleInvocationFailed(ICallerContext caller, InvokeResult result, string errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask HandleInvocationFailed(ICallerContext caller, InvokeResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
@@ -255,7 +255,7 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleUnknownResult(ICallerContext caller, IExecuteResult result, string errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask HandleUnknownResult(ICallerContext caller, IExecuteResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     #endregion

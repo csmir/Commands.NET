@@ -2,7 +2,7 @@
 
 internal static class TestUtilities
 {
-    internal static async ValueTask<TestResult> Test(this Command command, ICallerContext caller, ITestProvider provider, CommandOptions options)
+    public static async ValueTask<TestResult> Test(this Command command, Func<string, ICallerContext> callerCreation, ITestProvider provider, CommandOptions options)
     {
         TestResult GetResult(IExecuteResult result)
         {
@@ -29,9 +29,7 @@ internal static class TestUtilities
             ? command.GetFullName(false)
             : command.GetFullName(false) + ' ' + provider.Arguments;
 
-        var arguments = ArgumentArray.From(fullName);
-
-        var runResult = await command.Run(caller, arguments, options).ConfigureAwait(false);
+        var runResult = await command.Run(callerCreation(fullName), options).ConfigureAwait(false);
 
         return GetResult(runResult);
     }

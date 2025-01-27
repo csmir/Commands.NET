@@ -2,8 +2,8 @@
 
 namespace Commands.Samples;
 
-public sealed class HostedCallerContext(ILogger logger) : ICallerContext
+public sealed class HostedCallerContext(string? input, ILogger logger) : ConsoleContext(input)
 {
-    public void Respond(object? response)
+    public override void Respond(object? response)
         => logger.LogInformation("Response: {}", response);
 }

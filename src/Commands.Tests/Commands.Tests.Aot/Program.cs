@@ -1,7 +1,7 @@
 ﻿using Commands;
 using Commands.Tests;
 
-var manager = new ComponentManager(new DelegateResultHandler<ConsoleContext>((c, r, s) => c.Respond(r.GetMessage())))
+var manager = new ComponentManager(new DelegateResultHandler<ConsoleContext>((c, r, s) => c.Respond(r.Unfold())))
 {
     new CommandGroup(typeof(Module), configuration: new ComponentConfiguration()),
     new CommandGroup("commandgroup")
@@ -20,7 +20,7 @@ var manager = new ComponentManager(new DelegateResultHandler<ConsoleContext>((c,
 };
 
 while (true)
-    manager.TryExecute(new ConsoleContext(), Console.ReadLine()!, new CommandOptions()
+    manager.TryExecute(new ConsoleContext(Console.ReadLine()), new CommandOptions()
     {
         AsynchronousExecution = true,
     });
