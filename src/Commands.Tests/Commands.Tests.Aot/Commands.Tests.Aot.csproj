@@ -12,6 +12,7 @@
 		<IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
 		<StackTraceSupport>false</StackTraceSupport>
 		<IlcOptimizationPreference>Speed</IlcOptimizationPreference>
+		<NoWarn>CA1822;IDE0130</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
