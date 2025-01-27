@@ -7,7 +7,6 @@ namespace Commands;
 /// </summary>
 public sealed class CommandGroupProperties : IComponentProperties
 {
-    private readonly List<IExecuteConditionProperties> _conditions;
     private readonly List<IComponentProperties> _components;
     private readonly List<string> _names;
 
@@ -16,7 +15,6 @@ public sealed class CommandGroupProperties : IComponentProperties
     /// </summary>
     public CommandGroupProperties()
     {
-        _conditions = [];
         _components = [];
         _names      = [];
     }
@@ -56,54 +54,6 @@ public sealed class CommandGroupProperties : IComponentProperties
     }
 
     /// <summary>
-    ///     Adds a condition to the command group.
-    /// </summary>
-    /// <param name="condition">The condition to add to the group.</param>
-    /// <returns>The same <see cref="CommandGroupProperties"/> for call-chaining.</returns>
-    public CommandGroupProperties Condition(IExecuteConditionProperties condition)
-    {
-        Assert.NotNull(condition, nameof(condition));
-
-        _conditions.Add(condition);
-
-        return this;
-    }
-
-    /// <summary>
-    ///     Adds a condition to the command group.
-    /// </summary>
-    /// <param name="condition">The condition to add to the group.</param>
-    /// <returns>The same <see cref="CommandGroupProperties"/> for call-chaining.</returns>
-    public CommandGroupProperties Condition(ExecuteCondition condition)
-        => Condition(new ExecuteConditionProperties(condition));
-
-    /// <summary>
-    ///     Adds multiple conditions to the command group.
-    /// </summary>
-    /// <param name="conditions">The conditions to add to the group.</param>
-    /// <returns>The same <see cref="CommandGroupProperties"/> for call-chaining.</returns>
-    public CommandGroupProperties Conditions(params IExecuteConditionProperties[] conditions)
-    {
-        foreach (var condition in conditions)
-            Condition(condition);
-
-        return this;
-    }
-
-    /// <summary>
-    ///     Adds multiple conditions to the command group.
-    /// </summary>
-    /// <param name="conditions">The conditions to add to the group.</param>
-    /// <returns>The same <see cref="CommandGroupProperties"/> for call-chaining.</returns>
-    public CommandGroupProperties Conditions(params ExecuteCondition[] conditions)
-    {
-        foreach (var condition in conditions)
-            Condition(new ExecuteConditionProperties(condition));
-
-        return this;
-    }
-
-    /// <summary>
     ///     Adds a component to the command group.
     /// </summary>
     /// <param name="component">The component to add to the group.</param>
@@ -138,7 +88,7 @@ public sealed class CommandGroupProperties : IComponentProperties
     /// <returns>A new instance of <see cref="CommandGroup"/>.</returns>
     public IComponent Create(CommandGroup? parent = null, ComponentConfiguration? configuration = null)
     {
-        var group = new CommandGroup(_conditions.Count > 0 ? _conditions.Select(condition => condition.Create()) : [], _names, parent);
+        var group = new CommandGroup(_names, parent);
 
         if (_components.Count != 0)
             group.AddRange(_components.Select(component => component.Create(group, configuration)).ToArray());

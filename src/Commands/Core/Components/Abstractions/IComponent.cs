@@ -19,14 +19,6 @@ public interface IComponent : ICommandSegment, IComparable<IComponent>
     public string[] Names { get; }
 
     /// <summary>
-    ///     Gets all evaluations that this component should do during the execution process, determined by a set of defined <see cref="IExecuteCondition"/>'s pointing at the component.
-    /// </summary>
-    /// <remarks>
-    ///     When this property is called by a child component, this property will inherit all evaluations from the component's <see cref="Parent"/> component(s).
-    /// </remarks>
-    public ConditionEvaluator[] Evaluators { get; }
-
-    /// <summary>
     ///     Gets if the component should be ignored during the execution process.
     /// </summary>
     public bool Ignore { get; }

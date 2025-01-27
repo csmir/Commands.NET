@@ -132,6 +132,14 @@ public sealed class CommandProperties : IComponentProperties
     {
         var conditionsToAdd = _conditions.Select(condition => condition.Create());
 
-        return new Command(_delegate!, conditionsToAdd, _names, configuration, parent);
+        return new Command(_delegate!, conditionsToAdd, _names, parent, configuration);
+    }
+
+    // A private version of the create method that allows for additional conditions to be added from the parent group.
+    internal IComponent Create(IEnumerable<ExecuteCondition> conditions, CommandGroup? parent = null, ComponentConfiguration? configuration = null)
+    {
+        var conditionsToAdd = _conditions.Select(condition => condition.Create()).Concat(conditions);
+
+        return new Command(_delegate!, conditionsToAdd, _names, parent, configuration);
     }
 }

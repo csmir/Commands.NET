@@ -21,20 +21,24 @@ public abstract class ConditionEvaluator
     public abstract ValueTask<ConditionResult> Evaluate(
         ICallerContext caller, Command command, IServiceProvider services, CancellationToken cancellationToken);
 
-    internal static IEnumerable<ConditionEvaluator> CreateEvaluators(IEnumerable<IExecuteCondition> conditions)
+    internal static ConditionEvaluator[] CreateEvaluators(IEnumerable<IExecuteCondition> conditions)
     {
         if (!conditions.Any())
-            yield break;
+            return [];
 
-        // Group conditions by their evaluator implementation.
-        foreach (var conditionTypeGroup in conditions.GroupBy(x => x.EvaluatorType))
+        var evaluatorGroups = conditions.GroupBy(x => x.EvaluatorType);
+
+        var arr = new ConditionEvaluator[evaluatorGroups.Count()];
+
+        var i = 0;
+
+        foreach (var group in evaluatorGroups)
         {
-            // We would prefer to take the group Key as the evaluator type, but thanks to DynamicallyAccessedMembers not being present on IGrouping.Key, we cannot.
-            var instance = (ConditionEvaluator)Activator.CreateInstance(conditionTypeGroup.First().EvaluatorType)!;
-
-            instance.Conditions = [.. conditionTypeGroup];
-
-            yield return instance;
+            var instance = (ConditionEvaluator)Activator.CreateInstance(group.First().EvaluatorType)!;
+            instance.Conditions = [.. group];
+            arr[i++] = instance;
         }
+
+        return arr;
     }
 }
