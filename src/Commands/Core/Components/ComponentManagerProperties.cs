@@ -184,7 +184,7 @@ public sealed class ComponentManagerProperties
 
         var configuration = _configuration.Create();
 
-        var handlers = _handlers.Select(handler => handler.Create());
+        var handlers = _handlers.Select(handler => handler.Create()).ToArray();
 
         var manager = new ComponentManager(handlers);
 

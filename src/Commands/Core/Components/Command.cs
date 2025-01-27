@@ -78,6 +78,14 @@ public sealed class Command : IComponent, IParameterCollection
     /// </summary>
     /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
     /// <param name="names">The names used to discover this command during execution.</param>
+    public Command(Delegate executionDelegate, params string[] names)
+        : this(executionDelegate, [], names) { }
+
+    /// <summary>
+    ///     Initializes a new instance of <see cref="Command"/> with the provided execution delegate, conditions, names, configuration, and parent group.
+    /// </summary>
+    /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
+    /// <param name="names">The names used to discover this command during execution.</param>
     /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
     public Command(Delegate executionDelegate, string[] names, ComponentConfiguration? configuration = null)
         : this(executionDelegate, [], names, configuration) { }

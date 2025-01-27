@@ -14,10 +14,4 @@ public class Module : CommandModule
     [Name("command3")]
     public static Task<string> Respond(string str)
         => Task.FromResult(str);
-
-    public class CallerContext : ICallerContext
-    {
-        public void Respond(object? response)
-            => Console.WriteLine(response);
-    }
 }

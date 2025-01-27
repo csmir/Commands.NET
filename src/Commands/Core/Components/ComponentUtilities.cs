@@ -133,7 +133,7 @@ public static class ComponentUtilities
 
             try
             {
-                group = new CommandGroup(type, configuration, parent);
+                group = new CommandGroup(type, parent, configuration);
             }
             catch
             {
@@ -152,7 +152,7 @@ public static class ComponentUtilities
 
         foreach (var method in members)
         {
-            var command = new Command(method, configuration, parent);
+            var command = new Command(method, parent, configuration);
 
             if (command.Ignore)
                 continue;

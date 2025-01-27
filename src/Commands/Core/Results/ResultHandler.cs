@@ -10,12 +10,29 @@ namespace Commands;
 ///     This implementation of <see cref="ResultHandler"/> allows you to define a delegate that will be executed when the command execution is completed. This delegate is only executed if the command failed.
 /// </remarks>
 /// <typeparam name="TContext">The context type this handler should cover.</typeparam>
-/// <param name="resultDelegate">The delegate that will handle the failed execution result.</param>
-public sealed class DelegateResultHandler<TContext>(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
+public sealed class DelegateResultHandler<TContext>
     : ResultHandler<TContext>
     where TContext : class, ICallerContext
 {
-    private readonly Func<TContext, IExecuteResult, IServiceProvider, ValueTask> _resultDelegate = resultDelegate;
+    private readonly Func<TContext, IExecuteResult, IServiceProvider, ValueTask> _resultDelegate;
+
+    /// <summary>
+    ///     Creates a new instance of <see cref="DelegateResultHandler{TContext}"/> using the provided handler.
+    /// </summary>
+    /// <param name="resultDelegate">The delegate that will handle the failed execution result.</param>
+    public DelegateResultHandler(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
+        => _resultDelegate = resultDelegate;
+
+    /// <summary>
+    ///     Creates a new instance of <see cref="DelegateResultHandler{TContext}"/> using the provided handler.
+    /// </summary>
+    /// <param name="resultDelegate">The delegate that will handle the failed execution result.</param>
+    public DelegateResultHandler(Action<TContext, IExecuteResult, IServiceProvider> resultDelegate)
+        => _resultDelegate = (context, result, services) =>
+        {
+            resultDelegate(context, result, services);
+            return default;
+        };
 
     /// <inheritdoc />
     public override ValueTask HandleResult(TContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)

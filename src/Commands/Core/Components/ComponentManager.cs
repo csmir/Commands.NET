@@ -10,22 +10,14 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     private readonly ResultHandler[] _handlers;
 
     /// <summary>
-    ///     Initializes a new instance of <see cref="ComponentManager"/>.
-    /// </summary>
-    public ComponentManager()
-        : this([]) { }
-
-    /// <summary>
     ///     Initializes a new instance of <see cref="ComponentManager"/> with the specified handlers.
     /// </summary>
     /// <param name="handlers">A collection of handlers for post-execution processing of retrieved command input.</param>
-    public ComponentManager(IEnumerable<ResultHandler> handlers)
+    public ComponentManager(params ResultHandler[] handlers)
         : base()
     {
-        var arr = handlers.ToArray();
-
-        _handlersAvailable = arr.Length > 0;
-        _handlers = arr;
+        _handlersAvailable = handlers.Length > 0;
+        _handlers = handlers;
     }
 
     /// <inheritdoc />
@@ -82,6 +74,18 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         options ??= new CommandOptions();
 
         var task = ExecutePipelineTask(caller, args, options);
+        
+        task.ContinueWith(async task =>
+        {
+            var result = await task;
+
+            if (_handlersAvailable)
+            {
+                foreach (var handler in _handlers)
+                    await handler.HandleResult(caller, result, options.Services, options.CancellationToken).ConfigureAwait(false);
+            }
+
+        }, options.CancellationToken);
 
         if (options.AsynchronousExecution)
             return Task.CompletedTask;
@@ -89,7 +93,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         return task;
     }
 
-    private async Task ExecutePipelineTask<T>(T caller, ArgumentArray args, CommandOptions options)
+    private async Task<IExecuteResult> ExecutePipelineTask<T>(T caller, ArgumentArray args, CommandOptions options)
         where T : ICallerContext
     {
         options.Manager = this;
@@ -113,13 +117,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
             result ??= new SearchResult(new CommandRouteIncompleteException(component));
         }
 
-        result ??= new SearchResult(new CommandNotFoundException());
-
-        if (_handlersAvailable)
-        {
-            foreach (var resolver in _handlers)
-                await resolver.HandleResult(caller, result, options.Services, options.CancellationToken).ConfigureAwait(false);
-        }
+        return result ?? new SearchResult(new CommandNotFoundException());
     }
 
     #region Initializers

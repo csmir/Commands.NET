@@ -52,7 +52,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     ///     Initializes a new instance of <see cref="CommandGroup"/> using the specified conditions, names and parent group.
     /// </summary>
     /// <param name="names">The names used to discover this group during execution.</param>
-    public CommandGroup(string[] names)
+    public CommandGroup(params string[] names)
         : base()
     {
         Ignore = false;
