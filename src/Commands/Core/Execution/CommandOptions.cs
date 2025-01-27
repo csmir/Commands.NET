@@ -28,38 +28,6 @@ public sealed class CommandOptions
     public CancellationToken CancellationToken { get; set; } = default;
 
     /// <summary>
-    ///     Gets or sets the approach to asynchronousity in command execution.
-    ///     This value drastically changes the expected behavior of executing a command:
-    ///     <list type="bullet">
-    ///         <item>
-    ///             <see langword="false"/> is the default value and tells the pipeline to finish executing before returning control to the caller. 
-    ///             This ensures that the execution will fully finish whether it failed or not, before allowing another command to be executed.
-    ///         </item>
-    ///         <item>
-    ///             When marked as <see langword="true"/>, the execution will return immediately after the entrypoint is called, slipping thread for the rest of execution.
-    ///         </item>
-    ///     </list>
-    /// </summary>
-    /// <remarks>
-    ///     When changing this setting to <see langword="true"/>, the following should be checked for thread-safety:
-    ///     <list type="number">
-    ///         <item>
-    ///             Services, specifically those created as singleton or scoped to anything but a single command.
-    ///         </item>
-    ///         <item>
-    ///             Implementations of <see cref="ITypeParser"/> and <see cref="IExecuteCondition"/>.
-    ///         </item>
-    ///         <item>
-    ///             Mutable collections and objects with shared access. <see cref="ComponentCollection"/> implementations are concurrently accessible, not needing additional effort to make thread-safe.
-    ///         </item>
-    ///     </list>
-    ///     For ensuring thread safety in any of the above situations, it is important to know what this actually means. 
-    ///     <br/>
-    ///     For more information, consider reading this article: <see href="https://learn.microsoft.com/en-us/dotnet/standard/threading/managed-threading-best-practices"/>
-    /// </remarks>
-    public bool AsynchronousExecution { get; set; } = false;
-
-    /// <summary>
     ///     Gets or sets whether the defined <see cref="ExecuteConditionAttribute{T}"/>'s for this execution should be ran.
     /// </summary>
     /// <remarks>

@@ -11,11 +11,9 @@ public class Listener(ILogger<Listener> logger, ComponentManager manager) : Back
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            var input = Console.ReadLine()!;
+            var context = new HostedCallerContext(Console.ReadLine(), logger);
 
-            var context = new HostedCallerContext(logger);
-
-            await manager.TryExecuteAsync(context, input);
+            await manager.ExecuteBlocking(context);
         }
 
         logger.LogInformation("Stopped listening for commands.");

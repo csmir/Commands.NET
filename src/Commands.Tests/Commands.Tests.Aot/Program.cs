@@ -20,7 +20,4 @@ var manager = new ComponentManager(new DelegateResultHandler<ConsoleContext>((c,
 };
 
 while (true)
-    manager.TryExecute(new ConsoleContext(Console.ReadLine()), new CommandOptions()
-    {
-        AsynchronousExecution = true,
-    });
+    await manager.Execute(new ConsoleContext(Console.ReadLine()));

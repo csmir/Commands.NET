@@ -1,5 +1,6 @@
 ﻿using Commands.Conditions;
 using Commands.Parsing;
+using System.ComponentModel;
 
 namespace Commands;
 
@@ -14,14 +15,13 @@ public sealed class DelegateResultHandler<TContext>
     : ResultHandler<TContext>
     where TContext : class, ICallerContext
 {
-    private readonly Func<TContext, IExecuteResult, IServiceProvider, ValueTask> _resultDelegate;
+    private readonly Func<TContext, IExecuteResult, IServiceProvider, ValueTask>? _resultDelegate;
 
     /// <summary>
-    ///     Creates a new instance of <see cref="DelegateResultHandler{TContext}"/> using the provided handler.
+    ///     Creates a new instance of <see cref="DelegateResultHandler{TContext}"/>, which only responds to the caller with the result of the command execution.
     /// </summary>
-    /// <param name="resultDelegate">The delegate that will handle the failed execution result.</param>
-    public DelegateResultHandler(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
-        => _resultDelegate = resultDelegate;
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public DelegateResultHandler() { }
 
     /// <summary>
     ///     Creates a new instance of <see cref="DelegateResultHandler{TContext}"/> using the provided handler.
@@ -34,13 +34,23 @@ public sealed class DelegateResultHandler<TContext>
             return default;
         };
 
+    /// <summary>
+    ///     Creates a new instance of <see cref="DelegateResultHandler{TContext}"/> using the provided handler.
+    /// </summary>
+    /// <param name="resultDelegate">The delegate that will handle the failed execution result.</param>
+    public DelegateResultHandler(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
+        => _resultDelegate = resultDelegate;
+
     /// <inheritdoc />
     public override ValueTask HandleResult(TContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (result.Success)
             return HandleSuccess(caller, result, services, cancellationToken);
-        else
-            return _resultDelegate(caller, result, services);
+
+        if (_resultDelegate != null)
+            return _resultDelegate.Invoke(caller, result, services);
+
+        return default;
     }
 }
 

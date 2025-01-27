@@ -22,4 +22,4 @@ if (results.Count(x => x.Success) == testRunner.Count)
     Console.WriteLine("All tests ran succesfully.");
 
 while (true)
-    manager.TryExecute(new ConsoleContext(Console.ReadLine()));
+    await manager.ExecuteBlocking(new ConsoleContext(Console.ReadLine()));

@@ -20,4 +20,4 @@ properties.Component(CommandGroup.From("greet")
 var manager = properties.Create();
 
 while (true)
-    manager.TryExecute(new ConsoleCallerContext("Pete", Console.ReadLine()));
+    await manager.ExecuteBlocking(new ConsoleCallerContext("Pete", Console.ReadLine()));

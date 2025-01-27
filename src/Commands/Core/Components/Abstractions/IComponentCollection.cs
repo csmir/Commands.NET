@@ -49,6 +49,13 @@ public interface IComponentCollection : IEnumerable<IComponent>
     public int CountAll();
 
     /// <summary>
+    ///     Adds a component to the current collection.
+    /// </summary>
+    /// <param name="component">The component to be added to the group.</param>
+    /// <returns><see langword="true"/> if the component was added; Otherwise, <see langword="false"/>.</returns>
+    public void Add(IComponent component);
+
+    /// <summary>
     ///     Adds all provided components to the current collection.
     /// </summary>
     /// <param name="components">The components to be added to the collection.</param>
@@ -68,11 +75,4 @@ public interface IComponentCollection : IEnumerable<IComponent>
     /// <param name="components">The components to be removed from the collection.</param>
     /// <returns>The number of removed components, being 0 if no commands were removed.</returns>
     public int RemoveRange(IEnumerable<IComponent> components);
-
-    /// <summary>
-    ///     Adds a component to the current collection.
-    /// </summary>
-    /// <param name="component">The component to be added to the group.</param>
-    /// <returns><see langword="true"/> if the component was added; Otherwise, <see langword="false"/>.</returns>
-    public bool Add(IComponent component);
 }

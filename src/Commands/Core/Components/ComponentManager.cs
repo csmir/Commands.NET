@@ -6,7 +6,6 @@
 [DebuggerDisplay("Count = {Count}")]
 public sealed class ComponentManager : ComponentCollection, IExecutionProvider
 {
-    private readonly bool _handlersAvailable;
     private readonly ResultHandler[] _handlers;
 
     /// <summary>
@@ -16,8 +15,11 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     public ComponentManager(params ResultHandler[] handlers)
         : base()
     {
-        _handlersAvailable = handlers.Length > 0;
         _handlers = handlers;
+
+        // A default handler is added if none are provided, which allows the command result to be processed with no further implications.
+        if (handlers.Length < 0)
+            _handlers = [new DelegateResultHandler<ICallerContext>()];
     }
 
     /// <inheritdoc />
@@ -43,34 +45,37 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     }
 
     /// <inheritdoc />
-    public IExecuteResult TryExecute<TContext>(TContext context, CommandOptions? options = null)
-        where TContext : ICallerContext
-        => TryExecuteAsync(context, options).GetAwaiter().GetResult();
-
-    /// <inheritdoc />
-    public Task<IExecuteResult> TryExecuteAsync<TContext>(TContext context, CommandOptions? options = null)
+    public Task Execute<TContext>(TContext context, CommandOptions? options = null)
         where TContext : ICallerContext
     {
         options ??= new CommandOptions();
 
         var task = ExecutePipelineTask(context, options);
 
-        if (_handlersAvailable)
+        task.ContinueWith(async task =>
         {
-            task.ContinueWith(async task =>
-            {
-                var result = await task;
+            var result = await task.ConfigureAwait(false);
 
-                foreach (var handler in _handlers)
-                    await handler.HandleResult(context, result, options.Services, options.CancellationToken).ConfigureAwait(false);
+            foreach (var handler in _handlers)
+                await handler.HandleResult(context, result, options.Services, options.CancellationToken).ConfigureAwait(false);
 
-            }, options.CancellationToken);
-        }
+        }, options.CancellationToken);
 
-        //if (options.AsynchronousExecution)
-        //    return Task.CompletedTask;
+        return Task.CompletedTask;
+    }
 
-        return task;
+    /// <inheritdoc />
+    public async Task<IExecuteResult> ExecuteBlocking<TContext>(TContext context, CommandOptions? options = null)
+        where TContext : ICallerContext
+    {
+        options ??= new CommandOptions();
+
+        var result = await ExecutePipelineTask(context, options).ConfigureAwait(false);
+
+        foreach (var handler in _handlers)
+            await handler.HandleResult(context, result, options.Services, options.CancellationToken).ConfigureAwait(false);
+
+        return result;
     }
 
     private async Task<IExecuteResult> ExecutePipelineTask<TContext>(TContext caller, CommandOptions options)

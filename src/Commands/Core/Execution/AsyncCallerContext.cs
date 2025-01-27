@@ -10,7 +10,7 @@
 public abstract class AsyncCallerContext : ICallerContext
 {
     /// <inheritdoc />
-    public ArgumentArray Arguments { get; }
+    public abstract ArgumentArray Arguments { get; }
 
     /// <summary>
     ///     Responds to the caller asynchronously with the provided message.

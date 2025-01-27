@@ -1,13 +1,12 @@
 ﻿open Commands
 open System
 
-let handler = ResultHandler.From(Action<ConsoleContext, IExecuteResult, IServiceProvider>(fun (context: ConsoleContext) (result: IExecuteResult) (services: IServiceProvider) -> printfn "%A" result))
-let command = Command.From(Func<string>(fun () -> "Hello world"), "hello")
+let command = new Command(Func<_>(fun () -> "Hello world"), "hello")
 
-let manager 
-    = ComponentManager.From()
-        .Component(command)
-        .Handler(handler)
-        .Create()
+let manager = new ComponentManager() 
+[ command ] |> Seq.iter manager.Add
 
-manager.TryExecute<ConsoleContext>(new ConsoleContext("hello")) |> ignore
+let res = manager.ExecuteBlocking<ConsoleContext>(new ConsoleContext("hello")) |> Async.AwaitTask |> Async.RunSynchronously 
+
+if res.Success = false then
+    printf "%s" (res.Unfold().Message)

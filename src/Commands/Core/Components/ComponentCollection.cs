@@ -95,8 +95,8 @@ public abstract class ComponentCollection : IComponentCollection
     }
 
     /// <inheritdoc />
-    public bool Add(IComponent component)
-        => AddRange([component]) > 0;
+    public void Add(IComponent component)
+        => AddRange([component]);
 
     /// <inheritdoc />
     public int AddRange(IEnumerable<IComponent> components)

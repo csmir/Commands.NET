@@ -3,8 +3,10 @@ using BenchmarkDotNet.Running;
 
 namespace Commands.Tests;
 
-public class BenchmarkCallerContext : AsyncCallerContext
+public class BenchmarkCallerContext(string? input) : AsyncCallerContext
 {
+    public override ArgumentArray Arguments { get; } = ArgumentArray.From(input);
+
     public override Task Respond(object? response) 
         => Task.CompletedTask;
 }
@@ -25,26 +27,40 @@ public class CreationAnalysisModule : CommandModule<BenchmarkCallerContext>
 [MemoryDiagnoser]
 public class Program
 {
-    static void Main() 
-        => BenchmarkRunner.Run<Program>();
-
     private static readonly ArgumentArray _args = ArgumentArray.From("command");
     private static readonly ComponentManager _components = ComponentManager.From()
         .Type<CreationAnalysisModule>()
         .Component(Command.From(() => { }, "command"))
         .Create();
 
-    [Benchmark] public void CreateArguments() => ArgumentArray.From("command");
+    static void Main() 
+        => BenchmarkRunner.Run<Program>();
 
-    [Benchmark] public void FindCommands() => _components.Find(_args);
+    [Benchmark] 
+    public void CreateArguments() 
+        => ArgumentArray.From("command");
 
-    [Benchmark] public void RunCommand() => _components.TryExecute(new BenchmarkCallerContext());
+    [Benchmark] 
+    public void FindCommands() 
+        => _components.Find(_args);
 
-    [Benchmark] public Task RunCommandAsync() => _components.TryExecuteAsync(new BenchmarkCallerContext());
+    [Benchmark] 
+    public Task RunCommand() 
+        => _components.ExecuteBlocking(new BenchmarkCallerContext("command"));
 
-    [Benchmark] public ComponentManager CollectionCreate() => [];
+    [Benchmark] 
+    public Task RunCommandNonBlocking() 
+        => _components.Execute(new BenchmarkCallerContext("command"));
 
-    [Benchmark] public CommandGroup GroupCreate() => new(["name"]);
+    [Benchmark] 
+    public ComponentManager CollectionCreate() 
+        => [];
 
-    [Benchmark] public Command CommandCreate() => new(() => { }, ["name"]);
+    [Benchmark] 
+    public CommandGroup GroupCreate() 
+        => new(["name"]);
+
+    [Benchmark] 
+    public Command CommandCreate() 
+        => new(() => { }, ["name"]);
 }
