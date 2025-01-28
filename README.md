@@ -31,7 +31,7 @@ var command = Command.From(() => "Hello world!", "greet");
 
 var manager = ComponentManager.With.Component(command).Create();
 
-manager.TryExecute(new ConsoleContext(), args);
+await manager.ExecuteBlocking(new ConsoleContext(args));
 
 // dotnet run greet -> Hello world!
 ```
@@ -58,7 +58,7 @@ var mathCommands = CommandGroup.From("math")
 
 var manager = ComponentManager.With.Components(mathCommands).Create();
 
-manager.TryExecute(new ConsoleContext(), args);
+manager.ExecuteBlocking(new ConsoleContext(args));
 
 // dotnet run math sum 5 3 -> 8
 ```
@@ -87,11 +87,9 @@ public class HelpModule : CommandModule
 
 ...
 
-var helpCommands = CommandGroup.Create<HelpModule>();
-
 var manager = ComponentManager.With.Component(mathCommands).Type<HelpModule>().Create();
 
-manager.TryExecute(new ConsoleContext(), args);
+manager.ExecuteBlocking(new ConsoleContext(args));
 
 // dotnet run help -> Commands: math sum <...> math subtract <...> math ...
 ```
@@ -108,19 +106,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection()
     .AddSingleton<MyService>()
-    .AddSingleton<ComponentManager>(ComponentManager.With.Component(mathCommands).Type<HelpModule>());
+    .AddSingleton<ComponentManager>(ComponentManager.With.Component(mathCommands).Type<HelpModule>().Create());
     .BuildServiceProvider();
 
 var manager = services.GetRequiredService<ComponentManager>();
 
-manager.TryExecute(new ConsoleContext(), args, new CommandOptions() { Services = services });
+manager.ExecuteBlocking(new ConsoleContext(), args, new CommandOptions() { Services = services });
 ```
 
-Modules can be injected directly from the provider. They themselves are considered transient services;
+Modules can be injected directly from the provider. They themselves are considered transient, being created and disposed of per command execution.
 
 ```cs
 public class ServicedModule(MyService service) : CommandModule 
 {
+
 }
 ```
 

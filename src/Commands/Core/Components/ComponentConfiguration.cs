@@ -21,14 +21,23 @@ public sealed class ComponentConfiguration
     ///     Creates a new instance of <see cref="ComponentConfiguration"/>.
     /// </summary>
     public ComponentConfiguration()
-        : this([], [])
-    {
+        : this([], []) { }
 
-    }
+    /// <summary>
+    ///     Creates a new instance of <see cref="ComponentConfiguration"/> with the provided parsers.
+    /// </summary>
+    /// <remarks>
+    ///     This overload supports enumerable service injection in order to create a configuration from service definitions.
+    /// </remarks>
+    /// <param name="parsers">The parsers to add to the configuration.</param>
+    public ComponentConfiguration(IEnumerable<TypeParser> parsers)
+        : this(parsers.ToDictionary(x => x.Type), []) { }
 
     /// <summary>
     ///     Creates a new instance of <see cref="ComponentConfiguration"/> with the provided parsers and properties.
     /// </summary>
+    /// <param name="parsers">The parsers to add to the configuration.</param>
+    /// <param name="properties">The properties to add to the configuration.</param>
     public ComponentConfiguration(Dictionary<Type, TypeParser> parsers, Dictionary<object, object> properties)
     {
         var baseParsers = TypeParser.CreateDefaults().ToDictionary(x => x.Type);

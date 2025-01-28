@@ -20,7 +20,7 @@ var provider = TestProvider.Create(TestResultType.Success, "arguments");
 Tests can be defined by marking a method with the `Test` attribute. This attribute is used to define the test, and will be used by the `TestRunner` to execute the test.
 
 ```cs
-// Because an argument too many is provided here, the test will fail on Match, which is what the test expects to fail at, so it will succeed.
+// Because an argument too many is provided here, the test will fail on Match, which is what the test expects to fail at, so it will complete succesfully.
 [Name("testcommand")]
 [Test(ShouldEvaluateTo = TestResultType.MatchFailure, Arguments = "arguments")]
 public void TestMethod()
@@ -31,40 +31,28 @@ public void TestMethod()
 
 ## Testing Commands
 
-Collections of commands can be tested in bulk using `TestRunner`. The class is initialized using a creation pattern:
+Collections of commands can be tested in bulk using `TestRunner`. The class can be initialized using a functional pattern:
 
 ```cs
-var runner = TestRunner<TestCallerContext>.Create()
+var runner = TestRunner.From(manager.GetCommands().ToArray()).Create();
 ```
 
-This will create a new instance of `TestRunner<TestCallerContext>`, which will be used to test commands. 
-The type parameter `TestCallerContext` is a class that implements `ICallerContext`. This interface is used to provide context to the commands being tested.
-
-When testing commands, some processing might be required to provide a clear overview of the execution. Two events are available to implement which will be notified after test execution:
+This will create a new instance of `TestRunner`, which will be used to test commands. 
+The runner can be started and awaited, running all available tests made available to it:
 
 ```cs
-// Ran when a test is completed.
-runner.TestCompleted += (result) => { /* handle result */ };
-
-// Ran when a test fails.
-runner.TestFailed += (result) => { /* handle result */ };
+var results = await runner.Run((input) => new TestContext(input));
 ```
 
-Now, the runner can be started and awaited, running all available tests made available to it.
+When this method completes, all tests have been executed. 
+In order to evaluate whether all results ran, `results.Count(x => x.Success)` can be compared against `runner.Count`.
 
 ```cs
-await runner.Run();
-```
-
-When this method completes, all tests have been executed. In order to evaluate whether all results ran, the `CountCompleted` value can be compared against `Count.`
-
-```cs
-if (runner.CountCompleted == runner.Count)
+if (results.Count(x => x.Success) == runner.Count)
 {
 	// All tests ran successfully.
 }
 ```
 
 > [!NOTE]
-> To ensure that the context is not shared between commands, `TestRunner<T>` will create a new instance of `T:ICallerContext` for every available test. 
-> Therefore, the context type is constrained to `new()`.
+> To ensure that the context is not shared between commands, `TestRunner` will create a new instance of `ICallerContext` using the provided delegate for every available test.

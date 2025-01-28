@@ -1,7 +1,7 @@
 ﻿using Commands;
 using Commands.Testing;
 
-var manager = ComponentManager.From()
+var manager = ComponentManager.With
     .Types(typeof(Program).Assembly.GetExportedTypes())
     .Handler(ResultHandler.From<ICallerContext>((c, r, s) => c.Respond(r.Unfold())))
     .Component(
@@ -13,7 +13,8 @@ var manager = ComponentManager.From()
         }, "help"))
     .Create();
 
-var testRunner = TestRunner.From(manager.GetCommands().ToArray())
+var testRunner = TestRunner.With
+    .Commands(manager.GetCommands().ToArray())
     .Create();
 
 var results = await testRunner.Run((str) => new TestContext(str));

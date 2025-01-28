@@ -1,4 +1,5 @@
-Every command can have a different return type, from another. In order to handle the possible scenarios in which a developer might find themselves, the library tries to resolve as many as possible.
+Every command can have a different return type, from another. 
+In order to handle the possible scenarios in which a developer might find themselves, the library tries to resolve as many as possible.
 
 - [Basic Return Types](#basic-return-types)
 - [Custom Return Type Handling](#custom-return-type-handling)
@@ -10,9 +11,9 @@ Amongst basic return types, the library supports:
 - `void`
 - `object`
 - `string`
-- `T:notnull`
+- `T : notnull`
 - `Task`
-- `Task<T:notnull>`
+- `Task<T : notnull>`
 
 When returning `void`, the library will not send a response to the caller.
 
@@ -68,7 +69,9 @@ public Task GetTask()
 ```
 
 > [!NOTE]
-> ValueTask is not handled as a method return type. Furthermore, the library will convert the return type to a `string` by calling `ToString`, if it is `T` and unhandled.
+> ValueTask is not handled as a method return type. 
+> Furthermore, the library will convert the return type to a `string` by calling `ToString`, if it is `T` and unhandled. 
+> If the consumer desires to display `T` in a different way, they can override `ToString` in the class.
 
 ## Custom Return Type Handling
 
@@ -88,3 +91,7 @@ public class CustomResultHandler : ResultHandler
     }
 }
 ```
+
+> [!NOTE]
+> When no implementation of `ResultHandler` is provided to a `ComponentManager`, the library will use a default implementation. 
+> This implementation does not handle failed results, only resolving the returned value by an `InvokeResult` as described above.

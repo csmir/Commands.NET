@@ -126,7 +126,7 @@ For this, the signature must implement `CommandContext<T>` as the first paramete
 public class CommandClass : CommandModule
 {
     // 'command' is valid
-    public static void Command(CommandContext<TCaller> context)
+    public static void Command(CommandContext<T> context)
     {
     }
 }

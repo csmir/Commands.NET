@@ -9,7 +9,17 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     private readonly ResultHandler[] _handlers;
 
     /// <summary>
-    ///     Initializes a new instance of <see cref="ComponentManager"/> with the specified handlers.
+    ///     Creates a new instance of <see cref="ComponentManager"/> with the specified handlers.
+    /// </summary>
+    /// <remarks>
+    ///     This overload supports enumerable service injection in order to create a manager from service definitions.
+    /// </remarks>
+    /// <param name="handlers">A collection of handlers for post-execution processing of retrieved command input.</param>
+    public ComponentManager(IEnumerable<ResultHandler> handlers)
+        : this(handlers.ToArray()) { }
+
+    /// <summary>
+    ///     Creates a new instance of <see cref="ComponentManager"/> with the specified handlers.
     /// </summary>
     /// <param name="handlers">A collection of handlers for post-execution processing of retrieved command input.</param>
     public ComponentManager(params ResultHandler[] handlers)
