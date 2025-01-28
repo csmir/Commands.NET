@@ -157,9 +157,9 @@ public sealed class Command : IComponent, IParameterCollection
     /// <typeparam name="TContext">The type of the <see cref="ICallerContext"/> provided to this command.</typeparam>
     /// <param name="caller">The instance of the <see cref="ICallerContext"/> provided to this command.</param>
     /// <param name="options">A collection of options that determines pipeline logic.</param>
-    /// <returns>An awaitable <see cref="ValueTask"/> containing the result of the execution. If <see cref="IExecuteResult.Success"/> is <see langword="true"/>, the command has successfully been executed.</returns>
-    public async ValueTask<IExecuteResult> Run<TContext>(TContext caller, CommandOptions options)
-        where TContext : ICallerContext
+    /// <returns>An awaitable <see cref="ValueTask"/> containing the result of the execution. If <see cref="IResult.Success"/> is <see langword="true"/>, the command has successfully been executed.</returns>
+    public async ValueTask<IResult> Run<TContext>(TContext caller, CommandOptions options)
+        where TContext : class, ICallerContext
     {
         var args = caller.Arguments;
 
@@ -171,7 +171,7 @@ public sealed class Command : IComponent, IParameterCollection
             parameters = [];
         else if (MaxLength == args.AvailableLength || (MaxLength <= args.AvailableLength && HasRemainder) || (MaxLength > args.AvailableLength && MinLength <= args.AvailableLength))
         {
-            var arguments = await this.Parse(caller, args, options).ConfigureAwait(false);
+            var arguments = await ComponentUtilities.Parse(this, caller, args, options).ConfigureAwait(false);
 
             parameters = new object[arguments.Length];
 

@@ -8,7 +8,7 @@ properties.Configuration(ComponentConfiguration.From()
     .Parser(new SystemTypeParser(true))
     .Parser(TypeParser.From<Version>(Version.TryParse)));
 
-properties.Handler(ResultHandler.From<ConsoleCallerContext>((caller, result, services) => caller.Respond(result.Unfold())));
+properties.Handler(ResultHandler.From<ConsoleCallerContext>((caller, exception, services) => caller.Respond(exception)));
 
 properties.Types(typeof(Program).Assembly.GetExportedTypes());
 

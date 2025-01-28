@@ -3,7 +3,7 @@ using Commands.Testing;
 
 var manager = ComponentManager.With
     .Types(typeof(Program).Assembly.GetExportedTypes())
-    .Handler(ResultHandler.From<ICallerContext>((c, r, s) => c.Respond(r.Unfold())))
+    .Handler(ResultHandler.From<ICallerContext>((c, e, s) => c.Respond(e)))
     .Component(
         Command.From((CommandContext<ConsoleContext> c) => 
         {
@@ -23,4 +23,4 @@ if (results.Count(x => x.Success) == testRunner.Count)
     Console.WriteLine("All tests ran succesfully.");
 
 while (true)
-    await manager.ExecuteBlocking(new ConsoleContext(Console.ReadLine()));
+    await manager.Execute(new ConsoleContext(Console.ReadLine()));

@@ -4,7 +4,7 @@
 ///     The result of a check operation within the command execution pipeline.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public readonly struct ConditionResult : IExecuteResult
+public readonly struct ConditionResult : IResult
 {
     /// <inheritdoc />
     public Exception? Exception { get; }

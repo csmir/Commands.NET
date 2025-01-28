@@ -78,8 +78,8 @@ public struct ArgumentDictionary
     /// </summary>
     public ArgumentDictionary()
     {
-        _namedArgs = [];
-        _unnamedArgs = [];
+        _namedArgs = null!;
+        _unnamedArgs = null!;
         _remainingLength = 0;
     }
 

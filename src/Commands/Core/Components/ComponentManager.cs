@@ -56,7 +56,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
 
     /// <inheritdoc />
     public Task Execute<TContext>(TContext context, CommandOptions? options = null)
-        where TContext : ICallerContext
+        where TContext : class, ICallerContext
     {
         options ??= new CommandOptions();
 
@@ -75,8 +75,8 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     }
 
     /// <inheritdoc />
-    public async Task<IExecuteResult> ExecuteBlocking<TContext>(TContext context, CommandOptions? options = null)
-        where TContext : ICallerContext
+    public async Task<IResult> ExecuteBlocking<TContext>(TContext context, CommandOptions? options = null)
+        where TContext : class, ICallerContext
     {
         options ??= new CommandOptions();
 
@@ -88,12 +88,12 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         return result;
     }
 
-    private async Task<IExecuteResult> ExecutePipelineTask<TContext>(TContext caller, CommandOptions options)
-        where TContext : ICallerContext
+    private async Task<IResult> ExecutePipelineTask<TContext>(TContext caller, CommandOptions options)
+        where TContext : class, ICallerContext
     {
         options.Manager = this;
 
-        IExecuteResult? result = null;
+        IResult? result = null;
 
         var components = Find(caller.Arguments);
 

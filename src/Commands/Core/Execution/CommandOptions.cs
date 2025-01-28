@@ -1,5 +1,5 @@
 ﻿using Commands.Conditions;
-using Commands.Parsing;
+using System.ComponentModel;
 
 namespace Commands;
 
@@ -47,6 +47,7 @@ public sealed class CommandOptions
     /// <remarks>
     ///     This class implements the <see cref="IServiceProvider"/> interface and returns <see langword="null"/> for all service requests.
     /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class EmptyServiceProvider : IServiceProvider
     {
         private static readonly EmptyServiceProvider _i = new();

@@ -74,7 +74,7 @@ using Commands;
 
 public class CustomResultHandler : ResultHandler
 {
-    protected override ValueTask CommandNotFound(ICallerContext caller, SearchResult result, string errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected override ValueTask CommandNotFound(ICallerContext caller, CommandNotFoundException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         // Your response logic here
     }

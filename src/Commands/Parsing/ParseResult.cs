@@ -4,7 +4,7 @@
 ///     The result of a convert operation within the command execution pipeline.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public readonly struct ParseResult : IExecuteResult
+public readonly struct ParseResult : IResult
 {
     /// <summary>
     ///     Gets the value of the resulted operation.

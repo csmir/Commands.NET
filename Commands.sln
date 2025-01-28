@@ -23,6 +23,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Samples.Core", "sr
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Commands.Tests.FSharp", "src\Commands.Tests\Commands.Tests.FSharp\Commands.Tests.FSharp.fsproj", "{3026DAEB-9AE2-499C-8343-D66A0FE99AFE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{56834F2E-6E91-4EE6-80C0-E62B745311AC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Extensions.Hosting", "src\Commands.Extensions\Commands.Extensions.Hosting\Commands.Extensions.Hosting.csproj", "{8F9AE8A4-838D-4321-9B04-DF88921F5492}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +65,10 @@ Global
 		{3026DAEB-9AE2-499C-8343-D66A0FE99AFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3026DAEB-9AE2-499C-8343-D66A0FE99AFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3026DAEB-9AE2-499C-8343-D66A0FE99AFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F9AE8A4-838D-4321-9B04-DF88921F5492}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F9AE8A4-838D-4321-9B04-DF88921F5492}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F9AE8A4-838D-4321-9B04-DF88921F5492}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F9AE8A4-838D-4321-9B04-DF88921F5492}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -73,6 +81,7 @@ Global
 		{B223CFF0-3809-49A7-AFC5-01BBEF6C6C65} = {1AB3A177-3567-4B50-98D5-9F6CF187D0DD}
 		{B744E55E-4DD1-4929-B831-CBB41B3B08CF} = {A9564368-0CFA-474A-BFBA-A1A140C53F2F}
 		{3026DAEB-9AE2-499C-8343-D66A0FE99AFE} = {1AB3A177-3567-4B50-98D5-9F6CF187D0DD}
+		{8F9AE8A4-838D-4321-9B04-DF88921F5492} = {56834F2E-6E91-4EE6-80C0-E62B745311AC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0CAE3B50-8AEE-4E7A-95F7-A63F51C38083}

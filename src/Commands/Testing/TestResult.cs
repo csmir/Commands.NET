@@ -3,7 +3,7 @@
 /// <summary>
 ///     A result type which contains the result of a test execution.
 /// </summary>
-public readonly struct TestResult : IExecuteResult
+public readonly struct TestResult : IResult
 {
     /// <summary>
     ///     The command that was tested.

@@ -15,7 +15,7 @@ public sealed class DelegateResultHandler<TContext>
     : ResultHandler<TContext>
     where TContext : class, ICallerContext
 {
-    private readonly Func<TContext, IExecuteResult, IServiceProvider, ValueTask>? _resultDelegate;
+    private readonly Func<TContext, Exception, IServiceProvider, ValueTask>? _resultDelegate;
 
     /// <summary>
     ///     Creates a new instance of <see cref="DelegateResultHandler{TContext}"/>, which only responds to the caller with the result of the command execution.
@@ -26,8 +26,11 @@ public sealed class DelegateResultHandler<TContext>
     /// <summary>
     ///     Creates a new instance of <see cref="DelegateResultHandler{TContext}"/> using the provided handler.
     /// </summary>
+    /// <remarks>
+    ///     This handler will be executed when the command execution fails, containing the occurred pipeline exception.
+    /// </remarks>
     /// <param name="resultDelegate">The delegate that will handle the failed execution result.</param>
-    public DelegateResultHandler(Action<TContext, IExecuteResult, IServiceProvider> resultDelegate)
+    public DelegateResultHandler(Action<TContext, Exception, IServiceProvider> resultDelegate)
         => _resultDelegate = (context, result, services) =>
         {
             resultDelegate(context, result, services);
@@ -37,18 +40,29 @@ public sealed class DelegateResultHandler<TContext>
     /// <summary>
     ///     Creates a new instance of <see cref="DelegateResultHandler{TContext}"/> using the provided handler.
     /// </summary>
+    /// <remarks>
+    ///     This handler will be executed when the command execution fails, containing the occurred pipeline exception.
+    /// </remarks>
     /// <param name="resultDelegate">The delegate that will handle the failed execution result.</param>
-    public DelegateResultHandler(Func<TContext, IExecuteResult, IServiceProvider, ValueTask> resultDelegate)
+    public DelegateResultHandler(Func<TContext, Exception, IServiceProvider, ValueTask> resultDelegate)
         => _resultDelegate = resultDelegate;
 
     /// <inheritdoc />
-    public override ValueTask HandleResult(TContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+    public override ValueTask HandleResult(TContext caller, IResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
+        static Exception Unfold(Exception exception)
+        {
+            if (exception.InnerException != null)
+                return Unfold(exception.InnerException);
+
+            return exception;
+        }
+
         if (result.Success)
-            return HandleSuccess(caller, result, services, cancellationToken);
+            return HandleMethodReturn(caller, result, services, cancellationToken);
 
         if (_resultDelegate != null)
-            return _resultDelegate.Invoke(caller, result, services);
+            return _resultDelegate.Invoke(caller, Unfold(result.Exception!), services);
 
         return default;
     }
@@ -64,15 +78,15 @@ public sealed class DelegateResultHandler<TContext>
 public abstract class ResultHandler<TContext> : ResultHandler
     where TContext : class, ICallerContext
 {
-    /// <inheritdoc cref="ResultHandler.HandleResult(ICallerContext, IExecuteResult, IServiceProvider, CancellationToken)"/>.
+    /// <inheritdoc cref="ResultHandler.HandleResult(ICallerContext, IResult, IServiceProvider, CancellationToken)"/>.
     /// <remarks>
     ///     This method is only executed when the provided <paramref name="caller"/> is of type <typeparamref name="TContext"/>.
     /// </remarks>
-    public virtual ValueTask HandleResult(TContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+    public virtual ValueTask HandleResult(TContext caller, IResult result, IServiceProvider services, CancellationToken cancellationToken)
         => base.HandleResult(caller, result, services, cancellationToken);
 
     /// <inheritdoc />
-    public override ValueTask HandleResult(ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+    public override ValueTask HandleResult(ICallerContext caller, IResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (caller is TContext typedCaller)
             return HandleResult(typedCaller, result, services, cancellationToken);
@@ -100,29 +114,61 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    public virtual ValueTask HandleResult(ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+    public virtual ValueTask HandleResult(ICallerContext caller, IResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (result is InvokeResult valueResult && valueResult.Success)
-            return HandleSuccess(caller, valueResult, services, cancellationToken);
-
-        var message = result.Unfold()!; // On failure, the exception message is always present.
-
-        switch (result)
+        static Exception? Unfold(Exception? exception)
         {
-            case InvokeResult invoke:
-                return HandleInvocationFailed(caller, invoke, message, services, cancellationToken);
-            case SearchResult search:
-                if (search.Exception is CommandRouteIncompleteException)
-                    return HandleRouteIncomplete(caller, search, message, services, cancellationToken);
-                return HandleCommandNotFound(caller, search, message, services, cancellationToken);
-            case ParseResult parse:
-                if (parse.Exception is CommandOutOfRangeException)
-                    return HandleCommandOutOfRange(caller, parse, message, services, cancellationToken);
-                return HandleConversionFailed(caller, parse, message, services, cancellationToken);
-            case ConditionResult condition:
-                return HandleConditionUnmet(caller, condition, message, services, cancellationToken);
-            default:
-                return HandleUnknownResult(caller, result, message, services, cancellationToken);
+            if (exception?.InnerException != null)
+                return Unfold(exception.InnerException);
+
+            return exception;
+        }
+
+        try
+        {
+            var exception = Unfold(result.Exception!); // On failure, the exception message is always present.
+
+            switch (result)
+            {
+                case SearchResult searchResult:
+                    {
+                        if (exception is CommandRouteIncompleteException routeEx)
+                            return RouteIncomplete(caller, routeEx, searchResult, services, cancellationToken);
+
+                        if (exception is CommandNotFoundException foundEx)
+                            return CommandNotFound(caller, foundEx, searchResult, services, cancellationToken);
+                    }
+                    break;
+                case ParseResult parseResult:
+                    {
+                        if (exception is ParserException parseEx)
+                            return ParseFailed(caller, parseEx, parseResult, services, cancellationToken);
+
+                        if (exception is CommandOutOfRangeException rangeEx)
+                            return ParamsOutOfRange(caller, rangeEx, parseResult, services, cancellationToken);
+                    }
+                    break;
+                case ConditionResult conditionResult:
+                    {
+                        if (exception is ConditionException conditionEx)
+                            return ConditionUnmet(caller, conditionEx, conditionResult, services, cancellationToken);
+                    }
+                    break;
+                case InvokeResult invokeResult:
+                    {
+                        if (exception is null)
+                            return HandleMethodReturn(caller, invokeResult, services, cancellationToken);
+
+                        return InvokeFailed(caller, exception, invokeResult, services, cancellationToken);
+                    }
+            }
+
+            return Unhandled(caller, exception, result, services, cancellationToken);
+
+        }
+        catch (Exception ex)
+        {
+            return Unhandled(caller, ex, result, services, cancellationToken);
         }
     }
 
@@ -141,7 +187,7 @@ public abstract class ResultHandler
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Task<>))]
     [UnconditionalSuppressMessage("AotAnalysis", "IL2075", Justification = "The availability of Task<> is ensured at compile-time.")]
 #endif
-    protected async virtual ValueTask HandleSuccess(ICallerContext caller, IExecuteResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected async virtual ValueTask HandleMethodReturn(ICallerContext caller, IResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         async ValueTask Respond(object? obj)
         {
@@ -164,7 +210,8 @@ public abstract class ResultHandler
 
                 var taskType = task.GetType();
 
-                // If the task is a generic task, and the result is not a void task result, get the result and respond with it. Unfortunately we cannot do a type comparison on VoidTaskResult, because it is an internal corelib struct.
+                // If the task is a generic task, and the result is not a void task result, get the result and respond with it.
+                // Unfortunately we cannot do a type comparison on VoidTaskResult, because it is an internal corelib struct.
                 if (taskType.IsGenericType && taskType.GenericTypeArguments[0].Name != "VoidTaskResult")
                 {
                     _taskGetValue ??= taskType.GetProperty("Result")!.GetMethod;
@@ -188,60 +235,60 @@ public abstract class ResultHandler
     ///     Holds the evaluation data of a search operation where a command is not found from the provided match.
     /// </summary>
     /// <param name="caller">The caller of the command.</param>
+    /// <param name="exception">The exception that occurred during execution.</param>
     /// <param name="result">The result of the command execution.</param>
-    /// <param name="errorReason">The reason why the operation did not succeed.</param>
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleCommandNotFound(ICallerContext caller, SearchResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask CommandNotFound(ICallerContext caller, CommandNotFoundException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
     ///     Holds the evaluation data of a search operation where the root of a command is found, but no invokable command is discovered.
     /// </summary>
     /// <param name="caller">The caller of the command.</param>
+    /// <param name="exception">The exception that occurred during execution.</param>
     /// <param name="result">The result of the command execution.</param>
-    /// <param name="errorReason">The reason why the operation did not succeed.</param>
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleRouteIncomplete(ICallerContext caller, SearchResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask RouteIncomplete(ICallerContext caller, CommandRouteIncompleteException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
     ///     Holds the evaluation data of a match operation where the argument length of the best match does not match the input query.
     /// </summary>
     /// <param name="caller">The caller of the command.</param>
+    /// <param name="exception">The exception that occurred during execution.</param>
     /// <param name="result">The result of the command execution.</param>
-    /// <param name="errorReason">The reason why the operation did not succeed.</param>
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleCommandOutOfRange(ICallerContext caller, ParseResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask ParamsOutOfRange(ICallerContext caller, CommandOutOfRangeException exception, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
     ///     Holds the evaluation data of a match operation where one or more arguments did not succeed conversion into target type.
     /// </summary>
     /// <param name="caller">The caller of the command.</param>
+    /// <param name="exception">The exception that occurred during execution.</param>
     /// <param name="result">The result of the command execution.</param>
-    /// <param name="errorReason">The reason why the operation did not succeed.</param>
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleConversionFailed(ICallerContext caller, ParseResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask ParseFailed(ICallerContext caller, ParserException exception, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
     ///     Holds the evaluation data of a check operation where a pre- or postcondition did not succeed evaluation.
     /// </summary>
     /// <param name="caller">The caller of the command.</param>
+    /// <param name="exception">The exception that occurred during execution.</param>
     /// <param name="result">The result of the command execution.</param>
-    /// <param name="errorReason">The reason why the operation did not succeed.</param>
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleConditionUnmet(ICallerContext caller, ConditionResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask ConditionUnmet(ICallerContext caller, ConditionException exception, ConditionResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
@@ -249,36 +296,36 @@ public abstract class ResultHandler
     /// </summary>
     /// <param name="caller">The caller of the command.</param>
     /// <param name="result">The result of the command execution.</param>
-    /// <param name="errorReason">The reason why the operation did not succeed.</param>
+    /// <param name="exception">The exception that occurred during execution.</param>
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleInvocationFailed(ICallerContext caller, InvokeResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask InvokeFailed(ICallerContext caller, Exception exception, InvokeResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
     ///     Holds the evaluation data of an unhandled result.
     /// </summary>
     /// <param name="caller">The caller of the command.</param>
+    /// <param name="exception">The exception that occurred during execution.</param>
     /// <param name="result">The result of the command execution.</param>
-    /// <param name="errorReason">The reason why the operation did not succeed.</param>
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask HandleUnknownResult(ICallerContext caller, IExecuteResult result, Exception errorReason, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask Unhandled(ICallerContext caller, Exception? exception, IResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     #endregion
 
     #region Initializers
 
-    /// <inheritdoc cref="From{T}(Action{T, IExecuteResult, IServiceProvider})"/>
+    /// <inheritdoc cref="From{T}(Action{T, Exception, IServiceProvider})"/>
     public static ResultHandlerProperties<T> For<T>()
         where T : class, ICallerContext
         => new();
 
-    /// <inheritdoc cref="From{T}(Action{T, IExecuteResult, IServiceProvider})"/>
-    public static ResultHandlerProperties<T> From<T>(Func<T, IExecuteResult, IServiceProvider, ValueTask> executionDelegate)
+    /// <inheritdoc cref="From{T}(Action{T, Exception, IServiceProvider})"/>
+    public static ResultHandlerProperties<T> From<T>(Func<T, Exception, IServiceProvider, ValueTask> executionDelegate)
         where T : class, ICallerContext
         => new ResultHandlerProperties<T>().Delegate(executionDelegate);
 
@@ -287,7 +334,7 @@ public abstract class ResultHandler
     /// </summary>
     /// <param name="executionDelegate">The delegate that should be executed when the handler is invoked.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static ResultHandlerProperties<T> From<T>(Action<T, IExecuteResult, IServiceProvider> executionDelegate)
+    public static ResultHandlerProperties<T> From<T>(Action<T, Exception, IServiceProvider> executionDelegate)
         where T : class, ICallerContext
         => new ResultHandlerProperties<T>().Delegate(executionDelegate);
 

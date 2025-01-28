@@ -169,6 +169,61 @@ public abstract class ComponentCollection : IComponentCollection
     public IEnumerator<IComponent> GetEnumerator()
         => new StateEnumerator(this);
 
+    /// <summary>
+    ///     An enumerator for the current state of the collection.
+    /// </summary>
+    /// <remarks>
+    ///     This enumerator does not reflect changes made to the collection after the enumerator was created, nor does it reject iterations after modifications to the root collection.
+    /// </remarks>
+    public struct StateEnumerator : IEnumerator<IComponent>
+    {
+        private readonly IComponent[] _items;
+        private int _index;
+        private IComponent? _current;
+
+        /// <inheritdoc />
+        public IComponent Current
+            => _current!;
+
+        internal StateEnumerator(ComponentCollection collection)
+        {
+            _items = new IComponent[collection._items.Length];
+            _index = 0;
+            _current = default;
+
+            collection._items.CopyTo(_items, 0);
+        }
+
+        /// <inheritdoc />
+        public bool MoveNext()
+        {
+            if (_index < _items.Length)
+            {
+                _current = _items[_index];
+                _index++;
+                return true;
+            }
+            _index = _items.Length;
+            _current = default;
+            return false;
+        }
+
+        /// <inheritdoc />
+        public void Reset()
+        {
+            _index = 0;
+            _current = default;
+        }
+
+        /// <inheritdoc />
+        public readonly void Dispose() { }
+
+        object IEnumerator.Current
+            => Current;
+    }
+
+    #region Internals
+
     // Gets an stale enumerator which copies the current state of the collection into a span and iterates it.
     internal SpanStateEnumerator GetSpanEnumerator()
         => new(this);
@@ -242,59 +297,6 @@ public abstract class ComponentCollection : IComponentCollection
     IEnumerator IEnumerable.GetEnumerator()
         => GetEnumerator();
 
-    /// <summary>
-    ///     An enumerator for the current state of the collection.
-    /// </summary>
-    /// <remarks>
-    ///     This enumerator does not reflect changes made to the collection after the enumerator was created, nor does it reject iterations after modifications to the root collection.
-    /// </remarks>
-    public struct StateEnumerator : IEnumerator<IComponent>
-    {
-        private readonly IComponent[] _items;
-        private int _index;
-        private IComponent? _current;
-
-        /// <inheritdoc />
-        public IComponent Current
-            => _current!;
-
-        internal StateEnumerator(ComponentCollection collection)
-        {
-            _items = new IComponent[collection._items.Length];
-            _index = 0;
-            _current = default;
-
-            collection._items.CopyTo(_items, 0);
-        }
-
-        /// <inheritdoc />
-        public bool MoveNext()
-        {
-            if (_index < _items.Length)
-            {
-                _current = _items[_index];
-                _index++;
-                return true;
-            }
-            _index = _items.Length;
-            _current = default;
-            return false;
-        }
-
-        /// <inheritdoc />
-        public void Reset()
-        {
-            _index = 0;
-            _current = default;
-        }
-
-        /// <inheritdoc />
-        public readonly void Dispose() { }
-
-        object IEnumerator.Current
-            => Current;
-    }
-
     internal ref struct SpanStateEnumerator
     {
         private readonly Span<IComponent> _items;
@@ -328,4 +330,6 @@ public abstract class ComponentCollection : IComponentCollection
             return false;
         }
     }
+
+    #endregion
 }

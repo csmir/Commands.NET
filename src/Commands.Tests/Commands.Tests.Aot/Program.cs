@@ -1,7 +1,7 @@
 ﻿using Commands;
 using Commands.Tests;
 
-var manager = new ComponentManager(new DelegateResultHandler<ConsoleContext>((c, r, s) => c.Respond(r.Unfold())))
+var manager = new ComponentManager(new DelegateResultHandler<ConsoleContext>((c, e, s) => c.Respond(e)))
 {
     new CommandGroup(typeof(Module), configuration: new ComponentConfiguration()),
     new CommandGroup("commandgroup")

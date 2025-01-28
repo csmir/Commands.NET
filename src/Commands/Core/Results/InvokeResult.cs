@@ -4,7 +4,7 @@
 ///     The result of an invocation operation within the command execution pipeline.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public readonly struct InvokeResult : IExecuteResult
+public readonly struct InvokeResult : IResult
 {
     /// <inheritdoc />
     public Exception? Exception { get; }

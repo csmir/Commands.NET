@@ -4,7 +4,7 @@ internal static class TestUtilities
 {
     public static async ValueTask<TestResult> Test(this Command command, Func<string, ICallerContext> callerCreation, ITestProvider provider, CommandOptions options)
     {
-        TestResult GetResult(IExecuteResult result)
+        TestResult GetResult(IResult result)
         {
             TestResult CompareReturn(TestResultType targetType, Exception exception)
             {

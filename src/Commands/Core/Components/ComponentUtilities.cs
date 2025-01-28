@@ -49,19 +49,17 @@ public static class ComponentUtilities
         }
     }
 
-    #region Internal Helpers
+    #region Internals
 
     #region Execution
 
-    internal static async ValueTask<ParseResult[]> Parse(this IParameterCollection provider, ICallerContext caller, ArgumentDictionary args, CommandOptions options)
+    internal static async ValueTask<ParseResult[]> Parse(IParameterCollection coll, ICallerContext caller, ArgumentDictionary args, CommandOptions options)
     {
-        options.CancellationToken.ThrowIfCancellationRequested();
+        var results = new ParseResult[coll.Parameters.Length];
 
-        var results = new ParseResult[provider.Parameters.Length];
-
-        for (int i = 0; i < provider.Parameters.Length; i++)
+        for (int i = 0; i < coll.Parameters.Length; i++)
         {
-            var argument = provider.Parameters[i];
+            var argument = coll.Parameters[i];
 
             if (argument.IsRemainder)
             {
@@ -72,7 +70,7 @@ public static class ComponentUtilities
 
             if (argument is ConstructibleParameter complexParameter)
             {
-                var result = await complexParameter.Parse(caller, args, options).ConfigureAwait(false);
+                var result = await Parse(complexParameter, caller, args, options).ConfigureAwait(false);
 
                 if (result.All(x => x.Success))
                 {

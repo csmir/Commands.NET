@@ -9,7 +9,7 @@ await Host.CreateDefaultBuilder(args)
     {
         var properties = ComponentManager.With
             .Types(typeof(Program).Assembly.GetExportedTypes())
-            .Handler(ResultHandler.From<HostedCallerContext>((c, r, s) => c.Respond(r.Unfold())));
+            .Handler(ResultHandler.From<HostedCallerContext>((c, e, s) => c.Respond(e)));
 
         configure.AddSingleton((services) => properties.Create());
         configure.AddHostedService<Listener>();

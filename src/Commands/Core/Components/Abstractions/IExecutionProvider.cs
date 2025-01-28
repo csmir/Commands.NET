@@ -17,8 +17,8 @@ public interface IExecutionProvider : IComponentCollection
     /// <param name="caller">A command caller that persist for the duration of the execution pipeline, serving as a metadata container.</param>
     /// <param name="options">A collection of options that determines pipeline logic.</param>
     /// <returns>An awaitable <see cref="Task"/> containing the result of the command execution.</returns>
-    public Task<IExecuteResult> ExecuteBlocking<T>(T caller, CommandOptions? options = null)
-        where T : ICallerContext;
+    public Task<IResult> ExecuteBlocking<T>(T caller, CommandOptions? options = null)
+        where T : class, ICallerContext;
 
     /// <summary>
     ///     Attempts to execute a command based on the provided <paramref name="caller"/>. 
@@ -42,5 +42,5 @@ public interface IExecutionProvider : IComponentCollection
     /// <param name="caller">A command caller that persist for the duration of the execution pipeline, serving as a metadata container.</param>
     /// <param name="options">A collection of options that determines pipeline logic.</param>
     public Task Execute<T>(T caller, CommandOptions? options = null)
-        where T : ICallerContext;
+        where T : class, ICallerContext;
 }

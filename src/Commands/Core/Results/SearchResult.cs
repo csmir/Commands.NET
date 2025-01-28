@@ -4,7 +4,7 @@
 ///     The result of a search operation within the command execution pipeline.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public readonly struct SearchResult : IExecuteResult
+public readonly struct SearchResult : IResult
 {
     /// <inheritdoc />
     public Exception Exception { get; }

@@ -3,7 +3,7 @@
 /// <summary>
 ///     The result of an operation within the command execution pipeline.
 /// </summary>
-public interface IExecuteResult
+public interface IResult
 {
     /// <summary>
     ///     Gets the exception that represents the reason and context of a failed operation.

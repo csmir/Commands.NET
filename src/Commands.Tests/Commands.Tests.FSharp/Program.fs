@@ -9,4 +9,4 @@ let manager = new ComponentManager()
 let res = manager.ExecuteBlocking<ConsoleContext>(new ConsoleContext("hello")) |> Async.AwaitTask |> Async.RunSynchronously 
 
 if res.Success = false then
-    printf "%s" (res.Unfold().Message)
+    printf "%s" (res.Exception.Message)
