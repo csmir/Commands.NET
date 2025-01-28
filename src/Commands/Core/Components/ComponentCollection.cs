@@ -19,7 +19,7 @@ public abstract class ComponentCollection : IComponentCollection
     }
 
     /// <inheritdoc />
-    public abstract IEnumerable<IComponent> Find(ArgumentArray args);
+    public abstract IEnumerable<IComponent> Find(ArgumentDictionary args);
 
     /// <inheritdoc />
     public bool Contains(IComponent component)

@@ -53,7 +53,7 @@ public static class ComponentUtilities
 
     #region Execution
 
-    internal static async ValueTask<ParseResult[]> Parse(this IParameterCollection provider, ICallerContext caller, ArgumentArray args, CommandOptions options)
+    internal static async ValueTask<ParseResult[]> Parse(this IParameterCollection provider, ICallerContext caller, ArgumentDictionary args, CommandOptions options)
     {
         options.CancellationToken.ThrowIfCancellationRequested();
 
@@ -94,7 +94,7 @@ public static class ComponentUtilities
                 continue;
             }
 
-            if (args.TryGetElement(argument.Name!, out var value))
+            if (args.TryGetValue(argument.Name!, out var value))
                 results[i] = await argument.Parse(caller, value, options.Services, options.CancellationToken).ConfigureAwait(false);
             else if (argument.IsOptional)
                 results[i] = ParseResult.FromSuccess(Type.Missing);

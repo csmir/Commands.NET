@@ -7,7 +7,7 @@
 public class TestContext(string? input) : ICallerContext
 {
     /// <inheritdoc />
-    public ArgumentArray Arguments { get; } = ArgumentArray.From(input);
+    public ArgumentDictionary Arguments { get; } = ArgumentDictionary.From(input);
 
     /// <inheritdoc />
     public void Respond(object? message) { } // Deliberately emptied.

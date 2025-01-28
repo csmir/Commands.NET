@@ -5,7 +5,7 @@ namespace Commands.Tests;
 
 public class BenchmarkCallerContext(string? input) : AsyncCallerContext
 {
-    public override ArgumentArray Arguments { get; } = ArgumentArray.From(input);
+    public override ArgumentDictionary Arguments { get; } = ArgumentDictionary.From(input);
 
     public override Task Respond(object? response) 
         => Task.CompletedTask;
@@ -27,7 +27,7 @@ public class CreationAnalysisModule : CommandModule<BenchmarkCallerContext>
 [MemoryDiagnoser]
 public class Program
 {
-    private static readonly ArgumentArray _args = ArgumentArray.From("command");
+    private static readonly ArgumentDictionary _args = ArgumentDictionary.From("command");
     private static readonly ComponentManager _components = ComponentManager.From()
         .Type<CreationAnalysisModule>()
         .Component(Command.From(() => { }, "command"))
@@ -38,7 +38,7 @@ public class Program
 
     [Benchmark] 
     public void CreateArguments() 
-        => ArgumentArray.From("command");
+        => ArgumentDictionary.From("command");
 
     [Benchmark] 
     public void FindCommands() 

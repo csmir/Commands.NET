@@ -11,7 +11,7 @@ public interface ICallerContext
     /// <summary>
     ///     The arguments that were provided to the command for which this context was created.
     /// </summary>
-    public ArgumentArray Arguments { get; }
+    public ArgumentDictionary Arguments { get; }
 
     /// <summary>
     ///     Sends a response to the caller.

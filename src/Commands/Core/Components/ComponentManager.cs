@@ -33,7 +33,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     }
 
     /// <inheritdoc />
-    public override IEnumerable<IComponent> Find(ArgumentArray args)
+    public override IEnumerable<IComponent> Find(ArgumentDictionary args)
     {
         List<IComponent> discovered = [];
 

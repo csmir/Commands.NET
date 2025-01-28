@@ -3,7 +3,7 @@
 /// <summary>
 ///     Represents a mechanism for enumerating arguments while searching or parsing a command.
 /// </summary>
-public struct ArgumentArray
+public struct ArgumentDictionary
 {
 #if NET8_0_OR_GREATER
     const char U0022 = '"';
@@ -15,24 +15,47 @@ public struct ArgumentArray
     const string U002D = "-";
 #endif
 
-    private int _remaindingLength;
+    private int _remainingLength;
     private int _index = 0;
 
     private readonly List<string> _unnamedArgs;
     private readonly Dictionary<string, object?> _namedArgs;
 
-    /// <summary>
-    ///     Gets the length of the argument set. This is represented by a sum of named and unnamed arguments, reducing it by the search range of a discovered command.
-    /// </summary>
-    public readonly int Length
-        => _remaindingLength;
+    internal readonly int AvailableLength
+        => _remainingLength;
 
     /// <summary>
-    ///     Creates a new <see cref="ArgumentArray"/> from a set of named arguments.
+    ///     Gets the number of arguments present in the set.
+    /// </summary>
+    public readonly int Count
+        => _unnamedArgs.Count + _namedArgs.Count;
+
+    /// <summary>
+    ///     Gets a key-value pair from the set of arguments, known by the provided <paramref name="key"/>.
+    /// </summary>
+    /// <param name="key">The key under which this argument is known to the current array.</param>
+    /// <returns>A </returns>
+    /// <exception cref="KeyNotFoundException">Thrown when the provided <paramref name="key"/> is not found in the set.</exception>
+    public readonly KeyValuePair<string, object?> this[string key]
+    {
+        get
+        {
+            if (_namedArgs.TryGetValue(key, out var value))
+                return new(key, value);
+
+            if (_unnamedArgs.Contains(key, StringComparer.OrdinalIgnoreCase))
+                return new(key, null);
+
+            throw new KeyNotFoundException();
+        }
+    }
+
+    /// <summary>
+    ///     Creates a new <see cref="ArgumentDictionary"/> from a set of named arguments.
     /// </summary>
     /// <param name="args">The range of named arguments to enumerate in this set.</param>
     /// <param name="comparer">The comparer to evaluate keys in the inner named dictionary.</param>
-    public ArgumentArray(StringComparer? comparer, IEnumerable<KeyValuePair<string, object?>> args)
+    public ArgumentDictionary(StringComparer? comparer, IEnumerable<KeyValuePair<string, object?>> args)
     {
         _namedArgs = new(comparer);
 
@@ -47,29 +70,25 @@ public struct ArgumentArray
         }
 
         _unnamedArgs = unnamedFill;
-        _remaindingLength = _unnamedArgs.Count + _namedArgs.Count;
+        _remainingLength = _unnamedArgs.Count + _namedArgs.Count;
     }
 
     /// <summary>
-    ///     Creates a new empty <see cref="ArgumentArray"/>.
+    ///     Creates a new empty <see cref="ArgumentDictionary"/>.
     /// </summary>
-    public ArgumentArray()
+    public ArgumentDictionary()
     {
-        _namedArgs        = [];
-        _unnamedArgs      = [];
-        _remaindingLength = 0;
+        _namedArgs = [];
+        _unnamedArgs = [];
+        _remainingLength = 0;
     }
 
-    /// <summary>
-    ///     Makes an attempt to retrieve the next argument in the set.
-    /// </summary>
-    /// <param name="parameterName">The name of the command parameter that this set attempts to match to.</param>
-    /// <param name="value">The value returned when an item is discovered in the set.</param>
-    /// <returns><see langword="true"/> when an item was discovered in the set, otherwise <see langword="false"/>.</returns>
+    #region Internals
+
 #if NET8_0_OR_GREATER
-    public bool TryGetElement(string parameterName, [NotNullWhen(true)] out object? value)
+    internal bool TryGetValue(string parameterName, [NotNullWhen(true)] out object? value)
 #else
-    public bool TryGetElement(string parameterName, out object? value)
+    internal bool TryGetValue(string parameterName, out object? value)
 #endif
     {
         if (_namedArgs.TryGetValue(parameterName, out value!))
@@ -83,16 +102,10 @@ public struct ArgumentArray
         return true;
     }
 
-    /// <summary>
-    ///     Makes an attempt to retrieve the next argument in the set, exclusively browsing unnamed arguments to match in search operations.
-    /// </summary>
-    /// <param name="index">The next incrementation that the search operation should attempt to match in the command set.</param>
-    /// <param name="value">The value returned when an item is discovered in the set.</param>
-    /// <returns><see langword="true"/> when an item was discovered in the set, otherwise <see langword="false"/>.</returns>
 #if NET8_0_OR_GREATER
-    public readonly bool TryGetElementAt(int index, [NotNullWhen(true)] out string? value)
+    internal readonly bool TryGetElementAt(int index, [NotNullWhen(true)] out string? value)
 #else
-    public readonly bool TryGetElementAt(int index, out string? value)
+    internal readonly bool TryGetElementAt(int index, out string? value)
 #endif
     {
         if (index < _unnamedArgs.Count)
@@ -105,22 +118,14 @@ public struct ArgumentArray
         return false;
     }
 
-    /// <summary>
-    ///     Joins the remaining unnamed arguments in the set into a single string.
-    /// </summary>
-    /// <returns>A joined string containing all remaining arguments in this enumerator.</returns>
-    public readonly string TakeRemaining(string parameterName, char separator)
+    internal readonly string TakeRemaining(string parameterName, char separator)
 #if NET8_0_OR_GREATER
         => string.Join(separator, TakeRemaining(parameterName));
 #else
         => string.Join($"{separator}", TakeRemaining(parameterName));
 #endif
 
-    /// <summary>
-    ///     Takes the remaining unnamed arguments in the set into an array which is used by Collector arguments.
-    /// </summary>
-    /// <returns>An array of objects that represent the remaining arguments of this enumerator.</returns>
-    public readonly IEnumerable<object> TakeRemaining(string parameterName)
+    internal readonly IEnumerable<object> TakeRemaining(string parameterName)
     {
         if (_namedArgs.TryGetValue(parameterName, out var value))
             return [value!, .. _unnamedArgs.Skip(_index)];
@@ -131,24 +136,28 @@ public struct ArgumentArray
     internal void SetParseIndex(int index)
     {
         _index = index;
-        _remaindingLength = Length - index;
+        _remainingLength = AvailableLength - index;
     }
 
+    #endregion
+
+    #region Initializers
+
     /// <inheritdoc cref="From(string, char[], StringComparer?)"/>
-    public static ArgumentArray From(string? input, StringComparer? comparer = null)
+    public static ArgumentDictionary From(string? input, StringComparer? comparer = null)
         => From(input, [' '], comparer);
 
     /// <inheritdoc cref="From(string, char[], StringComparer?)"/>
-    public static ArgumentArray From(string[] input, StringComparer? comparer = null)
+    public static ArgumentDictionary From(string[] input, StringComparer? comparer = null)
     {
         if (input.Length == 0)
             return new();
-        
+
         return new(comparer, ReadInternal(input));
     }
 
     /// <summary>
-    ///     Reads the provided <paramref name="input"/> into an array of command arguments. This method will never throw, always returning a new <see cref="ArgumentArray"/>.
+    ///     Reads the provided <paramref name="input"/> into an array of command arguments. This method will never throw, always returning a new <see cref="ArgumentDictionary"/>.
     /// </summary>
     /// <remarks>
     ///     The implementation is defined by the following rules:
@@ -174,7 +183,7 @@ public struct ArgumentArray
     /// <returns>
     ///     An array of arguments that can be used to search for a command or parse into a method.
     /// </returns>
-    public static ArgumentArray From(string? input, char[] separators, StringComparer? comparer = null)
+    public static ArgumentDictionary From(string? input, char[] separators, StringComparer? comparer = null)
     {
         if (string.IsNullOrWhiteSpace(input))
             return new();
@@ -324,4 +333,6 @@ public struct ArgumentArray
                 yield return new(name, string.Join(U0020, concatenation));
         }
     }
+
+    #endregion
 }

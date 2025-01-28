@@ -6,7 +6,7 @@
 public class ConsoleContext : ICallerContext
 {
     /// <inheritdoc />
-    public ArgumentArray Arguments { get; }
+    public ArgumentDictionary Arguments { get; }
 
     /// <summary>
     ///     Creates a new instance of <see cref="ConsoleContext"/> with the specified input.
@@ -16,7 +16,7 @@ public class ConsoleContext : ICallerContext
     /// </remarks>
     /// <param name="input">A raw string which will be parsed into a set of arguments.</param>
     public ConsoleContext(string? input)
-        => Arguments = ArgumentArray.From(input);
+        => Arguments = ArgumentDictionary.From(input);
 
     /// <summary>
     ///     Creates a new instance of <see cref="ConsoleContext"/> with the specified input.
@@ -26,7 +26,7 @@ public class ConsoleContext : ICallerContext
     /// </remarks>
     /// <param name="input">The CLI arguments passed to the application upon entry.</param>
     public ConsoleContext(string[] input)
-        => Arguments = ArgumentArray.From(input);
+        => Arguments = ArgumentDictionary.From(input);
 
     /// <summary>
     ///     Sends a response to the console.
