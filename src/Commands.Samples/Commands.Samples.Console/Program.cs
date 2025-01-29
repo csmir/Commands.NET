@@ -1,25 +1,23 @@
 ﻿using Commands;
+using Commands.Parsing;
 using Commands.Samples;
-using Commands.Testing;
 
-var configuration = ComponentConfigurationProperties.Default;
+var properties = ComponentCollection.From();
 
-var results = ResultHandler.For<SampleContext>()
-    .Delegate((c, e, s) => c.Respond(e));
+properties.Configuration(ComponentConfiguration.From()
+    .Parser(new SystemTypeParser(true))
+    .Parser(TypeParser.From<Version>(Version.TryParse)));
 
-var manager = ComponentManager.With
-    .Configuration(configuration)
-    .Handler(results)
-    .Create();
+properties.Handler(ResultHandler.From<ConsoleCallerContext>((caller, exception, services) => caller.Respond(exception)));
 
-var testRunner = TestRunner.With
-    .Commands(manager.GetCommands().ToArray())
-    .Create();
+properties.Types(typeof(Program).Assembly.GetExportedTypes());
 
-var testEvaluation = await testRunner.Run((str) => new TestContext(str));
+properties.Component(CommandGroup.From("greet")
+    .Components(
+        Command.From((CommandContext<ConsoleCallerContext> ctx) => $"Hello, {ctx.Caller.Name}"),
+        Command.From((string name) => $"Hello, {name}", "another")));
 
-if (testEvaluation.Count(x => x.Success) == testRunner.Count)
-    Console.WriteLine("All tests ran successfully.");
+var manager = properties.Create();
 
 while (true)
-    await manager.Execute(new SampleContext(username: "Peter", args: Console.ReadLine()));
+    await manager.ExecuteBlocking(new ConsoleCallerContext("Pete", Console.ReadLine()));

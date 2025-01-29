@@ -7,13 +7,21 @@ namespace Commands;
 ///     Reveals information about a command module, hosting zero-or-more commands.
 /// </summary>
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
-public sealed class CommandGroup : ComponentCollection, IComponent
+public sealed class CommandGroup : ComponentCollectionBase, IComponent
 {
+    /// <summary>
+    ///     Gets the type of this module.
+    /// </summary>
+#if NET8_0_OR_GREATER
+    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
+#endif
+    public Type? Type { get; }
+
     /// <inheritdoc />
     public CommandGroup? Parent { get; private set; }
 
     /// <inheritdoc />
-    public IDependencyActivator<CommandModule>? Activator { get; }
+    public IActivator? Activator { get; }
 
     /// <inheritdoc />
     public string[] Names { get; }
@@ -66,10 +74,11 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         Type type, CommandGroup? parent = null, ComponentConfiguration? configuration = null)
         : base()
     {
-        if (!typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters)
+        if (!type.IsImplementationOfModule())
             throw new InvalidCastException($"The provided type is not an implementation of {nameof(CommandModule)}.");
 
         Parent = parent;
+        Type = type;
 
         var attributes = type.GetAttributes(true);
 
@@ -78,11 +87,11 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         Ignore = attributes.Contains<IgnoreAttribute>();
         Names = attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
 
-        Activator = new CommandModuleActivator(type);
+        Activator = new CommandGroupActivator(type);
 
         if (!Ignore)
         {
-            var components = ComponentUtilities.GetNestedComponents(configuration ?? ComponentConfiguration.Empty, this);
+            var components = ComponentUtilities.BuildNestedComponents(configuration ?? ComponentConfiguration.Empty, this);
 
             AddRange(components);
         }
@@ -133,7 +142,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         while (enumerator.MoveNext())
             score += enumerator.Current!.GetScore();
 
-        if (Name != Activator?.Type?.Name)
+        if (Name != Type?.Name)
             score += 1.0f;
 
         score += Attributes.FirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
@@ -184,10 +193,10 @@ public sealed class CommandGroup : ComponentCollection, IComponent
 
         // When type is null this group has been created manually.
         // We can only assume it is a group, as it does not have a type.
-        if (Activator == null)
+        if (Type == null)
             sb.Append("Group");
         else
-            sb.Append(Activator.Type?.Name);
+            sb.Append(Type.Name);
 
         if (Name != null)
         {
