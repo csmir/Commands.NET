@@ -29,9 +29,9 @@ using Commands;
 
 var command = Command.From(() => "Hello world!", "greet");
 
-var manager = ComponentManager.With.Component(command).Create();
+var collection = ComponentCollection.With.Component(command).Create();
 
-await manager.ExecuteBlocking(new ConsoleContext(args));
+await collection.Execute(new ConsoleContext(args));
 
 // dotnet run greet -> Hello world!
 ```
@@ -56,9 +56,9 @@ var mathCommands = CommandGroup.From("math")
             "divide", "div")
     );
 
-var manager = ComponentManager.With.Components(mathCommands).Create();
+var collection = ComponentCollection.With.Components(mathCommands).Create();
 
-manager.ExecuteBlocking(new ConsoleContext(args));
+await collection.Execute(new ConsoleContext(args));
 
 // dotnet run math sum 5 3 -> 8
 ```
@@ -87,9 +87,9 @@ public class HelpModule : CommandModule
 
 ...
 
-var manager = ComponentManager.With.Component(mathCommands).Type<HelpModule>().Create();
+var collection = ComponentCollection.With.Component(mathCommands).Type<HelpModule>().Create();
 
-manager.ExecuteBlocking(new ConsoleContext(args));
+await collection.Execute(new ConsoleContext(args));
 
 // dotnet run help -> Commands: math sum <...> math subtract <...> math ...
 ```
@@ -106,12 +106,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection()
     .AddSingleton<MyService>()
-    .AddSingleton<ComponentManager>(ComponentManager.With.Component(mathCommands).Type<HelpModule>().Create());
+    .AddSingleton<ComponentCollection>(ComponentCollection.With.Component(mathCommands).Type<HelpModule>().Create());
     .BuildServiceProvider();
 
-var manager = services.GetRequiredService<ComponentManager>();
+var collection = services.GetRequiredService<ComponentCollection>();
 
-manager.ExecuteBlocking(new ConsoleContext(), args, new CommandOptions() { Services = services });
+await collection.Execute(new ConsoleContext(args), new CommandOptions() { Services = services });
 ```
 
 Modules can be injected directly from the provider. They themselves are considered transient, being created and disposed of per command execution.
