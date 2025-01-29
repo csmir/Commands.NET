@@ -1,12 +1,14 @@
 ﻿open Commands
+open Commands.Tests;
 open System
 
-let command = new Command(Func<_>(fun () -> "Hello world"), "hello")
+let manager = new ComponentManager()
 
-let manager = new ComponentManager() 
-[ command ] |> Seq.iter manager.Add
+printf "Added %i components." (manager.AddRange(typeof<FSharpModule>.Assembly.GetExportedTypes()))
 
-let res = manager.ExecuteBlocking<ConsoleContext>(new ConsoleContext("hello")) |> Async.AwaitTask |> Async.RunSynchronously 
+while true do
+    let input = Console.ReadLine()
+    let res = manager.Execute<ConsoleContext>(new ConsoleContext(input)) |> Async.AwaitTask |> Async.RunSynchronously
+    if res.Success = false then
+        printf "%s" (res.Exception.Message)
 
-if res.Success = false then
-    printf "%s" (res.Exception.Message)

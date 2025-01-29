@@ -82,7 +82,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent
 
         if (!Ignore)
         {
-            var components = ComponentUtilities.BuildNestedComponents(configuration ?? ComponentConfiguration.Empty, this);
+            var components = ComponentUtilities.GetNestedComponents(configuration ?? ComponentConfiguration.Empty, this);
 
             AddRange(components);
         }

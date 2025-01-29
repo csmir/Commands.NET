@@ -2,12 +2,11 @@
 
 namespace Commands.Samples;
 
-public class StaticCommands : CommandModule
+public sealed class StaticCommands : CommandModule
 {
     [Name("static")]
     [Description("Sends a hello world message.")]
-    [RequireContext<ConsoleCallerContext>]
-    public static void StaticHelloWorld(CommandContext<ConsoleCallerContext> context)
+    public static void StaticHelloWorld(CommandContext<SampleContext> context)
     {
         context.Caller.Respond("Hello world!");
     }

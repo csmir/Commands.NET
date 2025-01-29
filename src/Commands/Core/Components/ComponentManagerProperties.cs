@@ -189,7 +189,7 @@ public sealed class ComponentManagerProperties
         var manager = new ComponentManager(configuration, handlers);
 
         manager.AddRange(_components.Select(component => component.Create(configuration: configuration)));
-        manager.AddRange(ComponentUtilities.BuildGroups(configuration, _dynamicTypes, null, false));
+        manager.AddRange(ComponentUtilities.GetComponents(configuration, _dynamicTypes, null, false));
 
         return manager;
     }

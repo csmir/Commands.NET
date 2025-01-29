@@ -3,7 +3,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Commands.Samples;
 
-public class Listener(ILogger<Listener> logger, ComponentManager manager) : BackgroundService
+// The listener is a hosted service that listens for commands from the console.
+// It uses the component manager to execute the commands from retrieved console input.
+public sealed class Listener(ILogger<Listener> logger, ComponentManager components) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -13,7 +15,7 @@ public class Listener(ILogger<Listener> logger, ComponentManager manager) : Back
         {
             var context = new HostedCallerContext(Console.ReadLine(), logger);
 
-            await manager.ExecuteBlocking(context);
+            await components.Execute(context);
         }
 
         logger.LogInformation("Stopped listening for commands.");

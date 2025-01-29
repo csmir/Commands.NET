@@ -1,7 +1,7 @@
 ﻿namespace Commands.Samples;
 
 [Name("class")]
-public class ClassModule : CommandModule
+public sealed class ClassModule : CommandModule
 {
     public string ClassCommand()
     {

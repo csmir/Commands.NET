@@ -66,37 +66,44 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     }
 
     /// <inheritdoc />
-    public Task Execute<TContext>(TContext context, CommandOptions? options = null)
+    public Task<IResult?> Execute<TContext>(TContext context, CommandOptions? options = null)
         where TContext : class, ICallerContext
     {
+        async Task<IResult> PostExecuteAwait(Task<IResult> result, CommandOptions options)
+        {
+            var output = await result.ConfigureAwait(false);
+
+            foreach (var handler in _handlers)
+                await handler.HandleResult(context, output, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
+
+            return output;
+        }
+
         options ??= new CommandOptions();
 
         var task = ExecutePipelineTask(context, options);
 
-        task.ContinueWith(async task =>
-        {
-            var result = await task.ConfigureAwait(false);
+        if (!options.ExecuteAsynchronously)
+            return PostExecuteAwait(task, options)!;
 
-            foreach (var handler in _handlers)
-                await handler.HandleResult(context, result, options.Services, options.CancellationToken).ConfigureAwait(false);
+        task.ContinueWith(task => PostExecuteAwait(task, options), options.CancellationToken);
 
-        }, options.CancellationToken);
-
-        return Task.CompletedTask;
+        return Task.FromResult<IResult?>(null);
     }
 
-    /// <inheritdoc />
-    public async Task<IResult> ExecuteBlocking<TContext>(TContext context, CommandOptions? options = null)
-        where TContext : class, ICallerContext
+    /// <summary>
+    ///     Adds a collection of types to the component manager.
+    /// </summary>
+    /// <remarks>
+    ///     This operation will add implementations of <see cref="CommandModule"/> and <see cref="CommandModule{T}"/>, that are public and non-abstract to the current manager.
+    /// </remarks>
+    /// <param name="types">A collection of types to filter and add to the manager, where possible.</param>
+    /// <returns>The number of added components; or 0 if no components are added.</returns>
+    public int AddRange(IEnumerable<Type> types)
     {
-        options ??= new CommandOptions();
+        var components = ComponentUtilities.GetComponents(types, Configuration);
 
-        var result = await ExecutePipelineTask(context, options).ConfigureAwait(false);
-
-        foreach (var handler in _handlers)
-            await handler.HandleResult(context, result, options.Services, options.CancellationToken).ConfigureAwait(false);
-
-        return result;
+        return AddRange(components);
     }
 
     private async Task<IResult> ExecutePipelineTask<TContext>(TContext caller, CommandOptions options)

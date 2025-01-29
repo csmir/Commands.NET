@@ -10,12 +10,12 @@ public sealed class ComponentConfiguration
     /// <summary>
     ///     Gets a collection of properties that are used to store additional information explicitly important during the build process.
     /// </summary>
-    public IReadOnlyDictionary<object, object> Properties { get; }
+    public Dictionary<object, object> Properties { get; }
 
     /// <summary>
     ///     Gets a collection of parsers that are used to convert arguments.
     /// </summary>
-    public IReadOnlyDictionary<Type, TypeParser> Parsers { get; }
+    public Dictionary<Type, TypeParser> Parsers { get; }
 
     /// <summary>
     ///     Creates a new instance of <see cref="ComponentConfiguration"/>.

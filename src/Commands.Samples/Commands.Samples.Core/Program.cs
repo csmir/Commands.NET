@@ -17,7 +17,7 @@ var manager = ComponentManager.From(exit, mathCommands)
     .Type<HelpModule>()
     .Create();
 
-var result = manager.ExecuteBlocking(new ConsoleContext(args));
+var result = await manager.Execute(new ConsoleContext(args));
 
 static double Sum(double number, int sumBy)
     => number + sumBy;

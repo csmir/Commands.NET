@@ -16,4 +16,8 @@
     <ProjectReference Include="..\..\Commands\Commands.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Commands\Parsers\" />
+  </ItemGroup>
+
 </Project>

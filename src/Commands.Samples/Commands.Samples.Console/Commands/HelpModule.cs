@@ -2,7 +2,7 @@
 
 namespace Commands.Samples;
 
-public class HelpModule : CommandModule
+public sealed class HelpModule : CommandModule
 {
     [Name("help")]
     public async Task Help()

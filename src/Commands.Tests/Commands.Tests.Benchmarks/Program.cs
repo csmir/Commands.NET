@@ -46,11 +46,14 @@ public class Program
 
     [Benchmark] 
     public Task RunCommand() 
-        => _components.ExecuteBlocking(new BenchmarkCallerContext("command"));
+        => _components.Execute(new BenchmarkCallerContext("command"));
 
     [Benchmark] 
     public Task RunCommandNonBlocking() 
-        => _components.Execute(new BenchmarkCallerContext("command"));
+        => _components.Execute(new BenchmarkCallerContext("command"), new CommandOptions()
+        {
+            ExecuteAsynchronously = true,
+        });
 
     [Benchmark] 
     public ComponentManager CollectionCreate() 

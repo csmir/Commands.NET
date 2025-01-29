@@ -1,6 +1,5 @@
 ﻿using Commands.Parsing;
 using System.ComponentModel;
-using System.Numerics;
 
 namespace Commands;
 
@@ -54,13 +53,24 @@ public static class ComponentUtilities
     /// <summary>
     ///     Gets an <see cref="IEnumerable{T}"/> containing all implementations of <see cref="CommandModule"/> from the provided types.
     /// </summary>
-    /// <param name="configuration">The configuration which determines certain settings for the creation process for contained commands.</param>
     /// <param name="types">A collection of types to create modules from.</param>
+    /// <param name="configuration">The configuration which determines certain settings for the creation process for contained commands.</param>
     /// <param name="parent">The parent of this collection of types, if any.</param>
     /// <param name="isNested">Determines whether the current iteration of additions is nested or not.</param>
     /// <returns>A new <see cref="IEnumerable{T}"/> containing all created component groups in the initial collection of types.</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static IEnumerable<CommandGroup> BuildGroups(ComponentConfiguration configuration, IEnumerable<DynamicType> types, CommandGroup? parent, bool isNested)
+#if NET8_0_OR_GREATER
+    [UnconditionalSuppressMessage("AotAnalysis", "IL2067", Justification = "The types are supplied from user-facing implementation, it is up to the user to ensure that these types are available in AOT context.")]
+#endif
+    public static IEnumerable<CommandGroup> GetComponents(IEnumerable<Type> types, ComponentConfiguration configuration, CommandGroup? parent = null, bool isNested = false)
+    {
+        Assert.NotNull(types, nameof(types));
+        Assert.NotNull(configuration, nameof(configuration));
+
+        return GetComponents(configuration, types.Select(x => new DynamicType(x)), parent, isNested);
+    }
+
+    internal static IEnumerable<CommandGroup> GetComponents(ComponentConfiguration configuration, IEnumerable<DynamicType> types, CommandGroup? parent, bool isNested)
     {
         Assert.NotNull(types, nameof(types));
 
@@ -102,7 +112,7 @@ public static class ComponentUtilities
 
             if (argument.IsRemainder)
             {
-                results[i] = await argument.Parse(caller, argument.IsCollection ? args.TakeRemaining(argument.Name!) : args.TakeRemaining(argument.Name!, options.RemainderSeparator), options.Services, options.CancellationToken).ConfigureAwait(false);
+                results[i] = await argument.Parse(caller, argument.IsCollection ? args.TakeRemaining(argument.Name!) : args.TakeRemaining(argument.Name!, options.RemainderSeparator), options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
 
                 break;
             }
@@ -132,7 +142,7 @@ public static class ComponentUtilities
             }
 
             if (args.TryGetValue(argument.Name!, out var value))
-                results[i] = await argument.Parse(caller, value, options.Services, options.CancellationToken).ConfigureAwait(false);
+                results[i] = await argument.Parse(caller, value, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
             else if (argument.IsOptional)
                 results[i] = ParseResult.FromSuccess(Type.Missing);
             else
@@ -149,9 +159,9 @@ public static class ComponentUtilities
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL2062", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
 #endif
-    internal static IEnumerable<IComponent> BuildNestedComponents(ComponentConfiguration configuration, CommandGroup parent)
+    internal static IEnumerable<IComponent> GetNestedComponents(ComponentConfiguration configuration, CommandGroup parent)
     {
-        static IEnumerable<IComponent> BuildCommands(ComponentConfiguration configuration, CommandGroup parent)
+        static IEnumerable<IComponent> GetExecutableComponents(ComponentConfiguration configuration, CommandGroup parent)
         {
             var members = parent.Activator!.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
 
@@ -171,13 +181,13 @@ public static class ComponentUtilities
         if (parent.Activator!.Type == null)
             return [];
 
-        var commands = BuildCommands(configuration, parent);
+        var commands = GetExecutableComponents(configuration, parent);
 
         try
         {
             var nestedTypes = parent.Activator.Type.GetNestedTypes(BindingFlags.Public);
 
-            var groups = BuildGroups(configuration, [.. nestedTypes], parent, true);
+            var groups = GetComponents(configuration, [.. nestedTypes], parent, true);
 
             return commands.Concat(groups);
         }
@@ -188,7 +198,7 @@ public static class ComponentUtilities
         }
     }
 
-    internal static ICommandParameter[] BuildParameters(IActivator activator, ComponentConfiguration configuration)
+    internal static ICommandParameter[] GetParameters(IActivator activator, ComponentConfiguration configuration)
     {
         var parameters = activator.Target.GetParameters();
 

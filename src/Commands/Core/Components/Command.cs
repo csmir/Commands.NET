@@ -131,7 +131,7 @@ public sealed class Command : IComponent, IParameterCollection
     private Command(IActivator activator, ComponentConfiguration configuration)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
-        var parameters = ComponentUtilities.BuildParameters(activator, configuration);
+        var parameters = ComponentUtilities.GetParameters(activator, configuration);
         var attributes = activator.Target.GetAttributes(true);
 
         Attributes = attributes.ToArray();
@@ -190,7 +190,7 @@ public sealed class Command : IComponent, IParameterCollection
         {
             foreach (var condition in Evaluators)
             {
-                var checkResult = await condition.Evaluate(caller, this, options.Services, options.CancellationToken).ConfigureAwait(false);
+                var checkResult = await condition.Evaluate(caller, this, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
 
                 if (!checkResult.Success)
                     return ConditionResult.FromError(new CommandEvaluationException(this, checkResult.Exception));

@@ -17,7 +17,7 @@ public sealed class CommandOptions
     /// <remarks>
     ///     Default: <see cref="EmptyServiceProvider.Instance" />
     /// </remarks>
-    public IServiceProvider Services { get; set; } = EmptyServiceProvider.Instance;
+    public IServiceProvider ServiceProvider { get; set; } = EmptyServiceProvider.Instance;
 
     /// <summary>
     ///     Gets or sets a token that can be provided from a <see cref="CancellationTokenSource"/> and later used to cancel asynchronous execution
@@ -42,6 +42,25 @@ public sealed class CommandOptions
     ///     Default: <c>' '</c>
     /// </remarks> 
     public char RemainderSeparator { get; set; } = ' ';
+
+    /// <summary>
+    ///     Gets or sets whether command execution should be handled asynchronously or not.
+    /// </summary>
+    /// <remarks>
+    ///     This approach drastically changes the behavior of execution, and as such, there are a few things to consider when using it:
+    ///     <list type="bullet">
+    ///         <item>
+    ///             The end-user must provide an implementation of <see cref="ResultHandler"/> to the <see cref="ComponentManager"/> that is used to execute the command, in order to handle the result of the command.
+    ///         </item>
+    ///         <item>
+    ///             Objects, specifically those scoped to more than a single command must be made thread-safe, meaning they must be able to handle multiple requests at once.
+    ///         </item>
+    ///     </list>
+    ///     When considering thread-safety, it is important to know what this actually means.
+    ///     <br/>
+    ///     Default: <see langword="false"/>
+    /// </remarks>
+    public bool ExecuteAsynchronously { get; set; } = false;
 
     /// <inheritdoc cref="IServiceProvider" />
     /// <remarks>
