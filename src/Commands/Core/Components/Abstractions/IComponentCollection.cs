@@ -3,7 +3,7 @@
 /// <summary>
 ///     Represents a concurrent, recursive collection of components that can be searched and filtered based on their type.
 /// </summary>
-public interface IComponentCollection : IEnumerable<IComponent>
+public interface IComponentCollection : ICollection<IComponent>, IEnumerable<IComponent>
 {
     /// <summary>
     ///     Searches recursively through this and all subcollections for components that match the provided arguments.
@@ -49,25 +49,11 @@ public interface IComponentCollection : IEnumerable<IComponent>
     public int CountAll();
 
     /// <summary>
-    ///     Adds a component to the current collection.
-    /// </summary>
-    /// <param name="component">The component to be added to the group.</param>
-    /// <returns><see langword="true"/> if the component was added; Otherwise, <see langword="false"/>.</returns>
-    public void Add(IComponent component);
-
-    /// <summary>
     ///     Adds all provided components to the current collection.
     /// </summary>
     /// <param name="components">The components to be added to the collection.</param>
     /// <returns>The number of added components, being 0 if no records were added.</returns>
     public int AddRange(IEnumerable<IComponent> components);
-
-    /// <summary>
-    ///     Removes a component from the current collection if it exists.
-    /// </summary>
-    /// <param name="component">The component to be removed from the collection.</param>
-    /// <returns><see langword="true"/> if the component was removed; Otherwise, <see langword="false"/>.</returns>
-    public bool Remove(IComponent component);
 
     /// <summary>
     ///     Removes all provided components from the current collection.

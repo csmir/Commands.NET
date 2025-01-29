@@ -21,7 +21,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Tests.Aot", "src\C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Samples.Core", "src\Commands.Samples\Commands.Samples.Core\Commands.Samples.Core.csproj", "{B744E55E-4DD1-4929-B831-CBB41B3B08CF}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Commands.Tests.FSharp", "src\Commands.Tests\Commands.Tests.FSharp\Commands.Tests.FSharp.fsproj", "{3026DAEB-9AE2-499C-8343-D66A0FE99AFE}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Commands.Samples.FSharp", "src\Commands.Samples\Commands.Samples.FSharp\Commands.Samples.FSharp.fsproj", "{3026DAEB-9AE2-499C-8343-D66A0FE99AFE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -72,7 +72,7 @@ Global
 		{3F5E8CB9-FC11-47EC-81EA-2CA241B89A1D} = {1AB3A177-3567-4B50-98D5-9F6CF187D0DD}
 		{B223CFF0-3809-49A7-AFC5-01BBEF6C6C65} = {1AB3A177-3567-4B50-98D5-9F6CF187D0DD}
 		{B744E55E-4DD1-4929-B831-CBB41B3B08CF} = {A9564368-0CFA-474A-BFBA-A1A140C53F2F}
-		{3026DAEB-9AE2-499C-8343-D66A0FE99AFE} = {1AB3A177-3567-4B50-98D5-9F6CF187D0DD}
+		{3026DAEB-9AE2-499C-8343-D66A0FE99AFE} = {A9564368-0CFA-474A-BFBA-A1A140C53F2F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0CAE3B50-8AEE-4E7A-95F7-A63F51C38083}

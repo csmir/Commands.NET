@@ -32,7 +32,6 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
     /// </summary>
     /// <param name="handlers">A collection of handlers for post-execution processing of retrieved command input.</param>
     public ComponentCollection(params ResultHandler[] handlers)
-        : base()
     {
         _handlers = handlers;
 

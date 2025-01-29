@@ -45,7 +45,6 @@ public sealed class CommandGroup : ComponentCollectionBase, IComponent
     /// </summary>
     /// <param name="names">The names used to discover this group during execution.</param>
     public CommandGroup(params string[] names)
-        : base()
     {
         Ignore = false;
         Attributes = [];
@@ -64,7 +63,6 @@ public sealed class CommandGroup : ComponentCollectionBase, IComponent
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
         Type type, CommandGroup? parent = null, ComponentConfiguration? configuration = null)
-        : base()
     {
         if (!typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters)
             throw new InvalidCastException($"The provided type is not an implementation of {nameof(CommandModule)}.");

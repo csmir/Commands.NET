@@ -5,18 +5,13 @@ namespace Commands;
 [DebuggerDisplay("Count = {Count}")]
 public abstract class ComponentCollectionBase : IComponentCollection
 {
-    private IComponent[] _items;
+    private IComponent[] _items = [];
 
     private Action<IEnumerable<IComponent>, bool>? _mutateParent;
 
     /// <inheritdoc />
     public int Count
         => _items.Length;
-
-    internal ComponentCollectionBase()
-    {
-        _items = [];
-    }
 
     /// <inheritdoc />
     public abstract IEnumerable<IComponent> Find(ArgumentDictionary args);
@@ -296,6 +291,9 @@ public abstract class ComponentCollectionBase : IComponentCollection
 
     IEnumerator IEnumerable.GetEnumerator()
         => GetEnumerator();
+
+    bool ICollection<IComponent>.IsReadOnly
+        => false;
 
     internal ref struct SpanStateEnumerator
     {

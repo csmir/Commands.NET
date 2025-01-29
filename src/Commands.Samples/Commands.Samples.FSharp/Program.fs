@@ -1,5 +1,5 @@
 ﻿open Commands
-open Commands.Tests;
+open Commands.Samples;
 open System
 
 let manager = new ComponentCollection()
@@ -11,4 +11,3 @@ while true do
     let res = manager.Execute<ConsoleContext>(new ConsoleContext(input)) |> Async.AwaitTask |> Async.RunSynchronously
     if res.Success = false then
         printf "%s" (res.Exception.Message)
-

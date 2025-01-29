@@ -1,4 +1,4 @@
-﻿namespace Commands.Tests
+﻿namespace Commands.Samples
 
 open Commands
 
