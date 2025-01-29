@@ -24,11 +24,6 @@ public interface IComponent : ICommandSegment, IComparable<IComponent>
     public bool Ignore { get; }
 
     /// <summary>
-    ///     Gets the invocation target of this component.
-    /// </summary>
-    public IActivator? Activator { get; }
-
-    /// <summary>
     ///     Gets if the component name is queryable.
     /// </summary>
     public bool IsSearchable { get; }

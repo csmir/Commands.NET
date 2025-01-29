@@ -21,7 +21,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent
     public CommandGroup? Parent { get; private set; }
 
     /// <inheritdoc />
-    public IActivator? Activator { get; }
+    public IDependencyActivator<CommandModule>? Activator { get; }
 
     /// <inheritdoc />
     public string[] Names { get; }

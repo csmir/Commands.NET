@@ -14,7 +14,7 @@ internal readonly struct CommandInstanceActivator(MethodInfo target) : IActivato
     public object? Invoke<T>(T caller, Command? command, object?[] args, CommandOptions options)
         where T : ICallerContext
     {
-        var module = command!.Parent?.Activator?.Invoke(caller, command, args, options) as CommandModule;
+        var module = command!.Parent?.Activator?.Activate(options.Services);
 
         if (module != null)
         {

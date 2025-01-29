@@ -1,15 +1,12 @@
 ﻿namespace Commands;
 
-internal readonly struct CommandGroupActivator : IActivator
+internal readonly struct CommandGroupActivator : IDependencyActivator<CommandModule>
 {
     private readonly ConstructorInfo _ctor;
-    private readonly CommandGroupService[] _services;
 
-    public MethodBase Target
-        => _ctor;
+    public Type? Type { get; }
 
-    public bool HasContext
-        => false;
+    public DependencyParameter[]? Dependencies { get; }
 
     public CommandGroupActivator(
 #if NET8_0_OR_GREATER
@@ -21,42 +18,42 @@ internal readonly struct CommandGroupActivator : IActivator
 
         var parameters = _ctor.GetParameters();
 
-        _services = new CommandGroupService[parameters.Length];
+        Dependencies = new DependencyParameter[parameters.Length];
 
         for (var i = 0; i < parameters.Length; i++)
-            _services[i] = new CommandGroupService(parameters[i]);
+            Dependencies[i] = new DependencyParameter(parameters[i]);
     }
-
-    /// <inheritdoc />
-    public object? Invoke<T>(T caller, Command? command, object?[] args, CommandOptions options)
-        where T : ICallerContext
+    
+    public CommandModule Activate(IServiceProvider services)
     {
-        var obj = options.Services.GetService(Target.DeclaringType!);
+        var obj = services.GetService(Type!);
 
         if (obj == null)
         {
-            var services = new object?[_services.Length];
-            for (int i = 0; i < _services.Length; i++)
-            {
-                var parameter = _services[i];
+            var param = new object?[Dependencies!.Length];
 
-                var service = options.Services.GetService(parameter.Type);
+            for (int i = 0; i < Dependencies.Length; i++)
+            {
+                var parameter = Dependencies[i];
+
+                var service = services.GetService(parameter.Type);
 
                 if (service != null || parameter.IsNullable)
-                    services[i] = service;
+                    param[i] = service;
 
                 else if (parameter.Type == typeof(IServiceProvider))
-                    services[i] = options.Services;
+                    param[i] = services;
 
                 else if (parameter.IsOptional)
-                    services[i] = Type.Missing;
+                    param[i] = Type.Missing;
 
                 else
-                    throw new InvalidOperationException($"Constructor {command?.Parent?.Name ?? Target.Name} defines unknown service {parameter.Type}.");
+                    throw new InvalidOperationException($"Constructor {Type!.Name} defines unknown service {parameter.Type}.");
             }
 
-            return _ctor.Invoke(services);
+            return (CommandModule)_ctor.Invoke(param);
         }
-        return obj;
+
+        return (CommandModule)obj;
     }
 }
