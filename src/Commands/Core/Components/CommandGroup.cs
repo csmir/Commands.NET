@@ -9,14 +9,6 @@ namespace Commands;
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
 public sealed class CommandGroup : ComponentCollection, IComponent
 {
-    /// <summary>
-    ///     Gets the type of this module.
-    /// </summary>
-#if NET8_0_OR_GREATER
-    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
-#endif
-    public Type? Type { get; }
-
     /// <inheritdoc />
     public CommandGroup? Parent { get; private set; }
 
@@ -78,7 +70,6 @@ public sealed class CommandGroup : ComponentCollection, IComponent
             throw new InvalidCastException($"The provided type is not an implementation of {nameof(CommandModule)}.");
 
         Parent = parent;
-        Type = type;
 
         var attributes = type.GetAttributes(true);
 
@@ -142,7 +133,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         while (enumerator.MoveNext())
             score += enumerator.Current!.GetScore();
 
-        if (Name != Type?.Name)
+        if (Name != Activator?.Type?.Name)
             score += 1.0f;
 
         score += Attributes.FirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
@@ -193,10 +184,10 @@ public sealed class CommandGroup : ComponentCollection, IComponent
 
         // When type is null this group has been created manually.
         // We can only assume it is a group, as it does not have a type.
-        if (Type == null)
+        if (Activator == null)
             sb.Append("Group");
         else
-            sb.Append(Type.Name);
+            sb.Append(Activator.Type?.Name);
 
         if (Name != null)
         {
