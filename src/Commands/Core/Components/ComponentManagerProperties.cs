@@ -186,10 +186,10 @@ public sealed class ComponentManagerProperties
 
         var handlers = _handlers.Select(handler => handler.Create()).ToArray();
 
-        var manager = new ComponentManager(handlers);
+        var manager = new ComponentManager(configuration, handlers);
 
-        manager.AddRange([.. _components.Select(component => component.Create(configuration: configuration))]);
-        manager.AddRange([.. ComponentUtilities.BuildGroups(configuration, _dynamicTypes, null, false)]);
+        manager.AddRange(_components.Select(component => component.Create(configuration: configuration)));
+        manager.AddRange(ComponentUtilities.BuildGroups(configuration, _dynamicTypes, null, false));
 
         return manager;
     }

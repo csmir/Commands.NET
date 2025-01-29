@@ -1,4 +1,6 @@
 ﻿using Commands.Parsing;
+using System.ComponentModel;
+using System.Numerics;
 
 namespace Commands;
 
@@ -46,6 +48,43 @@ public static class ComponentUtilities
         {
             if (entry is T tEntry && predicate(tEntry))
                 yield return tEntry;
+        }
+    }
+
+    /// <summary>
+    ///     Gets an <see cref="IEnumerable{T}"/> containing all implementations of <see cref="CommandModule"/> from the provided types.
+    /// </summary>
+    /// <param name="configuration">The configuration which determines certain settings for the creation process for contained commands.</param>
+    /// <param name="types">A collection of types to create modules from.</param>
+    /// <param name="parent">The parent of this collection of types, if any.</param>
+    /// <param name="isNested">Determines whether the current iteration of additions is nested or not.</param>
+    /// <returns>A new <see cref="IEnumerable{T}"/> containing all created component groups in the initial collection of types.</returns>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static IEnumerable<CommandGroup> BuildGroups(ComponentConfiguration configuration, IEnumerable<DynamicType> types, CommandGroup? parent, bool isNested)
+    {
+        Assert.NotNull(types, nameof(types));
+
+        foreach (var definition in types)
+        {
+            var type = definition.Value;
+
+            if (!isNested && type.IsNested)
+                continue;
+
+            CommandGroup? group;
+
+            try
+            {
+                group = new CommandGroup(type, parent, configuration);
+            }
+            catch
+            {
+                // This will throw if the type does not implement CommandModule. We can safely ignore this.
+                continue;
+            }
+
+            if (group != null && !group.Ignore)
+                yield return group;
         }
     }
 
@@ -107,73 +146,36 @@ public static class ComponentUtilities
 
     #region Building
 
-    internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
-        => provider.GetCustomAttributes(inherit).OfType<Attribute>();
-
-    internal static bool HasContextProvider(this MethodBase method)
-        => method.GetParameters().Length > 0 && method.GetParameters()[0].ParameterType.IsGenericType && method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>);
-
-    internal static bool IsImplementationOfModule(this Type type)
-        => typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters;
-
-    internal static IEnumerable<CommandGroup> BuildGroups(ComponentConfiguration configuration, IEnumerable<DynamicType> types, CommandGroup? parent, bool isNested)
-    {
-        Assert.NotNull(types, nameof(types));
-
-        foreach (var definition in types)
-        {
-            var type = definition.Value;
-
-            if (!isNested && type.IsNested)
-                continue;
-
-            CommandGroup? group;
-
-            try
-            {
-                group = new CommandGroup(type, parent, configuration);
-            }
-            catch
-            {
-                // This will throw if the type does not implement CommandModule. We can safely ignore this.
-                continue;
-            }
-
-            if (group != null && !group.Ignore)
-                yield return group;
-        }
-    }
-
-    internal static IEnumerable<IComponent> BuildCommands(ComponentConfiguration configuration, CommandGroup parent)
-    {
-        var members = parent.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
-
-        foreach (var method in members)
-        {
-            var command = new Command(method, parent, configuration);
-
-            if (command.Ignore)
-                continue;
-
-            yield return command;
-        }
-    }
-
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL2062", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
 #endif
     internal static IEnumerable<IComponent> BuildNestedComponents(ComponentConfiguration configuration, CommandGroup parent)
     {
+        static IEnumerable<IComponent> BuildCommands(ComponentConfiguration configuration, CommandGroup parent)
+        {
+            var members = parent.Activator!.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
+
+            foreach (var method in members)
+            {
+                var command = new Command(method, parent, configuration);
+
+                if (command.Ignore)
+                    continue;
+
+                yield return command;
+            }
+        }
+
         Assert.NotNull(parent, nameof(parent));
 
-        if (parent.Type == null)
+        if (parent.Activator!.Type == null)
             return [];
 
         var commands = BuildCommands(configuration, parent);
 
         try
         {
-            var nestedTypes = parent.Type.GetNestedTypes(BindingFlags.Public);
+            var nestedTypes = parent.Activator.Type.GetNestedTypes(BindingFlags.Public);
 
             var groups = BuildGroups(configuration, [.. nestedTypes], parent, true);
 
@@ -186,7 +188,7 @@ public static class ComponentUtilities
         }
     }
 
-    internal static ICommandParameter[] BuildArguments(IActivator activator, ComponentConfiguration configuration)
+    internal static ICommandParameter[] BuildParameters(IActivator activator, ComponentConfiguration configuration)
     {
         var parameters = activator.Target.GetParameters();
 
@@ -272,6 +274,16 @@ public static class ComponentUtilities
         }
 
         throw new InvalidOperationException($"{type} has no publically available constructors to use in creating instances of this type.");
+    }
+
+    internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
+        => provider.GetCustomAttributes(inherit).OfType<Attribute>();
+
+    internal static bool HasContextProvider(this MethodBase method)
+    {
+        var parameters = method.GetParameters();
+
+        return parameters.Length > 0 && parameters[0].ParameterType.IsGenericType && parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>);
     }
 
     #endregion

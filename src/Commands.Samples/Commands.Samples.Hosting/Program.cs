@@ -5,17 +5,17 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 await Host.CreateDefaultBuilder(args)
-    .ConfigureServices(configure =>
+    .ConfigureServices(services =>
     {
         var properties = ComponentManager.With
             .Types(typeof(Program).Assembly.GetExportedTypes())
             .Handler(ResultHandler.From<HostedCallerContext>((c, e, s) => c.Respond(e)));
 
-        configure.AddSingleton((services) => properties.Create());
-        configure.AddHostedService<Listener>();
+        services.AddSingleton((services) => properties.Create());
+        services.AddHostedService<Listener>();
     })
-    .ConfigureLogging(configure =>
+    .ConfigureLogging(logging =>
     {
-        configure.AddSimpleConsole();
+        logging.AddSimpleConsole();
     })
     .RunConsoleAsync();

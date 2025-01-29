@@ -66,7 +66,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         Type type, CommandGroup? parent = null, ComponentConfiguration? configuration = null)
         : base()
     {
-        if (!type.IsImplementationOfModule())
+        if (!typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters)
             throw new InvalidCastException($"The provided type is not an implementation of {nameof(CommandModule)}.");
 
         Parent = parent;
@@ -78,7 +78,7 @@ public sealed class CommandGroup : ComponentCollection, IComponent
         Ignore = attributes.Contains<IgnoreAttribute>();
         Names = attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
 
-        Activator = new CommandGroupActivator(type);
+        Activator = new CommandModuleActivator(type);
 
         if (!Ignore)
         {

@@ -1,16 +1,19 @@
 ﻿namespace Commands;
 
-internal readonly struct CommandGroupActivator : IDependencyActivator<CommandModule>
+internal readonly struct CommandModuleActivator : IDependencyActivator<CommandModule>
 {
     private readonly ConstructorInfo _ctor;
 
-    public Type? Type { get; }
-
-    public DependencyParameter[]? Dependencies { get; }
-
-    public CommandGroupActivator(
 #if NET8_0_OR_GREATER
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
+#endif
+    public Type Type { get; }
+
+    public DependencyParameter[] Dependencies { get; }
+
+    public CommandModuleActivator(
+#if NET8_0_OR_GREATER
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
         Type type)
     {
@@ -22,6 +25,8 @@ internal readonly struct CommandGroupActivator : IDependencyActivator<CommandMod
 
         for (var i = 0; i < parameters.Length; i++)
             Dependencies[i] = new DependencyParameter(parameters[i]);
+
+        Type = type;
     }
     
     public CommandModule Activate(IServiceProvider services)
@@ -48,7 +53,7 @@ internal readonly struct CommandGroupActivator : IDependencyActivator<CommandMod
                     param[i] = Type.Missing;
 
                 else
-                    throw new InvalidOperationException($"Constructor {Type!.Name} defines unknown service {parameter.Type}.");
+                    throw new InvalidOperationException($"Module {Type!.Name} defines unknown service {parameter.Type}.");
             }
 
             return (CommandModule)_ctor.Invoke(param);

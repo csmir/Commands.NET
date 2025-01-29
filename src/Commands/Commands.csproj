@@ -6,9 +6,7 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>13.0</LangVersion>
 		<WarningsAsErrors>true</WarningsAsErrors>
-
 		<IsAotCompatible Condition="'$(TargetFramework)' == 'net8'">true</IsAotCompatible>
-		
 		<NoWarn>CA1822;IDE0130;IDE0290</NoWarn>
 
 		<AssemblyVersion>2.0</AssemblyVersion>

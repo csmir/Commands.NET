@@ -9,14 +9,23 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     private readonly ResultHandler[] _handlers;
 
     /// <summary>
+    ///     Gets the configuration for this component manager.
+    /// </summary>
+    public ComponentConfiguration Configuration { get; }
+
+    /// <summary>
     ///     Creates a new instance of <see cref="ComponentManager"/> with the specified handlers.
     /// </summary>
     /// <remarks>
     ///     This overload supports enumerable service injection in order to create a manager from service definitions.
     /// </remarks>
+    /// <param name="configuration">The configuration for this component manager.</param>
     /// <param name="handlers">A collection of handlers for post-execution processing of retrieved command input.</param>
-    public ComponentManager(IEnumerable<ResultHandler> handlers)
-        : this(handlers.ToArray()) { }
+    public ComponentManager(ComponentConfiguration configuration, IEnumerable<ResultHandler> handlers)
+        : this(handlers.ToArray())
+    {
+        Configuration = configuration;
+    }
 
     /// <summary>
     ///     Creates a new instance of <see cref="ComponentManager"/> with the specified handlers.
@@ -26,6 +35,8 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         : base()
     {
         _handlers = handlers;
+
+        Configuration = ComponentConfiguration.Empty;
 
         // A default handler is added if none are provided, which allows the command result to be processed with no further implications.
         if (handlers.Length < 0)

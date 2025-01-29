@@ -85,7 +85,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
 
         Activator = new ConstructibleParameterActivator(Type);
 
-        var parameters = ComponentUtilities.BuildArguments(Activator, configuration);
+        var parameters = ComponentUtilities.BuildParameters(Activator, configuration);
 
         if (parameters.Length == 0)
             throw new NotSupportedException($"Complex argument of type {Type} must have at least one parameter.");
