@@ -3,7 +3,7 @@
 /// <summary>
 ///     A set of properties for a component manager.
 /// </summary>
-public sealed class ComponentCollectionProperties
+public sealed class ComponentManagerProperties
 {
     private readonly List<DynamicType> _dynamicTypes;
 
@@ -13,9 +13,9 @@ public sealed class ComponentCollectionProperties
     private ComponentConfigurationProperties? _configuration;
 
     /// <summary>
-    ///     Creates a new instance of <see cref="ComponentCollectionProperties"/>.
+    ///     Creates a new instance of <see cref="ComponentManagerProperties"/>.
     /// </summary>
-    public ComponentCollectionProperties()
+    public ComponentManagerProperties()
     {
         _dynamicTypes = [];
         _components = [];
@@ -31,8 +31,8 @@ public sealed class ComponentCollectionProperties
     ///     Types are evaluated whether they implement <see cref="CommandModule"/>, are not abstract, and have no open generic parameters when the manager is created. Any added types that do not match this constraint are ignored.
     /// </remarks>
     /// <param name="type">The type to add. If the type is already added, it is ignored.</param>
-    /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Type(
+    /// <returns>The same <see cref="ComponentManagerProperties"/> for call-chaining.</returns>
+    public ComponentManagerProperties Type(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 # endif
@@ -52,8 +52,8 @@ public sealed class ComponentCollectionProperties
     ///     Adds a type to the component manager.
     /// </summary>
     /// <typeparam name="T">The type definition to add. If the type is already added, it is ignored.</typeparam>
-    /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Type<
+    /// <returns>The same <see cref="ComponentManagerProperties"/> for call-chaining.</returns>
+    public ComponentManagerProperties Type<
 #if NET8_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
@@ -67,11 +67,11 @@ public sealed class ComponentCollectionProperties
     ///     Adds multiple types to the component manager.
     /// </summary>
     /// <param name="types">The types to add. If any type is already added, it is ignored.</param>
-    /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
+    /// <returns>The same <see cref="ComponentManagerProperties"/> for call-chaining.</returns>
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The types are supplied from user-facing implementation, it is up to the user to ensure that these types are available in AOT context.")]
 #endif
-    public ComponentCollectionProperties Types(params Type[] types)
+    public ComponentManagerProperties Types(params Type[] types)
     {
         foreach (var componentType in types)
             Type(componentType);
@@ -86,8 +86,8 @@ public sealed class ComponentCollectionProperties
     ///     Commands added to the manager must have at least one name. Groups that are added are not required to have a name.
     /// </remarks>
     /// <param name="component">The component to add.</param>
-    /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Component(IComponentProperties component)
+    /// <returns>The same <see cref="ComponentManagerProperties"/> for call-chaining.</returns>
+    public ComponentManagerProperties Component(IComponentProperties component)
     {
         Assert.NotNull(component, nameof(component));
 
@@ -103,8 +103,8 @@ public sealed class ComponentCollectionProperties
     ///     Commands added to the manager must have at least one name. Groups that are added are not required to have a name.
     /// </remarks>
     /// <param name="components">The components to add.</param>
-    /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Components(params IComponentProperties[] components)
+    /// <returns>The same <see cref="ComponentManagerProperties"/> for call-chaining.</returns>
+    public ComponentManagerProperties Components(params IComponentProperties[] components)
     {
         foreach (var component in components)
             Component(component);
@@ -116,8 +116,8 @@ public sealed class ComponentCollectionProperties
     ///     Adds a result handler to the component manager.
     /// </summary>
     /// <param name="handler">The handler to add.</param>
-    /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Handler(IResultHandlerProperties handler)
+    /// <returns>The same <see cref="ComponentManagerProperties"/> for call-chaining.</returns>
+    public ComponentManagerProperties Handler(IResultHandlerProperties handler)
     {
         Assert.NotNull(handler, nameof(handler));
 
@@ -130,16 +130,16 @@ public sealed class ComponentCollectionProperties
     ///     Adds a result handler to the component manager.
     /// </summary>
     /// <param name="handler">The handler to add.</param>
-    /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Handler(ResultHandler handler)
+    /// <returns>The same <see cref="ComponentManagerProperties"/> for call-chaining.</returns>
+    public ComponentManagerProperties Handler(ResultHandler handler)
         => Handler(new ResultHandlerProperties(handler));
 
     /// <summary>
     ///     Adds multiple result handlers to the component manager.
     /// </summary>
     /// <param name="handlers">The handlers to add.</param>
-    /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Handlers(params IResultHandlerProperties[] handlers)
+    /// <returns>The same <see cref="ComponentManagerProperties"/> for call-chaining.</returns>
+    public ComponentManagerProperties Handlers(params IResultHandlerProperties[] handlers)
     {
         foreach (var handler in handlers)
             Handler(handler);
@@ -151,8 +151,8 @@ public sealed class ComponentCollectionProperties
     ///     Adds multiple result handlers to the component manager.
     /// </summary>
     /// <param name="handlers">The handlers to add.</param>
-    /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Handlers(params ResultHandler[] handlers)
+    /// <returns>The same <see cref="ComponentManagerProperties"/> for call-chaining.</returns>
+    public ComponentManagerProperties Handlers(params ResultHandler[] handlers)
     {
         foreach (var handler in handlers)
             Handler(new ResultHandlerProperties(handler));
@@ -164,8 +164,8 @@ public sealed class ComponentCollectionProperties
     ///     Sets the configuration for the component manager.
     /// </summary>
     /// <param name="configuration">The configuration which should configure defined components that are to be built for this manager.</param>
-    /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Configuration(ComponentConfigurationProperties configuration)
+    /// <returns>The same <see cref="ComponentManagerProperties"/> for call-chaining.</returns>
+    public ComponentManagerProperties Configuration(ComponentConfigurationProperties configuration)
     {
         Assert.NotNull(configuration, nameof(configuration));
 
@@ -175,10 +175,10 @@ public sealed class ComponentCollectionProperties
     }
 
     /// <summary>
-    ///     Converts this set of properties to a new instance of <see cref="ComponentCollection"/>.
+    ///     Converts this set of properties to a new instance of <see cref="ComponentManager"/>.
     /// </summary>
-    /// <returns>A new instance of <see cref="ComponentCollection"/>.</returns>
-    public ComponentCollection Create()
+    /// <returns>A new instance of <see cref="ComponentManager"/>.</returns>
+    public ComponentManager Create()
     {
         _configuration ??= ComponentConfigurationProperties.Default;
 
@@ -186,7 +186,7 @@ public sealed class ComponentCollectionProperties
 
         var handlers = _handlers.Select(handler => handler.Create()).ToArray();
 
-        var manager = new ComponentCollection(configuration, handlers);
+        var manager = new ComponentManager(configuration, handlers);
 
         manager.AddRange(_components.Select(component => component.Create(configuration: configuration)));
         manager.AddRange(ComponentUtilities.GetComponents(configuration, _dynamicTypes, null, false));

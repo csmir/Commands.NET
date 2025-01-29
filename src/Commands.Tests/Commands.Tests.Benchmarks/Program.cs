@@ -28,7 +28,7 @@ public class CreationAnalysisModule : CommandModule<BenchmarkCallerContext>
 public class Program
 {
     private static readonly ArgumentDictionary _args = ArgumentDictionary.From("command");
-    private static readonly ComponentCollection _components = ComponentCollection.From()
+    private static readonly ComponentManager _components = ComponentManager.From()
         .Type<CreationAnalysisModule>()
         .Component(Command.From(() => { }, "command"))
         .Create();
@@ -46,14 +46,17 @@ public class Program
 
     [Benchmark] 
     public Task RunCommand() 
-        => _components.ExecuteBlocking(new BenchmarkCallerContext("command"));
-
-    [Benchmark] 
-    public Task RunCommandNonBlocking() 
         => _components.Execute(new BenchmarkCallerContext("command"));
 
     [Benchmark] 
-    public ComponentCollection CollectionCreate() 
+    public Task RunCommandNonBlocking() 
+        => _components.Execute(new BenchmarkCallerContext("command"), new CommandOptions()
+        {
+            ExecuteAsynchronously = true,
+        });
+
+    [Benchmark] 
+    public ComponentManager CollectionCreate() 
         => [];
 
     [Benchmark] 
