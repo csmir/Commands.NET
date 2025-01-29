@@ -78,7 +78,7 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
             return output;
         }
 
-        options ??= new CommandOptions();
+        options ??= CommandOptions.Default;
 
         var task = ExecutePipelineTask(context, options);
 
