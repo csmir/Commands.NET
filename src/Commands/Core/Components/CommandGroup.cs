@@ -7,7 +7,7 @@ namespace Commands;
 ///     Reveals information about a command module, hosting zero-or-more commands.
 /// </summary>
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
-public sealed class CommandGroup : ComponentCollection, IComponent
+public sealed class CommandGroup : ComponentCollectionBase, IComponent
 {
     /// <inheritdoc />
     public CommandGroup? Parent { get; private set; }

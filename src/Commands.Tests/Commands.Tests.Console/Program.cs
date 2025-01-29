@@ -1,7 +1,7 @@
 ﻿using Commands;
 using Commands.Testing;
 
-var manager = ComponentManager.With
+var manager = ComponentCollection.With
     .Types(typeof(Program).Assembly.GetExportedTypes())
     .Handler(ResultHandler.From<ICallerContext>((c, e, s) => c.Respond(e)))
     .Component(
