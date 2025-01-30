@@ -47,7 +47,7 @@ public sealed class CommandOptions
     ///     Gets or sets whether command execution should be handled asynchronously or not.
     /// </summary>
     /// <remarks>
-    ///     This approach drastically changes the behavior of execution, and as such, there are a few things to consider when using it:
+    ///     This behavior drastically changes execution flow, and as such, there are a few things to consider when using it:
     ///     <list type="bullet">
     ///         <item>
     ///             The end-user must provide an implementation of <see cref="ResultHandler"/> to the <see cref="ComponentManager"/> that is used to execute the command, in order to handle the result of the command.

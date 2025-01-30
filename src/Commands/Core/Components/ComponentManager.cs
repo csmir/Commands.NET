@@ -14,6 +14,12 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     public ComponentConfiguration Configuration { get; }
 
     /// <summary>
+    ///     Gets the handlers for post-execution processing of retrieved command input.
+    /// </summary>
+    public IReadOnlyCollection<ResultHandler> Handlers
+        => _handlers;
+
+    /// <summary>
     ///     Creates a new instance of <see cref="ComponentManager"/> with the specified handlers.
     /// </summary>
     /// <remarks>
@@ -43,6 +49,21 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
             _handlers = [new DelegateResultHandler<ICallerContext>()];
     }
 
+    /// <summary>
+    ///     Adds a collection of types to the component manager.
+    /// </summary>
+    /// <remarks>
+    ///     This operation will add implementations of <see cref="CommandModule"/> and <see cref="CommandModule{T}"/>, that are public and non-abstract to the current manager.
+    /// </remarks>
+    /// <param name="types">A collection of types to filter and add to the manager, where possible.</param>
+    /// <returns>The number of added components; or 0 if no components are added.</returns>
+    public int AddRange(IEnumerable<Type> types)
+    {
+        var components = ComponentUtilities.GetComponents(types, Configuration);
+
+        return AddRange(components);
+    }
+
     /// <inheritdoc />
     public override IEnumerable<IComponent> Find(ArgumentDictionary args)
     {
@@ -69,7 +90,7 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     public Task<IResult?> Execute<TContext>(TContext context, CommandOptions? options = null)
         where TContext : class, ICallerContext
     {
-        async Task<IResult> PostExecuteAwait(Task<IResult> result, CommandOptions options)
+        async Task<IResult> PostExecute(Task<IResult> result, CommandOptions options)
         {
             var output = await result.ConfigureAwait(false);
 
@@ -81,32 +102,17 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
 
         options ??= new CommandOptions();
 
-        var task = ExecutePipelineTask(context, options);
+        var task = StartExecute(context, options);
 
         if (!options.ExecuteAsynchronously)
-            return PostExecuteAwait(task, options)!;
+            return PostExecute(task, options)!;
 
-        task.ContinueWith(task => PostExecuteAwait(task, options), options.CancellationToken);
+        task.ContinueWith(task => PostExecute(task, options), options.CancellationToken);
 
         return Task.FromResult<IResult?>(null);
     }
 
-    /// <summary>
-    ///     Adds a collection of types to the component manager.
-    /// </summary>
-    /// <remarks>
-    ///     This operation will add implementations of <see cref="CommandModule"/> and <see cref="CommandModule{T}"/>, that are public and non-abstract to the current manager.
-    /// </remarks>
-    /// <param name="types">A collection of types to filter and add to the manager, where possible.</param>
-    /// <returns>The number of added components; or 0 if no components are added.</returns>
-    public int AddRange(IEnumerable<Type> types)
-    {
-        var components = ComponentUtilities.GetComponents(types, Configuration);
-
-        return AddRange(components);
-    }
-
-    private async Task<IResult> ExecutePipelineTask<TContext>(TContext caller, CommandOptions options)
+    private async Task<IResult> StartExecute<TContext>(TContext caller, CommandOptions options)
         where TContext : class, ICallerContext
     {
         options.Manager = this;
