@@ -103,7 +103,7 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
     private async Task<IResult> StartExecute<TContext>(TContext context, CommandOptions options)
         where TContext : class, ICallerContext
     {
-        options.Manager = this;
+        options.Manager ??= this;
 
         IResult? result = null;
 
