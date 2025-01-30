@@ -21,14 +21,14 @@ await Host.CreateDefaultBuilder(args)
 
         // We configure a component manager to manage our components.
         // This manager requires a configuration and a set of handlers to process the results of command execution.
-        services.AddSingleton<ComponentManager>((services) =>
+        services.AddSingleton<ComponentCollection>((services) =>
         {
             var config = services.GetRequiredService<ComponentConfiguration>();
             var logger = services.GetRequiredService<ILogger<Program>>();
 
             var handler = new DelegateResultHandler<HostedCallerContext>((c, e, s) => c.Respond(e));
 
-            var manager = new ComponentManager(config, [handler]);
+            var manager = new ComponentCollection(config, [handler]);
 
             logger.LogInformation("Component manager created.");
 

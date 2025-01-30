@@ -7,7 +7,7 @@ var configuration = ComponentConfigurationProperties.Default;
 var results = ResultHandler.For<SampleContext>()
     .Delegate((c, e, s) => c.Respond(e));
 
-var manager = ComponentManager.With
+var manager = ComponentCollection.With
     .Configuration(configuration)
     .Handler(results)
     .Create();

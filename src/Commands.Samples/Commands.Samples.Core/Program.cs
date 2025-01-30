@@ -13,7 +13,7 @@ var mathCommands = CommandGroup.From("math")
         Command.From(Divide, "divide", "div")
     );
 
-var manager = ComponentManager.From(exit, mathCommands)
+var manager = ComponentCollection.From(exit, mathCommands)
     .Type<HelpModule>()
     .Create();
 

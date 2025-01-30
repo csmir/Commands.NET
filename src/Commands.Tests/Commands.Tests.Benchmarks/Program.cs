@@ -28,7 +28,7 @@ public class CreationAnalysisModule : CommandModule<BenchmarkCallerContext>
 public class Program
 {
     private static readonly ArgumentDictionary _args = ArgumentDictionary.From("command");
-    private static readonly ComponentManager _components = ComponentManager.From()
+    private static readonly ComponentCollection _components = ComponentCollection.From()
         .Type<CreationAnalysisModule>()
         .Component(Command.From(() => { }, "command"))
         .Create();
@@ -56,7 +56,7 @@ public class Program
         });
 
     [Benchmark] 
-    public ComponentManager CollectionCreate() 
+    public ComponentCollection CollectionCreate() 
         => [];
 
     [Benchmark] 

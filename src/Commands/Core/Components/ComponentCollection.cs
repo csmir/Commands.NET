@@ -38,7 +38,6 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
     /// </summary>
     /// <param name="handlers">A collection of handlers for post-execution processing of retrieved command input.</param>
     public ComponentCollection(params ResultHandler[] handlers)
-        : base()
     {
         _handlers = handlers;
 
@@ -58,9 +57,8 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
     /// <param name="types">A collection of types to filter and add to the manager, where possible.</param>
     /// <returns>The number of added components; or 0 if no components are added.</returns>
     public int AddRange(IEnumerable<Type> types)
-    {
+    { 
         var components = ComponentUtilities.GetComponents(types, Configuration);
-
         return AddRange(components);
     }
 
@@ -90,7 +88,7 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
     public Task<IResult?> Execute<TContext>(TContext context, CommandOptions? options = null)
         where TContext : class, ICallerContext
     {
-        options ??= new CommandOptions();
+        options ??= CommandOptions.Default;
 
         var task = StartExecute(context, options);
 
@@ -139,7 +137,7 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
 
         return output;
     }
-
+    
     #region Initializers
 
     /// <inheritdoc cref="From(IComponentProperties[])"/>
