@@ -90,42 +90,32 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
     public Task<IResult?> Execute<TContext>(TContext context, CommandOptions? options = null)
         where TContext : class, ICallerContext
     {
-        async Task<IResult> PostExecute(Task<IResult> result, CommandOptions options)
-        {
-            var output = await result.ConfigureAwait(false);
-
-            foreach (var handler in _handlers)
-                await handler.HandleResult(context, output, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
-
-            return output;
-        }
-
         options ??= new CommandOptions();
 
         var task = StartExecute(context, options);
 
         if (!options.ExecuteAsynchronously)
-            return PostExecute(task, options)!;
+            return FinishExecute(context, task, options)!;
 
-        task.ContinueWith(task => PostExecute(task, options), options.CancellationToken);
+        task.ContinueWith(task => FinishExecute(context, task, options), options.CancellationToken);
 
         return Task.FromResult<IResult?>(null);
     }
 
-    private async Task<IResult> StartExecute<TContext>(TContext caller, CommandOptions options)
+    private async Task<IResult> StartExecute<TContext>(TContext context, CommandOptions options)
         where TContext : class, ICallerContext
     {
         options.Manager = this;
 
         IResult? result = null;
 
-        var components = Find(caller.Arguments);
+        var components = Find(context.Arguments);
 
         foreach (var component in components)
         {
             if (component is Command command)
             {
-                result = await command.Run(caller, options).ConfigureAwait(false);
+                result = await command.Run(context, options).ConfigureAwait(false);
 
                 if (!result.Success)
                     continue;
@@ -137,6 +127,17 @@ public sealed class ComponentManager : ComponentCollection, IExecutionProvider
         }
 
         return result ?? new SearchResult(new CommandNotFoundException());
+    }
+
+    private async Task<IResult> FinishExecute<TContext>(TContext context, Task<IResult> result, CommandOptions options)
+        where TContext : class, ICallerContext
+    {
+        var output = await result.ConfigureAwait(false);
+
+        foreach (var handler in _handlers)
+            await handler.HandleResult(context, output, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
+
+        return output;
     }
 
     #region Initializers

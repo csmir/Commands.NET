@@ -103,7 +103,7 @@ public abstract class ComponentCollection : IComponentCollection
     {
         lock (_items)
         {
-            var additions = ValidateAddition(components);
+            var additions = FilterComponents(components);
 
             if (additions.Count > 0)
             {
@@ -229,7 +229,7 @@ public abstract class ComponentCollection : IComponentCollection
         => new(this);
 
     // Returns which of the provided components should be added to the collection.
-    private List<IComponent> ValidateAddition(IEnumerable<IComponent> components)
+    private List<IComponent> FilterComponents(IEnumerable<IComponent> components)
     {
         var discovered = new List<IComponent>();
 
@@ -250,7 +250,7 @@ public abstract class ComponentCollection : IComponentCollection
                     if (component is not CommandGroup group)
                         throw new InvalidOperationException($"{nameof(Command)} instances without names can only be added to a {nameof(CommandGroup)}.");
 
-                    discovered.AddRange(ValidateAddition(group._items));
+                    discovered.AddRange(FilterComponents(group._items));
 
                     // By binding a top-level group without a name to the manager, the manager will be notified of any changes made so it can update its state.
                     group.Bind(manager);
