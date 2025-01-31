@@ -131,6 +131,8 @@ public class ServicedModule(MyService service) : CommandModule
   - Fluent API's, complex execution flow and workflow expansion.
 - [Commands.Samples.Hosting](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Hosting)
   - Integrating Commands.NET into the .NET Generic Host infrastructure.
+- [Commands.Samples.FSharp](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.FSharp)
+  - Use Commands.NET in F# projects.
 
 ## Benchmarks
 
