@@ -13,7 +13,7 @@ public interface IExecutionProvider : IComponentCollection
     /// </remarks>
     /// <param name="caller">A command caller that persist for the duration of the execution pipeline, serving as a metadata container.</param>
     /// <param name="options">A collection of options that determines pipeline logic.</param>
-    /// <returns>An awaitable <see cref="Task"/> containing the result of the command execution. If <see cref="CommandOptions.ExecuteAsynchronously"/> is true, this task will contain no result.</returns>
-    public Task<IResult?> Execute<T>(T caller, CommandOptions? options = null)
+    /// <returns>An awaitable <see cref="Task"/> representing the state of the command execution operation.</returns>
+    public Task Execute<T>(T caller, CommandOptions? options = null)
         where T : class, ICallerContext;
 }

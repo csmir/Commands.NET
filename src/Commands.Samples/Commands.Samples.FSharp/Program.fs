@@ -8,6 +8,4 @@ printf "Added %i components." (manager.AddRange(typeof<FSharpModule>.Assembly.Ge
 
 while true do
     let input = Console.ReadLine()
-    let res = manager.Execute<ConsoleContext>(new ConsoleContext(input)) |> Async.AwaitTask |> Async.RunSynchronously
-    if res.Success = false then
-        printf "%s" (res.Exception.Message)
+    manager.Execute<ConsoleContext>(new ConsoleContext(input)) |> Async.AwaitTask |> Async.RunSynchronously

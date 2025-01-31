@@ -1,4 +1,6 @@
-﻿namespace Commands;
+﻿using System.Runtime.CompilerServices;
+
+namespace Commands;
 
 /// <summary>
 ///     A concurrent implementation of the mechanism that allows commands to be executed using a provided set of arguments. This class cannot be inherited.
@@ -28,9 +30,11 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
     /// <param name="configuration">The configuration for this component manager.</param>
     /// <param name="handlers">A collection of handlers for post-execution processing of retrieved command input.</param>
     public ComponentCollection(ComponentConfiguration configuration, IEnumerable<ResultHandler> handlers)
-        : this(handlers.ToArray())
     {
         Configuration = configuration;
+
+        // We choose not to set a standard handler through this constructor, in case it is desired that someone absolutely does not want to use one.
+        _handlers = handlers.ToArray();
     }
 
     /// <summary>
@@ -85,26 +89,35 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
     }
 
     /// <inheritdoc />
-    public Task<IResult?> Execute<TContext>(TContext context, CommandOptions? options = null)
+    public Task Execute<TContext>(TContext context, CommandOptions? options = null)
         where TContext : class, ICallerContext
     {
         options ??= CommandOptions.Default;
 
-        var task = StartExecute(context, options);
+        if (options.ExecuteAsynchronously)
+        {
+            _ = ExecuteInternal(context, options);
 
-        if (!options.ExecuteAsynchronously)
-            return FinishExecute(context, task, options)!;
+            return Task.CompletedTask;
+        }
 
-        task.ContinueWith(task => FinishExecute(context, task, options), options.CancellationToken);
-
-        return Task.FromResult<IResult?>(null);
+        return ExecuteInternal(context, options);
     }
 
-    private async Task<IResult> StartExecute<TContext>(TContext context, CommandOptions options)
+    private async Task ExecuteInternal<TContext>(TContext context, CommandOptions options)
         where TContext : class, ICallerContext
     {
         options.Manager ??= this;
 
+        var result = await WorkInternal(context, options).ConfigureAwait(false);
+
+        foreach (var handler in _handlers)
+            await handler.HandleResult(context, result, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<IResult> WorkInternal<TContext>(TContext context, CommandOptions options)
+        where TContext : class, ICallerContext
+    {
         IResult? result = null;
 
         var components = Find(context.Arguments);
@@ -127,20 +140,9 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
         return result ?? new SearchResult(new CommandNotFoundException());
     }
 
-    private async Task<IResult> FinishExecute<TContext>(TContext context, Task<IResult> result, CommandOptions options)
-        where TContext : class, ICallerContext
-    {
-        var output = await result.ConfigureAwait(false);
-
-        foreach (var handler in _handlers)
-            await handler.HandleResult(context, output, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
-
-        return output;
-    }
-    
     #region Initializers
 
-    /// <inheritdoc cref="From(IComponentProperties[])"/>
+        /// <inheritdoc cref="From(IComponentProperties[])"/>
     public static ComponentCollectionProperties With
         => new();
 

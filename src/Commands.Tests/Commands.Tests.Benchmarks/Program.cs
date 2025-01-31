@@ -36,13 +36,13 @@ public class Program
     static void Main() 
         => BenchmarkRunner.Run<Program>();
 
-    [Benchmark] 
-    public void CreateArguments() 
-        => ArgumentDictionary.From("command");
+    //[Benchmark] 
+    //public void CreateArguments() 
+    //    => ArgumentDictionary.From("command");
 
-    [Benchmark] 
-    public void FindCommands() 
-        => _components.Find(_args);
+    //[Benchmark] 
+    //public void FindCommands() 
+    //    => _components.Find(_args);
 
     [Benchmark] 
     public Task RunCommand() 
@@ -55,15 +55,15 @@ public class Program
             ExecuteAsynchronously = true,
         });
 
-    [Benchmark] 
-    public ComponentCollection CollectionCreate() 
-        => [];
+    //[Benchmark]
+    //public ComponentCollection CollectionCreate()
+    //    => [];
 
-    [Benchmark] 
-    public CommandGroup GroupCreate() 
-        => new(["name"]);
+    //[Benchmark]
+    //public CommandGroup GroupCreate()
+    //    => new(["name"]);
 
-    [Benchmark] 
-    public Command CommandCreate() 
-        => new(() => { }, ["name"]);
+    //[Benchmark]
+    //public Command CommandCreate()
+    //    => new(() => { }, ["name"]);
 }
