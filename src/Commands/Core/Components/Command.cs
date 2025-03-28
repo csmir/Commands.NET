@@ -113,7 +113,7 @@ public sealed class Command : IComponent, IParameterCollection
     /// <param name="executionMethod">The method to run when the command is executed.</param>
     /// <param name="parent">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
     /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
-    public Command(MethodInfo executionMethod, CommandGroup? parent = null, ComponentConfiguration ? configuration = null)
+    public Command(MethodInfo executionMethod, CommandGroup? parent = null, ComponentConfiguration? configuration = null)
         : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), configuration ?? ComponentConfiguration.Empty)
     {
         Names = Attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
@@ -134,7 +134,7 @@ public sealed class Command : IComponent, IParameterCollection
         var parameters = ComponentUtilities.GetParameters(activator, configuration);
         var attributes = activator.Target.GetAttributes(true);
 
-        Attributes = attributes.ToArray();
+        Attributes = [.. attributes];
         Activator = activator;
 
         (MinLength, MaxLength) = parameters.GetLength();

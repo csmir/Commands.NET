@@ -58,7 +58,7 @@ public sealed class TestRunner
     ///     Gets a collection of properties to configure a new instance of <see cref="TestRunner"/>.
     /// </summary>
     public static TestRunnerProperties With { get; } = new();
-    
+
     /// <summary>
     ///     Defines a collection of properties to configure and convert into a new instance of <see cref="TestRunner"/>, with the specified commands.
     /// </summary>

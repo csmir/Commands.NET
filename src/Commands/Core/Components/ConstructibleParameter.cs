@@ -94,7 +94,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
 
         Parameters = parameters;
 
-        Attributes = attributes.ToArray();
+        Attributes = [.. attributes];
 
         ExposedType = parameterInfo.ParameterType;
 
