@@ -184,9 +184,7 @@ public sealed class ComponentCollectionProperties
 
         var configuration = _configuration.Create();
 
-        var handlers = _handlers.Select(handler => handler.Create()).ToArray();
-
-        var manager = new ComponentCollection(configuration, handlers);
+        var manager = new ComponentCollection(configuration, [.. _handlers.Select(handler => handler.Create())]);
 
         manager.AddRange(_components.Select(component => component.Create(configuration: configuration)));
         manager.AddRange(ComponentUtilities.GetComponents(configuration, _dynamicTypes, null, false));

@@ -13,7 +13,7 @@ var manager = ComponentCollection.With
     .Create();
 
 var testRunner = TestRunner.With
-    .Commands(manager.GetCommands().ToArray())
+    .Commands([.. manager.GetCommands()])
     .Create();
 
 var testEvaluation = await testRunner.Run((str) => new TestContext(str));

@@ -71,7 +71,7 @@ public sealed class CommandGroup : ComponentCollectionBase, IComponent
 
         var attributes = type.GetAttributes(true);
 
-        Attributes = attributes.ToArray();
+        Attributes = [.. attributes];
 
         Ignore = attributes.Contains<IgnoreAttribute>();
         Names = attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];

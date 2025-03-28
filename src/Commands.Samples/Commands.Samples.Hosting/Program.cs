@@ -10,7 +10,7 @@ await Host.CreateDefaultBuilder(args)
     {
         // We configure a configuration for our components. Most of the time, we do this to define custom parsers.
         // TypeParser implementations allow command arguments to be parsed into the expected format and type.
-        services.AddSingleton<ComponentConfiguration>((services) =>
+        services.AddSingleton((services) =>
         {
             var config = new ComponentConfiguration();
 
@@ -21,7 +21,7 @@ await Host.CreateDefaultBuilder(args)
 
         // We configure a component manager to manage our components.
         // This manager requires a configuration and a set of handlers to process the results of command execution.
-        services.AddSingleton<ComponentCollection>((services) =>
+        services.AddSingleton((services) =>
         {
             var config = services.GetRequiredService<ComponentConfiguration>();
             var logger = services.GetRequiredService<ILogger<Program>>();

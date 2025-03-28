@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
+﻿
 namespace Commands;
 
 /// <summary>
@@ -34,7 +33,7 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
         Configuration = configuration;
 
         // We choose not to set a standard handler through this constructor, in case it is desired that someone absolutely does not want to use one.
-        _handlers = handlers.ToArray();
+        _handlers = [.. handlers];
     }
 
     /// <summary>
@@ -61,7 +60,7 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
     /// <param name="types">A collection of types to filter and add to the manager, where possible.</param>
     /// <returns>The number of added components; or 0 if no components are added.</returns>
     public int AddRange(IEnumerable<Type> types)
-    { 
+    {
         var components = ComponentUtilities.GetComponents(types, Configuration);
         return AddRange(components);
     }
@@ -142,7 +141,7 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
 
     #region Initializers
 
-        /// <inheritdoc cref="From(IComponentProperties[])"/>
+    /// <inheritdoc cref="From(IComponentProperties[])"/>
     public static ComponentCollectionProperties With
         => new();
 

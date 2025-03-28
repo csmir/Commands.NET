@@ -118,7 +118,7 @@ public abstract class ComponentCollectionBase : IComponentCollection
             return additions.Count;
         }
     }
-    
+
     /// <inheritdoc />
     public bool Remove(IComponent component)
         => RemoveRange([component]) > 0;
@@ -142,7 +142,7 @@ public abstract class ComponentCollectionBase : IComponentCollection
             if (mutations > 0)
             {
                 _mutateParent?.Invoke(components, true);
-                _items = [..copy];
+                _items = [.. copy];
             }
 
             return mutations;
@@ -177,7 +177,7 @@ public abstract class ComponentCollectionBase : IComponentCollection
         private IComponent? _current;
 
         /// <inheritdoc />
-        public IComponent Current
+        public readonly IComponent Current
             => _current!;
 
         internal StateEnumerator(ComponentCollectionBase collection)
@@ -213,7 +213,7 @@ public abstract class ComponentCollectionBase : IComponentCollection
         /// <inheritdoc />
         public readonly void Dispose() { }
 
-        object IEnumerator.Current
+        readonly object IEnumerator.Current
             => Current;
     }
 

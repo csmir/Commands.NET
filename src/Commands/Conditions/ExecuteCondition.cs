@@ -1,6 +1,5 @@
 ﻿namespace Commands.Conditions;
 
-
 /// <summary>
 ///     A delegate-based condition that determines whether a command can execute or not.
 /// </summary>
