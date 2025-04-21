@@ -15,14 +15,12 @@ public struct ArgumentDictionary
     const string U002D = "-";
 #endif
 
-    private int _remainingLength;
     private int _index = 0;
 
     private readonly List<string> _unnamedArgs;
     private readonly Dictionary<string, object?> _namedArgs;
 
-    internal readonly int AvailableLength
-        => _remainingLength;
+    internal int AvailableLength { get; private set; }
 
     /// <summary>
     ///     Gets the number of arguments present in the set.
@@ -70,7 +68,7 @@ public struct ArgumentDictionary
         }
 
         _unnamedArgs = unnamedFill;
-        _remainingLength = _unnamedArgs.Count + _namedArgs.Count;
+        AvailableLength = _unnamedArgs.Count + _namedArgs.Count;
     }
 
     /// <summary>
@@ -80,7 +78,7 @@ public struct ArgumentDictionary
     {
         _namedArgs = null!;
         _unnamedArgs = null!;
-        _remainingLength = 0;
+        AvailableLength = 0;
     }
 
     #region Internals
@@ -136,7 +134,7 @@ public struct ArgumentDictionary
     internal void SetParseIndex(int index)
     {
         _index = index;
-        _remainingLength = AvailableLength - index;
+        AvailableLength -= index;
     }
 
     #endregion

@@ -78,10 +78,7 @@ public sealed class CommandOptions
     [EditorBrowsable(EditorBrowsableState.Never)]
     public sealed class EmptyServiceProvider : IServiceProvider
     {
-        private static readonly EmptyServiceProvider _i = new();
-
-        internal static EmptyServiceProvider Instance
-            => _i;
+        internal static EmptyServiceProvider Instance { get; } = new();
 
         /// <inheritdoc />
         public object? GetService(Type serviceType)

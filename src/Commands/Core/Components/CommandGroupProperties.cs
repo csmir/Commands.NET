@@ -1,5 +1,4 @@
-﻿using Commands.Conditions;
-
+﻿
 namespace Commands;
 
 /// <summary>
@@ -90,7 +89,7 @@ public sealed class CommandGroupProperties : IComponentProperties
         var group = new CommandGroup([.. _names]);
 
         if (_components.Count != 0)
-            group.AddRange(_components.Select(component => component.Create(configuration)).ToArray());
+            group.AddRange([.. _components.Select(component => component.Create(configuration))]);
 
         return group;
     }

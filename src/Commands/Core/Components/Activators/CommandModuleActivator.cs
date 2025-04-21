@@ -28,7 +28,7 @@ internal readonly struct CommandModuleActivator : IDependencyActivator<CommandMo
 
         Type = type;
     }
-    
+
     public CommandModule Activate(IServiceProvider services)
     {
         var obj = services.GetService(Type!);

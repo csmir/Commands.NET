@@ -1,5 +1,4 @@
 ﻿using Commands.Parsing;
-using System.Xml.Linq;
 
 namespace Commands;
 
@@ -72,7 +71,7 @@ public sealed class CommandParameter : ICommandParameter
         // Assign the parser defined on the parameter if it exists, otherwise use the one defined in the configuration.
         Parser = attributes.FirstOrDefault<ITypeParser>() ?? configuration.GetParser(Type);
 
-        Attributes = attributes.ToArray();
+        Attributes = [.. attributes];
 
         Name = attributes.FirstOrDefault<NameAttribute>()?.Name ?? parameterInfo.Name ?? "";
     }

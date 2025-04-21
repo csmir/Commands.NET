@@ -125,7 +125,7 @@ public static class ComponentUtilities
                 {
                     try
                     {
-                        results[i] = ParseResult.FromSuccess(complexParameter.Activator.Invoke(caller, null, result.Select(x => x.Value).ToArray(), options));
+                        results[i] = ParseResult.FromSuccess(complexParameter.Activator.Invoke(caller, null, [.. result.Select(x => x.Value)], options));
                     }
                     catch (Exception ex)
                     {
@@ -203,7 +203,7 @@ public static class ComponentUtilities
         var parameters = activator.Target.GetParameters();
 
         if (activator.HasContext)
-            parameters = parameters.Skip(1).ToArray();
+            parameters = [.. parameters.Skip(1)];
 
         var arr = new ICommandParameter[parameters.Length];
 

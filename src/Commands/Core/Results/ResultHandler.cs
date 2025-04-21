@@ -187,7 +187,7 @@ public abstract class ResultHandler
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Task<>))]
     [UnconditionalSuppressMessage("AotAnalysis", "IL2075", Justification = "The availability of Task<> is ensured at compile-time.")]
 #endif
-    protected async virtual ValueTask HandleMethodReturn(ICallerContext caller, IResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual async ValueTask HandleMethodReturn(ICallerContext caller, IResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         async ValueTask Respond(object? obj)
         {
