@@ -1,5 +1,4 @@
-﻿
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     A concurrent implementation of the mechanism that allows commands to be executed using a provided set of arguments. This class cannot be inherited.
