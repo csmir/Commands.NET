@@ -10,7 +10,7 @@
 		<NoWarn>CA1822;IDE0130;IDE0290</NoWarn>
 
 		<AssemblyVersion>2.0</AssemblyVersion>
-		<PackageVersion>2.0.0-alpha.12</PackageVersion> <!--\-alpha.1-->
+		<PackageVersion>2.0.0-alpha.13</PackageVersion> <!--\-alpha.1-->
 		<FileVersion>2.0.0.0</FileVersion>
 
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -31,10 +31,6 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageIcon>cnet_nogap_bexp.png</PackageIcon>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(PublishAot)' == 'true'">
-		<DefineConstants>$(DefineConstants);NATIVEAOT</DefineConstants>
 	</PropertyGroup>
 
 	<ItemGroup>
