@@ -34,7 +34,14 @@ public abstract class ConditionEvaluator
 
         foreach (var group in evaluatorGroups)
         {
+            // Unable to access group.Key in this context as IGrouping does not have dynamic access to required type info.
+            // Rather, it does, but the compiler doesn't know it does.
+
+#if NET8_0_OR_GREATER
             var instance = (ConditionEvaluator)Activator.CreateInstance(group.First().EvaluatorType)!;
+#else
+            var instance = (ConditionEvaluator)Activator.CreateInstance(group.Key);
+#endif
             instance.Conditions = [.. group];
             arr[i++] = instance;
         }
