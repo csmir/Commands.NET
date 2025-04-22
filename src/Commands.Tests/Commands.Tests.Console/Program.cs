@@ -1,10 +1,10 @@
 ﻿using Commands;
 using Commands.Testing;
 
-var manager = ComponentCollection.With
-    .Types(typeof(Program).Assembly.GetExportedTypes())
-    .Handler(ResultHandler.From<ICallerContext>((c, e, s) => c.Respond(e)))
-    .Component(
+var components = new ComponentCollectionProperties()
+    .AddTypes(typeof(Program).Assembly.GetExportedTypes())
+    .AddHandler(ResultHandler.From<ICallerContext>((c, e, s) => c.Respond(e)))
+    .AddComponent(
         Command.From((CommandContext<ConsoleContext> c) => 
         {
             foreach (var command in c.Manager!.GetCommands())
@@ -13,14 +13,13 @@ var manager = ComponentCollection.With
         }, "help"))
     .Create();
 
-var testRunner = TestRunner.With
-    .Commands(manager.GetCommands().ToArray())
+var tests = TestCollection.From([.. components.GetCommands()])
     .Create();
 
-var results = await testRunner.Run((str) => new TestContext(str));
+var results = await tests.Execute((str) => new TestContext(str));
 
-if (results.Count(x => x.Success) == testRunner.Count)
+if (results.Count(x => x.Success) == tests.Count)
     Console.WriteLine("All tests ran succesfully.");
 
 while (true)
-    await manager.Execute(new ConsoleContext(Console.ReadLine()));
+    await components.Execute(new ConsoleContext(Console.ReadLine()));

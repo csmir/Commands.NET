@@ -61,17 +61,13 @@ public sealed class ComponentConfiguration
 
     #region Initializers
 
-    /// <inheritdoc cref="From(TypeParser[])"/>
-    public static ComponentConfigurationProperties With
-        => new();
-
     /// <summary>
     ///     Defines a collection of properties to configure and convert into a new instance of <see cref="ComponentConfiguration"/>.
     /// </summary>
     /// <param name="parsers">The parsers to add to the configuration.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static ComponentConfigurationProperties From(params TypeParser[] parsers)
-        => new ComponentConfigurationProperties().Parsers(parsers);
+        => new ComponentConfigurationProperties().AddParsers(parsers);
 
     /// <summary>
     ///     Gets a default configuration that can be used as a fallback when no configuration is provided.

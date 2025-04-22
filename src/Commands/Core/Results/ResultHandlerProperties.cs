@@ -22,7 +22,7 @@ public sealed class ResultHandlerProperties<T> : IResultHandlerProperties
     /// </summary>
     /// <param name="executionDelegate">The delegate to set.</param>
     /// <returns>The same <see cref="ResultHandlerProperties{T}"/> for call-chaining.</returns>
-    public ResultHandlerProperties<T> Delegate(Action<T, Exception, IServiceProvider> executionDelegate)
+    public ResultHandlerProperties<T> AddDelegate(Action<T, Exception, IServiceProvider> executionDelegate)
     {
         Assert.NotNull(executionDelegate, nameof(executionDelegate));
 
@@ -40,7 +40,7 @@ public sealed class ResultHandlerProperties<T> : IResultHandlerProperties
     /// </summary>
     /// <param name="executionDelegate">The delegate to set.</param>
     /// <returns>The same <see cref="ResultHandlerProperties{T}"/> for call-chaining.</returns>
-    public ResultHandlerProperties<T> Delegate(Func<T, Exception, IServiceProvider, ValueTask> executionDelegate)
+    public ResultHandlerProperties<T> AddDelegate(Func<T, Exception, IServiceProvider, ValueTask> executionDelegate)
     {
         Assert.NotNull(executionDelegate, nameof(executionDelegate));
 

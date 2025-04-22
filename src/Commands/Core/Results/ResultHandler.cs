@@ -327,7 +327,7 @@ public abstract class ResultHandler
     /// <inheritdoc cref="From{T}(Action{T, Exception, IServiceProvider})"/>
     public static ResultHandlerProperties<T> From<T>(Func<T, Exception, IServiceProvider, ValueTask> executionDelegate)
         where T : class, ICallerContext
-        => new ResultHandlerProperties<T>().Delegate(executionDelegate);
+        => new ResultHandlerProperties<T>().AddDelegate(executionDelegate);
 
     /// <summary>
     ///     Defines a collection of properties to configure and convert into a new instance of <see cref="ResultHandler"/>.
@@ -336,7 +336,7 @@ public abstract class ResultHandler
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static ResultHandlerProperties<T> From<T>(Action<T, Exception, IServiceProvider> executionDelegate)
         where T : class, ICallerContext
-        => new ResultHandlerProperties<T>().Delegate(executionDelegate);
+        => new ResultHandlerProperties<T>().AddDelegate(executionDelegate);
 
     #endregion
 }

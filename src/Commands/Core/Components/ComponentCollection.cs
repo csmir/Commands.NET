@@ -140,17 +140,13 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
 
     #region Initializers
 
-    /// <inheritdoc cref="From(IComponentProperties[])"/>
-    public static ComponentCollectionProperties With
-        => new();
-
     /// <summary>
     ///     Defines a collection of properties to configure and convert into a new instance of <see cref="ComponentCollection"/>.
     /// </summary>
     /// <param name="components">The components to add.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static ComponentCollectionProperties From(params IComponentProperties[] components)
-        => new ComponentCollectionProperties().Components(components);
+        => new ComponentCollectionProperties().AddComponents(components);
 
     #endregion
 }

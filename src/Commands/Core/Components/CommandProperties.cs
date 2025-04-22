@@ -31,7 +31,7 @@ public sealed class CommandProperties : IComponentProperties
     /// </remarks>
     /// <param name="name">The value to add. If this value already exists in the properties, it is ignored.</param>
     /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties Name(string name)
+    public CommandProperties AddName(string name)
     {
         Assert.NotNullOrEmpty(name, nameof(name));
 
@@ -49,10 +49,10 @@ public sealed class CommandProperties : IComponentProperties
     /// </remarks>
     /// <param name="names">The values to add. If any value already exists in the properties, it is ignored.</param>
     /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties Names(params string[] names)
+    public CommandProperties AddNames(params string[] names)
     {
         foreach (var name in names)
-            Name(name);
+            AddName(name);
 
         return this;
     }
@@ -62,7 +62,7 @@ public sealed class CommandProperties : IComponentProperties
     /// </summary>
     /// <param name="condition">The condition to add to the group.</param>
     /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties Condition(IExecuteConditionProperties condition)
+    public CommandProperties AddCondition(IExecuteConditionProperties condition)
     {
         Assert.NotNull(condition, nameof(condition));
 
@@ -76,18 +76,18 @@ public sealed class CommandProperties : IComponentProperties
     /// </summary>
     /// <param name="condition">The condition to add to the group.</param>
     /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties Condition(ExecuteCondition condition)
-        => Condition(new ExecuteConditionProperties(condition));
+    public CommandProperties AddCondition(ExecuteCondition condition)
+        => AddCondition(new ExecuteConditionProperties(condition));
 
     /// <summary>
     ///     Adds multiple conditions to the command group.
     /// </summary>
     /// <param name="conditions">The conditions to add to the group.</param>
     /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties Conditions(params IExecuteConditionProperties[] conditions)
+    public CommandProperties AddConditions(params IExecuteConditionProperties[] conditions)
     {
         foreach (var condition in conditions)
-            Condition(condition);
+            AddCondition(condition);
 
         return this;
     }
@@ -97,10 +97,10 @@ public sealed class CommandProperties : IComponentProperties
     /// </summary>
     /// <param name="conditions">The conditions to add to the group.</param>
     /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties Conditions(params ExecuteCondition[] conditions)
+    public CommandProperties AddConditions(params ExecuteCondition[] conditions)
     {
         foreach (var condition in conditions)
-            Condition(new ExecuteConditionProperties(condition));
+            AddCondition(new ExecuteConditionProperties(condition));
 
         return this;
     }
@@ -113,7 +113,7 @@ public sealed class CommandProperties : IComponentProperties
     /// </remarks>
     /// <param name="executionDelegate">The delegate to be considered the command body.</param>
     /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties Delegate(Delegate executionDelegate)
+    public CommandProperties AddDelegate(Delegate executionDelegate)
     {
         Assert.NotNull(executionDelegate, nameof(executionDelegate));
 

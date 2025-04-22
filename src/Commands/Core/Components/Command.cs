@@ -302,12 +302,8 @@ public sealed class Command : IComponent, IParameterCollection
     #region Initializers
 
     /// <inheritdoc cref="From(Delegate, string[])"/>
-    public static CommandProperties With
-        => new();
-
-    /// <inheritdoc cref="From(Delegate, string[])"/>
     public static CommandProperties From(params string[] names)
-        => new CommandProperties().Names(names);
+        => new CommandProperties().AddNames(names);
 
     /// <summary>
     ///     Defines a collection of properties to configure and convert into a new instance of <see cref="Command"/>.
@@ -316,7 +312,7 @@ public sealed class Command : IComponent, IParameterCollection
     /// <param name="names">A set of names this command be discovered by.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static CommandProperties From(Delegate executionDelegate, params string[] names)
-        => new CommandProperties().Delegate(executionDelegate).Names(names);
+        => new CommandProperties().AddDelegate(executionDelegate).AddNames(names);
 
     #endregion
 }

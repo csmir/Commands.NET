@@ -23,7 +23,7 @@ public sealed class TestProviderProperties
     /// </summary>
     /// <param name="command">The command to set.</param>
     /// <returns>The same <see cref="TestProviderProperties"/> for call-chaining.</returns>
-    public TestProviderProperties Command(Command command)
+    public TestProviderProperties AddCommand(Command command)
     {
         Assert.NotNull(command, nameof(command));
 
@@ -37,7 +37,7 @@ public sealed class TestProviderProperties
     /// </summary>
     /// <param name="arguments">The arguments to set.</param>
     /// <returns>The same <see cref="TestProviderProperties"/> for call-chaining.</returns>
-    public TestProviderProperties Arguments(string? arguments)
+    public TestProviderProperties AddArguments(string? arguments)
     {
         _arguments = arguments;
 
@@ -49,7 +49,7 @@ public sealed class TestProviderProperties
     /// </summary>
     /// <param name="result">The result to set.</param>
     /// <returns>The same <see cref="TestProviderProperties"/> for call-chaining.</returns>
-    public TestProviderProperties Result(TestResultType result)
+    public TestProviderProperties AddResult(TestResultType result)
     {
         _result = result;
 

@@ -24,7 +24,7 @@ public sealed class ComponentConfigurationProperties
     /// </summary>
     /// <param name="parser">The parser to add. This parser will replace existing parsers converting the same type.</param>
     /// <returns>The same <see cref="ComponentConfigurationProperties"/> for call-chaining.</returns>
-    public ComponentConfigurationProperties Parser(ITypeParserProperties parser)
+    public ComponentConfigurationProperties AddParser(ITypeParserProperties parser)
     {
         Assert.NotNull(parser, nameof(parser));
 
@@ -38,18 +38,18 @@ public sealed class ComponentConfigurationProperties
     /// </summary>
     /// <param name="parser">The parser to add. This parser will replace existing parsers converting the same type.</param>
     /// <returns>The same <see cref="ComponentConfigurationProperties"/> for call-chaining.</returns>
-    public ComponentConfigurationProperties Parser(TypeParser parser)
-        => Parser(new TypeParserProperties(parser));
+    public ComponentConfigurationProperties AddParser(TypeParser parser)
+        => AddParser(new TypeParserProperties(parser));
 
     /// <summary>
     ///     Adds multiple parsers to the configuration.
     /// </summary>
     /// <param name="parsers">The parsers to add. Provided parsers will replace existing parsers converting the same type.</param>
     /// <returns>The same <see cref="ComponentConfigurationProperties"/> for call-chaining.</returns>
-    public ComponentConfigurationProperties Parsers(params ITypeParserProperties[] parsers)
+    public ComponentConfigurationProperties AddParsers(params ITypeParserProperties[] parsers)
     {
         foreach (var parser in parsers)
-            Parser(parser);
+            AddParser(parser);
 
         return this;
     }
@@ -59,10 +59,10 @@ public sealed class ComponentConfigurationProperties
     /// </summary>
     /// <param name="parsers">The parsers to add. Provided parsers will replace existing parsers converting the same type.</param>
     /// <returns>The same <see cref="ComponentConfigurationProperties"/> for call-chaining.</returns>
-    public ComponentConfigurationProperties Parsers(params TypeParser[] parsers)
+    public ComponentConfigurationProperties AddParsers(params TypeParser[] parsers)
     {
         foreach (var parser in parsers)
-            Parser(new TypeParserProperties(parser));
+            AddParser(new TypeParserProperties(parser));
 
         return this;
     }
@@ -73,7 +73,7 @@ public sealed class ComponentConfigurationProperties
     /// <param name="key">The identifier of the property. Properties with the same key as this one will replace the existing value.</param>
     /// <param name="value">The value of the property.</param>
     /// <returns>The same <see cref="ComponentConfigurationProperties"/> for call-chaining.</returns>
-    public ComponentConfigurationProperties Property(object key, object value)
+    public ComponentConfigurationProperties AddProperty(object key, object value)
     {
         Assert.NotNull(key, nameof(key));
 
@@ -87,10 +87,10 @@ public sealed class ComponentConfigurationProperties
     /// </summary>
     /// <param name="properties">The properties to add. Properties with the same key as another will replace the existing value.</param>
     /// <returns>The same <see cref="ComponentConfigurationProperties"/> for call-chaining.</returns>
-    public ComponentConfigurationProperties Properties(params KeyValuePair<object, object>[] properties)
+    public ComponentConfigurationProperties AddProperties(params KeyValuePair<object, object>[] properties)
     {
         foreach (var property in properties)
-            Property(property.Key, property.Value);
+            AddProperty(property.Key, property.Value);
 
         return this;
     }

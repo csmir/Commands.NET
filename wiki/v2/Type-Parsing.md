@@ -27,7 +27,7 @@ Any user-defined parsers will take precedence over the default parsers.
 ### Functional Pattern
 
 ```cs
-var parser = TypeParser.For<Type>().Delegate((ctx, param, value, services) => ...);
+var parser = TypeParser.For<Type>().AddDelegate((ctx, param, value, services) => ...);
 ```
 
 The creation pattern handles conditions as `ValueTask<ParseResult>` where `ParseResult.FromError()` or `ParseResult.FromSuccess()` can be used to return the result. 
@@ -72,10 +72,10 @@ The attribute pattern writes similar to `ExecuteCondition` implementations, also
 ### Functional Pattern & Declarative Pattern
 
 ```cs
-ComponentConfiguration.With.Parser(parser);
+ComponentConfiguration.From(...).AddParser(parser);
 ```
 ```cs
-ComponentConfiguration.With.Parser(new CustomTypeParser());
+ComponentConfiguration.From(...).AddParser(new CustomTypeParser());
 ```
 
 ### Attribute Pattern
@@ -87,4 +87,5 @@ public void Command([CustomTypeParser] Type type)
 }
 ```
 
-Attribute based parsers are applied to the parameter of a command. `Deconstruct` parameters do not support parsing.
+Attribute based parsers are applied to the parameter of a command. 
+Parameters marked by `DeconstructAttribute` do not support parsing, but every non-deconstructed argument within the applicable signature does.

@@ -28,16 +28,16 @@ await Host.CreateDefaultBuilder(args)
 
             var handler = new DelegateResultHandler<HostedCallerContext>((c, e, s) => c.Respond(e));
 
-            var manager = new ComponentCollection(config, [handler]);
+            var components = new ComponentCollection(config, [handler]);
 
             logger.LogInformation("Component manager created.");
 
             // We add all exported types from the current assembly to the manager.
-            var componentCount = manager.AddRange(typeof(Program).Assembly.GetExportedTypes());
+            var componentCount = components.AddRange(typeof(Program).Assembly.GetExportedTypes());
 
             logger.LogInformation("Added {} components to the manager.", componentCount);
 
-            return manager;
+            return components;
         });
 
         services.AddHostedService<Listener>();

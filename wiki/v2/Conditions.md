@@ -57,10 +57,10 @@ This pattern writes similar to `ExecuteCondition` implementations, also allowing
 ### Functional Pattern & Declarative Pattern
 
 ```cs
-var command = Command.From(() => { }, "name").Condition(condition);
+var command = Command.From(() => { }, "name").AddCondition(condition);
 ```
 ```cs
-var group = CommandGroup.From("name").Condition(new CustomCondition());
+var group = CommandGroup.From("name").AddCondition(new CustomCondition());
 ```
 
 Conditions exposed to `CommandGroup` are passed to every `Command` and `CommandGroup` added to it.

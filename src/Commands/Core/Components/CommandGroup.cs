@@ -206,17 +206,13 @@ public sealed class CommandGroup : ComponentCollectionBase, IComponent
 
     #region Initializers
 
-    /// <inheritdoc cref="From(string[])"/>
-    public static CommandGroupProperties With
-        => new();
-
     /// <summary>
     ///     Defines a collection of properties to configure and convert into a new instance of <see cref="CommandGroup"/>.
     /// </summary>
     /// <param name="names">A set of names this group be discovered by.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
     public static CommandGroupProperties From(params string[] names)
-        => new CommandGroupProperties().Names(names);
+        => new CommandGroupProperties().AddNames(names);
 
     #endregion
 }

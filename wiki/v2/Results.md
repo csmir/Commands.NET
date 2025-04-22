@@ -50,7 +50,7 @@ It will return a failed result if the command execution failed by errors thrown 
 ### Functional Pattern
 
 ```cs
-var handler = ResultHandler.For<TContext>().Delegate((ctx, result, services) => ...);
+var handler = ResultHandler.For<TContext>().AddDelegate((ctx, result, services) => ...);
 ```
 
 Here, `TContext` is the `ICallerContext` implementation that this handler will handle. 
@@ -86,7 +86,7 @@ The `CommandNotFound` method is called when the search operation returns no comm
 When you have succesfully constructed the logic for handling the result, you can pass it along when creating a new `ComponentCollection`:
 
 ```cs
-var collection = ComponentCollection.With.Handler(new CustomResultHandler()).Create();
+var collection = ComponentCollection.From(...).AddHandler(new CustomResultHandler()).Create();
 ```
 
 > [!NOTE]

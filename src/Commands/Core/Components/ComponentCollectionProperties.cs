@@ -32,7 +32,7 @@ public sealed class ComponentCollectionProperties
     /// </remarks>
     /// <param name="type">The type to add. If the type is already added, it is ignored.</param>
     /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Type(
+    public ComponentCollectionProperties AddType(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 # endif
@@ -53,14 +53,14 @@ public sealed class ComponentCollectionProperties
     /// </summary>
     /// <typeparam name="T">The type definition to add. If the type is already added, it is ignored.</typeparam>
     /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Type<
+    public ComponentCollectionProperties AddType<
 #if NET8_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
     T>()
         where T : CommandModule
     {
-        return Type(new DynamicType(typeof(T)));
+        return AddType(new DynamicType(typeof(T)));
     }
 
     /// <summary>
@@ -71,10 +71,10 @@ public sealed class ComponentCollectionProperties
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The types are supplied from user-facing implementation, it is up to the user to ensure that these types are available in AOT context.")]
 #endif
-    public ComponentCollectionProperties Types(params Type[] types)
+    public ComponentCollectionProperties AddTypes(params Type[] types)
     {
         foreach (var componentType in types)
-            Type(componentType);
+            AddType(componentType);
 
         return this;
     }
@@ -87,7 +87,7 @@ public sealed class ComponentCollectionProperties
     /// </remarks>
     /// <param name="component">The component to add.</param>
     /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Component(IComponentProperties component)
+    public ComponentCollectionProperties AddComponent(IComponentProperties component)
     {
         Assert.NotNull(component, nameof(component));
 
@@ -104,10 +104,10 @@ public sealed class ComponentCollectionProperties
     /// </remarks>
     /// <param name="components">The components to add.</param>
     /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Components(params IComponentProperties[] components)
+    public ComponentCollectionProperties AddComponents(params IComponentProperties[] components)
     {
         foreach (var component in components)
-            Component(component);
+            AddComponent(component);
 
         return this;
     }
@@ -117,7 +117,7 @@ public sealed class ComponentCollectionProperties
     /// </summary>
     /// <param name="handler">The handler to add.</param>
     /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Handler(IResultHandlerProperties handler)
+    public ComponentCollectionProperties AddHandler(IResultHandlerProperties handler)
     {
         Assert.NotNull(handler, nameof(handler));
 
@@ -131,18 +131,18 @@ public sealed class ComponentCollectionProperties
     /// </summary>
     /// <param name="handler">The handler to add.</param>
     /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Handler(ResultHandler handler)
-        => Handler(new ResultHandlerProperties(handler));
+    public ComponentCollectionProperties AddHandler(ResultHandler handler)
+        => AddHandler(new ResultHandlerProperties(handler));
 
     /// <summary>
     ///     Adds multiple result handlers to the component manager.
     /// </summary>
     /// <param name="handlers">The handlers to add.</param>
     /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Handlers(params IResultHandlerProperties[] handlers)
+    public ComponentCollectionProperties AddHandlers(params IResultHandlerProperties[] handlers)
     {
         foreach (var handler in handlers)
-            Handler(handler);
+            AddHandler(handler);
 
         return this;
     }
@@ -152,10 +152,10 @@ public sealed class ComponentCollectionProperties
     /// </summary>
     /// <param name="handlers">The handlers to add.</param>
     /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Handlers(params ResultHandler[] handlers)
+    public ComponentCollectionProperties AddHandlers(params ResultHandler[] handlers)
     {
         foreach (var handler in handlers)
-            Handler(new ResultHandlerProperties(handler));
+            AddHandler(new ResultHandlerProperties(handler));
 
         return this;
     }
@@ -165,7 +165,7 @@ public sealed class ComponentCollectionProperties
     /// </summary>
     /// <param name="configuration">The configuration which should configure defined components that are to be built for this manager.</param>
     /// <returns>The same <see cref="ComponentCollectionProperties"/> for call-chaining.</returns>
-    public ComponentCollectionProperties Configuration(ComponentConfigurationProperties configuration)
+    public ComponentCollectionProperties AddConfiguration(ComponentConfigurationProperties configuration)
     {
         Assert.NotNull(configuration, nameof(configuration));
 

@@ -22,7 +22,7 @@ public sealed class TypeParserProperties<T> : ITypeParserProperties
     /// </summary>
     /// <param name="executionDelegate">The delegate to set.</param>
     /// <returns>The same <see cref="TypeParserProperties{T}"/> for call-chaining.</returns>
-    public TypeParserProperties<T> Delegate(Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> executionDelegate)
+    public TypeParserProperties<T> AddDelegate(Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> executionDelegate)
     {
         Assert.NotNull(executionDelegate, nameof(executionDelegate));
 
@@ -39,7 +39,7 @@ public sealed class TypeParserProperties<T> : ITypeParserProperties
     /// </remarks>
     /// <param name="executionDelegate">The delegate to set.</param>
     /// <returns>The same <see cref="TypeParserProperties{T}"/> for call-chaining.</returns>
-    public TypeParserProperties<T> Delegate(TryParseParser<T>.ParseDelegate executionDelegate)
+    public TypeParserProperties<T> AddDelegate(TryParseParser<T>.ParseDelegate executionDelegate)
     {
         Assert.NotNull(executionDelegate, nameof(executionDelegate));
 

@@ -26,7 +26,7 @@ public sealed class CommandGroupProperties : IComponentProperties
     /// </remarks>
     /// <param name="name">The value to add. If this value already exists in the properties, it is ignored.</param>
     /// <returns>The same <see cref="CommandGroupProperties"/> for call-chaining.</returns>
-    public CommandGroupProperties Name(string name)
+    public CommandGroupProperties AddName(string name)
     {
         Assert.NotNullOrEmpty(name, nameof(name));
 
@@ -44,10 +44,10 @@ public sealed class CommandGroupProperties : IComponentProperties
     /// </remarks>
     /// <param name="names">The values to add. If any value already exists in the properties, it is ignored.</param>
     /// <returns>The same <see cref="CommandGroupProperties"/> for call-chaining.</returns>
-    public CommandGroupProperties Names(params string[] names)
+    public CommandGroupProperties AddNames(params string[] names)
     {
         foreach (var name in names)
-            Name(name);
+            AddName(name);
 
         return this;
     }
@@ -57,7 +57,7 @@ public sealed class CommandGroupProperties : IComponentProperties
     /// </summary>
     /// <param name="component">The component to add to the group.</param>
     /// <returns>The same <see cref="CommandGroupProperties"/> for call-chaining.</returns>
-    public CommandGroupProperties Component(IComponentProperties component)
+    public CommandGroupProperties AddComponent(IComponentProperties component)
     {
         Assert.NotNull(component, nameof(component));
 
@@ -71,10 +71,10 @@ public sealed class CommandGroupProperties : IComponentProperties
     /// </summary>
     /// <param name="components">The components to add to the group.</param>
     /// <returns>The same <see cref="CommandGroupProperties"/> for call-chaining.</returns>
-    public CommandGroupProperties Components(params IComponentProperties[] components)
+    public CommandGroupProperties AddComponents(params IComponentProperties[] components)
     {
         foreach (var component in components)
-            Component(component);
+            AddComponent(component);
 
         return this;
     }

@@ -3,21 +3,21 @@ using Commands;
 using Commands.Samples;
 
 var exit = Command.From("exit")
-    .Delegate(() => Environment.Exit(0));
+    .AddDelegate(() => Environment.Exit(0));
 
 var mathCommands = CommandGroup.From("math")
-    .Components(
+    .AddComponents(
         Command.From(Sum, "sum", "add"),
         Command.From(Subtract, "subtract", "sub"),
         Command.From(Multiply, "multiply", "mul"),
         Command.From(Divide, "divide", "div")
     );
 
-var manager = ComponentCollection.From(exit, mathCommands)
-    .Type<HelpModule>()
+var components = ComponentCollection.From(exit, mathCommands)
+    .AddType<HelpModule>()
     .Create();
 
-await manager.Execute(new ConsoleContext(args));
+await components.Execute(new ConsoleContext(args));
 
 static double Sum(double number, int sumBy)
     => number + sumBy;

@@ -27,12 +27,10 @@ public class CreationAnalysisModule : CommandModule<BenchmarkCallerContext>
 [MemoryDiagnoser]
 public class Program
 {
-    private static readonly CommandOptions _options = new() { ExecuteAsynchronously = true };
-
     private static readonly ArgumentDictionary _args = ArgumentDictionary.From("command");
     private static readonly ComponentCollection _components = ComponentCollection.From()
-        .Type<CreationAnalysisModule>()
-        .Component(Command.From(() => { }, "command"))
+        .AddType<CreationAnalysisModule>()
+        .AddComponent(Command.From(() => { }, "command"))
         .Create();
 
     static void Main() 
@@ -46,13 +44,16 @@ public class Program
     public void FindCommands()
         => _components.Find(_args);
 
-    [Benchmark]
-    public Task RunCommand()
+    [Benchmark] 
+    public Task RunCommand() 
         => _components.Execute(new BenchmarkCallerContext("command"));
 
     [Benchmark] 
     public Task RunCommandNonBlocking() 
-        => _components.Execute(new BenchmarkCallerContext("command"), _options);
+        => _components.Execute(new BenchmarkCallerContext("command"), new CommandOptions()
+        {
+            ExecuteAsynchronously = true,
+        });
 
     [Benchmark]
     public ComponentCollection CollectionCreate()

@@ -3,15 +3,15 @@
 /// <summary>
 ///     A set of properties for a test runner.
 /// </summary>
-public sealed class TestRunnerProperties
+public sealed class TestCollectionProperties
 {
     private readonly List<TestProviderProperties> _tests;
     private readonly List<Command> _commands;
 
     /// <summary>
-    ///     Creates a new instance of <see cref="TestRunnerProperties"/>.
+    ///     Creates a new instance of <see cref="TestCollectionProperties"/>.
     /// </summary>
-    public TestRunnerProperties()
+    public TestCollectionProperties()
     {
         _tests = [];
         _commands = [];
@@ -21,8 +21,8 @@ public sealed class TestRunnerProperties
     ///     Adds a test provider to the test runner.
     /// </summary>
     /// <param name="provider">The provider to add.</param>
-    /// <returns>The same <see cref="TestRunnerProperties"/> for call-chaining.</returns>
-    public TestRunnerProperties Test(TestProviderProperties provider)
+    /// <returns>The same <see cref="TestCollectionProperties"/> for call-chaining.</returns>
+    public TestCollectionProperties AddTest(TestProviderProperties provider)
     {
         Assert.NotNull(provider, nameof(provider));
 
@@ -35,11 +35,11 @@ public sealed class TestRunnerProperties
     ///     Adds multiple test providers to the test runner.
     /// </summary>
     /// <param name="providers">The providers to add.</param>
-    /// <returns>The same <see cref="TestRunnerProperties"/> for call-chaining.</returns>
-    public TestRunnerProperties Tests(params TestProviderProperties[] providers)
+    /// <returns>The same <see cref="TestCollectionProperties"/> for call-chaining.</returns>
+    public TestCollectionProperties AddTests(params TestProviderProperties[] providers)
     {
         foreach (var provider in providers)
-            Test(provider);
+            AddTest(provider);
 
         return this;
     }
@@ -48,8 +48,8 @@ public sealed class TestRunnerProperties
     ///     Adds a command to the test runner.
     /// </summary>
     /// <param name="command">The command to add.</param>
-    /// <returns>The same <see cref="TestRunnerProperties"/> for call-chaining.</returns>
-    public TestRunnerProperties Command(Command command)
+    /// <returns>The same <see cref="TestCollectionProperties"/> for call-chaining.</returns>
+    public TestCollectionProperties AddCommand(Command command)
     {
         Assert.NotNull(command, nameof(command));
 
@@ -62,20 +62,20 @@ public sealed class TestRunnerProperties
     ///     Adds multiple commands to the test runner.
     /// </summary>
     /// <param name="commands">The commands to add.</param>
-    /// <returns>The same <see cref="TestRunnerProperties"/> for call-chaining.</returns>
-    public TestRunnerProperties Commands(params Command[] commands)
+    /// <returns>The same <see cref="TestCollectionProperties"/> for call-chaining.</returns>
+    public TestCollectionProperties AddCommands(params Command[] commands)
     {
         foreach (var command in commands)
-            Command(command);
+            AddCommand(command);
 
         return this;
     }
 
     /// <summary>
-    ///     Converts the properties to a new instance of <see cref="TestRunner"/>.
+    ///     Converts the properties to a new instance of <see cref="TestCollection"/>.
     /// </summary>
-    /// <returns>A new instance of <see cref="TestRunner"/>.</returns>
-    public TestRunner Create()
+    /// <returns>A new instance of <see cref="TestCollection"/>.</returns>
+    public TestCollection Create()
     {
         var tests = _commands.ToDictionary(x => x, x => x.Attributes.OfType<ITestProvider>().ToArray());
 
@@ -89,6 +89,6 @@ public sealed class TestRunnerProperties
                 tests[group.Key] = [.. group];
         }
 
-        return new TestRunner(tests);
+        return new TestCollection(tests);
     }
 }

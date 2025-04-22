@@ -29,7 +29,7 @@ using Commands;
 
 var command = Command.From(() => "Hello world!", "greet");
 
-var collection = ComponentCollection.With.Component(command).Create();
+var collection = ComponentCollection.From(command).Create();
 
 await collection.Execute(new ConsoleContext(args));
 
@@ -45,7 +45,7 @@ Groups allow for subcommand creation, where the group name is a category for its
 using Commands;
 
 var mathCommands = CommandGroup.From("math")
-    .Components(
+    .AddComponents(
         Command.From((double number, int sumBy)      => number + sumBy, 
             "sum", "add"), 
         Command.From((double number, int subtractBy) => number - subtractBy, 
@@ -56,7 +56,7 @@ var mathCommands = CommandGroup.From("math")
             "divide", "div")
     );
 
-var collection = ComponentCollection.With.Components(mathCommands).Create();
+var collection = ComponentCollection.From(mathCommands).Create();
 
 await collection.Execute(new ConsoleContext(args));
 
@@ -87,7 +87,7 @@ public class HelpModule : CommandModule
 
 ...
 
-var collection = ComponentCollection.With.Component(mathCommands).Type<HelpModule>().Create();
+var collection = ComponentCollection.From(mathCommands).AddType<HelpModule>().Create();
 
 await collection.Execute(new ConsoleContext(args));
 
@@ -106,7 +106,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection()
     .AddSingleton<MyService>()
-    .AddSingleton<ComponentCollection>(ComponentCollection.With.Component(mathCommands).Type<HelpModule>().Create());
+    .AddSingleton<ComponentCollection>(ComponentCollection.From(mathCommands).AddType<HelpModule>().Create());
     .BuildServiceProvider();
 
 var collection = services.GetRequiredService<ComponentCollection>();
