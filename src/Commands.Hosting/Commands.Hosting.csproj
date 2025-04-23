@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>13.0</LangVersion>
+		<WarningsAsErrors>true</WarningsAsErrors>
+		<IsAotCompatible>true</IsAotCompatible>
+		<NoWarn>CA1822;IDE0130;IDE0290</NoWarn>
+
+		<AssemblyVersion>2.0</AssemblyVersion>
+		<PackageVersion>2.0.0-alpha.13</PackageVersion> <!--\-alpha.1-->
+		<FileVersion>2.0.0.0</FileVersion>
+
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+		<PackageId>Commands.NET.Hosting</PackageId>
+
+		<Authors>Commands.NET contributors.</Authors>
+		<Title>Commands.NET.Hosting</Title>
+		<Description>A package containing tooling for integrating Commands.NET with Microsoft.Extensions.*.</Description>
+		<PackageTags>commands, hosting, dependencyinjection, logging, configuration</PackageTags>
+		<NeutralLanguage>en-US</NeutralLanguage>
+
+		<PackageProjectUrl>https://github.com/csmir/Commands.NET</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/csmir/Commands.NET</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageIcon>cnet_nogap_bexp.png</PackageIcon>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\..\img\cnet_nogap_bexp.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+</Project>
