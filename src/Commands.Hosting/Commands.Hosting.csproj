@@ -48,4 +48,8 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\Commands\Commands.csproj" />
+	</ItemGroup>
+
 </Project>
