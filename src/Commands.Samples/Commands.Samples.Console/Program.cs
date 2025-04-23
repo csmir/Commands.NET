@@ -8,8 +8,8 @@ var results = ResultHandler.For<SampleContext>()
     .AddDelegate((c, e, s) => c.Respond(e));
 
 var components = new ComponentCollectionProperties()
-    .AddConfiguration(configuration)
-    .AddHandler(results)
+    .WithConfiguration(configuration)
+    .AddResultHandler(results)
     .Create();
 
 var tests = new TestCollectionProperties()

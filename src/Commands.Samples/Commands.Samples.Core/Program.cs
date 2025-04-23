@@ -14,7 +14,7 @@ var mathCommands = CommandGroup.From("math")
     );
 
 var components = ComponentCollection.From(exit, mathCommands)
-    .AddType<HelpModule>()
+    .AddComponentType<HelpModule>()
     .Create();
 
 await components.Execute(new ConsoleContext(args));

@@ -1,7 +1,7 @@
 ﻿namespace Commands.Samples;
 
 // By defining a module, we can create commands.
-public sealed class Module : CommandModule<HostedCallerContext>
+public sealed class Module : CommandModule<ConsoleContext>
 {
     [Name("help")]
     public void Help()

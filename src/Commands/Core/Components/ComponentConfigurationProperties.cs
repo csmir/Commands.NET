@@ -42,6 +42,15 @@ public sealed class ComponentConfigurationProperties
         => AddParser(new TypeParserProperties(parser));
 
     /// <summary>
+    ///     Adds a parser to the configuration.
+    /// </summary>
+    /// <typeparam name="TConvertible">The type to convert using this converter.</typeparam>
+    /// <param name="parseDelegate">The delegate that will parse any incoming value that targets this type, and return the parsed output.</param>
+    /// <returns>The same <see cref="ComponentConfigurationProperties"/> for call-chaining.</returns>
+    public ComponentConfigurationProperties AddParser<TConvertible>(Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> parseDelegate)
+        => AddParser(new TypeParserProperties(new DelegateTypeParser<TConvertible>(parseDelegate)));
+
+    /// <summary>
     ///     Adds multiple parsers to the configuration.
     /// </summary>
     /// <param name="parsers">The parsers to add. Provided parsers will replace existing parsers converting the same type.</param>

@@ -29,7 +29,7 @@ public class Program
 {
     private static readonly ArgumentDictionary _args = ArgumentDictionary.From("command");
     private static readonly ComponentCollection _components = ComponentCollection.From()
-        .AddType<CreationAnalysisModule>()
+        .AddComponentType<CreationAnalysisModule>()
         .AddComponent(Command.From(() => { }, "command"))
         .Create();
 

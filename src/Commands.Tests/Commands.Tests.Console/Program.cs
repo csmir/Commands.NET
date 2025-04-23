@@ -2,8 +2,8 @@
 using Commands.Testing;
 
 var components = new ComponentCollectionProperties()
-    .AddTypes(typeof(Program).Assembly.GetExportedTypes())
-    .AddHandler(ResultHandler.From<ICallerContext>((c, e, s) => c.Respond(e)))
+    .AddComponentTypes(typeof(Program).Assembly.GetExportedTypes())
+    .AddResultHandler(ResultHandler.From<ICallerContext>((c, e, s) => c.Respond(e)))
     .AddComponent(
         Command.From((CommandContext<ConsoleContext> c) => 
         {
