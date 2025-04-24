@@ -2,10 +2,9 @@
 using Commands.Hosting;
 using Commands.Parsing;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 await Host.CreateDefaultBuilder(args)
-    .ConfigureCommands(commands =>
+    .ConfigureComponents(commands =>
     {
         commands.WithConfiguration(configure =>
         {
@@ -13,10 +12,5 @@ await Host.CreateDefaultBuilder(args)
         });
         commands.AddResultHandler<ConsoleContext>((c, e, s) => c.Respond(s));
         commands.AddComponentTypes(typeof(Program).Assembly.GetExportedTypes());
-    })
-    .WithCommandFactory<HostedCommandExecutionFactory>()
-    .ConfigureLogging(logging =>
-    {
-        logging.AddSimpleConsole();
     })
     .RunConsoleAsync();

@@ -23,8 +23,7 @@ internal sealed class ExecutionContext : IExecutionContext
         CancellationSource?.Dispose();
     }
 
-    bool IExecutionContext.TryGetCaller<T>([NotNullWhen(true)] out T? caller)
-        where T : class
+    bool IExecutionContext.TryGetCaller<T>([NotNullWhen(true)] out T caller)
     {
         if (Caller is T t)
         {
@@ -32,7 +31,7 @@ internal sealed class ExecutionContext : IExecutionContext
             return true;
         }
 
-        caller = null;
+        caller = default!;
         return false;
     }
 }

@@ -7,7 +7,7 @@ namespace Commands;
 ///     Provides a set of assertion methods for validating arguments.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
-public sealed class Assert
+public static class Assert
 {
     /// <summary>
     ///     Validates that the specified argument is not null.

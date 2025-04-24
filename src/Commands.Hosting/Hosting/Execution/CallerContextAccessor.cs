@@ -1,16 +1,16 @@
-﻿namespace Commands.Hosting.Hosting.Execution;
+﻿namespace Commands.Hosting;
 
-internal sealed class CallerContextAccessor<T>(IExecutionContext context) : ICallerContextAccessor<T>
-    where T : class, ICallerContext
+internal sealed class CallerContextAccessor<TCaller>(IExecutionContext context) : ICallerContextAccessor<TCaller>
+    where TCaller : ICallerContext
 {
-    public T Caller
+    public TCaller Caller
     {
         get
         {
-            if (context.TryGetCaller<T>(out var caller))
+            if (context.TryGetCaller<TCaller>(out var caller))
                 return caller;
-            else
-                throw new InvalidOperationException($"The caller of type {typeof(T)} is not available in the current context.");
+            
+            throw new InvalidOperationException($"The caller of type {typeof(TCaller)} is not available in the current context.");
         }
     }
 }
