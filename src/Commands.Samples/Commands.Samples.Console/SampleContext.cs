@@ -1,7 +1,7 @@
 ﻿
 namespace Commands.Samples;
 
-public class SampleContext(string username, string? args) : ConsoleContext(args)
+public class SampleContext(string username, string? args) : ConsoleCallerContext(args)
 {
     public string Name { get; } = username;
 

@@ -9,7 +9,7 @@ public sealed class CommandListener(IExecutionFactory factory) : BackgroundServi
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var context = new ConsoleContext(Console.ReadLine());
+            var context = new ConsoleCallerContext(Console.ReadLine());
 
             await factory.StartExecution(context);
         }

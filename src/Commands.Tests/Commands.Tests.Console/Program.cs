@@ -5,7 +5,7 @@ var components = new ComponentCollectionProperties()
     .AddComponentTypes(typeof(Program).Assembly.GetExportedTypes())
     .AddResultHandler(ResultHandler.From<ICallerContext>((c, e, s) => c.Respond(e)))
     .AddComponent(
-        Command.From((CommandContext<ConsoleContext> c) => 
+        Command.From((CommandContext<ConsoleCallerContext> c) => 
         {
             foreach (var command in c.Manager!.GetCommands())
                 c.Respond(command);
@@ -22,4 +22,4 @@ if (results.Count(x => x.Success) == tests.Count)
     Console.WriteLine("All tests ran succesfully.");
 
 while (true)
-    await components.Execute(new ConsoleContext(Console.ReadLine()));
+    await components.Execute(new ConsoleCallerContext(Console.ReadLine()));

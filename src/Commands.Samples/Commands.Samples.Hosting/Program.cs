@@ -1,6 +1,8 @@
 ﻿using Commands;
 using Commands.Hosting;
 using Commands.Parsing;
+using Commands.Samples;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 await Host.CreateDefaultBuilder(args)
@@ -10,7 +12,12 @@ await Host.CreateDefaultBuilder(args)
         {
             configure.AddParser(new TryParseParser<Version>(Version.TryParse));
         });
-        commands.AddResultHandler<ConsoleContext>((c, e, s) => c.Respond(s));
+        commands.AddResultHandler<ConsoleCallerContext>((c, e, s) => c.Respond(e));
         commands.AddComponentTypes(typeof(Program).Assembly.GetExportedTypes());
+    })
+    .ConfigureServices(services =>
+    {
+        services.AddHostedService<CommandListener>();
+        services.AddScoped<BasicService>();
     })
     .RunConsoleAsync();

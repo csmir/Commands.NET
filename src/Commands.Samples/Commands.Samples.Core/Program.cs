@@ -17,7 +17,7 @@ var components = ComponentCollection.From(exit, mathCommands)
     .AddComponentType<HelpModule>()
     .Create();
 
-await components.Execute(new ConsoleContext(args));
+await components.Execute(new ConsoleCallerContext(args));
 
 static double Sum(double number, int sumBy)
     => number + sumBy;
