@@ -13,9 +13,28 @@ Consider leaving a ⭐
 Commands.NET aims to improve your experience integrating input from different sources* into the same, concurrent pool and treating them as triggered actions, called commands. 
 It provides a modular and intuitive API for registering and executing commands.
 
-> Browse the [wiki](https://github.com/csmir/Commands.NET/wiki) for a full overview of the library.
-
 **Sources can range from command-line, console, chatboxes, to social platforms like Discord, Slack, Messenger & much, much more.*
+
+## Documentation
+
+Browse the [wiki](https://github.com/csmir/Commands.NET/wiki) for a full overview of the library.
+
+## Installation
+
+Commands.NET is available on NuGet. You can install it using the package manager, or the following command:
+
+```bash
+dotnet add package Commands.NET
+dotnet add package Commands.NET.Hosting
+```
+
+Alternatively, adding it to your `.csproj` file:
+
+```xml
+<PackageReference Include="Commands.NET" Version="x.x.x" />
+<PackageReference Include="Commands.NET.Hosting" Version="x.x.x" />
+```
+> The hosting package is optional.
 
 ## Usage
 
@@ -94,7 +113,7 @@ await collection.Execute(new ConsoleContext(args));
 // dotnet run help -> Commands: math sum <...> math subtract <...> math ...
 ```
 
-### Using Dependency Injection
+### Dependency Injection
 
 Commands.NET is designed to be compatible with dependency injection out of the box, propagating `IServiceProvider` throughout the execution flow.
 
@@ -120,6 +139,40 @@ Modules can be injected directly from the provider. They themselves are consider
 public class ServicedModule(MyService service) : CommandModule 
 {
 
+}
+```
+
+### .NET Generic Host
+
+Alongside dependency injection support in the base package, Commands.NET provides an extension package for the .NET Generic Host, allowing you to integrate Commands.NET into your application with ease.
+
+```cs
+using Commands.Hosting;
+using Microsoft.Extensions.Hosting;
+
+var host = Host.CreateDefaultBuilder(args)
+    .ConfigureServices(configure => configure.AddHostedService<CommandListener>())
+    .ConfigureComponents(configure => ...)
+    .Build();
+```
+
+The extension package supports factory-based command execution alongside scope management, allowing you to manage the lifetime of your commands and modules.
+
+```cs
+using Commands.Hosting;
+using Microsoft.Extensions.Hosting;
+
+public class CommandListener(IExecutionFactory factory) : BackgroundService
+{
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            var context = new ConsoleContext(Console.ReadLine());
+
+            await factory.StartExecution(context);
+        }
+    }
 }
 ```
 
