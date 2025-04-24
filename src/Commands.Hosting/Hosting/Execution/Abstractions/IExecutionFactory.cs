@@ -15,6 +15,6 @@ public interface IExecutionFactory
     /// <param name="caller">The <see cref="ICallerContext"/> implementation that serves as the caller for this execution.</param>
     /// <param name="options">A set of options that change the pipeline behavior. This factory overrides a couple of settings.</param>
     /// <returns>An instance of <see cref="IExecutionContext"/> which represents the scope of the command, its lifetime and the logic to dispose necessary resources.</returns>
-    public Task<IExecutionContext> StartExecution<TCaller>(TCaller caller, HostedCommandOptions? options = null)
+    public Task<IExecutionContext> CreateExecution<TCaller>(TCaller caller, HostedCommandOptions? options = null)
         where TCaller : class, ICallerContext;
 }
