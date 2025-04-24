@@ -15,7 +15,7 @@ public sealed class ComponentConfigurationProperties
     /// </summary>
     public ComponentConfigurationProperties()
     {
-        _parsers    = [];
+        _parsers = [];
         _properties = [];
     }
 

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Commands.Hosting;
+﻿namespace Commands.Hosting;
 
 /// <summary>
 ///     A static class containing methods for configuring a .NET Generic host -being any implementation of <see cref="IHostBuilder"/>- with Commands.NET functionality.
@@ -16,14 +14,14 @@ public static class HostUtilities
     /// </remarks>
     /// <param name="builder"></param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
-    public static IHostBuilder ConfigureComponents(this IHostBuilder builder) 
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder)
         => ConfigureComponents(builder, configure => { });
 
     /// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>
     /// <param name="builder"></param>
     /// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentCollectionProperties"/> in preparation for building an implementation of <see cref="IExecutionProvider"/> to execute commands with.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
-    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentCollectionProperties> configureAction) 
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentCollectionProperties> configureAction)
         => ConfigureComponents(builder, (ctx, props) => configureAction(props));
 
     /// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>

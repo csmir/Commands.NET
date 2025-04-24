@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Commands.Hosting;
+﻿namespace Commands.Hosting;
 
 /// <summary>
 ///     Represents the execution of a command. This context can be accessed during the hosted execution process through an implementation of <see cref="IExecutionFactory"/>.

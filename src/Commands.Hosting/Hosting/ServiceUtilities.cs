@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Commands.Hosting;

@@ -7,7 +7,7 @@ public class BenchmarkCallerContext(string? input) : AsyncCallerContext
 {
     public override ArgumentDictionary Arguments { get; } = ArgumentDictionary.From(input);
 
-    public override Task Respond(object? response) 
+    public override Task Respond(object? response)
         => Task.CompletedTask;
 }
 
@@ -33,7 +33,7 @@ public class Program
         .AddComponent(Command.From(() => { }, "command"))
         .Create();
 
-    static void Main() 
+    static void Main()
         => BenchmarkRunner.Run<Program>();
 
     [Benchmark]
@@ -44,12 +44,12 @@ public class Program
     public void FindCommands()
         => _components.Find(_args);
 
-    [Benchmark] 
-    public Task RunCommand() 
+    [Benchmark]
+    public Task RunCommand()
         => _components.Execute(new BenchmarkCallerContext("command"));
 
-    [Benchmark] 
-    public Task RunCommandNonBlocking() 
+    [Benchmark]
+    public Task RunCommandNonBlocking()
         => _components.Execute(new BenchmarkCallerContext("command"), new CommandOptions()
         {
             ExecuteAsynchronously = true,

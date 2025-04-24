@@ -1,7 +1,4 @@
-﻿
-using System.Diagnostics.CodeAnalysis;
-
-namespace Commands.Hosting;
+﻿namespace Commands.Hosting;
 
 internal sealed class ExecutionContext : IExecutionContext
 {

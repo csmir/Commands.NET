@@ -9,7 +9,7 @@ internal sealed class CallerContextAccessor<TCaller>(IExecutionContext context) 
         {
             if (context.TryGetCaller<TCaller>(out var caller))
                 return caller;
-            
+
             throw new InvalidOperationException($"The caller of type {typeof(TCaller)} is not available in the current context.");
         }
     }

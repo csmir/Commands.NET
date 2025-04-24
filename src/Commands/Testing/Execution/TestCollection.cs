@@ -14,7 +14,7 @@ public sealed class TestCollection : IReadOnlyDictionary<Command, ITestProvider[
     public int Count { get; }
 
     /// <inheritdoc />
-    public ITestProvider[] this[Command key] 
+    public ITestProvider[] this[Command key]
         => _tests[key];
 
     /// <summary>

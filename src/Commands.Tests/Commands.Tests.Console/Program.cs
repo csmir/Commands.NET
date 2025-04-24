@@ -5,7 +5,7 @@ var components = new ComponentCollectionProperties()
     .AddComponentTypes(typeof(Program).Assembly.GetExportedTypes())
     .AddResultHandler(ResultHandler.From<ICallerContext>((c, e, s) => c.Respond(e)))
     .AddComponent(
-        Command.From((CommandContext<ConsoleCallerContext> c) => 
+        Command.From((CommandContext<ConsoleCallerContext> c) =>
         {
             foreach (var command in c.Manager!.GetCommands())
                 c.Respond(command);
