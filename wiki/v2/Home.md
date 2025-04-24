@@ -44,3 +44,9 @@ Manage and create custom parsers for changing raw input into types.
 > `using Commands.Testing;`
 
 Learn how to test commands and ensure they function as expected.
+
+### ⚙️ [[Hosting Commands|Hosting]]
+
+> `using Commands.Hosting;`
+
+Empower your commands with the .NET generic host and service-pattern scoping mechanisms.

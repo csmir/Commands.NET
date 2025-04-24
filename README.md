@@ -50,7 +50,7 @@ var command = Command.From(() => "Hello world!", "greet");
 
 var collection = ComponentCollection.From(command).Create();
 
-await collection.Execute(new ConsoleContext(args));
+await collection.Execute(new ConsoleCallerContext(args));
 
 // dotnet run greet -> Hello world!
 ```
@@ -77,7 +77,7 @@ var mathCommands = CommandGroup.From("math")
 
 var collection = ComponentCollection.From(mathCommands).Create();
 
-await collection.Execute(new ConsoleContext(args));
+await collection.Execute(new ConsoleCallerContext(args));
 
 // dotnet run math sum 5 3 -> 8
 ```
@@ -108,7 +108,7 @@ public class HelpModule : CommandModule
 
 var collection = ComponentCollection.From(mathCommands).AddType<HelpModule>().Create();
 
-await collection.Execute(new ConsoleContext(args));
+await collection.Execute(new ConsoleCallerContext(args));
 
 // dotnet run help -> Commands: math sum <...> math subtract <...> math ...
 ```
@@ -130,7 +130,7 @@ var services = new ServiceCollection()
 
 var collection = services.GetRequiredService<ComponentCollection>();
 
-await collection.Execute(new ConsoleContext(args), new CommandOptions() { Services = services });
+await collection.Execute(new ConsoleCallerContext(args), new CommandOptions() { Services = services });
 ```
 
 Modules can be injected directly from the provider. They themselves are considered transient, being created and disposed of per command execution.
@@ -168,7 +168,7 @@ public class CommandListener(IExecutionFactory factory) : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var context = new ConsoleContext(Console.ReadLine());
+            var context = new ConsoleCallerContext(Console.ReadLine());
 
             await factory.StartExecution(context);
         }
