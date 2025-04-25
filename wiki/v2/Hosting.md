@@ -47,6 +47,7 @@ The `ConfigureComponents` method can also be used to configure the host with a c
 This instance can be used to configure the collection of commands, including the build configuration, adding components and adding result handlers:
 
 ```csharp
+using Commands;
 using Commands.Hosting;
 using Microsoft.Extensions.Hosting;
 
