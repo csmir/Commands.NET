@@ -93,7 +93,6 @@ to create a new execution context for each command:
 using Commands;
 using Commands.Hosting;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 
 public sealed class CommandListener(IExecutionFactory factory) : BackgroundService
 {
