@@ -24,9 +24,12 @@ Alternatively, adding it to your `.csproj` file:
 
 ## Configure the Host
 
-The package extends the `IHostBuilder` interface with the `ConfigureComponents` method, which can be used to configure execution, discovery and configuration of any commands in the assembly or provided types.
+The package extends the `IHostBuilder` interface with the `ConfigureComponents` method, which can be used to configure execution, 
+discovery and configuration of any commands in the assembly or provided types.
 
-> The ConfigureComponents method also accepts a `TFactory` type, which is the implementation of `CommandExecutionFactory` to be used by the host, as explained in the [Factory Execution](#factory-execution) section.
+> [!IMPORTANT]
+> The ConfigureComponents method also accepts a `TFactory` type, 
+> which is the implementation of `CommandExecutionFactory` to be used by the host, as explained in the [Factory Execution](#factory-execution) section.
 
 ```csharp
 using Commands.Hosting;
