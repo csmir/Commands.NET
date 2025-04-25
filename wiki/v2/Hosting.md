@@ -75,12 +75,19 @@ The `ConfigureComponents` method implicitly adds a number of services that are u
 | `IExecutionContext`		 | Scoped    | Represents the lifetime of a command, containing the caller and possible cancellation.									|
 | `ICallerContextAccessor<>` | Transient | Used to access the caller of the command. This transient service requests the `IExecutionContext` to retrieve the caller.|
 
-In order to execute commands through these interfaces, inject the `IExecutionFactory` into your class and call `CreateExecution` with the execution data you wish to run against.
+> [!TIP]
+> Service lifetimes determine how the service should be treated and in what context it is available. 
+> In order to understand what implications this has on your codebase, 
+> it is recommended to have [a good understanding of what lifetimes mean](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection#service-lifetimes). 
+
+In order to execute commands through these interfaces, 
+inject the `IExecutionFactory` into your class and call `CreateExecution` with the execution data you wish to run against.
 
 ## Command Listener
 
 An example usage for the `IExecutionFactory` lies in a generic host console application. 
-A simple command listener can be created by implementing the `BackgroundService` class and using the `IExecutionFactory` to create a new execution context for each command:
+A simple command listener can be created by implementing the `BackgroundService` class and using the `IExecutionFactory` 
+to create a new execution context for each command:
 
 ```cs
 using Commands;
