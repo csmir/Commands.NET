@@ -13,7 +13,7 @@ For the following examples, `ANDEvaluator` will be used. This means that all con
 ### Functional Pattern
 
 ```cs
-var condition = ExecuteCondition.For<ANDEvaluator>().Delegate(ctx, cmd, services) => ...);
+var condition = ExecuteCondition.For<ANDEvaluator>().AddDelegate(ctx, cmd, services) => ...);
 ```
 
 The creation pattern handles conditions as `ValueTask<ConditionResult>` where `ConditionResult.FromError()` or `ConditionResult.FromSuccess()` can be used to return the result. 
