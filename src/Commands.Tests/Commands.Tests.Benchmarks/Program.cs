@@ -31,7 +31,7 @@ public class Program
     private static readonly ComponentCollection _components = ComponentCollection.From()
         .AddComponentType<CreationAnalysisModule>()
         .AddComponent(Command.From(() => { }, "command"))
-        .Create();
+        .ToCollection();
 
     static void Main()
         => BenchmarkRunner.Run<Program>();

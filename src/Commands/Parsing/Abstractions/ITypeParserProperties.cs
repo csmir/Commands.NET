@@ -11,7 +11,7 @@ public interface ITypeParserProperties
     ///     Converts the properties to a new instance of <see cref="TypeParser"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="TypeParser"/>.</returns>
-    public TypeParser Create();
+    public TypeParser ToParser();
 
     /// <summary>
     ///     Gets the target type of the parser to create.

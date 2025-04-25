@@ -11,10 +11,10 @@ var components = new ComponentCollectionProperties()
                 c.Respond(command);
 
         }, "help"))
-    .Create();
+    .ToCollection();
 
 var tests = TestCollection.From([.. components.GetCommands()])
-    .Create();
+    .ToCollection();
 
 var results = await tests.Execute((str) => new TestContext(str));
 

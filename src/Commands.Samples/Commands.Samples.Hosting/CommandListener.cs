@@ -11,7 +11,7 @@ public sealed class CommandListener(IExecutionFactory factory) : BackgroundServi
         {
             var context = new ConsoleCallerContext(Console.ReadLine());
 
-            await factory.CreateExecution(context);
+            await factory.StartExecution(context);
         }
     }
 }

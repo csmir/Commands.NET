@@ -67,7 +67,7 @@ public sealed class ComponentCollectionProperties
     ///     Adds multiple types to the component manager. This operation can include non-command module types, but they will be ignored when the manager is created.
     /// </summary>
     /// <remarks>
-    ///     When <see cref="Create"/> is called on the properties, all types added to the properties are checked if they implement <see cref="CommandModule"/> or <see cref="CommandModule{T}"/>. 
+    ///     When <see cref="ToCollection"/> is called on the properties, all types added to the properties are checked if they implement <see cref="CommandModule"/> or <see cref="CommandModule{T}"/>. 
     ///     If any provided type does not implement said base type, it is ignored.
     /// </remarks>
     /// <param name="types">The types to add. If any type is already added, it is ignored.</param>
@@ -219,15 +219,15 @@ public sealed class ComponentCollectionProperties
     ///     Converts this set of properties to a new instance of <see cref="ComponentCollection"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="ComponentCollection"/>.</returns>
-    public ComponentCollection Create()
+    public ComponentCollection ToCollection()
     {
         _configuration ??= ComponentConfigurationProperties.Default;
 
-        var configuration = _configuration.Create();
+        var configuration = _configuration.ToConfiguration();
 
-        var manager = new ComponentCollection(configuration, [.. _handlers.Select(handler => handler.Create())]);
+        var manager = new ComponentCollection(configuration, [.. _handlers.Select(handler => handler.ToHandler())]);
 
-        manager.AddRange(_components.Select(component => component.Create(configuration: configuration)));
+        manager.AddRange(_components.Select(component => component.ToComponent(configuration: configuration)));
         manager.AddRange(ComponentUtilities.GetComponents(configuration, _dynamicTypes, null, false));
 
         return manager;

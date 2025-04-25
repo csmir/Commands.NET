@@ -127,7 +127,7 @@ public sealed class CommandProperties : IComponentProperties
     /// </summary>
     /// <param name="configuration">The configuration object to configure this object during creation.</param>
     /// <returns>A new instance of <see cref="Command"/>.</returns>
-    public IComponent Create(ComponentConfiguration? configuration = null)
+    public IComponent ToComponent(ComponentConfiguration? configuration = null)
     {
         var conditionsToAdd = _conditions.Select(condition => condition.Create());
 

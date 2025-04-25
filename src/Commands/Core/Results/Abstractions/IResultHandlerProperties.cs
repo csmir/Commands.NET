@@ -9,5 +9,5 @@ public interface IResultHandlerProperties
     ///     Converts the properties to a new instance of <see cref="ResultHandler"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="ResultHandler"/>.</returns>
-    public ResultHandler Create();
+    public ResultHandler ToHandler();
 }

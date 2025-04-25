@@ -10,11 +10,11 @@ var results = ResultHandler.For<SampleContext>()
 var components = new ComponentCollectionProperties()
     .WithConfiguration(configuration)
     .AddResultHandler(results)
-    .Create();
+    .ToCollection();
 
 var tests = new TestCollectionProperties()
     .AddCommands([.. components.GetCommands()])
-    .Create();
+    .ToCollection();
 
 var testEvaluation = await tests.Execute((str) => new TestContext(str));
 

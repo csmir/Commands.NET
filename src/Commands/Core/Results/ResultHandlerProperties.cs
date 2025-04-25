@@ -50,7 +50,7 @@ public sealed class ResultHandlerProperties<T> : IResultHandlerProperties
     }
 
     /// <inheritdoc />
-    public ResultHandler Create()
+    public ResultHandler ToHandler()
     {
         Assert.NotNull(_delegate, nameof(_delegate));
 
@@ -67,6 +67,6 @@ internal readonly struct ResultHandlerProperties : IResultHandlerProperties
         _handler = handler;
     }
 
-    public ResultHandler Create()
+    public ResultHandler ToHandler()
         => _handler;
 }

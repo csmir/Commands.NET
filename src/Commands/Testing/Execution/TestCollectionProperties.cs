@@ -75,11 +75,11 @@ public sealed class TestCollectionProperties
     ///     Converts the properties to a new instance of <see cref="TestCollection"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="TestCollection"/>.</returns>
-    public TestCollection Create()
+    public TestCollection ToCollection()
     {
         var tests = _commands.ToDictionary(x => x, x => x.Attributes.OfType<ITestProvider>().ToArray());
 
-        var runtimeDefined = _tests.Select(x => x.Create()).GroupBy(x => x.Command);
+        var runtimeDefined = _tests.Select(x => x.ToProvider()).GroupBy(x => x.Command);
 
         foreach (var group in runtimeDefined)
         {
