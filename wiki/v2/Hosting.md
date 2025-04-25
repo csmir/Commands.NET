@@ -50,12 +50,12 @@ using Microsoft.Extensions.Hosting;
 var host = Host.CreateDefaultBuilder(args)
 	.ConfigureComponents(configureComponents => 
 	{
-        commands.WithConfiguration(configure =>
-        {
-            configure.AddParser(new TryParseParser<Version>(Version.TryParse));
-        });
-        commands.AddResultHandler<ConsoleCallerContext>((c, e, s) => c.Respond(e));
-        commands.AddComponentTypes(typeof(Program).Assembly.GetExportedTypes());
+		commands.WithConfiguration(configure =>
+		{
+			configure.AddParser(new TryParseParser<Version>(Version.TryParse));
+		});
+		commands.AddResultHandler<ConsoleCallerContext>((c, e, s) => c.Respond(e));
+		commands.AddComponentTypes(typeof(Program).Assembly.GetExportedTypes());
 	})
 	.Build();
 ```
