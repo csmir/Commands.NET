@@ -50,3 +50,6 @@ Learn how to test commands and ensure they function as expected.
 > `using Commands.Hosting;`
 
 Empower your commands with the .NET generic host and service-pattern scoping mechanisms.
+
+> [!NOTE]
+> This namespace requires an additional package to be installed.
