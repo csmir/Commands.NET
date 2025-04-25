@@ -24,9 +24,12 @@ Alternatively, adding it to your `.csproj` file:
 
 ## Configure the Host
 
-The package extends the `IHostBuilder` interface with the `ConfigureComponents` method, which can be used to configure execution, discovery and configuration of any commands in the assembly or provided types.
+The package extends the `IHostBuilder` interface with the `ConfigureComponents` method, which can be used to configure execution, 
+discovery and configuration of any commands in the assembly or provided types.
 
-> The ConfigureComponents method also accepts a `TFactory` type, which is the implementation of `CommandExecutionFactory` to be used by the host, as explained in the [Factory Execution](#factory-execution) section.
+> [!IMPORTANT]
+> The ConfigureComponents method also accepts a `TFactory` type, 
+> which is the implementation of `CommandExecutionFactory` to be used by the host, as explained in the [Factory Execution](#factory-execution) section.
 
 ```csharp
 using Commands.Hosting;
@@ -44,18 +47,19 @@ The `ConfigureComponents` method can also be used to configure the host with a c
 This instance can be used to configure the collection of commands, including the build configuration, adding components and adding result handlers:
 
 ```csharp
+using Commands;
 using Commands.Hosting;
 using Microsoft.Extensions.Hosting;
 
 var host = Host.CreateDefaultBuilder(args)
 	.ConfigureComponents(configureComponents => 
 	{
-        commands.WithConfiguration(configure =>
-        {
-            configure.AddParser(new TryParseParser<Version>(Version.TryParse));
-        });
-        commands.AddResultHandler<ConsoleCallerContext>((c, e, s) => c.Respond(e));
-        commands.AddComponentTypes(typeof(Program).Assembly.GetExportedTypes());
+		configureComponents.WithConfiguration(configureBuild =>
+		{
+			configureBuild.AddParser(new TryParseParser<Version>(Version.TryParse));
+		});
+		configureComponents.AddResultHandler<ConsoleCallerContext>((c, e, s) => c.Respond(e));
+		configureComponents.AddComponentTypes(typeof(Program).Assembly.GetExportedTypes());
 	})
 	.Build();
 ```
@@ -72,18 +76,24 @@ The `ConfigureComponents` method implicitly adds a number of services that are u
 | `IExecutionContext`		 | Scoped    | Represents the lifetime of a command, containing the caller and possible cancellation.									|
 | `ICallerContextAccessor<>` | Transient | Used to access the caller of the command. This transient service requests the `IExecutionContext` to retrieve the caller.|
 
-In order to execute commands through these interfaces, inject the `IExecutionFactory` into your class and call `CreateExecution` with the execution data you wish to run against.
+> [!TIP]
+> Service lifetimes determine how the service should be treated and in what context it is available. 
+> In order to understand what implications this has on your codebase, 
+> it is recommended to have [a good understanding of what lifetimes mean](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection#service-lifetimes). 
+
+In order to execute commands through these interfaces, 
+inject the `IExecutionFactory` into your class and call `CreateExecution` with the execution data you wish to run against.
 
 ## Command Listener
 
 An example usage for the `IExecutionFactory` lies in a generic host console application. 
-A simple command listener can be created by implementing the `BackgroundService` class and using the `IExecutionFactory` to create a new execution context for each command:
+A simple command listener can be created by implementing the `BackgroundService` class and using the `IExecutionFactory` 
+to create a new execution context for each command:
 
 ```cs
 using Commands;
 using Commands.Hosting;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 
 public sealed class CommandListener(IExecutionFactory factory) : BackgroundService
 {

@@ -69,7 +69,7 @@ public Task GetTask()
 ```
 
 > [!NOTE]
-> ValueTask is not handled as a method return type. 
+> `ValueTask` is not handled as a method return type. 
 > Furthermore, the library will convert the return type to a `string` by calling `ToString`, if it is `T` and unhandled. 
 > If the consumer desires to display `T` in a different way, they can override `ToString` in the class.
 

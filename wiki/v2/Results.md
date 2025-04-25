@@ -8,7 +8,8 @@ When handling results, the different types of results are handled by the `Result
 
 There are four different types of results that can be returned from the command pipeline. Between these results, the `IExecuteResult` interface is implemented. 
 
-> [!NOTE] Each result implements a `Success` property, which is used to determine if the result was successful or not. 
+> [!NOTE] 
+> Each result implements a `Success` property, which is used to determine if the result was successful or not. 
 > If `false`, the `Exception` property will contain the exception that was thrown.
 
 ### SearchResult
@@ -40,7 +41,8 @@ Its `Exception` property contains a `CommandEvaluationException` which holds the
 `InvokeResult` is returned when the command is finished executing, containing the result of the command. 
 It will return a failed result if the command execution failed by errors thrown in the user's own codebase.
 
-> [!TIP] It is good to note that every `IExecuteResult` implementation overrides `ToString()` with a preformatted message to send to the user. 
+> [!TIP] 
+> It is good to note that every `IExecuteResult` implementation overrides `ToString()` with a preformatted message to send to the user. 
 > This message can be sent to the user by-for example-calling `caller.Respond(result)`.
 
 ## Handling Results
