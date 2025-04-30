@@ -3,7 +3,7 @@
 public class BasicModule(BasicService service) : CommandModule<ConsoleCallerContext>
 {
     [Name("help")]
-    public List<string> Help()
+    public IEnumerable<string> Help()
         => service.GetCommands();
 
     [Name("version")]
