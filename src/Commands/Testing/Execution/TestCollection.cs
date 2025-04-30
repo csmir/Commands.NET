@@ -4,18 +4,41 @@ namespace Commands.Testing;
 /// <summary>
 ///     A test collection that can be ran and evaluated per command instance. This class cannot be inherited.
 /// </summary>
-public sealed class TestCollection : IReadOnlyDictionary<Command, ITestProvider[]>
+public sealed class TestCollection : IDictionary<Command, ITestProvider[]>
 {
     private readonly Dictionary<Command, ITestProvider[]> _tests;
 
     /// <summary>
     ///     Gets the number of tests present for this runner.
     /// </summary>
-    public int Count { get; }
+    public int Count
+        => _tests.Sum(x => x.Value.Length);
+
+    /// <inheritdoc />
+    public ICollection<Command> Keys 
+        => _tests.Keys;
+
+    /// <inheritdoc />
+    public ICollection<ITestProvider[]> Values 
+        => _tests.Values;
+
+    /// <inheritdoc />
+    public bool IsReadOnly { get; } = false;
 
     /// <inheritdoc />
     public ITestProvider[] this[Command key]
-        => _tests[key];
+    {
+        get => _tests[key];
+        set => _tests[key] = value;
+    }
+
+    /// <summary>
+    ///     Creates a new instance of <see cref="TestCollection"/> with no tests.
+    /// </summary>
+    public TestCollection()
+    {
+        _tests = [];
+    }
 
     /// <summary>
     ///     Creates a new instance of <see cref="TestCollection"/> with the specified tests.
@@ -24,7 +47,6 @@ public sealed class TestCollection : IReadOnlyDictionary<Command, ITestProvider[
     public TestCollection(Dictionary<Command, ITestProvider[]> tests)
     {
         _tests = tests;
-        Count = tests.Values.Sum(x => x.Length);
     }
 
     /// <summary>
@@ -67,6 +89,22 @@ public sealed class TestCollection : IReadOnlyDictionary<Command, ITestProvider[
         => _tests.TryGetValue(key, out value);
 
     /// <inheritdoc />
+    public void Add(Command key, ITestProvider[] value)
+        => _tests.Add(key, value);
+
+    /// <inheritdoc />
+    public bool Remove(Command key)
+        => _tests.Remove(key);
+
+    /// <inheritdoc />
+    public void Clear()
+        => _tests.Clear();
+
+    /// <inheritdoc />
+    public bool Remove(KeyValuePair<Command, ITestProvider[]> item)
+        => _tests.Remove(item.Key);
+
+    /// <inheritdoc />
     public IEnumerator<KeyValuePair<Command, ITestProvider[]>> GetEnumerator()
         => _tests.GetEnumerator();
 
@@ -82,16 +120,19 @@ public sealed class TestCollection : IReadOnlyDictionary<Command, ITestProvider[
 
     #endregion
 
-    #region IReadOnlyDictionary<>
-
-    IEnumerable<Command> IReadOnlyDictionary<Command, ITestProvider[]>.Keys
-        => _tests.Keys;
-
-    IEnumerable<ITestProvider[]> IReadOnlyDictionary<Command, ITestProvider[]>.Values
-        => _tests.Values;
+    #region IDictionary<>
 
     IEnumerator IEnumerable.GetEnumerator()
         => GetEnumerator();
+
+    void ICollection<KeyValuePair<Command, ITestProvider[]>>.Add(KeyValuePair<Command, ITestProvider[]> item)
+        => _tests.Add(item.Key, item.Value);
+
+    bool ICollection<KeyValuePair<Command, ITestProvider[]>>.Contains(KeyValuePair<Command, ITestProvider[]> item)
+        => _tests.ContainsKey(item.Key) && _tests[item.Key].SequenceEqual(item.Value);
+
+    void ICollection<KeyValuePair<Command, ITestProvider[]>>.CopyTo(KeyValuePair<Command, ITestProvider[]>[] array, int arrayIndex)
+        => ((ICollection<KeyValuePair<Command, ITestProvider[]>>)_tests).CopyTo(array, arrayIndex);
 
     #endregion
 }

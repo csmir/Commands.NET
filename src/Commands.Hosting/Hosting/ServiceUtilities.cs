@@ -37,9 +37,15 @@ public static class ServiceUtilities
         (IServiceCollection services, ComponentCollectionProperties properties)
         where TFactory : class, IExecutionFactory
     {
-        services.RemoveAll(typeof(IExecutionProvider));
-        services.RemoveAll(typeof(ComponentConfiguration));
-        services.RemoveAll(typeof(IExecutionFactory));
+        if (services.Contains<IExecutionFactory>())
+        {
+            // Remove the existing factory to avoid conflicts.
+            services.RemoveAll<IExecutionFactory>();
+            services.RemoveAll<IExecutionProvider>();
+            services.RemoveAll<ComponentConfiguration>();
+            services.RemoveAll<IExecutionContext>();
+            services.RemoveAll(typeof(ICallerContextAccessor<>));
+        }
 
         services.AddSingleton<IExecutionFactory, TFactory>();
 
