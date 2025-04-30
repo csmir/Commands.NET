@@ -13,5 +13,5 @@ public interface IComponentProperties
     /// </summary>
     /// <param name="configuration">The configuration object to configure this object during creation.</param>
     /// <returns>A new implementation of <see cref="IComponent"/>.</returns>
-    public IComponent Create(ComponentConfiguration? configuration = null);
+    public IComponent ToComponent(ComponentConfiguration? configuration = null);
 }

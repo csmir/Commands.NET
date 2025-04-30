@@ -108,12 +108,12 @@ public sealed class ComponentConfigurationProperties
     ///     Converts the properties to a new instance of <see cref="ComponentConfiguration"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="ComponentConfiguration"/>.</returns>
-    public ComponentConfiguration Create()
+    public ComponentConfiguration ToConfiguration()
     {
         var baseParsers = new Dictionary<Type, TypeParser>();
 
         foreach (var kvp in _parsers)
-            baseParsers[kvp.Key] = kvp.Value.Create();
+            baseParsers[kvp.Key] = kvp.Value.ToParser();
 
         return new ComponentConfiguration(baseParsers, _properties);
     }

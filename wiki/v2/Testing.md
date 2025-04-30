@@ -34,10 +34,10 @@ public void TestMethod()
 Collections of commands can be tested in bulk using `TestCollection`. The class can be initialized using a functional pattern:
 
 ```cs
-var tests = TestCollection.From(collection.GetCommands().ToArray()).Create();
+var tests = TestCollection.From(collection.GetCommands().ToArray()).ToCollection();
 ```
 
-This will create a new instance of `TestRunner`, which will be used to test commands. 
+This will create a new instance of `TestCollection`, which will be used to test commands. 
 The runner can be started and awaited, running all available tests made available to it:
 
 ```cs

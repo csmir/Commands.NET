@@ -9,9 +9,9 @@ Let's work on an example to learn how they work.
 
 By default, the library provides parsers for the following types, without any additional configuration:
 
-- All primitive BCL types.
+- All primitive [BCL](https://learn.microsoft.com/en-us/dotnet/standard/class-library-overview#system-namespace) types.
 - Implementations of `Enum`.
-- BCL types contained within `Array`
+- [BCL](https://learn.microsoft.com/en-us/dotnet/standard/class-library-overview#system-namespace) types contained within `Array`
 - Commonly used structs, being: 
     - `DateTime`
     - `DateTimeOffset`

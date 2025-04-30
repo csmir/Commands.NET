@@ -12,7 +12,7 @@
 public class CommandExecutionFactory(IExecutionProvider executionProvider, IServiceProvider serviceProvider, ILoggerFactory loggerFactory) : IExecutionFactory
 {
     /// <inheritdoc />
-    public virtual async Task<IExecutionContext> CreateExecution<TCaller>(TCaller caller, HostedCommandOptions? options = null)
+    public virtual async Task<IExecutionContext> StartExecution<TCaller>(TCaller caller, HostedCommandOptions? options = null)
         where TCaller : class, ICallerContext
     {
         // Prefer local machine time over UTC time in the logging scenario.

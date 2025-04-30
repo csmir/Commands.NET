@@ -60,7 +60,7 @@ public sealed class TestProviderProperties
     ///     Converts the properties to a new instance of <see cref="TestProvider"/>.
     /// </summary>
     /// <returns>A new instance of <see cref="TestProvider"/>.</returns>
-    public TestProvider Create()
+    public TestProvider ToProvider()
     {
         Assert.NotNull(_command, nameof(_command));
 

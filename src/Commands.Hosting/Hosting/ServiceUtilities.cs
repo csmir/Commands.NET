@@ -57,7 +57,7 @@ public static class ServiceUtilities
             // Implement global result handler to dispose of the execution scope. This must be done last, even if the properties are mutated anywhere before.
             properties.AddResultHandler(new ExecutionScopeResolver());
 
-            var collection = properties.Create();
+            var collection = properties.ToCollection();
 
             return collection;
         });

@@ -84,12 +84,12 @@ public sealed class CommandGroupProperties : IComponentProperties
     /// </summary>
     /// <param name="configuration">The configuration object to configure this object during creation.</param>
     /// <returns>A new instance of <see cref="CommandGroup"/>.</returns>
-    public IComponent Create(ComponentConfiguration? configuration = null)
+    public IComponent ToComponent(ComponentConfiguration? configuration = null)
     {
         var group = new CommandGroup([.. _names]);
 
         if (_components.Count != 0)
-            group.AddRange([.. _components.Select(component => component.Create(configuration))]);
+            group.AddRange([.. _components.Select(component => component.ToComponent(configuration))]);
 
         return group;
     }

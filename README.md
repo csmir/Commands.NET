@@ -48,7 +48,7 @@ using Commands;
 
 var command = Command.From(() => "Hello world!", "greet");
 
-var collection = ComponentCollection.From(command).Create();
+var collection = ComponentCollection.From(command).ToCollection();
 
 await collection.Execute(new ConsoleCallerContext(args));
 
@@ -75,7 +75,7 @@ var mathCommands = CommandGroup.From("math")
             "divide", "div")
     );
 
-var collection = ComponentCollection.From(mathCommands).Create();
+var collection = ComponentCollection.From(mathCommands).ToCollection();
 
 await collection.Execute(new ConsoleCallerContext(args));
 
@@ -106,7 +106,7 @@ public class HelpModule : CommandModule
 
 ...
 
-var collection = ComponentCollection.From(mathCommands).AddType<HelpModule>().Create();
+var collection = ComponentCollection.From(mathCommands).AddType<HelpModule>().ToCollection();
 
 await collection.Execute(new ConsoleCallerContext(args));
 
@@ -125,7 +125,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection()
     .AddSingleton<MyService>()
-    .AddSingleton<ComponentCollection>(ComponentCollection.From(mathCommands).AddType<HelpModule>().Create());
+    .AddSingleton<ComponentCollection>(ComponentCollection.From(mathCommands).AddType<HelpModule>().ToCollection());
     .BuildServiceProvider();
 
 var collection = services.GetRequiredService<ComponentCollection>();
@@ -157,24 +157,6 @@ var host = Host.CreateDefaultBuilder(args)
 ```
 
 The extension package supports factory-based command execution alongside scope management, allowing you to manage the lifetime of your commands and modules.
-
-```cs
-using Commands.Hosting;
-using Microsoft.Extensions.Hosting;
-
-public class CommandListener(IExecutionFactory factory) : BackgroundService
-{
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            var context = new ConsoleCallerContext(Console.ReadLine());
-
-            await factory.StartExecution(context);
-        }
-    }
-}
-```
 
 ## Samples
 
