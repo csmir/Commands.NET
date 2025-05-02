@@ -9,18 +9,13 @@
 /// <param name="executionProvider">The component collection representing all configured commands for the current host.</param>
 /// <param name="serviceProvider">The global collection of services available for this host.</param>
 /// <param name="loggerFactory">The factory used to create loggers for running scopes.</param>
-public class CommandExecutionFactory(IExecutionProvider executionProvider, IServiceProvider serviceProvider, ILoggerFactory loggerFactory) : IExecutionFactory
+public class CommandExecutionFactory(IExecutionProvider executionProvider, IServiceProvider serviceProvider) : IExecutionFactory
 {
     /// <inheritdoc />
     public virtual async Task<IExecutionContext> StartExecution<TCaller>(TCaller caller, HostedCommandOptions? options = null)
         where TCaller : class, ICallerContext
     {
-        // Prefer local machine time over UTC time in the logging scenario.
-        var logger = loggerFactory.CreateLogger($"{nameof(CommandExecutionFactory)}[{DateTime.Now.TimeOfDay}]");
-
         var scope = serviceProvider.CreateScope();
-
-        logger.LogDebug("Configuring scope for command execution.");
 
         var context = ConfigureScope(caller, scope);
 
@@ -32,8 +27,6 @@ public class CommandExecutionFactory(IExecutionProvider executionProvider, IServ
             CancellationToken = context.CancellationSource.Token,
             ServiceProvider = scope.ServiceProvider,
         };
-
-        logger.LogDebug("Firing execution of caller {} with {} arguments.", nameof(TCaller), caller.Arguments.Count);
 
         await executionProvider.Execute(caller, executeOptions);
 
