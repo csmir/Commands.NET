@@ -2,7 +2,8 @@
 
 internal static class TestUtilities
 {
-    public static async ValueTask<TestResult> Test(this Command command, Func<string, ICallerContext> callerCreation, ITestProvider provider, CommandOptions options)
+    public static async ValueTask<TestResult> TestAgainst<TContext>(this Command command, Func<string, TContext> callerCreation, ITest provider, CommandOptions options)
+        where TContext : class, ICallerContext
     {
         TestResult GetResult(IResult result)
         {

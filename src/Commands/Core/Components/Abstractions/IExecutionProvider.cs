@@ -1,7 +1,7 @@
 ﻿namespace Commands;
 
 /// <summary>
-///     Defines mechanisms for executing commands based on a set of arguments.
+///     Defines a mechanism for executing commands based on a set of arguments.
 /// </summary>
 public interface IExecutionProvider : IComponentCollection
 {

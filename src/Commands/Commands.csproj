@@ -52,5 +52,10 @@
 			<PackagePath>\</PackagePath>
 		</None>
 	</ItemGroup>
+	
+	<ItemGroup>
+	  <Folder Include="Testing\Abstractions\" />
+	  <Folder Include="Testing\Execution\Abstractions\" />
+	</ItemGroup>
 
 </Project>

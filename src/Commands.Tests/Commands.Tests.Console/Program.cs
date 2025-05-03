@@ -13,7 +13,7 @@ var components = new ComponentCollectionProperties()
         }, "help"))
     .ToCollection();
 
-var tests = TestCollection.From([.. components.GetCommands()])
+var tests = TestCollection.From(components.GetCommands())
     .ToCollection();
 
 var results = await tests.Execute((str) => new TestContext(str));

@@ -3,7 +3,7 @@
 /// <summary>
 ///     Represents a test provider that can be used to test a command.
 /// </summary>
-public interface ITestProvider
+public interface ITest
 {
     /// <summary>
     ///     Gets or sets the result that the test should return. If the test does not return this result, it will be considered a failure.
