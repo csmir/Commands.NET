@@ -2,7 +2,7 @@
 open Commands.Samples;
 open System
 
-let components = new ComponentCollection()
+let components = new ComponentProvider()
 
 printf "Added %i components." (components.AddRange(typeof<FSharpModule>.Assembly.GetExportedTypes()))
 

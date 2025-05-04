@@ -2,8 +2,8 @@
 
 namespace Commands.Samples;
 
-[RequireContext<TestContext>]
-public sealed class TestModule : CommandModule<TestContext>
+[RequireContext<ConsoleCallerContext>]
+public sealed class TestModule : CommandModule<ConsoleCallerContext>
 {
     [Name("testcommand")]
     [Test]

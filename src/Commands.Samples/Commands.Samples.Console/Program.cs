@@ -12,14 +12,15 @@ var components = new ComponentProviderProperties()
     .AddResultHandler(results)
     .ToProvider();
 
-var tests = new TestCollectionProperties()
-    .AddCommands([.. components.GetCommands()])
-    .ToCollection();
+var tests = components.GetCommands().Select(x => TestProvider.From(x).ToProvider());
 
-var testEvaluation = await tests.Execute((str) => new TestContext(str));
+foreach (var test in tests)
+{
+    var result = await test.Test(x => new ConsoleCallerContext(x));
 
-if (testEvaluation.Count(x => x.Success) == tests.Count)
-    Console.WriteLine("All tests ran successfully.");
+    if (result.Any(x => !x.Success))
+        throw new InvalidOperationException($"A command test failed to evaluate to success. Command: {test.Command}. Test: {result.FirstOrDefault(x => !x.Success).Test}");
+}
 
 while (true)
     await components.Execute(new SampleContext(username: "Peter", args: Console.ReadLine()));
