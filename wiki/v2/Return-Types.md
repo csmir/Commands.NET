@@ -93,5 +93,5 @@ public class CustomResultHandler : ResultHandler
 ```
 
 > [!NOTE]
-> When no implementation of `ResultHandler` is provided to a `ComponentCollection`, the library will use a default implementation. 
+> When no implementation of `ResultHandler` is provided to a `ComponentProvider`, the library will use a default implementation. 
 > This implementation does not handle failed results, only resolving the returned value by an `InvokeResult` as described above.

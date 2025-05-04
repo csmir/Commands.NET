@@ -19,31 +19,31 @@ public static class HostUtilities
 
     /// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>
     /// <param name="builder"></param>
-    /// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentCollectionProperties"/> in preparation for building an implementation of <see cref="IExecutionProvider"/> to execute commands with.</param>
+    /// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentProviderProperties"/> in preparation for building an implementation of <see cref="IExecutionProvider"/> to execute commands with.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
-    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentCollectionProperties> configureAction)
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentProviderProperties> configureAction)
         => ConfigureComponents(builder, (ctx, props) => configureAction(props));
 
     /// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>
     /// <param name="builder"></param>
-    /// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentCollectionProperties"/> in preparation for building an implementation of <see cref="IExecutionProvider"/> to execute commands with.</param>
+    /// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentProviderProperties"/> in preparation for building an implementation of <see cref="IExecutionProvider"/> to execute commands with.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
-    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<HostBuilderContext, ComponentCollectionProperties> configureAction)
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<HostBuilderContext, ComponentProviderProperties> configureAction)
         => ConfigureComponents<CommandExecutionFactory>(builder, configureAction);
 
     /// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>
     /// <typeparam name="TFactory">The implementation of <see cref="IExecutionFactory"/> to consider the factory for executing commands using this host as the lifetime.</typeparam>
     /// <param name="builder"></param>
-    /// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentCollectionProperties"/> in preparation for building an implementation of <see cref="IExecutionProvider"/> to execute commands with.</param>
+    /// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentProviderProperties"/> in preparation for building an implementation of <see cref="IExecutionProvider"/> to execute commands with.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
     public static IHostBuilder ConfigureComponents<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
-        (this IHostBuilder builder, Action<HostBuilderContext, ComponentCollectionProperties> configureAction)
+        (this IHostBuilder builder, Action<HostBuilderContext, ComponentProviderProperties> configureAction)
         where TFactory : CommandExecutionFactory
     {
         Assert.NotNull(builder, nameof(builder));
         Assert.NotNull(configureAction, nameof(configureAction));
 
-        var properties = new ComponentCollectionProperties();
+        var properties = new ComponentProviderProperties();
         var services = builder.ConfigureServices((ctx, services) =>
         {
             configureAction(ctx, properties);

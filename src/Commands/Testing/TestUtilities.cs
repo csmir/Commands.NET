@@ -2,15 +2,16 @@
 
 internal static class TestUtilities
 {
-    public static async ValueTask<TestResult> Test(this Command command, Func<string, ICallerContext> callerCreation, ITestProvider provider, CommandOptions options)
+    public static async ValueTask<TestResult> TestUsing<TContext>(this Command command, Func<string, TContext> callerCreation, ITest test, CommandOptions options)
+        where TContext : class, ICallerContext
     {
         TestResult GetResult(IResult result)
         {
             TestResult CompareReturn(TestResultType targetType, Exception exception)
             {
-                return provider.ShouldEvaluateTo == targetType
-                    ? TestResult.FromSuccess(command, provider.ShouldEvaluateTo)
-                    : TestResult.FromError(command, provider.ShouldEvaluateTo, targetType, exception);
+                return test.ShouldEvaluateTo == targetType
+                    ? TestResult.FromSuccess(test, test.ShouldEvaluateTo)
+                    : TestResult.FromError(test, test.ShouldEvaluateTo, targetType, exception);
             }
 
             return result.Exception switch
@@ -25,9 +26,9 @@ internal static class TestUtilities
             };
         }
 
-        var fullName = string.IsNullOrWhiteSpace(provider.Arguments)
+        var fullName = string.IsNullOrWhiteSpace(test.Arguments)
             ? command.GetFullName(false)
-            : command.GetFullName(false) + ' ' + provider.Arguments;
+            : command.GetFullName(false) + ' ' + test.Arguments;
 
         var runResult = await command.Run(callerCreation(fullName), options).ConfigureAwait(false);
 

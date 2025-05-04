@@ -235,7 +235,7 @@ public abstract class ComponentCollectionBase : IComponentCollection
             if (_items.Contains(component))
                 continue;
 
-            if (this is ComponentCollection manager)
+            if (this is ComponentProvider manager)
             {
                 // When a component is not searchable it means it has no names. Between a manager and a group, a different restriction applies to how this should be done.
                 if (!component.IsSearchable)
@@ -261,7 +261,7 @@ public abstract class ComponentCollectionBase : IComponentCollection
                     // Anything added to a group should be considered nested.
                     // Because of the nature of this design, we want to avoid folding anything but top level. This means that nested groups must be named.
                     if (component is not Command)
-                        throw new InvalidOperationException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ComponentCollection)}.");
+                        throw new InvalidOperationException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ComponentProvider)}.");
 
                     discovered.Add(component);
                 }

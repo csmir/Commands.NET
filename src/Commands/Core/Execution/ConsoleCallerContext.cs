@@ -16,7 +16,7 @@ public class ConsoleCallerContext : ICallerContext
     /// </remarks>
     /// <param name="input">A raw string which will be parsed into a set of arguments.</param>
     public ConsoleCallerContext(string? input)
-        => Arguments = ArgumentDictionary.From(input);
+        => Arguments = ArgumentDictionary.FromString(input);
 
     /// <summary>
     ///     Creates a new instance of <see cref="ConsoleCallerContext"/> with the specified input.
@@ -26,7 +26,7 @@ public class ConsoleCallerContext : ICallerContext
     /// </remarks>
     /// <param name="input">The CLI arguments passed to the application upon entry.</param>
     public ConsoleCallerContext(string[] input)
-        => Arguments = ArgumentDictionary.From(input);
+        => Arguments = ArgumentDictionary.FromArguments(input);
 
     /// <summary>
     ///     Sends a response to the console.
@@ -34,7 +34,7 @@ public class ConsoleCallerContext : ICallerContext
     /// <param name="message">The message to send.</param>
     public virtual void Respond(object? message)
     {
-        if (message is IEnumerable enumerable)
+        if (message is IEnumerable enumerable and not string)
         {
             foreach (var item in enumerable)
                 Console.WriteLine(item);

@@ -1,7 +1,7 @@
 ﻿using Commands;
 using Commands.Testing;
 
-var components = new ComponentCollectionProperties()
+var components = new ComponentProviderProperties()
     .AddComponentTypes(typeof(Program).Assembly.GetExportedTypes())
     .AddResultHandler(ResultHandler.From<ICallerContext>((c, e, s) => c.Respond(e)))
     .AddComponent(
@@ -11,15 +11,17 @@ var components = new ComponentCollectionProperties()
                 c.Respond(command);
 
         }, "help"))
-    .ToCollection();
+    .ToProvider();
 
-var tests = TestCollection.From([.. components.GetCommands()])
-    .ToCollection();
+var tests = components.GetCommands().Select(x => TestProvider.From(x).ToProvider());
 
-var results = await tests.Execute((str) => new TestContext(str));
+foreach (var test in tests)
+{
+    var result = await test.Test(x => new ConsoleCallerContext(x));
 
-if (results.Count(x => x.Success) == tests.Count)
-    Console.WriteLine("All tests ran succesfully.");
+    if (result.Any(x => !x.Success))
+        throw new InvalidOperationException($"A command test failed to evaluate to success. Command: {test.Command}. Test: {result.FirstOrDefault(x => !x.Success).Test}");
+}
 
 while (true)
     await components.Execute(new ConsoleCallerContext(Console.ReadLine()));

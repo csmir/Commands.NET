@@ -48,7 +48,7 @@ using Commands;
 
 var command = Command.From(() => "Hello world!", "greet");
 
-var collection = ComponentCollection.From(command).ToCollection();
+var collection = ComponentProvider.From(command).ToProvider();
 
 await collection.Execute(new ConsoleCallerContext(args));
 
@@ -75,7 +75,7 @@ var mathCommands = CommandGroup.From("math")
             "divide", "div")
     );
 
-var collection = ComponentCollection.From(mathCommands).ToCollection();
+var collection = ComponentProvider.From(mathCommands).ToProvider();
 
 await collection.Execute(new ConsoleCallerContext(args));
 
@@ -106,7 +106,7 @@ public class HelpModule : CommandModule
 
 ...
 
-var collection = ComponentCollection.From(mathCommands).AddType<HelpModule>().ToCollection();
+var collection = ComponentProvider.From(mathCommands).AddType<HelpModule>().ToProvider();
 
 await collection.Execute(new ConsoleCallerContext(args));
 
@@ -125,10 +125,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection()
     .AddSingleton<MyService>()
-    .AddSingleton<ComponentCollection>(ComponentCollection.From(mathCommands).AddType<HelpModule>().ToCollection());
+    .AddSingleton<ComponentProvider>(ComponentProvider.From(mathCommands).AddType<HelpModule>().ToProvider());
     .BuildServiceProvider();
 
-var collection = services.GetRequiredService<ComponentCollection>();
+var collection = services.GetRequiredService<ComponentProvider>();
 
 await collection.Execute(new ConsoleCallerContext(args), new CommandOptions() { Services = services });
 ```

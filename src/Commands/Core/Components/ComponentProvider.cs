@@ -4,7 +4,7 @@
 ///     A concurrent implementation of the mechanism that allows commands to be executed using a provided set of arguments. This class cannot be inherited.
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-public sealed class ComponentCollection : ComponentCollectionBase, IExecutionProvider
+public sealed class ComponentProvider : ComponentCollectionBase, IExecutionProvider
 {
     private readonly ResultHandler[] _handlers;
 
@@ -20,14 +20,14 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
         => _handlers;
 
     /// <summary>
-    ///     Creates a new instance of <see cref="ComponentCollection"/> with the specified handlers.
+    ///     Creates a new instance of <see cref="ComponentProvider"/> with the specified handlers.
     /// </summary>
     /// <remarks>
     ///     This overload supports enumerable service injection in order to create a manager from service definitions.
     /// </remarks>
     /// <param name="configuration">The configuration for this component manager.</param>
     /// <param name="handlers">A collection of handlers for post-execution processing of retrieved command input.</param>
-    public ComponentCollection(ComponentConfiguration configuration, IEnumerable<ResultHandler> handlers)
+    public ComponentProvider(ComponentConfiguration configuration, IEnumerable<ResultHandler> handlers)
     {
         Configuration = configuration;
 
@@ -36,10 +36,10 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
     }
 
     /// <summary>
-    ///     Creates a new instance of <see cref="ComponentCollection"/> with the specified handlers.
+    ///     Creates a new instance of <see cref="ComponentProvider"/> with the specified handlers.
     /// </summary>
     /// <param name="handlers">A collection of handlers for post-execution processing of retrieved command input.</param>
-    public ComponentCollection(params ResultHandler[] handlers)
+    public ComponentProvider(params ResultHandler[] handlers)
     {
         _handlers = handlers;
 
@@ -141,12 +141,12 @@ public sealed class ComponentCollection : ComponentCollectionBase, IExecutionPro
     #region Initializers
 
     /// <summary>
-    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="ComponentCollection"/>.
+    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="ComponentProvider"/>.
     /// </summary>
     /// <param name="components">The components to add.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static ComponentCollectionProperties From(params IComponentProperties[] components)
-        => new ComponentCollectionProperties().AddComponents(components);
+    public static ComponentProviderProperties From(params IComponentProperties[] components)
+        => new ComponentProviderProperties().AddComponents(components);
 
     #endregion
 }

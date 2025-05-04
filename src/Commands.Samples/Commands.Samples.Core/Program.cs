@@ -13,9 +13,9 @@ var mathCommands = CommandGroup.From("math")
         Command.From(Divide, "divide", "div")
     );
 
-var components = ComponentCollection.From(exit, mathCommands)
+var components = ComponentProvider.From(exit, mathCommands)
     .AddComponentType<HelpModule>()
-    .ToCollection();
+    .ToProvider();
 
 await components.Execute(new ConsoleCallerContext(args));
 
