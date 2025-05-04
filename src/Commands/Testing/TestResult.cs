@@ -3,20 +3,21 @@
 /// <summary>
 ///     A result type which contains the result of a test execution.
 /// </summary>
+[DebuggerDisplay("{ToString()}")]
 public readonly struct TestResult : IResult
 {
     /// <summary>
-    ///     The command that was tested.
+    ///     Gets the executed test.
     /// </summary>
-    public Command Command { get; }
+    public ITest Test { get; }
 
     /// <summary>
-    ///     The actual result of the test. If the test succeeded, this will be the same as <see cref="ExpectedResult"/>.
+    ///     Gets the actual result of the test. If the test succeeded, this will be the same as <see cref="ExpectedResult"/>.
     /// </summary>
     public TestResultType ActualResult { get; }
 
     /// <summary>
-    ///     The expected result of the test.
+    ///     Gets the expected result of the test.
     /// </summary>
     public TestResultType ExpectedResult { get; }
 
@@ -26,9 +27,9 @@ public readonly struct TestResult : IResult
     /// <inheritdoc />
     public bool Success { get; }
 
-    private TestResult(Command command, TestResultType expectedResult, TestResultType actualResult, Exception? exception, bool success)
+    private TestResult(ITest test, TestResultType expectedResult, TestResultType actualResult, Exception? exception, bool success)
     {
-        Command = command;
+        Test = test;
         ExpectedResult = expectedResult;
         ActualResult = actualResult;
         Exception = exception;
@@ -37,7 +38,7 @@ public readonly struct TestResult : IResult
 
     /// <inheritdoc />
     public override string ToString()
-        => $"Command = {Command} \nSuccess = {(Exception == null ? "True" : $"False \nException = {Exception.Message}")}";
+        => $"Test = {Test} \nSuccess = {(Exception == null ? "True" : $"False \nException = {Exception.Message}")}";
 
     /// <summary>
     ///     Gets a string representation of this result.
@@ -50,20 +51,20 @@ public readonly struct TestResult : IResult
     /// <summary>
     ///     Creates a new <see cref="TestResult"/> representing a successful test execution.
     /// </summary>
-    /// <param name="command">The command that was tested.</param>
+    /// <param name="test">The test that was tested.</param>
     /// <param name="resultType">The result type of the test execution.</param>
     /// <returns></returns>
-    public static TestResult FromSuccess(Command command, TestResultType resultType)
-        => new(command, resultType, resultType, null, true);
+    public static TestResult FromSuccess(ITest test, TestResultType resultType)
+        => new(test, resultType, resultType, null, true);
 
     /// <summary>
     ///     Creates a new <see cref="TestResult"/> representing a failed test execution.
     /// </summary>
-    /// <param name="command">The command that was tested.</param>
+    /// <param name="test">The test that was tested.</param>
     /// <param name="expectedResult">The expected result of the test.</param>
     /// <param name="actualResult">The actual result of the test execution.</param>
     /// <param name="exception">An exception that might have occurred during test execution.</param>
     /// <returns></returns>
-    public static TestResult FromError(Command command, TestResultType expectedResult, TestResultType actualResult, Exception exception)
-        => new(command, expectedResult, actualResult, exception, false);
+    public static TestResult FromError(ITest test, TestResultType expectedResult, TestResultType actualResult, Exception exception)
+        => new(test, expectedResult, actualResult, exception, false);
 }

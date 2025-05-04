@@ -40,9 +40,9 @@ public abstract class CommandModule
     public Command Command { get; internal set; } = null!;
 
     /// <summary>
-    ///     Gets the <see cref="ComponentCollection"/> that invoked this command. This property is <see langword="null"/> if the command was not invoked by a <see cref="ComponentCollection"/>.
+    ///     Gets the <see cref="ComponentProvider"/> that invoked this command. This property is <see langword="null"/> if the command was not invoked by a <see cref="ComponentProvider"/>.
     /// </summary>
-    public ComponentCollection? Manager { get; internal set; }
+    public ComponentProvider? Manager { get; internal set; }
 
     /// <summary>
     ///     Sends a response to the caller.

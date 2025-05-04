@@ -30,7 +30,7 @@ public sealed class HostedCommandOptions
     ///     This behavior drastically changes execution flow, and as such, there are a few things to consider when using it:
     ///     <list type="bullet">
     ///         <item>
-    ///             The end-user must provide an implementation of <see cref="ResultHandler"/> to the <see cref="ComponentCollection"/> that is used to execute the command, in order to handle the result of the command.
+    ///             The end-user must provide an implementation of <see cref="ResultHandler"/> to the <see cref="ComponentProvider"/> that is used to execute the command, in order to handle the result of the command.
     ///         </item>
     ///         <item>
     ///             Objects, specifically those scoped to more than a single command must be made thread-safe, meaning they must be able to handle multiple requests at once.

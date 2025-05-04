@@ -17,32 +17,32 @@ public struct ArgumentDictionary
 
     private int _index = 0;
 
-    private readonly List<string> _unnamedArgs;
+    private readonly string[] _unnamedArgs;
     private readonly Dictionary<string, object?> _namedArgs;
 
     internal int AvailableLength { get; private set; }
 
     /// <summary>
-    ///     Gets the number of arguments present in the set.
+    ///     Gets the number of keys present in the dictionary.
     /// </summary>
     public readonly int Count
-        => _unnamedArgs.Count + _namedArgs.Count;
+        => _unnamedArgs.Length + _namedArgs.Count;
 
     /// <summary>
-    ///     Gets a key-value pair from the set of arguments, known by the provided <paramref name="key"/>.
+    ///     Gets the value from the set of arguments, known by the provided <paramref name="key"/>.
     /// </summary>
     /// <param name="key">The key under which this argument is known to the current array.</param>
-    /// <returns>A </returns>
+    /// <returns>An object representing the value belonging to the specified key. If no value exists but the key is represented in the dictionary, <see langword="null"/> is returned instead.</returns>
     /// <exception cref="KeyNotFoundException">Thrown when the provided <paramref name="key"/> is not found in the set.</exception>
-    public readonly KeyValuePair<string, object?> this[string key]
+    public readonly object? this[string key]
     {
         get
         {
             if (_namedArgs.TryGetValue(key, out var value))
-                return new(key, value);
+                return value;
 
             if (_unnamedArgs.Contains(key, StringComparer.OrdinalIgnoreCase))
-                return new(key, null);
+                return null;
 
             throw new KeyNotFoundException();
         }
@@ -53,22 +53,26 @@ public struct ArgumentDictionary
     /// </summary>
     /// <param name="args">The range of named arguments to enumerate in this set.</param>
     /// <param name="comparer">The comparer to evaluate keys in the inner named dictionary.</param>
-    public ArgumentDictionary(StringComparer? comparer, IEnumerable<KeyValuePair<string, object?>> args)
+    public ArgumentDictionary(IEnumerable<KeyValuePair<string, object?>> args, StringComparer? comparer)
     {
         _namedArgs = new(comparer);
 
-        var unnamedFill = new List<string>();
+        var unnamedFill = Array.Empty<string>();
 
         foreach (var kvp in args)
         {
             if (kvp.Value == null)
-                unnamedFill.Add(kvp.Key);
+            {
+                Array.Resize(ref unnamedFill, unnamedFill.Length + 1);
+
+                unnamedFill[unnamedFill.Length] = kvp.Key;
+            }
             else
                 _namedArgs[kvp.Key] = kvp.Value;
         }
 
         _unnamedArgs = unnamedFill;
-        AvailableLength = _unnamedArgs.Count + _namedArgs.Count;
+        AvailableLength = _unnamedArgs.Length + _namedArgs.Count;
     }
 
     /// <summary>
@@ -76,8 +80,8 @@ public struct ArgumentDictionary
     /// </summary>
     public ArgumentDictionary()
     {
-        _namedArgs = null!;
-        _unnamedArgs = null!;
+        _namedArgs = [];
+        _unnamedArgs = [];
         AvailableLength = 0;
     }
 
@@ -92,7 +96,7 @@ public struct ArgumentDictionary
         if (_namedArgs.TryGetValue(parameterName, out value!))
             return true;
 
-        if (_index >= _unnamedArgs.Count)
+        if (_index >= _unnamedArgs.Length)
             return false;
 
         value = _unnamedArgs[_index++];
@@ -106,7 +110,7 @@ public struct ArgumentDictionary
     internal readonly bool TryGetElementAt(int index, out string? value)
 #endif
     {
-        if (index < _unnamedArgs.Count)
+        if (index < _unnamedArgs.Length)
         {
             value = _unnamedArgs[index];
             return true;
@@ -141,21 +145,12 @@ public struct ArgumentDictionary
 
     #region Initializers
 
-    /// <inheritdoc cref="From(string, char[], StringComparer?)"/>
-    public static ArgumentDictionary From(string? input, StringComparer? comparer = null)
-        => From(input, [' '], comparer);
-
-    /// <inheritdoc cref="From(string, char[], StringComparer?)"/>
-    public static ArgumentDictionary From(string[] input, StringComparer? comparer = null)
-    {
-        if (input.Length == 0)
-            return new();
-
-        return new(comparer, ReadInternal(input));
-    }
+    /// <inheritdoc cref="FromString(string, char[], StringComparer?)"/>
+    public static ArgumentDictionary FromString(string? input, StringComparer? comparer = null)
+        => FromString(input, [' '], comparer);
 
     /// <summary>
-    ///     Reads the provided <paramref name="input"/> into an array of command arguments. This method will never throw, always returning a new <see cref="ArgumentDictionary"/>.
+    ///     Reads the provided <paramref name="input"/> into an array of command arguments. This operation will never throw, always returning a new <see cref="ArgumentDictionary"/>.
     /// </summary>
     /// <remarks>
     ///     The implementation is defined by the following rules:
@@ -175,13 +170,13 @@ public struct ArgumentDictionary
     ///         </item>
     ///     </list>
     /// </remarks>
-    /// <param name="input">The caller input to parse into a set of arguments.</param>
+    /// <param name="input">The caller's input to parse into a set of arguments.</param>
     /// <param name="separators">The characters to use as separators when splitting the input.</param>
     /// <param name="comparer">The comparer to use when comparing argument names.</param>
     /// <returns>
-    ///     An array of arguments that can be used to search for a command or parse into a method.
+    ///     An array of arguments that can be used to search for a command or parse into a delegate.
     /// </returns>
-    public static ArgumentDictionary From(string? input, char[] separators, StringComparer? comparer = null)
+    public static ArgumentDictionary FromString(string? input, char[] separators, StringComparer? comparer = null)
     {
         if (string.IsNullOrWhiteSpace(input))
             return new();
@@ -191,7 +186,16 @@ public struct ArgumentDictionary
         if (split.Length == 0)
             return new();
 
-        return new(comparer, ReadInternal(split));
+        return new(ReadInternal(split), comparer);
+    }
+
+    /// <inheritdoc cref="FromString(string, char[], StringComparer?)"/>
+    public static ArgumentDictionary FromArguments(string[] input, StringComparer? comparer = null)
+    {
+        if (input.Length == 0)
+            return new();
+
+        return new(ReadInternal(input), comparer);
     }
 
     private static IEnumerable<KeyValuePair<string, object?>> ReadInternal(string[] input)

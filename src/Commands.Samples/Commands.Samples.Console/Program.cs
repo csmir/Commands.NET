@@ -7,10 +7,10 @@ var configuration = ComponentConfigurationProperties.Default;
 var results = ResultHandler.For<SampleContext>()
     .AddDelegate((c, e, s) => c.Respond(e));
 
-var components = new ComponentCollectionProperties()
+var components = new ComponentProviderProperties()
     .WithConfiguration(configuration)
     .AddResultHandler(results)
-    .ToCollection();
+    .ToProvider();
 
 var tests = new TestCollectionProperties()
     .AddCommands([.. components.GetCommands()])

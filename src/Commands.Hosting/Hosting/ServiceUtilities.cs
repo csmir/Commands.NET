@@ -16,16 +16,16 @@ public static class ServiceUtilities
     ///     Additionally, it provides a factory based execution mechanism for commands, implementing a singleton <see cref="IExecutionFactory"/>, scoped <see cref="IExecutionContext"/> and transient <see cref="ICallerContextAccessor{TCaller}"/>.
     /// </remarks>
     /// <param name="services"></param>
-    /// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentCollectionProperties"/> in preparation for building an implementation of <see cref="IExecutionProvider"/> to execute commands with.</param>
+    /// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentProviderProperties"/> in preparation for building an implementation of <see cref="IExecutionProvider"/> to execute commands with.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
     public static IServiceCollection AddComponentCollection<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
-        (this IServiceCollection services, Action<ComponentCollectionProperties> configureAction)
+        (this IServiceCollection services, Action<ComponentProviderProperties> configureAction)
         where TFactory : class, IExecutionFactory
     {
         Assert.NotNull(services, nameof(services));
         Assert.NotNull(configureAction, nameof(configureAction));
 
-        var properties = new ComponentCollectionProperties();
+        var properties = new ComponentProviderProperties();
 
         configureAction(properties);
 
@@ -34,7 +34,7 @@ public static class ServiceUtilities
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static IServiceCollection AddComponentCollection<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
-        (IServiceCollection services, ComponentCollectionProperties properties)
+        (IServiceCollection services, ComponentProviderProperties properties)
         where TFactory : class, IExecutionFactory
     {
         if (services.Contains<IExecutionFactory>())
@@ -52,12 +52,12 @@ public static class ServiceUtilities
         services.AddScoped<IExecutionContext, ExecutionContext>();
         services.AddTransient(typeof(ICallerContextAccessor<>), typeof(CallerContextAccessor<>));
 
-        var collectionDescriptor = ServiceDescriptor.Singleton<IExecutionProvider, ComponentCollection>(x =>
+        var collectionDescriptor = ServiceDescriptor.Singleton<IExecutionProvider, ComponentProvider>(x =>
         {
             // Implement global result handler to dispose of the execution scope. This must be done last, even if the properties are mutated anywhere before.
             properties.AddResultHandler(new ExecutionScopeResolver());
 
-            var collection = properties.ToCollection();
+            var collection = properties.ToProvider();
 
             return collection;
         });
@@ -66,10 +66,10 @@ public static class ServiceUtilities
         {
             var provider = x.GetRequiredService<IExecutionProvider>();
 
-            if (provider is ComponentCollection collection)
+            if (provider is ComponentProvider collection)
                 return collection.Configuration;
 
-            throw new NotSupportedException($"The component collection is not available in the current context. Ensure that you are configuring an instance of {nameof(ComponentCollection)}.");
+            throw new NotSupportedException($"The component collection is not available in the current context. Ensure that you are configuring an instance of {nameof(ComponentProvider)}.");
         });
 
         services.Add(collectionDescriptor);
