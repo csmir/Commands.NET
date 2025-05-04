@@ -20,7 +20,7 @@ public struct ArgumentDictionary
     private readonly string[] _unnamedArgs;
     private readonly Dictionary<string, object?> _namedArgs;
 
-    internal int AvailableLength { get; private set; }
+    internal int RemainingLength { get; private set; }
 
     /// <summary>
     ///     Gets the number of keys present in the dictionary.
@@ -72,7 +72,7 @@ public struct ArgumentDictionary
         }
 
         _unnamedArgs = unnamedFill;
-        AvailableLength = _unnamedArgs.Length + _namedArgs.Count;
+        RemainingLength = _unnamedArgs.Length + _namedArgs.Count;
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public struct ArgumentDictionary
     {
         _namedArgs = [];
         _unnamedArgs = [];
-        AvailableLength = 0;
+        RemainingLength = 0;
     }
 
     #region Internals
@@ -138,7 +138,7 @@ public struct ArgumentDictionary
     internal void SetParseIndex(int index)
     {
         _index = index;
-        AvailableLength -= index;
+        RemainingLength -= index;
     }
 
     #endregion

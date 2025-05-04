@@ -167,9 +167,9 @@ public sealed class Command : IComponent, IParameterCollection
 
         object?[] parameters;
 
-        if (!HasParameters && args.AvailableLength == 0)
+        if (!HasParameters && args.RemainingLength == 0)
             parameters = [];
-        else if (MaxLength == args.AvailableLength || (MaxLength <= args.AvailableLength && HasRemainder) || (MaxLength > args.AvailableLength && MinLength <= args.AvailableLength))
+        else if (MaxLength == args.RemainingLength || (MaxLength <= args.RemainingLength && HasRemainder) || (MaxLength > args.RemainingLength && MinLength <= args.RemainingLength))
         {
             var arguments = await ComponentUtilities.Parse(this, caller, args, options).ConfigureAwait(false);
 
@@ -184,7 +184,7 @@ public sealed class Command : IComponent, IParameterCollection
             }
         }
         else
-            return ParseResult.FromError(new CommandOutOfRangeException(this, args.AvailableLength));
+            return ParseResult.FromError(new CommandOutOfRangeException(this, args.RemainingLength));
 
         if (!options.SkipConditions)
         {
