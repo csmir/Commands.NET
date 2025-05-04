@@ -85,10 +85,10 @@ public class CustomResultHandler : ResultHandler
 
 The `CommandNotFound` method is called when the search operation returns no commands or groups.
 
-When you have succesfully constructed the logic for handling the result, you can pass it along when creating a new `ComponentCollection`:
+When you have succesfully constructed the logic for handling the result, you can pass it along when creating a new `ComponentProvider`:
 
 ```cs
-var collection = ComponentCollection.From(...).AddHandler(new CustomResultHandler()).Create();
+var collection = ComponentProvider.From(...).AddHandler(new CustomResultHandler()).Create();
 ```
 
 > [!NOTE]
