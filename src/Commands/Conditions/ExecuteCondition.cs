@@ -61,7 +61,7 @@ public abstract class ExecuteCondition : IExecuteCondition
     #region Initializers
 
     /// <inheritdoc cref="From{T}(Func{ICallerContext, Command, IServiceProvider, ValueTask{ConditionResult}})"/>
-    public static ExecuteConditionProperties<T> For<T>()
+    public static ExecuteConditionBuilder<T> For<T>()
         where T : ConditionEvaluator, new()
         => new();
 
@@ -70,9 +70,9 @@ public abstract class ExecuteCondition : IExecuteCondition
     /// </summary>
     /// <param name="executionDelegate">The delegate that should be executed when the condition is invoked.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static ExecuteConditionProperties<T> From<T>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> executionDelegate)
+    public static ExecuteConditionBuilder<T> From<T>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> executionDelegate)
         where T : ConditionEvaluator, new()
-        => new ExecuteConditionProperties<T>().Delegate(executionDelegate);
+        => new ExecuteConditionBuilder<T>().Delegate(executionDelegate);
 
     #endregion
 }

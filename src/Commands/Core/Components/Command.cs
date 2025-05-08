@@ -5,10 +5,10 @@ using System.Text;
 namespace Commands;
 
 /// <summary>
-///     Contains information about a command that can be executed using an <see cref="IExecutionProvider"/>.
+///     Contains information about a command that can be executed using an <see cref="IExecutableComponentSet"/>.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public sealed class Command : IComponent, IParameterCollection
+public class Command : IComponent, IParameterCollection
 {
     /// <summary>
     ///     Gets all evaluations that this component should do during the execution process, determined by a set of defined <see cref="IExecuteCondition"/>'s pointing at the component.
@@ -302,8 +302,8 @@ public sealed class Command : IComponent, IParameterCollection
     #region Initializers
 
     /// <inheritdoc cref="From(Delegate, string[])"/>
-    public static CommandProperties From(params string[] names)
-        => new CommandProperties().AddNames(names);
+    public static CommandBuilder From(params string[] names)
+        => new CommandBuilder().AddNames(names);
 
     /// <summary>
     ///     Defines a collection of properties to configure and convert into a new instance of <see cref="Command"/>.
@@ -311,8 +311,8 @@ public sealed class Command : IComponent, IParameterCollection
     /// <param name="executionDelegate">The command body that should be executed when this command is invoked.</param>
     /// <param name="names">A set of names this command be discovered by.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static CommandProperties From(Delegate executionDelegate, params string[] names)
-        => new CommandProperties().AddDelegate(executionDelegate).AddNames(names);
+    public static CommandBuilder From(Delegate executionDelegate, params string[] names)
+        => new CommandBuilder().AddDelegate(executionDelegate).AddNames(names);
 
     #endregion
 }

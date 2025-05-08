@@ -1,9 +1,9 @@
 ﻿using Commands;
 using Commands.Tests;
 
-var manager = new ComponentProvider(new DelegateResultHandler<ConsoleCallerContext>((c, e, s) => c.Respond(e)))
+var manager = new ExecutableComponentSet(new DelegateResultHandler<ConsoleCallerContext>((c, e, s) => c.Respond(e)))
 {
-    new CommandGroup(typeof(Module), configuration: new ComponentConfiguration()),
+    new CommandGroup<Module>(),
     new CommandGroup("commandgroup")
     {
         new Command(() => "Hello, user!", "subcommand"),

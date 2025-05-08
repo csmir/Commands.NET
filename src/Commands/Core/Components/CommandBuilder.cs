@@ -5,17 +5,17 @@ namespace Commands;
 /// <summary>
 ///     A set of properties of a command.
 /// </summary>
-public sealed class CommandProperties : IComponentProperties
+public sealed class CommandBuilder : IComponentBuilder
 {
-    private readonly List<IExecuteConditionProperties> _conditions;
+    private readonly List<IExecuteConditionBuilder> _conditions;
     private readonly List<string> _names;
 
     private Delegate? _delegate;
 
     /// <summary>
-    ///     Creates a new instance of <see cref="CommandProperties"/>.
+    ///     Creates a new instance of <see cref="CommandBuilder"/>.
     /// </summary>
-    public CommandProperties()
+    public CommandBuilder()
     {
         _conditions = [];
         _names = [];
@@ -30,8 +30,8 @@ public sealed class CommandProperties : IComponentProperties
     ///     This add-operation is case-insensitive.
     /// </remarks>
     /// <param name="name">The value to add. If this value already exists in the properties, it is ignored.</param>
-    /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties AddName(string name)
+    /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+    public CommandBuilder AddName(string name)
     {
         Assert.NotNullOrEmpty(name, nameof(name));
 
@@ -48,8 +48,8 @@ public sealed class CommandProperties : IComponentProperties
     ///     This add-operation is case-insensitive.
     /// </remarks>
     /// <param name="names">The values to add. If any value already exists in the properties, it is ignored.</param>
-    /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties AddNames(params string[] names)
+    /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+    public CommandBuilder AddNames(params string[] names)
     {
         foreach (var name in names)
             AddName(name);
@@ -61,8 +61,8 @@ public sealed class CommandProperties : IComponentProperties
     ///     Adds a condition to the command group.
     /// </summary>
     /// <param name="condition">The condition to add to the group.</param>
-    /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties AddCondition(IExecuteConditionProperties condition)
+    /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+    public CommandBuilder AddCondition(IExecuteConditionBuilder condition)
     {
         Assert.NotNull(condition, nameof(condition));
 
@@ -75,16 +75,16 @@ public sealed class CommandProperties : IComponentProperties
     ///     Adds a condition to the command group.
     /// </summary>
     /// <param name="condition">The condition to add to the group.</param>
-    /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties AddCondition(ExecuteCondition condition)
-        => AddCondition(new ExecuteConditionProperties(condition));
+    /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+    public CommandBuilder AddCondition(ExecuteCondition condition)
+        => AddCondition(new ExecuteConditionBuilder(condition));
 
     /// <summary>
     ///     Adds multiple conditions to the command group.
     /// </summary>
     /// <param name="conditions">The conditions to add to the group.</param>
-    /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties AddConditions(params IExecuteConditionProperties[] conditions)
+    /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+    public CommandBuilder AddConditions(params IExecuteConditionBuilder[] conditions)
     {
         foreach (var condition in conditions)
             AddCondition(condition);
@@ -96,11 +96,11 @@ public sealed class CommandProperties : IComponentProperties
     ///     Adds multiple conditions to the command group.
     /// </summary>
     /// <param name="conditions">The conditions to add to the group.</param>
-    /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties AddConditions(params ExecuteCondition[] conditions)
+    /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+    public CommandBuilder AddConditions(params ExecuteCondition[] conditions)
     {
         foreach (var condition in conditions)
-            AddCondition(new ExecuteConditionProperties(condition));
+            AddCondition(new ExecuteConditionBuilder(condition));
 
         return this;
     }
@@ -112,8 +112,8 @@ public sealed class CommandProperties : IComponentProperties
     ///     Delegate commands support accessing execution context by implementing <see cref="CommandContext{T}"/> as the first parameter of the delegate.
     /// </remarks>
     /// <param name="executionDelegate">The delegate to be considered the command body.</param>
-    /// <returns>The same <see cref="CommandProperties"/> for call-chaining.</returns>
-    public CommandProperties AddDelegate(Delegate executionDelegate)
+    /// <returns>The same <see cref="CommandBuilder"/> for call-chaining.</returns>
+    public CommandBuilder AddDelegate(Delegate executionDelegate)
     {
         Assert.NotNull(executionDelegate, nameof(executionDelegate));
 
@@ -127,9 +127,9 @@ public sealed class CommandProperties : IComponentProperties
     /// </summary>
     /// <param name="configuration">The configuration object to configure this object during creation.</param>
     /// <returns>A new instance of <see cref="Command"/>.</returns>
-    public IComponent ToComponent(ComponentConfiguration? configuration = null)
+    public IComponent Build(ComponentConfiguration? configuration = null)
     {
-        var conditionsToAdd = _conditions.Select(condition => condition.Create());
+        var conditionsToAdd = _conditions.Select(condition => condition.Build());
 
         return new Command(_delegate!, conditionsToAdd, [.. _names], configuration);
     }

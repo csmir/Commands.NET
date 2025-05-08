@@ -320,23 +320,23 @@ public abstract class ResultHandler
     #region Initializers
 
     /// <inheritdoc cref="From{T}(Action{T, Exception, IServiceProvider})"/>
-    public static ResultHandlerProperties<T> For<T>()
+    public static ResultHandlerBuilder<T> For<T>()
         where T : class, ICallerContext
         => new();
 
     /// <inheritdoc cref="From{T}(Action{T, Exception, IServiceProvider})"/>
-    public static ResultHandlerProperties<T> From<T>(Func<T, Exception, IServiceProvider, ValueTask> executionDelegate)
+    public static ResultHandlerBuilder<T> From<T>(Func<T, Exception, IServiceProvider, ValueTask> executionDelegate)
         where T : class, ICallerContext
-        => new ResultHandlerProperties<T>().AddDelegate(executionDelegate);
+        => new ResultHandlerBuilder<T>().AddDelegate(executionDelegate);
 
     /// <summary>
     ///     Defines a collection of properties to configure and convert into a new instance of <see cref="ResultHandler"/>.
     /// </summary>
     /// <param name="executionDelegate">The delegate that should be executed when the handler is invoked.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static ResultHandlerProperties<T> From<T>(Action<T, Exception, IServiceProvider> executionDelegate)
+    public static ResultHandlerBuilder<T> From<T>(Action<T, Exception, IServiceProvider> executionDelegate)
         where T : class, ICallerContext
-        => new ResultHandlerProperties<T>().AddDelegate(executionDelegate);
+        => new ResultHandlerBuilder<T>().AddDelegate(executionDelegate);
 
     #endregion
 }

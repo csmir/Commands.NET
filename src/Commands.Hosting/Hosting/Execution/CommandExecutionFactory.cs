@@ -8,7 +8,7 @@
 /// </remarks>
 /// <param name="executionProvider">The component collection representing all configured commands for the current host.</param>
 /// <param name="serviceProvider">The global collection of services available for this host.</param>
-public class CommandExecutionFactory(IExecutionProvider executionProvider, IServiceProvider serviceProvider) : IExecutionFactory
+public class CommandExecutionFactory(IExecutableComponentSet executionProvider, IServiceProvider serviceProvider) : IExecutionFactory
 {
     /// <inheritdoc />
     public virtual async Task<IExecutionContext> StartExecution<TCaller>(TCaller caller, HostedCommandOptions? options = null)

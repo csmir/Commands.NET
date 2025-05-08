@@ -2,23 +2,17 @@
 
 namespace Commands;
 
-/// <summary>
-///     A read-only configuration class which is used by individual components to set up their own configuration. This class cannot be inherited.
-/// </summary>
-public sealed class ComponentConfiguration
+/// <inheritdoc cref="IComponentConfiguration"/>
+public sealed class ComponentConfiguration : IComponentConfiguration
 {
-    /// <summary>
-    ///     Gets a collection of properties that are used to store additional information explicitly important during the build process.
-    /// </summary>
+    /// <inheritdoc />
     public Dictionary<object, object> Properties { get; }
 
-    /// <summary>
-    ///     Gets a collection of parsers that are used to convert arguments.
-    /// </summary>
+    /// <inheritdoc />
     public Dictionary<Type, TypeParser> Parsers { get; }
 
     /// <summary>
-    ///     Creates a new instance of <see cref="ComponentConfiguration"/>.
+    ///     Creates a new -empty- instance of <see cref="ComponentConfiguration"/>.
     /// </summary>
     public ComponentConfiguration()
         : this([], []) { }
@@ -66,8 +60,8 @@ public sealed class ComponentConfiguration
     /// </summary>
     /// <param name="parsers">The parsers to add to the configuration.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static ComponentConfigurationProperties From(params TypeParser[] parsers)
-        => new ComponentConfigurationProperties().AddParsers(parsers);
+    public static ComponentConfigurationBuilder From(params TypeParser[] parsers)
+        => new ComponentConfigurationBuilder().AddParsers(parsers);
 
     /// <summary>
     ///     Gets a default configuration that can be used as a fallback when no configuration is provided.

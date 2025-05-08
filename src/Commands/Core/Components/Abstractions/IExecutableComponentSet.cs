@@ -3,7 +3,7 @@
 /// <summary>
 ///     Defines a mechanism for executing commands based on a set of arguments.
 /// </summary>
-public interface IExecutionProvider : IComponentCollection
+public interface IExecutableComponentSet : IComponentSet
 {
     /// <summary>
     ///     Attempts to execute a command based on the provided <paramref name="caller"/>, and returns the result.

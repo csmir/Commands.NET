@@ -3,7 +3,7 @@
 /// <summary>
 ///     Represents a concurrent, recursive collection of components that can be searched and filtered based on their type.
 /// </summary>
-public interface IComponentCollection : ICollection<IComponent>, IEnumerable<IComponent>
+public interface IComponentSet : ICollection<IComponent>, IEnumerable<IComponent>
 {
     /// <summary>
     ///     Searches recursively through this and all subcollections for components that match the provided arguments.

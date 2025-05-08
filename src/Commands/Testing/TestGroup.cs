@@ -4,7 +4,7 @@
 ///     Represents a provider containing <see cref="ITest"/> implementations to be tested against the <see cref="Command"/> that this group targets.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public sealed class TestProvider : ITestProvider
+public sealed class TestGroup : ITestGroup
 {
     private ITest[] _tests;
 
@@ -18,14 +18,14 @@ public sealed class TestProvider : ITestProvider
         => _tests.Length;
 
     /// <summary>
-    ///     Creates a new <see cref="TestProvider"/> targetting the provided command, including the provided tests.
+    ///     Creates a new <see cref="TestGroup"/> targetting the provided command, including the provided tests.
     /// </summary>
     /// <remarks>
     ///     This constructor adds all implementations of <see cref="TestAttribute"/> marked on defined execution delegates, alongside the provided <paramref name="tests"/>.
     /// </remarks>
     /// <param name="command">The command that should be tested against.</param>
     /// <param name="tests">A variable collection of tests this command should be tested with.</param>
-    public TestProvider(Command command, params ITest[] tests)
+    public TestGroup(Command command, params ITest[] tests)
     {
         Assert.NotNull(command, nameof(command));
         Assert.NotNull(tests, nameof(tests));
@@ -36,7 +36,7 @@ public sealed class TestProvider : ITestProvider
     }
 
     /// <inheritdoc />
-    public async ValueTask<IEnumerable<TestResult>> Test<TContext>(Func<string, TContext> callerCreation, CommandOptions? options = null)
+    public async ValueTask<IEnumerable<TestResult>> Run<TContext>(Func<string, TContext> callerCreation, CommandOptions? options = null)
         where TContext : class, ICallerContext
     {
         Assert.NotNull(callerCreation, nameof(callerCreation));
@@ -120,12 +120,12 @@ public sealed class TestProvider : ITestProvider
     #region Initializers
 
     /// <summary>
-    ///     Defines a collection of properties from the provided command, to configure and construct a new instance of <see cref="TestProvider"/> from.
+    ///     Defines a collection of properties from the provided command, to configure and construct a new instance of <see cref="TestGroup"/> from.
     /// </summary>
     /// <param name="command">The command to be represented by the constructed type, being a testable interface to evaluate execution for.</param>
-    /// <returns>A new instance of <see cref="TestProviderProperties"/> to configure and construct into a new instance of <see cref="TestProvider"/>.</returns>
-    public static TestProviderProperties From(Command command)
-        => new TestProviderProperties().WithCommand(command);
+    /// <returns>A new instance of <see cref="TestGroupBuilder"/> to configure and construct into a new instance of <see cref="TestGroup"/>.</returns>
+    public static TestGroupBuilder From(Command command)
+        => new TestGroupBuilder().WithCommand(command);
 
     #endregion
 }

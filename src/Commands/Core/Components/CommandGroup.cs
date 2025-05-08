@@ -3,11 +3,26 @@ using System.Text;
 
 namespace Commands;
 
+/// <inheritdoc cref="CommandGroup"/>
+/// <typeparam name="T"></typeparam>
+[DebuggerDisplay("Count = {Count}, {ToString()}")]
+public class CommandGroup<
+#if NET8_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
+# endif
+T> : CommandGroup
+where T : CommandModule
+{
+    /// <inheritdoc cref="CommandGroup(Type, CommandGroup?, ComponentConfiguration?)" />
+    public CommandGroup(CommandGroup? parent = null, ComponentConfiguration? configuration = null)
+        : base(typeof(T), parent, configuration) { }
+}
+
 /// <summary>
 ///     Reveals information about a command module, hosting zero-or-more commands.
 /// </summary>
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
-public sealed class CommandGroup : ComponentCollectionBase, IComponent
+public class CommandGroup : ComponentSet, IComponent
 {
     /// <inheritdoc />
     public CommandGroup? Parent { get; private set; }
@@ -211,8 +226,8 @@ public sealed class CommandGroup : ComponentCollectionBase, IComponent
     /// </summary>
     /// <param name="names">A set of names this group be discovered by.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static CommandGroupProperties From(params string[] names)
-        => new CommandGroupProperties().AddNames(names);
+    public static CommandGroupBuilder From(params string[] names)
+        => new CommandGroupBuilder().AddNames(names);
 
     #endregion
 }

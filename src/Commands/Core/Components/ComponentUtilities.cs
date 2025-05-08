@@ -70,34 +70,6 @@ public static class ComponentUtilities
         return GetComponents(configuration, types.Select(x => new DynamicType(x)), parent, isNested);
     }
 
-    internal static IEnumerable<CommandGroup> GetComponents(ComponentConfiguration configuration, IEnumerable<DynamicType> types, CommandGroup? parent, bool isNested)
-    {
-        Assert.NotNull(types, nameof(types));
-
-        foreach (var definition in types)
-        {
-            var type = definition.Value;
-
-            if (!isNested && type.IsNested)
-                continue;
-
-            CommandGroup? group;
-
-            try
-            {
-                group = new CommandGroup(type, parent, configuration);
-            }
-            catch
-            {
-                // This will throw if the type does not implement CommandModule. We can safely ignore this.
-                continue;
-            }
-
-            if (group != null && !group.Ignore)
-                yield return group;
-        }
-    }
-
     #region Internals
 
     #region Execution
@@ -155,6 +127,34 @@ public static class ComponentUtilities
     #endregion
 
     #region Building
+
+    internal static IEnumerable<CommandGroup> GetComponents(ComponentConfiguration configuration, IEnumerable<DynamicType> types, CommandGroup? parent, bool isNested)
+    {
+        Assert.NotNull(types, nameof(types));
+
+        foreach (var definition in types)
+        {
+            var type = definition.Value;
+
+            if (!isNested && type.IsNested)
+                continue;
+
+            CommandGroup? group;
+
+            try
+            {
+                group = new CommandGroup(type, parent, configuration);
+            }
+            catch
+            {
+                // This will throw if the type does not implement CommandModule. We can safely ignore this.
+                continue;
+            }
+
+            if (group != null && !group.Ignore)
+                yield return group;
+        }
+    }
 
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL2062", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]

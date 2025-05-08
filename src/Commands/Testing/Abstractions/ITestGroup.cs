@@ -1,12 +1,12 @@
 ﻿namespace Commands.Testing;
 
 /// <summary>
-///     Implements a mechanism for testing a <see cref="Command"/>.
+///     Defines a non-unique mutable <see cref="IGrouping{TKey, TElement}"/> structured collection, where the key is <see cref="Command"/> and the values are the tests targetted at that command.
 /// </summary>
-public interface ITestProvider : ICollection<ITest>, IEnumerable<ITest>
+public interface ITestGroup : ICollection<ITest>, IEnumerable<ITest>
 {
     /// <summary>
-    ///     Gets the command which the tests contained in this <see cref="TestProvider"/> should be tested against.
+    ///     Gets the command which the tests contained in this <see cref="ITestGroup"/> should be tested against.
     /// </summary>
     public Command Command { get; }
 
@@ -21,6 +21,6 @@ public interface ITestProvider : ICollection<ITest>, IEnumerable<ITest>
     /// <param name="callerCreation">A delegate that yields an implementation of <typeparamref name="TContext"/> based on the input value for every new test.</param>
     /// <param name="options">A collection of options that determine how every test against this command is ran.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> containing an <see cref="IEnumerable{T}"/> with the result of every test yielded by this operation.</returns>
-    public ValueTask<IEnumerable<TestResult>> Test<TContext>(Func<string, TContext> callerCreation, CommandOptions? options = null)
+    public ValueTask<IEnumerable<TestResult>> Run<TContext>(Func<string, TContext> callerCreation, CommandOptions? options = null)
         where TContext : class, ICallerContext;
 }

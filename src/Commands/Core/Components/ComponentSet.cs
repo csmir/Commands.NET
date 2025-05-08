@@ -1,9 +1,9 @@
 ﻿
 namespace Commands;
 
-/// <inheritdoc cref="IComponentCollection"/>
+/// <inheritdoc cref="IComponentSet"/>
 [DebuggerDisplay("Count = {Count}")]
-public abstract class ComponentCollectionBase : IComponentCollection
+public abstract class ComponentSet : IComponentSet
 {
     private IComponent[] _items = [];
 
@@ -180,7 +180,7 @@ public abstract class ComponentCollectionBase : IComponentCollection
         public readonly IComponent Current
             => _current!;
 
-        internal StateEnumerator(ComponentCollectionBase collection)
+        internal StateEnumerator(ComponentSet collection)
         {
             _items = new IComponent[collection._items.Length];
             _index = 0;
@@ -235,7 +235,7 @@ public abstract class ComponentCollectionBase : IComponentCollection
             if (_items.Contains(component))
                 continue;
 
-            if (this is ComponentProvider manager)
+            if (this is ExecutableComponentSet manager)
             {
                 // When a component is not searchable it means it has no names. Between a manager and a group, a different restriction applies to how this should be done.
                 if (!component.IsSearchable)
@@ -261,7 +261,7 @@ public abstract class ComponentCollectionBase : IComponentCollection
                     // Anything added to a group should be considered nested.
                     // Because of the nature of this design, we want to avoid folding anything but top level. This means that nested groups must be named.
                     if (component is not Command)
-                        throw new InvalidOperationException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ComponentProvider)}.");
+                        throw new InvalidOperationException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ExecutableComponentSet)}.");
 
                     discovered.Add(component);
                 }
@@ -286,7 +286,7 @@ public abstract class ComponentCollectionBase : IComponentCollection
     }
 
     // Binds the parent collection to the child collection.
-    private void Bind(ComponentCollectionBase collection)
+    private void Bind(ComponentSet collection)
         => _mutateParent = collection.MutateFromChild;
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -304,7 +304,7 @@ public abstract class ComponentCollectionBase : IComponentCollection
         // We convert this to a non-nullable so we do not need to propagate null checks all over the codebase.
         public IComponent Current;
 
-        internal SpanStateEnumerator(ComponentCollectionBase collection)
+        internal SpanStateEnumerator(ComponentSet collection)
         {
             _index = 0;
             Current = null!;
