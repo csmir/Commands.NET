@@ -4,9 +4,51 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+		<WarningsAsErrors>true</WarningsAsErrors>
+		<IsAotCompatible>true</IsAotCompatible>
+		<NoWarn>CA1822;IDE0130;IDE0290</NoWarn>
+
+		<AssemblyVersion>2.0</AssemblyVersion>
+		<PackageVersion>2.0.0-alpha.15</PackageVersion>
+		<!--\-alpha.1-->
+		<FileVersion>2.0.0.0</FileVersion>
+
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+		<PackageId>Commands.NET.Testing</PackageId>
+
+		<Authors>Commands.NET contributors.</Authors>
+		<Title>Commands.NET.Testing</Title>
+		<Description>A package containing tooling for testing Commands.NET commands.</Description>
+		<PackageTags>commands, testing, evaluation, factory, tests</PackageTags>
+		<NeutralLanguage>en-US</NeutralLanguage>
+
+		<PackageProjectUrl>https://github.com/csmir/Commands.NET</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/csmir/Commands.NET</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageIcon>cnet_nogap_bexp.png</PackageIcon>
   </PropertyGroup>
 
-  <ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\img\cnet_nogap_bexp.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
     <ProjectReference Include="..\Commands\Commands.csproj" />
   </ItemGroup>
 

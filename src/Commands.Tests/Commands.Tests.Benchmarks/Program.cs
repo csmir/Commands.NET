@@ -28,7 +28,7 @@ public class CreationAnalysisModule : CommandModule<BenchmarkCallerContext>
 public class Program
 {
     private static readonly ArgumentDictionary _args = ArgumentDictionary.FromString("command");
-    private static readonly ExecutableComponentSet _components = ExecutableComponentSet.From()
+    private static readonly IExecutableComponentSet _components = new ComponentSetBuilder()
         .AddComponentType<CreationAnalysisModule>()
         .AddComponent(Command.From(() => { }, "command"))
         .Build();

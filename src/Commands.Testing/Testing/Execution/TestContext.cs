@@ -21,6 +21,9 @@ public class TestContext(Command command) : ITestContext
     /// </summary>
     public CancellationTokenSource CancellationSource { get; set; } = null!;
 
+    /// <summary>
+    ///     
+    /// </summary>
     public virtual void Dispose()
     {
 

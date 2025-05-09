@@ -59,10 +59,10 @@ public static class ServiceUtilities
 
             var collection = properties.Build();
 
-            return collection;
+            return (collection as ExecutableComponentSet)!;
         });
 
-        var configurationDescriptor = ServiceDescriptor.Singleton<ComponentConfiguration>(x =>
+        var configurationDescriptor = ServiceDescriptor.Singleton<IComponentConfiguration, ComponentConfiguration>(x =>
         {
             var provider = x.GetRequiredService<IExecutableComponentSet>();
 
