@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Commands.Samples;
 
-public sealed class CommandListener(IExecutionFactory factory) : BackgroundService
+public sealed class CommandListener(ICommandExecutionFactory factory) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

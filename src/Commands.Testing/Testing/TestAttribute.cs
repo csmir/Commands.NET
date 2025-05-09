@@ -1,5 +1,4 @@
-﻿
-namespace Commands.Testing;
+﻿namespace Commands.Testing;
 
 /// <summary>
 ///     An attribute that is used to define a test for a command.

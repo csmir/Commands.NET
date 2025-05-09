@@ -1,11 +1,11 @@
 ﻿namespace Commands.Hosting;
 
 /// <summary>
-///     Represents the execution of a command. This context can be accessed during the hosted execution process through an implementation of <see cref="IExecutionFactory"/>.
+///     Represents the execution of a command. This context can be accessed during the hosted execution process through an implementation of <see cref="ICommandExecutionFactory"/>.
 /// </summary>
 /// <remarks>
 ///     The context is scoped to the command execution. A scope is created when the factory begins executing a command, and is disposed of when the command finishes executing.
-///     When implementing a custom <see cref="IExecutionFactory"/>, you must also implement a custom <see cref="IExecutionContext"/> and populate it when the factory creates the scope.
+///     When implementing a custom <see cref="ICommandExecutionFactory"/>, you must also implement a custom <see cref="IExecutionContext"/> and populate it when the factory creates the scope.
 /// </remarks>
 public interface IExecutionContext : IDisposable
 {

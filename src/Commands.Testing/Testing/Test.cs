@@ -23,8 +23,8 @@ public sealed class Test : ITest
     /// <param name="arguments">The arguments to test with.</param>
     /// <param name="testResult">The result to test for.</param>
     /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static TestProperties From(string? arguments = null, TestResultType testResult = TestResultType.Success)
-        => new TestProperties().AddArguments(arguments).AddResult(testResult);
+    public static TestBuilder From(string? arguments = null, TestResultType testResult = TestResultType.Success)
+        => new TestBuilder().AddArguments(arguments).AddResult(testResult);
 
     #endregion
 }
