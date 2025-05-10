@@ -2,10 +2,10 @@
 open Commands.Samples;
 open System
 
-let components = new ExecutableComponentSet()
+let provider = new ComponentProvider()
 
-printf "Added %i components." (components.AddRange(typeof<FSharpModule>.Assembly.GetExportedTypes()))
+printf "Added %i components." (provider.Components.AddRange(typeof<FSharpModule>.Assembly.GetExportedTypes()))
 
 while true do
     let input = Console.ReadLine()
-    components.Execute<ConsoleCallerContext>(new ConsoleCallerContext(input)) |> Async.AwaitTask |> Async.RunSynchronously
+    provider.Execute<ConsoleCallerContext>(new ConsoleCallerContext(input)) |> Async.AwaitTask |> Async.RunSynchronously

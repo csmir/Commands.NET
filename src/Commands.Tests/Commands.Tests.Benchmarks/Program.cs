@@ -28,7 +28,7 @@ public class CreationAnalysisModule : CommandModule<BenchmarkCallerContext>
 public class Program
 {
     private static readonly ArgumentDictionary _args = ArgumentDictionary.FromString("command");
-    private static readonly IExecutableComponentSet _components = new ComponentSetBuilder()
+    private static readonly IComponentProvider _provider = new ComponentProviderBuilder()
         .AddComponentType<CreationAnalysisModule>()
         .AddComponent(Command.From(() => { }, "command"))
         .Build();
@@ -42,21 +42,21 @@ public class Program
 
     [Benchmark]
     public void FindCommands()
-        => _components.Find(_args);
+        => _provider.Components.Find(_args);
 
     [Benchmark]
     public Task RunCommand()
-        => _components.Execute(new BenchmarkCallerContext("command"));
+        => _provider.Execute(new BenchmarkCallerContext("command"));
 
     [Benchmark]
     public Task RunCommandNonBlocking()
-        => _components.Execute(new BenchmarkCallerContext("command"), new CommandOptions()
+        => _provider.Execute(new BenchmarkCallerContext("command"), new CommandOptions()
         {
             ExecuteAsynchronously = true,
         });
 
     [Benchmark]
-    public ExecutableComponentSet CollectionCreate()
+    public ComponentTree CollectionCreate()
         => [];
 
     [Benchmark]

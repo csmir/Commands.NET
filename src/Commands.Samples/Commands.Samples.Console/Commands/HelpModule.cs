@@ -7,7 +7,7 @@ public sealed class HelpModule : CommandModule
     [Name("help")]
     public async Task Help()
     {
-        var commands = Manager!.GetCommands();
+        var commands = Provider!.Components.GetCommands();
 
         foreach (var command in commands)
         {

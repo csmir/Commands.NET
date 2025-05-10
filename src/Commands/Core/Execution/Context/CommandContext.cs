@@ -5,7 +5,7 @@
 /// </summary>
 /// <remarks>
 ///     This context is used for <see langword="static"/> and <see langword="delegate"/> commands. 
-///     By marking it as the first parameter of any of these command types, the <see cref="IExecutableComponentSet"/> will automatically inject the context into the method.
+///     By marking it as the first parameter of any of these command types, the <see cref="IComponentProvider"/> will automatically inject the context into the method.
 /// </remarks>
 public class CommandContext<T>(T caller, Command command, CommandOptions options)
     where T : ICallerContext
@@ -26,9 +26,9 @@ public class CommandContext<T>(T caller, Command command, CommandOptions options
     public Command Command { get; } = command;
 
     /// <summary>
-    ///     Gets the <see cref="ExecutableComponentSet"/> that triggered the command, if this command was invoked from one.
+    ///     Gets the <see cref="ComponentTree"/> that triggered the command, if this command was invoked from one.
     /// </summary>
-    public ExecutableComponentSet? Manager => Options.Manager;
+    public IComponentProvider? Provider => Options.Provider;
 
     /// <summary>
     ///     Sends a response to the caller of the command.

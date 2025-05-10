@@ -4,7 +4,7 @@ using System.Text;
 namespace Commands;
 
 /// <inheritdoc cref="CommandGroup"/>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">The type of the <see cref="CommandModule"/> or <see cref="CommandModule{T}"/> implementation to consider a group of commands.</typeparam>
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
 public class CommandGroup<
 #if NET8_0_OR_GREATER
@@ -19,7 +19,7 @@ where T : CommandModule
 }
 
 /// <summary>
-///     Reveals information about a command module, hosting zero-or-more commands.
+///     A concurrently accessible set of components, where <see cref="CommandGroup"/> instances are branches and <see cref="Command"/> instances are leaves.
 /// </summary>
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
 public class CommandGroup : ComponentSet, IComponent
@@ -95,7 +95,7 @@ public class CommandGroup : ComponentSet, IComponent
 
         if (!Ignore)
         {
-            var components = ComponentUtilities.GetNestedComponents(configuration ?? ComponentConfiguration.Empty, this);
+            var components = ComponentUtilities.GetNestedComponents(configuration ?? ComponentConfiguration.Default, this);
 
             AddRange(components);
         }
@@ -218,16 +218,4 @@ public class CommandGroup : ComponentSet, IComponent
 
     int IComparable.CompareTo(object? obj)
         => obj is IComponent component ? CompareTo(component) : -1;
-
-    #region Initializers
-
-    /// <summary>
-    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="CommandGroup"/>.
-    /// </summary>
-    /// <param name="names">A set of names this group be discovered by.</param>
-    /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static CommandGroupBuilder From(params string[] names)
-        => new CommandGroupBuilder().AddNames(names);
-
-    #endregion
 }

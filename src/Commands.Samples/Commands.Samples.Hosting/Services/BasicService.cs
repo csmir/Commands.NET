@@ -2,7 +2,7 @@
 
 namespace Commands.Samples;
 
-public class BasicService(ICallerContextAccessor<ConsoleCallerContext> caller, IExecutableComponentSet provider)
+public class BasicService(ICallerContextAccessor<ConsoleCallerContext> caller, IExecutionProvider provider)
 {
     public IEnumerable<string> GetCommands()
     {

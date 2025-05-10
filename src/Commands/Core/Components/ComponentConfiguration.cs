@@ -2,8 +2,10 @@
 
 namespace Commands;
 
-/// <inheritdoc cref="IComponentConfiguration"/>
-public sealed class ComponentConfiguration : IComponentConfiguration
+/// <summary>
+///     
+/// </summary>
+public sealed class ComponentConfiguration
 {
     /// <inheritdoc />
     public Dictionary<object, object> Properties { get; }
@@ -53,20 +55,6 @@ public sealed class ComponentConfiguration : IComponentConfiguration
     public T? GetProperty<T>(object key, T? defaultValue = default)
         => Properties.TryGetValue(key, out var value) && value is T tValue ? tValue : defaultValue;
 
-    #region Initializers
-
-    /// <summary>
-    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="ComponentConfiguration"/>.
-    /// </summary>
-    /// <param name="parsers">The parsers to add to the configuration.</param>
-    /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static ComponentConfigurationBuilder From(params TypeParser[] parsers)
-        => new ComponentConfigurationBuilder().AddParsers(parsers);
-
-    /// <summary>
-    ///     Gets a default configuration that can be used as a fallback when no configuration is provided.
-    /// </summary>
-    internal static ComponentConfiguration Empty = new([], []);
-
-    #endregion
+    // Defines a default configuration with no parsers or properties.
+    internal static ComponentConfiguration Default = new([], []);
 }

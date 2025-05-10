@@ -235,7 +235,7 @@ public abstract class ComponentSet : IComponentSet
             if (_items.Contains(component))
                 continue;
 
-            if (this is ExecutableComponentSet manager)
+            if (this is ComponentTree rootSet)
             {
                 // When a component is not searchable it means it has no names. Between a manager and a group, a different restriction applies to how this should be done.
                 if (!component.IsSearchable)
@@ -248,7 +248,7 @@ public abstract class ComponentSet : IComponentSet
                     discovered.AddRange(FilterComponents(group._items));
 
                     // By binding a top-level group without a name to the manager, the manager will be notified of any changes made so it can update its state.
-                    group.Bind(manager);
+                    group.Bind(rootSet);
                 }
                 else
                     discovered.Add(component);
@@ -261,7 +261,7 @@ public abstract class ComponentSet : IComponentSet
                     // Anything added to a group should be considered nested.
                     // Because of the nature of this design, we want to avoid folding anything but top level. This means that nested groups must be named.
                     if (component is not Command)
-                        throw new InvalidOperationException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ExecutableComponentSet)}.");
+                        throw new InvalidOperationException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ComponentTree)}.");
 
                     discovered.Add(component);
                 }

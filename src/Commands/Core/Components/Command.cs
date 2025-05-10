@@ -5,7 +5,7 @@ using System.Text;
 namespace Commands;
 
 /// <summary>
-///     Contains information about a command that can be executed using an <see cref="IExecutableComponentSet"/>.
+///     Contains information about a command that can be executed using an <see cref="IComponentProvider"/>.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
 public class Command : IComponent, IParameterCollection
@@ -98,7 +98,7 @@ public class Command : IComponent, IParameterCollection
     /// <param name="names">The names used to discover this command during execution.</param>
     /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
     public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, ComponentConfiguration? configuration = null)
-        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), configuration ?? ComponentConfiguration.Empty)
+        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), configuration ?? ComponentConfiguration.Default)
     {
         Names = names;
         Ignore = false;
@@ -114,7 +114,7 @@ public class Command : IComponent, IParameterCollection
     /// <param name="parent">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
     /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
     public Command(MethodInfo executionMethod, CommandGroup? parent = null, ComponentConfiguration? configuration = null)
-        : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), configuration ?? ComponentConfiguration.Empty)
+        : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), configuration ?? ComponentConfiguration.Default)
     {
         Names = Attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
         Ignore = Attributes.Contains<IgnoreAttribute>();
@@ -298,21 +298,4 @@ public class Command : IComponent, IParameterCollection
 
     int IComparable.CompareTo(object? obj)
         => obj is IComponent component ? CompareTo(component) : -1;
-
-    #region Initializers
-
-    /// <inheritdoc cref="From(Delegate, string[])"/>
-    public static CommandBuilder From(params string[] names)
-        => new CommandBuilder().AddNames(names);
-
-    /// <summary>
-    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="Command"/>.
-    /// </summary>
-    /// <param name="executionDelegate">The command body that should be executed when this command is invoked.</param>
-    /// <param name="names">A set of names this command be discovered by.</param>
-    /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static CommandBuilder From(Delegate executionDelegate, params string[] names)
-        => new CommandBuilder().AddDelegate(executionDelegate).AddNames(names);
-
-    #endregion
 }

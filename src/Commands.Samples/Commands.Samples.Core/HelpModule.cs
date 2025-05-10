@@ -10,7 +10,7 @@ public class HelpModule : CommandModule
         var builder = new StringBuilder()
             .AppendLine("Commands:");
 
-        foreach (var command in Manager!.GetCommands())
+        foreach (var command in Provider!.Components.GetCommands())
             builder.AppendLine(command.GetFullName());
 
         Respond(builder.ToString());
@@ -19,7 +19,7 @@ public class HelpModule : CommandModule
     [Name("help")]
     public void Help([Remainder, Name("command-name")] string commandName)
     {
-        var commands = Manager!.GetCommands();
+        var commands = Provider!.Components.GetCommands();
 
         var command = commands
             .Where(x => x.GetFullName().StartsWith(commandName))

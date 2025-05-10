@@ -1,7 +1,7 @@
 ﻿using Commands;
 using Commands.Tests;
 
-var manager = new ExecutableComponentSet(new DelegateResultHandler<ConsoleCallerContext>((c, e, s) => c.Respond(e)))
+var components = new ComponentTree()
 {
     new CommandGroup<Module>(),
     new CommandGroup("commandgroup")
@@ -19,5 +19,7 @@ var manager = new ExecutableComponentSet(new DelegateResultHandler<ConsoleCaller
     }, "asyncwork"),
 };
 
+var provider = new ComponentProvider(components, new DelegateResultHandler<ConsoleCallerContext>((c, e, s) => c.Respond(e)));
+
 while (true)
-    await manager.Execute(new ConsoleCallerContext(Console.ReadLine()));
+    await provider.Execute(new ConsoleCallerContext(Console.ReadLine()));

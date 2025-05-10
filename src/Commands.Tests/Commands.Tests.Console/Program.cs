@@ -1,16 +1,15 @@
 ﻿using Commands;
 
-var components = new ComponentSetBuilder()
+var provider = new ComponentProviderBuilder()
+    .AddResultHandler<ICallerContext>((c, e, s) => c.Respond(e))
     .AddComponentTypes(typeof(Program).Assembly.GetExportedTypes())
-    .AddResultHandler(ResultHandler.From<ICallerContext>((c, e, s) => c.Respond(e)))
-    .AddComponent(
-        Command.From((CommandContext<ConsoleCallerContext> c) =>
-        {
-            foreach (var command in c.Manager!.GetCommands())
-                c.Respond(command);
+    .AddComponent(new Command((CommandContext<ConsoleCallerContext> c) =>
+    {
+        foreach (var command in c.Provider!.Components.GetCommands())
+            c.Respond(command);
 
-        }, "help"))
+    }, "help"))
     .Build();
 
 while (true)
-    await components.Execute(new ConsoleCallerContext(Console.ReadLine()));
+    await provider.Execute(new ConsoleCallerContext(Console.ReadLine()));
