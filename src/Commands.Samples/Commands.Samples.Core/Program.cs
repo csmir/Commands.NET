@@ -1,6 +1,4 @@
-﻿
-using Commands;
-using Commands.Samples;
+﻿using Commands;
 
 var exitCommand = new Command(() => Environment.Exit(0), "exit");
 
@@ -12,11 +10,9 @@ var mathGroup = new CommandGroup("math")
     new Command(Divide, "divide", "div")
 };
 
-var provider = ComponentProvider.CreateBuilder()
-    .AddComponentType<HelpModule>()
-    .AddComponent(mathGroup)
-    .AddComponent(exitCommand)
-    .Build();
+var provider = new ComponentProvider();
+
+provider.Components.AddRange(mathGroup, exitCommand);
 
 await provider.Execute(new ConsoleCallerContext(args));
 

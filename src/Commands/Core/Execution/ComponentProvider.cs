@@ -119,11 +119,4 @@ public class ComponentProvider : IComponentProvider
 
         return result ?? new SearchResult(new CommandNotFoundException());
     }
-
-    /// <summary>
-    ///     Creates a new instance of the <see cref="ComponentProviderBuilder"/> which can be used to configure a <see cref="ComponentProvider"/> with custom behavior.
-    /// </summary>
-    /// <returns>A new instance of <see cref="ComponentProviderBuilder"/> that can be built into a <see cref="ComponentProvider"/>.</returns>
-    public static ComponentProviderBuilder CreateBuilder()
-        => new();
 }

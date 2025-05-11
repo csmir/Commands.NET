@@ -1,9 +1,9 @@
 ﻿namespace Commands;
 
 /// <summary>
-///     Represents a mechanism for enumerating arguments while searching or parsing a command.
+///     Represents a mechanism for querying arguments while searching or parsing a command.
 /// </summary>
-public struct ArgumentDictionary
+public struct Arguments
 {
 #if NET8_0_OR_GREATER
     const char U0022 = '"';
@@ -49,11 +49,11 @@ public struct ArgumentDictionary
     }
 
     /// <summary>
-    ///     Creates a new <see cref="ArgumentDictionary"/> from a set of named arguments.
+    ///     Creates a new <see cref="Arguments"/> from a set of named arguments.
     /// </summary>
     /// <param name="args">The range of named arguments to enumerate in this set.</param>
     /// <param name="comparer">The comparer to evaluate keys in the inner named dictionary.</param>
-    public ArgumentDictionary(IEnumerable<KeyValuePair<string, object?>> args, StringComparer? comparer)
+    public Arguments(IEnumerable<KeyValuePair<string, object?>> args, StringComparer? comparer)
     {
         _namedArgs = new(comparer);
 
@@ -76,9 +76,9 @@ public struct ArgumentDictionary
     }
 
     /// <summary>
-    ///     Creates a new empty <see cref="ArgumentDictionary"/>.
+    ///     Creates a new empty <see cref="Arguments"/>.
     /// </summary>
-    public ArgumentDictionary()
+    public Arguments()
     {
         _namedArgs = [];
         _unnamedArgs = [];
@@ -146,11 +146,11 @@ public struct ArgumentDictionary
     #region Initializers
 
     /// <inheritdoc cref="FromString(string, char[], StringComparer?)"/>
-    public static ArgumentDictionary FromString(string? input, StringComparer? comparer = null)
+    public static Arguments FromString(string? input, StringComparer? comparer = null)
         => FromString(input, [' '], comparer);
 
     /// <summary>
-    ///     Reads the provided <paramref name="input"/> into an array of command arguments. This operation will never throw, always returning a new <see cref="ArgumentDictionary"/>.
+    ///     Reads the provided <paramref name="input"/> into an array of command arguments. This operation will never throw, always returning a new <see cref="Arguments"/>.
     /// </summary>
     /// <remarks>
     ///     The implementation is defined by the following rules:
@@ -176,7 +176,7 @@ public struct ArgumentDictionary
     /// <returns>
     ///     An array of arguments that can be used to search for a command or parse into a delegate.
     /// </returns>
-    public static ArgumentDictionary FromString(string? input, char[] separators, StringComparer? comparer = null)
+    public static Arguments FromString(string? input, char[] separators, StringComparer? comparer = null)
     {
         if (string.IsNullOrWhiteSpace(input))
             return new();
@@ -190,7 +190,7 @@ public struct ArgumentDictionary
     }
 
     /// <inheritdoc cref="FromString(string, char[], StringComparer?)"/>
-    public static ArgumentDictionary FromArguments(string[] input, StringComparer? comparer = null)
+    public static Arguments FromArguments(string[] input, StringComparer? comparer = null)
     {
         if (input.Length == 0)
             return new();

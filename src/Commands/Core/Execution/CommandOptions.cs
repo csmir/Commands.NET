@@ -62,14 +62,10 @@ public sealed class CommandOptions
     /// </remarks>
     public bool ExecuteAsynchronously { get; set; } = false;
 
-    #region Initializers
-
     /// <summary>
     ///     Gets the default options for command execution.
     /// </summary>
     public static CommandOptions Default { get; } = new();
-
-    #endregion
 
     /// <inheritdoc cref="IServiceProvider" />
     /// <remarks>

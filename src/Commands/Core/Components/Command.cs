@@ -86,9 +86,9 @@ public class Command : IComponent, IParameterCollection
     /// </summary>
     /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
     /// <param name="names">The names used to discover this command during execution.</param>
-    /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
-    public Command(Delegate executionDelegate, string[] names, ComponentConfiguration? configuration = null)
-        : this(executionDelegate, [], names, configuration) { }
+    /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
+    public Command(Delegate executionDelegate, string[] names, BuildOptions? options = null)
+        : this(executionDelegate, [], names, options) { }
 
     /// <summary>
     ///     Initializes a new instance of <see cref="Command"/> with the provided execution delegate, conditions, names, configuration, and parent group.
@@ -96,9 +96,9 @@ public class Command : IComponent, IParameterCollection
     /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
     /// <param name="conditions">The conditions bound to the command, which will determine whether it can execute or not.</param>
     /// <param name="names">The names used to discover this command during execution.</param>
-    /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
-    public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, ComponentConfiguration? configuration = null)
-        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), configuration ?? ComponentConfiguration.Default)
+    /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
+    public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, BuildOptions? options = null)
+        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), options ?? BuildOptions.Default)
     {
         Names = names;
         Ignore = false;
@@ -112,9 +112,9 @@ public class Command : IComponent, IParameterCollection
     /// </summary>
     /// <param name="executionMethod">The method to run when the command is executed.</param>
     /// <param name="parent">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
-    /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
-    public Command(MethodInfo executionMethod, CommandGroup? parent = null, ComponentConfiguration? configuration = null)
-        : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), configuration ?? ComponentConfiguration.Default)
+    /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
+    public Command(MethodInfo executionMethod, CommandGroup? parent = null, BuildOptions? options = null)
+        : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ?? BuildOptions.Default)
     {
         Names = Attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
         Ignore = Attributes.Contains<IgnoreAttribute>();
@@ -128,10 +128,10 @@ public class Command : IComponent, IParameterCollection
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    private Command(IActivator activator, ComponentConfiguration configuration)
+    private Command(IActivator activator, BuildOptions options)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
-        var parameters = ComponentUtilities.GetParameters(activator, configuration);
+        var parameters = ComponentUtilities.GetParameters(activator, options);
         var attributes = activator.Target.GetAttributes(true);
 
         Attributes = [.. attributes];

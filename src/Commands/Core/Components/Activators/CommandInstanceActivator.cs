@@ -20,7 +20,6 @@ internal readonly struct CommandInstanceActivator(MethodInfo target) : IActivato
         {
             module.Caller = caller;
             module.Command = command;
-            module.Provider = options.Provider;
         }
 
         return Target.Invoke(module, args);

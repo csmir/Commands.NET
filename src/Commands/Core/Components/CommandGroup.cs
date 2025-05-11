@@ -13,9 +13,9 @@ public class CommandGroup<
 T> : CommandGroup
 where T : CommandModule
 {
-    /// <inheritdoc cref="CommandGroup(Type, CommandGroup?, ComponentConfiguration?)" />
-    public CommandGroup(CommandGroup? parent = null, ComponentConfiguration? configuration = null)
-        : base(typeof(T), parent, configuration) { }
+    /// <inheritdoc cref="CommandGroup(Type, CommandGroup?, BuildOptions?)" />
+    public CommandGroup(CommandGroup? parent = null, BuildOptions? options = null)
+        : base(typeof(T), parent, options) { }
 }
 
 /// <summary>
@@ -71,13 +71,13 @@ public class CommandGroup : ComponentSet, IComponent
     /// </summary>
     /// <param name="type">The implementation of <see cref="CommandModule"/> that holds commands to be executed.</param>
     /// <param name="parent">The parent of this group, if any. Irrespective of this value being set, the group can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
-    /// <param name="configuration">An optional configuration containing additional settings when creating this command.</param>
+    /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
     /// <exception cref="InvalidCastException">The provided type is not an implementation of <see cref="CommandModule"/>.</exception>
     public CommandGroup(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
-        Type type, CommandGroup? parent = null, ComponentConfiguration? configuration = null)
+        Type type, CommandGroup? parent = null, BuildOptions? options = null)
     {
         if (!typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters)
             throw new InvalidCastException($"The provided type is not an implementation of {nameof(CommandModule)}.");
@@ -95,7 +95,7 @@ public class CommandGroup : ComponentSet, IComponent
 
         if (!Ignore)
         {
-            var components = ComponentUtilities.GetNestedComponents(configuration ?? ComponentConfiguration.Default, this);
+            var components = ComponentUtilities.GetNestedComponents(options ?? BuildOptions.Default, this);
 
             AddRange(components);
         }
@@ -159,7 +159,7 @@ public class CommandGroup : ComponentSet, IComponent
         => GetScore().CompareTo(component?.GetScore());
 
     /// <inheritdoc />
-    public override IEnumerable<IComponent> Find(ArgumentDictionary args)
+    public override IEnumerable<IComponent> Find(Arguments args)
     {
         List<IComponent> discovered = [this];
 

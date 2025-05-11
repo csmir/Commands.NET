@@ -38,7 +38,7 @@ public sealed class CommandParameter : ICommandParameter
         => Type.IsArray;
 
     internal CommandParameter(
-        ParameterInfo parameterInfo, ComponentConfiguration configuration)
+        ParameterInfo parameterInfo, BuildOptions options)
     {
         ExposedType = parameterInfo.ParameterType;
 
@@ -69,7 +69,7 @@ public sealed class CommandParameter : ICommandParameter
             IsRemainder = false;
 
         // Assign the parser defined on the parameter if it exists, otherwise use the one defined in the configuration.
-        Parser = attributes.FirstOrDefault<ITypeParser>() ?? configuration.GetParser(Type);
+        Parser = attributes.FirstOrDefault<ITypeParser>() ?? options.GetParser(Type);
 
         Attributes = [.. attributes];
 

@@ -1,4 +1,6 @@
-﻿namespace Commands;
+﻿using Commands.Parsing;
+
+namespace Commands;
 
 /// <summary>
 ///     A concurrently accessible, rooted set of components, where <see cref="CommandGroup"/> instances are branches and <see cref="Command"/> instances are leaves.
@@ -10,41 +12,15 @@
 public sealed class ComponentTree : ComponentSet
 {
     /// <summary>
-    ///     Gets the configuration with which new additions to this tree will be created.
+    ///     Initializes a new instance of <see cref="ComponentTree"/>.
     /// </summary>
-    public ComponentConfiguration Configuration { get; }
-
-    /// <summary>
-    ///     Initializes a new instance of <see cref="ComponentTree"/> using the default configuration.
-    /// </summary>
-    public ComponentTree() 
-        => Configuration = ComponentConfiguration.Default;
-
-    /// <summary>
-    ///     Initializes a new instance of <see cref="ComponentTree"/> using the specified configuration.
-    /// </summary>
-    /// <param name="configuration">The configuration to configure newly created components added to this tree with.</param>
-    public ComponentTree(ComponentConfiguration configuration)
-    {
-        Assert.NotNull(configuration, nameof(configuration));
-
-        Configuration = configuration;
-    }
-
-    /// <summary>
-    ///     Initializes a new instance of <see cref="ComponentTree"/> using the specified components and the default configuration.
-    /// </summary>
-    /// <param name="components">The components to add to this tree.</param>
-    public ComponentTree(IEnumerable<IComponent> components)
-        : this(components, ComponentConfiguration.Default) { }
+    public ComponentTree() { }
 
     /// <summary>
     ///     Initializes a new instance of <see cref="ComponentTree"/> using the specified components and configuration.
     /// </summary>
     /// <param name="components">The components to add to this tree.</param>
-    /// <param name="configuration">The configuration to configure newly created components added to this tree with.</param>
-    public ComponentTree(IEnumerable<IComponent> components, ComponentConfiguration configuration)
-        : this(configuration)
+    public ComponentTree(IEnumerable<IComponent> components)
     {
         Assert.NotNull(components, nameof(components));
 
@@ -52,7 +28,7 @@ public sealed class ComponentTree : ComponentSet
     }
 
     /// <inheritdoc />
-    public override IEnumerable<IComponent> Find(ArgumentDictionary args)
+    public override IEnumerable<IComponent> Find(Arguments args)
     {
         List<IComponent> discovered = [];
 
@@ -74,16 +50,47 @@ public sealed class ComponentTree : ComponentSet
     }
 
     /// <summary>
-    ///     Adds a collection of types to the component manager.
+    ///     Attempts to add a type to the tree, using the <paramref name="parsers"/> to create a new <see cref="IComponent"/> implementation.
     /// </summary>
     /// <remarks>
-    ///     This operation will add implementations of <see cref="CommandModule"/> and <see cref="CommandModule{T}"/>, that are public and non-abstract to the current manager.
+    ///     This operation will add an implementation type of <see cref="CommandModule"/> that is public and non-abstract to the current tree.
+    ///     Any type that does not implement either of these base types will be ignored.
+    /// </remarks>
+    /// <param name="type">The type to add to the tree, if possible.</param>
+    /// <param name="parsers">Optional parsers to use when creating the components.</param>
+    /// <returns><see langword="true"/> if the component was created and succesfully added; otherwise <see langword="false"/>.</returns>
+    public bool Add(Type type, BuildOptions? parsers = null)
+        => AddRange([type], parsers) > 0;
+
+    /// <summary>
+    ///     Attempts to add the provided type to the tree, using the <paramref name="parsers"/> to create a new <see cref="IComponent"/> implementation.
+    /// </summary>
+    /// <remarks>
+    ///     This operation will not add the provided type if it is not a public, non-abstract implementation of <see cref="CommandModule"/>.
+    /// </remarks>
+    /// <typeparam name="T">The type implementation of <see cref="CommandModule"/> to add.</typeparam>
+    /// <param name="parsers">Optional parsers to use when creating the components.</param>
+    /// <returns><see langword="true"/> if the component was created and succesfully added; otherwise <see langword="false"/>.</returns>
+    public bool Add<T>(BuildOptions? parsers = null)
+        where T : CommandModule
+        => Add(typeof(T), parsers);
+
+    /// <summary>
+    ///     Attempts to add all provided types to the tree, using the <paramref name="parsers"/> to create new <see cref="IComponent"/> implementations.
+    /// </summary>
+    /// <remarks>
+    ///     This operation will add implementation types of <see cref="CommandModule"/> that are public and non-abstract to the current tree. 
+    ///     Any types that do not implement either of these base types will be ignored.
     /// </remarks>
     /// <param name="types">A collection of types to filter and add to the manager, where possible.</param>
+    /// <param name="parsers">Optional parsers to use when creating the components.</param>
     /// <returns>The number of added components; or 0 if no components are added.</returns>
-    public int AddRange(IEnumerable<Type> types)
+    public int AddRange(IEnumerable<Type> types, BuildOptions? parsers = null)
     {
-        var components = ComponentUtilities.GetComponents(types, Configuration);
+        parsers ??= BuildOptions.Default;
+
+        var components = ComponentUtilities.GetComponents(types, parsers);
+
         return AddRange(components);
     }
 }

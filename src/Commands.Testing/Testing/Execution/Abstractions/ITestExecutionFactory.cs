@@ -1,8 +1,5 @@
 ﻿namespace Commands.Testing;
 
-/// <summary>
-///     
-/// </summary>
 public interface ITestExecutionFactory
 {
     /// <summary>

@@ -1,8 +1,5 @@
 ﻿namespace Commands.Testing;
 
-/// <summary>
-///     
-/// </summary>
 public class TestExecutionFactory : ITestExecutionFactory
 {
     /// <inheritdoc />
@@ -30,12 +27,6 @@ public class TestExecutionFactory : ITestExecutionFactory
         await HandleResult(context, results).ConfigureAwait(false);
     }
     
-    /// <summary>
-    ///     
-    /// </summary>
-    /// <param name="command"></param>
-    /// <param name="options"></param>
-    /// <returns></returns>
     protected virtual ITestContext CreateContext(Command command, CommandOptions options)
     {
         var tests = command.Attributes.OfType<ITest>().ToArray();
@@ -49,13 +40,6 @@ public class TestExecutionFactory : ITestExecutionFactory
         return context;
     }
 
-    /// <summary>
-    ///     
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="results"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
     protected virtual Task HandleResult(ITestContext context, IEnumerable<TestResult> results)
     {
         foreach (var result in results)

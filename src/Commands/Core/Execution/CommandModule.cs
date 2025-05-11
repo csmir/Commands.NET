@@ -40,11 +40,6 @@ public abstract class CommandModule
     public Command Command { get; internal set; } = null!;
 
     /// <summary>
-    ///     Gets the <see cref="ComponentTree"/> that invoked this command. This property is <see langword="null"/> if the command was not invoked by a <see cref="ComponentTree"/>.
-    /// </summary>
-    public IComponentProvider? Provider { get; internal set; }
-
-    /// <summary>
     ///     Sends a response to the caller.
     /// </summary>
     /// <param name="message">The message to send to the caller.</param>

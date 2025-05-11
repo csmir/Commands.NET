@@ -14,7 +14,7 @@ public abstract class ComponentSet : IComponentSet
         => _items.Length;
 
     /// <inheritdoc />
-    public abstract IEnumerable<IComponent> Find(ArgumentDictionary args);
+    public abstract IEnumerable<IComponent> Find(Arguments args);
 
     /// <inheritdoc />
     public bool Contains(IComponent component)
@@ -92,6 +92,10 @@ public abstract class ComponentSet : IComponentSet
     /// <inheritdoc />
     public void Add(IComponent component)
         => AddRange([component]);
+
+    /// <inheritdoc />
+    public int AddRange(params IComponent[] components)
+        => AddRange((IEnumerable<IComponent>)components);
 
     /// <inheritdoc />
     public int AddRange(IEnumerable<IComponent> components)
