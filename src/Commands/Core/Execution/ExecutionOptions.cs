@@ -6,7 +6,7 @@ namespace Commands;
 /// <summary>
 ///     A set of options for handling command queries and determining the workflow in the command scope. This class cannot be inherited.
 /// </summary>
-public sealed class CommandOptions
+public sealed class ExecutionOptions
 {
     // A reference to the component manager that called the command, if any.
     internal ComponentProvider? Provider;
@@ -65,7 +65,7 @@ public sealed class CommandOptions
     /// <summary>
     ///     Gets the default options for command execution.
     /// </summary>
-    public static CommandOptions Default { get; } = new();
+    public static ExecutionOptions Default { get; } = new();
 
     /// <inheritdoc cref="IServiceProvider" />
     /// <remarks>

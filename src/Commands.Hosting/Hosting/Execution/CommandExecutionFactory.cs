@@ -16,7 +16,7 @@ public class CommandExecutionFactory(IComponentProvider executionProvider, IServ
     {
         var scope = serviceProvider.CreateScope();
 
-        var executeOptions = new CommandOptions()
+        var executeOptions = new ExecutionOptions()
         {
             SkipConditions = options?.SkipConditions ?? false,
             RemainderSeparator = options?.RemainderSeparator ?? ' ',
@@ -40,7 +40,7 @@ public class CommandExecutionFactory(IComponentProvider executionProvider, IServ
     /// <param name="options">A set of options that change the pipeline behavior. This factory overrides a couple of settings, which are applied to the options provided to this method.</param>
     /// <returns>A configured implementation of <see cref="IExecutionContext"/> that represents the lifetime of the execution pipeline.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the <see cref="IServiceProvider"/> cannot resolve the scoped <see cref="IExecutionContext"/> as its internal implementation. When customizing the <see cref="IExecutionContext"/> implementation, the factory must be overridden to support it.</exception>
-    protected virtual IExecutionContext CreateContext<TCaller>(TCaller caller, IServiceScope scope, CommandOptions options)
+    protected virtual IExecutionContext CreateContext<TCaller>(TCaller caller, IServiceScope scope, ExecutionOptions options)
         where TCaller : class, ICallerContext
     {
         var token = new CancellationTokenSource();

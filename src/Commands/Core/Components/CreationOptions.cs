@@ -5,7 +5,7 @@ namespace Commands;
 /// <summary>
 ///     A set of options that can be used to configure command, group and tree creation.
 /// </summary>
-public sealed class BuildOptions
+public sealed class CreationOptions
 {
     /// <summary>
     ///     A collection of parsers that can be used to parse command arguments into the target type. When creating this object, the default parsers are registered for the most common types.
@@ -13,13 +13,20 @@ public sealed class BuildOptions
     public Dictionary<Type, TypeParser> Parsers { get; }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="BuildOptions"/> class containing default values.
+    ///     Initializes a new instance of the <see cref="CreationOptions"/> class containing default values.
     /// </summary>
-    public BuildOptions()
+    public CreationOptions()
     {
         Parsers = TypeParser.CreateDefaults()
             .ToDictionary(x => x.Type);
     }
+
+    /// <summary>
+    ///     Gets the default <see cref="CreationOptions"/> instance. When creating a command, group or tree, this instance is used by default if no other options are provided.
+    /// </summary>
+    public static CreationOptions Default { get; } = new CreationOptions();
+
+    #region Internals
 
     internal TypeParser GetParser(Type type)
     {
@@ -45,8 +52,5 @@ public sealed class BuildOptions
         throw new NotSupportedException($"No parser is known for type {type}.");
     }
 
-    /// <summary>
-    ///     Gets the default <see cref="BuildOptions"/> instance.
-    /// </summary>
-    public static BuildOptions Default { get; } = new BuildOptions();
+    #endregion
 }

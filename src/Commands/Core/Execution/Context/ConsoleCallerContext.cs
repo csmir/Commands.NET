@@ -16,7 +16,7 @@ public class ConsoleCallerContext : ICallerContext
     /// </remarks>
     /// <param name="input">A raw string which will be parsed into a set of arguments.</param>
     public ConsoleCallerContext(string? input)
-        => Arguments = Arguments.FromString(input);
+        => Arguments = new(input);
 
     /// <summary>
     ///     Creates a new instance of <see cref="ConsoleCallerContext"/> with the specified input.
@@ -26,7 +26,7 @@ public class ConsoleCallerContext : ICallerContext
     /// </remarks>
     /// <param name="input">The CLI arguments passed to the application upon entry.</param>
     public ConsoleCallerContext(string[] input)
-        => Arguments = Arguments.FromArguments(input);
+        => Arguments = new(input);
 
     /// <summary>
     ///     Sends a response to the console.

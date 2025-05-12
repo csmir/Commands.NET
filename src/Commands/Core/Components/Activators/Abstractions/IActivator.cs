@@ -23,6 +23,6 @@ public interface IActivator
     /// <param name="args">The converted arguments to invoke the command with.</param>
     /// <param name="options">The options that determine the execution pattern of this invoker.</param>
     /// <returns>The result of the invocation. This result is <see langword="null"/> if the method signature returns void.</returns>
-    public object? Invoke<T>(T caller, Command? command, object?[] args, CommandOptions options)
+    public object? Invoke<T>(T caller, Command? command, object?[] args, ExecutionOptions options)
         where T : ICallerContext;
 }

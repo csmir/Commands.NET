@@ -5,51 +5,75 @@
 /// </summary>
 public static class HostUtilities
 {
-    ///// <summary>
-    /////     Configures the <see cref="IHostBuilder"/> with the default implementation of <see cref="IComponentProvider"/>, the mechanism for executing commands. This method will replace all existing related services.
-    ///// </summary>
-    ///// <remarks>
-    /////     This method adds a singleton implementation of <see cref="IComponentProvider"/> and the <see cref="ComponentConfiguration"/> used to create it. 
-    /////     Additionally, it provides a factory based execution mechanism for commands, implementing a singleton <see cref="ICommandExecutionFactory"/>, scoped <see cref="IExecutionContext"/> and transient <see cref="ICallerContextAccessor{TCaller}"/>.
-    ///// </remarks>
-    ///// <param name="builder"></param>
-    ///// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
-    //public static IHostBuilder ConfigureComponents(this IHostBuilder builder)
-    //    => ConfigureComponents(builder, configure => { });
+    /// <summary>
+    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and <see cref="ICommandExecutionFactory"/>.
+    /// </summary>
+    /// <param name="builder">The builder to configure with the related services.</param>
+    /// <param name="configureComponents">An action to configure the <see cref="ComponentProviderBuilder"/> which will be used to populate all related services.</param>
+    /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentProviderBuilder> configureComponents)
+    {
+        Assert.NotNull(configureComponents, nameof(configureComponents));
 
-    ///// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>
-    ///// <param name="builder"></param>
-    ///// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentProviderBuilder"/> in preparation for building an implementation of <see cref="IComponentProvider"/> to execute commands with.</param>
-    ///// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
-    //public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentProviderContext> configureAction)
-    //    => ConfigureComponents(builder, (ctx, props) => configureAction(props));
+        return ConfigureComponents<CommandExecutionFactory>(builder, (_, ctx) => configureComponents(ctx));
+    }
 
-    ///// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>
-    ///// <param name="builder"></param>
-    ///// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentProviderBuilder"/> in preparation for building an implementation of <see cref="IComponentProvider"/> to execute commands with.</param>
-    ///// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
-    //public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<HostBuilderContext, ComponentProviderContext> configureAction)
-    //    => ConfigureComponents<CommandExecutionFactory>(builder, configureAction);
+    /// <summary>
+    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and provided <typeparamref name="TFactory"/>.
+    /// </summary>
+    /// <typeparam name="TFactory">The type implementing <see cref="CommandExecutionFactory"/> which will be used to create execution context and fire off commands with.</typeparam>
+    /// <param name="builder">The builder to configure with the related services.</param>
+    /// <param name="configureComponents">An action to configure the <see cref="ComponentProviderBuilder"/> which will be used to populate all related services.</param>
+    /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
+    public static IHostBuilder ConfigureComponents<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>(
+        this IHostBuilder builder, Action<ComponentProviderBuilder> configureComponents)
+        where TFactory : CommandExecutionFactory
+    {
+        Assert.NotNull(configureComponents, nameof(configureComponents));
 
-    ///// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>
-    ///// <typeparam name="TFactory">The implementation of <see cref="ICommandExecutionFactory"/> to consider the factory for executing commands using this host as the lifetime.</typeparam>
-    ///// <param name="builder"></param>
-    ///// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentProviderBuilder"/> in preparation for building an implementation of <see cref="IComponentProvider"/> to execute commands with.</param>
-    ///// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
-    //public static IHostBuilder ConfigureComponents<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
-    //    (this IHostBuilder builder, Action<HostBuilderContext, ComponentProviderContext> configureAction)
-    //    where TFactory : CommandExecutionFactory
-    //{
-    //    Assert.NotNull(builder, nameof(builder));
-    //    Assert.NotNull(configureAction, nameof(configureAction));
+        return ConfigureComponents<TFactory>(builder, (_, ctx) => configureComponents(ctx));
+    }
 
-    //    var properties = new ComponentProviderContext();
-    //    var services = builder.ConfigureServices((ctx, services) =>
-    //    {
-    //        configureAction(ctx, properties);
+    /// <inheritdoc cref="ConfigureComponents{TFactory}(IHostBuilder, Action{ComponentProviderBuilder})"/>
+    public static IHostBuilder ConfigureComponents<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>(
+        this IHostBuilder builder, Action<HostBuilderContext, ComponentProviderBuilder> configureComponents)
+        where TFactory : CommandExecutionFactory
+    {
+        Assert.NotNull(configureComponents, nameof(configureComponents));
 
-    //        ServiceUtilities.AddComponentCollection<TFactory>(services, properties);
-    //    });
-    //    return builder;
-    //}
+        var properties = new ComponentProviderBuilder();
+
+        builder.ConfigureServices((ctx, services) =>
+        {
+            configureComponents(ctx, properties);
+            ServiceUtilities.AddComponentProvider<TFactory>(services, properties);
+        });
+
+        return builder;
+    }
+
+    /// <summary>
+    ///     Configures the <see cref="IHost"/>'s <see cref="IComponentProvider"/> to use the provided settings of the <see cref="ComponentTree"/> as the source of components.
+    /// </summary>
+    /// <param name="host">The host to configure with the related components.</param>
+    /// <param name="configureTree">An action to configure the <see cref="ComponentTree"/> with available components.</param>
+    /// <returns>The same <see cref="IHost"/> for call chaining.</returns>
+    public static IHost UseComponents(this IHost host, Action<ComponentTree> configureTree)
+    {
+        Assert.NotNull(configureTree, nameof(configureTree));
+
+        return UseComponents(host, (_, tree) => configureTree(tree));
+    }
+
+    /// <inheritdoc cref="UseComponents(IHost, Action{ComponentTree})"/>
+    public static IHost UseComponents(this IHost host, Action<IServiceProvider, ComponentTree> configureTree)
+    {
+        Assert.NotNull(configureTree, nameof(configureTree));
+
+        var provider = host.Services.GetRequiredService<IComponentProvider>();
+
+        configureTree(host.Services, provider.Components);
+
+        return host;
+    }
 }

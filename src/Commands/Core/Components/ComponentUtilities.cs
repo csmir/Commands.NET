@@ -62,7 +62,7 @@ public static class ComponentUtilities
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL2067", Justification = "The types are supplied from user-facing implementation, it is up to the user to ensure that these types are available in AOT context.")]
 #endif
-    public static IEnumerable<CommandGroup> GetComponents(IEnumerable<Type> types, BuildOptions configuration, CommandGroup? parent = null, bool isNested = false)
+    public static IEnumerable<CommandGroup> GetComponents(IEnumerable<Type> types, CreationOptions configuration, CommandGroup? parent = null, bool isNested = false)
     {
         Assert.NotNull(types, nameof(types));
         Assert.NotNull(configuration, nameof(configuration));
@@ -74,7 +74,7 @@ public static class ComponentUtilities
 
     #region Execution
 
-    internal static async ValueTask<ParseResult[]> Parse(IParameterCollection coll, ICallerContext caller, Arguments args, CommandOptions options)
+    internal static async ValueTask<ParseResult[]> Parse(IParameterCollection coll, ICallerContext caller, Arguments args, ExecutionOptions options)
     {
         var results = new ParseResult[coll.Parameters.Length];
 
@@ -128,7 +128,7 @@ public static class ComponentUtilities
 
     #region Building
 
-    internal static IEnumerable<CommandGroup> GetComponents(BuildOptions configuration, IEnumerable<DynamicType> types, CommandGroup? parent, bool isNested)
+    internal static IEnumerable<CommandGroup> GetComponents(CreationOptions configuration, IEnumerable<DynamicType> types, CommandGroup? parent, bool isNested)
     {
         Assert.NotNull(types, nameof(types));
 
@@ -159,9 +159,9 @@ public static class ComponentUtilities
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL2062", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
 #endif
-    internal static IEnumerable<IComponent> GetNestedComponents(BuildOptions configuration, CommandGroup parent)
+    internal static IEnumerable<IComponent> GetNestedComponents(CreationOptions configuration, CommandGroup parent)
     {
-        static IEnumerable<IComponent> GetExecutableComponents(BuildOptions configuration, CommandGroup parent)
+        static IEnumerable<IComponent> GetExecutableComponents(CreationOptions configuration, CommandGroup parent)
         {
             var members = parent.Activator!.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
 
@@ -198,7 +198,7 @@ public static class ComponentUtilities
         }
     }
 
-    internal static ICommandParameter[] GetParameters(IActivator activator, BuildOptions configuration)
+    internal static ICommandParameter[] GetParameters(IActivator activator, CreationOptions configuration)
     {
         var parameters = activator.Target.GetParameters();
 

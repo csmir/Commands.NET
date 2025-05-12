@@ -48,11 +48,49 @@ public struct Arguments
         }
     }
 
+    /// <inheritdoc cref="Arguments(string, char[], StringComparer?)"/>
+    public Arguments(string? input, StringComparer? comparer = null)
+        : this(input, [' '], comparer) { }
+
     /// <summary>
-    ///     Creates a new <see cref="Arguments"/> from a set of named arguments.
+    ///     Creates a new <see cref="Arguments"/> from a string input.
+    /// </summary>
+    /// <remarks>
+    ///     The implementation is defined by the following rules:
+    ///     <list type="number">
+    ///         <item>
+    ///             <b>Flags</b> can act either as a standalone argument when prefixed with one hyphen <c>-</c>, or as a name for the next item, assuming a prefix of two hyphens <c>--</c>, and that the next item is not also a flag.
+    ///         </item>
+    ///         <item>
+    ///             <b>Whitespace</b> acts as a delimiter. When preceded by an argument name, it treats the next item as its value, otherwise closing a pair.
+    ///         </item>
+    ///         <item>
+    ///             <b>Quotations</b> start concatenation when at the start of an argument, where all following arguments are collected until an end-quote is found.<br />
+    ///             <i>Note: A quote is only considered an end-quote if it is the lowest level quote in all following arguments.</i>
+    ///         </item>
+    ///         <item>
+    ///             <b>Unnamed</b> arguments are added to the collection as a key with a <see langword="null"/> value.
+    ///         </item>
+    ///     </list>
+    /// </remarks>
+    /// <param name="input">The caller's input to parse into a set of arguments.</param>
+    /// <param name="separators">The characters to use as separators when splitting the input.</param>
+    /// <param name="comparer">The comparer to use when comparing argument names.</param>
+    /// <returns>
+    ///     An array of arguments that can be used to search for a command or parse into a delegate.
+    /// </returns>
+    public Arguments(string? input, char[] separators, StringComparer? comparer = null)
+        : this(input?.Split(separators) ?? [], comparer) { }
+
+    /// <inheritdoc cref="Arguments(string, char[], StringComparer?)"/>
+    public Arguments(string[] input, StringComparer? comparer = null)
+        : this(ReadInternal(input), comparer) { }
+
+    /// <summary>
+    ///     Creates a new <see cref="Arguments"/> from an enumerable of named arguments.
     /// </summary>
     /// <param name="args">The range of named arguments to enumerate in this set.</param>
-    /// <param name="comparer">The comparer to evaluate keys in the inner named dictionary.</param>
+    /// <param name="comparer">The comparer to evaluate keys in the inner dictionary.</param>
     public Arguments(IEnumerable<KeyValuePair<string, object?>> args, StringComparer? comparer)
     {
         _namedArgs = new(comparer);
@@ -73,16 +111,6 @@ public struct Arguments
 
         _unnamedArgs = unnamedFill;
         RemainingLength = _unnamedArgs.Length + _namedArgs.Count;
-    }
-
-    /// <summary>
-    ///     Creates a new empty <see cref="Arguments"/>.
-    /// </summary>
-    public Arguments()
-    {
-        _namedArgs = [];
-        _unnamedArgs = [];
-        RemainingLength = 0;
     }
 
     #region Internals
@@ -141,65 +169,11 @@ public struct Arguments
         RemainingLength -= index;
     }
 
-    #endregion
-
-    #region Initializers
-
-    /// <inheritdoc cref="FromString(string, char[], StringComparer?)"/>
-    public static Arguments FromString(string? input, StringComparer? comparer = null)
-        => FromString(input, [' '], comparer);
-
-    /// <summary>
-    ///     Reads the provided <paramref name="input"/> into an array of command arguments. This operation will never throw, always returning a new <see cref="Arguments"/>.
-    /// </summary>
-    /// <remarks>
-    ///     The implementation is defined by the following rules:
-    ///     <list type="number">
-    ///         <item>
-    ///             <b>Flags</b> can act either as a standalone argument when prefixed with one hyphen <c>-</c>, or as a name for the next item, assuming a prefix of two hyphens <c>--</c>, and that the next item is not also a flag.
-    ///         </item>
-    ///         <item>
-    ///             <b>Whitespace</b> acts as a delimiter. When preceded by an argument name, it treats the next item as its value, otherwise closing a pair.
-    ///         </item>
-    ///         <item>
-    ///             <b>Quotations</b> start concatenation when at the start of an argument, where all following arguments are collected until an end-quote is found.<br />
-    ///             <i>Note: A quote is only considered an end-quote if it is the lowest level quote in all following arguments.</i>
-    ///         </item>
-    ///         <item>
-    ///             <b>Unnamed</b> arguments are added to the collection as a key with a <see langword="null"/> value.
-    ///         </item>
-    ///     </list>
-    /// </remarks>
-    /// <param name="input">The caller's input to parse into a set of arguments.</param>
-    /// <param name="separators">The characters to use as separators when splitting the input.</param>
-    /// <param name="comparer">The comparer to use when comparing argument names.</param>
-    /// <returns>
-    ///     An array of arguments that can be used to search for a command or parse into a delegate.
-    /// </returns>
-    public static Arguments FromString(string? input, char[] separators, StringComparer? comparer = null)
-    {
-        if (string.IsNullOrWhiteSpace(input))
-            return new();
-
-        var split = input!.Split(separators);
-
-        if (split.Length == 0)
-            return new();
-
-        return new(ReadInternal(split), comparer);
-    }
-
-    /// <inheritdoc cref="FromString(string, char[], StringComparer?)"/>
-    public static Arguments FromArguments(string[] input, StringComparer? comparer = null)
-    {
-        if (input.Length == 0)
-            return new();
-
-        return new(ReadInternal(input), comparer);
-    }
-
     private static IEnumerable<KeyValuePair<string, object?>> ReadInternal(string[] input)
     {
+        if (input.Length is 0)
+            yield break;
+
         if (input.Length is 1)
         {
             yield return new(input[0], null);

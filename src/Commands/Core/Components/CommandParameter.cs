@@ -38,7 +38,7 @@ public sealed class CommandParameter : ICommandParameter
         => Type.IsArray;
 
     internal CommandParameter(
-        ParameterInfo parameterInfo, BuildOptions options)
+        ParameterInfo parameterInfo, CreationOptions options)
     {
         ExposedType = parameterInfo.ParameterType;
 

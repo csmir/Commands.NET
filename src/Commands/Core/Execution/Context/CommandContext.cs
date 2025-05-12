@@ -7,7 +7,7 @@
 ///     This context is used for <see langword="static"/> and <see langword="delegate"/> commands. 
 ///     By marking it as the first parameter of any of these command types, the <see cref="IComponentProvider"/> will automatically inject the context into the method.
 /// </remarks>
-public class CommandContext<T>(T caller, Command command, CommandOptions options)
+public class CommandContext<T>(T caller, Command command, ExecutionOptions options)
     where T : ICallerContext
 {
     /// <summary>
@@ -18,7 +18,7 @@ public class CommandContext<T>(T caller, Command command, CommandOptions options
     /// <summary>
     ///     Gets the options for the command currently in scope.
     /// </summary>
-    public CommandOptions Options { get; } = options;
+    public ExecutionOptions Options { get; } = options;
 
     /// <summary>
     ///     Gets the information about the command currently being executed.

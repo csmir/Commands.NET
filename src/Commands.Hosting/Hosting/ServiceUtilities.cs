@@ -8,61 +8,59 @@ namespace Commands.Hosting;
 /// </summary>
 public static class ServiceUtilities
 {
-    ///// <summary>
-    /////     Configures the <see cref="IServiceCollection"/> with the default implementation of <see cref="IComponentProvider"/>, the mechanism for executing commands. This method will replace all existing related services.
-    ///// </summary>
-    ///// <remarks>
-    /////     This method adds a singleton implementation of <see cref="IComponentProvider"/>. 
-    /////     Additionally, it provides a factory based execution mechanism for commands, implementing a singleton <see cref="ICommandExecutionFactory"/>, scoped <see cref="IExecutionContext"/> and transient <see cref="ICallerContextAccessor{TCaller}"/>.
-    ///// </remarks>
-    ///// <param name="services"></param>
-    ///// <param name="configureAction">An action responsible for configuring a newly created instance of <see cref="ComponentProviderBuilder"/> in preparation for building an implementation of <see cref="IComponentProvider"/> to execute commands with.</param>
-    ///// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
-    //public static IServiceCollection AddComponentCollection<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
-    //    (this IServiceCollection services, Action<ComponentProviderContext> configureAction)
-    //    where TFactory : class, ICommandExecutionFactory
-    //{
-    //    Assert.NotNull(services, nameof(services));
-    //    Assert.NotNull(configureAction, nameof(configureAction));
+    /// <summary>
+    ///     Adds a <see cref="IComponentProvider"/> to the <see cref="IServiceCollection"/> using the provided <typeparamref name="TFactory"/> as the factory for creating execution contexts.
+    /// </summary>
+    /// <remarks>
+    ///     This method will remove any existing <see cref="IComponentProvider"/> and <see cref="ICommandExecutionFactory"/> from the collection before adding newly configured instances. Additionally, it configures a <see cref="IExecutionContext"/> and <see cref="ICallerContextAccessor{TCaller}"/> under scoped context.
+    /// </remarks>
+    /// <typeparam name="TFactory">The type implementing <see cref="CommandExecutionFactory"/> which will be used to create execution context and fire off commands with.</typeparam>
+    /// <param name="services">The <see cref="IServiceProvider"/> to add the configured services to.</param>
+    /// <param name="configureAction"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddComponentProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
+        (this IServiceCollection services, Action<ComponentProviderBuilder> configureAction)
+        where TFactory : class, ICommandExecutionFactory
+    {
+        Assert.NotNull(services, nameof(services));
+        Assert.NotNull(configureAction, nameof(configureAction));
 
-    //    var properties = new ComponentProviderContext();
+        var properties = new ComponentProviderBuilder();
 
-    //    configureAction(properties);
+        configureAction(properties);
 
-    //    return AddComponentCollection<TFactory>(services, properties);
-    //}
+        return AddComponentProvider<TFactory>(services, properties);
+    }
 
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-    //internal static IServiceCollection AddComponentCollection<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
-    //    (IServiceCollection services, ComponentProviderContext properties)
-    //    where TFactory : class, ICommandExecutionFactory
-    //{
-    //    if (services.Contains<ICommandExecutionFactory>())
-    //    {
-    //        // Remove the existing factory to avoid conflicts.
-    //        services.RemoveAll<ICommandExecutionFactory>();
-    //        services.RemoveAll<IComponentProvider>();
-    //        services.RemoveAll<IExecutionContext>();
-    //        services.RemoveAll(typeof(ICallerContextAccessor<>));
-    //    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static IServiceCollection AddComponentProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
+        (IServiceCollection services, ComponentProviderBuilder properties)
+        where TFactory : class, ICommandExecutionFactory
+    {
+        if (services.Contains<ICommandExecutionFactory>())
+        {
+            // Remove the existing factory to avoid conflicts.
+            services.RemoveAll<ICommandExecutionFactory>();
+            services.RemoveAll<IComponentProvider>();
+            services.RemoveAll<IExecutionContext>();
+            services.RemoveAll(typeof(ICallerContextAccessor<>));
+        }
 
-    //    services.AddSingleton<ICommandExecutionFactory, TFactory>();
+        services.AddSingleton<ICommandExecutionFactory, TFactory>();
 
-    //    services.AddScoped<IExecutionContext, ExecutionContext>();
-    //    services.AddTransient(typeof(ICallerContextAccessor<>), typeof(CallerContextAccessor<>));
+        services.AddScoped<IExecutionContext, ExecutionContext>();
+        services.AddTransient(typeof(ICallerContextAccessor<>), typeof(CallerContextAccessor<>));
 
-    //    var providerDescriptor = ServiceDescriptor.Singleton(x =>
-    //    {
-    //        // Implement global result handler to dispose of the execution scope. This must be done last, even if the properties are mutated anywhere before.
-    //        properties.Components.AddResultHandler(new ExecutionScopeResolver());
+        var providerDescriptor = ServiceDescriptor.Singleton(x =>
+        {
+            // Implement global result handler to dispose of the execution scope. This must be done last, even if the properties are mutated anywhere before.
+            properties.AddHandler(new ExecutionScopeResolver());
 
-    //        var provider = properties.Components.Build(properties.Configuration);
+            return new ComponentProvider(properties.GetHandlers());
+        });
 
-    //        return provider;
-    //    });
+        services.Add(providerDescriptor);
 
-    //    services.Add(providerDescriptor);
-
-    //    return services;
-    //}
+        return services;
+    }
 }

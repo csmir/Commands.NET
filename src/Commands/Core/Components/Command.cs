@@ -87,7 +87,7 @@ public class Command : IComponent, IParameterCollection
     /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
     /// <param name="names">The names used to discover this command during execution.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
-    public Command(Delegate executionDelegate, string[] names, BuildOptions? options = null)
+    public Command(Delegate executionDelegate, string[] names, CreationOptions? options = null)
         : this(executionDelegate, [], names, options) { }
 
     /// <summary>
@@ -97,8 +97,8 @@ public class Command : IComponent, IParameterCollection
     /// <param name="conditions">The conditions bound to the command, which will determine whether it can execute or not.</param>
     /// <param name="names">The names used to discover this command during execution.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
-    public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, BuildOptions? options = null)
-        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), options ?? BuildOptions.Default)
+    public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, CreationOptions? options = null)
+        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), options ?? CreationOptions.Default)
     {
         Names = names;
         Ignore = false;
@@ -113,8 +113,8 @@ public class Command : IComponent, IParameterCollection
     /// <param name="executionMethod">The method to run when the command is executed.</param>
     /// <param name="parent">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
-    public Command(MethodInfo executionMethod, CommandGroup? parent = null, BuildOptions? options = null)
-        : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ?? BuildOptions.Default)
+    public Command(MethodInfo executionMethod, CommandGroup? parent = null, CreationOptions? options = null)
+        : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ?? CreationOptions.Default)
     {
         Names = Attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
         Ignore = Attributes.Contains<IgnoreAttribute>();
@@ -128,7 +128,7 @@ public class Command : IComponent, IParameterCollection
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    private Command(IActivator activator, BuildOptions options)
+    private Command(IActivator activator, CreationOptions options)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
         var parameters = ComponentUtilities.GetParameters(activator, options);
@@ -158,7 +158,7 @@ public class Command : IComponent, IParameterCollection
     /// <param name="caller">The instance of the <see cref="ICallerContext"/> provided to this command.</param>
     /// <param name="options">A collection of options that determines pipeline logic.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> containing the result of the execution. If <see cref="IResult.Success"/> is <see langword="true"/>, the command has successfully been executed.</returns>
-    public async ValueTask<IResult> Run<TContext>(TContext caller, CommandOptions options)
+    public async ValueTask<IResult> Run<TContext>(TContext caller, ExecutionOptions options)
         where TContext : class, ICallerContext
     {
         var args = caller.Arguments;
@@ -248,8 +248,8 @@ public class Command : IComponent, IParameterCollection
     {
         var score = 1.0f;
 
-        foreach (var argument in Parameters)
-            score += argument.GetScore();
+        foreach (var parameter in Parameters)
+            score += parameter.GetScore();
 
         score += Attributes.FirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
 

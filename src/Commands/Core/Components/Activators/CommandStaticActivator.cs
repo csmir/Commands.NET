@@ -7,7 +7,7 @@ internal readonly struct CommandStaticActivator(MethodInfo target, object? state
 
     public bool HasContext { get; } = target.HasContextProvider();
 
-    public object? Invoke<T>(T caller, Command? command, object?[] args, CommandOptions options)
+    public object? Invoke<T>(T caller, Command? command, object?[] args, ExecutionOptions options)
         where T : ICallerContext
     {
         if (HasContext)

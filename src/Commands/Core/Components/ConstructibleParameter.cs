@@ -60,7 +60,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
     [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
 #endif
     internal ConstructibleParameter(
-        ParameterInfo parameterInfo, BuildOptions configuration)
+        ParameterInfo parameterInfo, CreationOptions configuration)
     {
         var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
         var attributes = parameterInfo.GetAttributes(false);

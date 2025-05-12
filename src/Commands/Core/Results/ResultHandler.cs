@@ -11,26 +11,26 @@ namespace Commands;
 ///     This implementation of <see cref="ResultHandler"/> allows you to define a delegate that will be executed when the command execution is completed. This delegate is only executed if the command failed.
 /// </remarks>
 /// <typeparam name="TContext">The context type this handler should cover.</typeparam>
-public sealed class DelegateResultHandler<TContext>
+public sealed class HandlerDelegate<TContext>
     : ResultHandler<TContext>
     where TContext : class, ICallerContext
 {
     private readonly Func<TContext, Exception, IServiceProvider, ValueTask>? _resultDelegate;
 
     /// <summary>
-    ///     Creates a new instance of <see cref="DelegateResultHandler{TContext}"/>, which only responds to the caller with the result of the command execution.
+    ///     Creates a new instance of <see cref="HandlerDelegate{TContext}"/>, which only responds to the caller with the result of the command execution.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public DelegateResultHandler() { }
+    public HandlerDelegate() { }
 
     /// <summary>
-    ///     Creates a new instance of <see cref="DelegateResultHandler{TContext}"/> using the provided handler.
+    ///     Creates a new instance of <see cref="HandlerDelegate{TContext}"/> using the provided handler.
     /// </summary>
     /// <remarks>
     ///     This handler will be executed when the command execution fails, containing the occurred pipeline exception.
     /// </remarks>
     /// <param name="resultDelegate">The delegate that will handle the failed execution result.</param>
-    public DelegateResultHandler(Action<TContext, Exception, IServiceProvider> resultDelegate)
+    public HandlerDelegate(Action<TContext, Exception, IServiceProvider> resultDelegate)
         => _resultDelegate = (context, result, services) =>
         {
             resultDelegate(context, result, services);
@@ -38,13 +38,13 @@ public sealed class DelegateResultHandler<TContext>
         };
 
     /// <summary>
-    ///     Creates a new instance of <see cref="DelegateResultHandler{TContext}"/> using the provided handler.
+    ///     Creates a new instance of <see cref="HandlerDelegate{TContext}"/> using the provided handler.
     /// </summary>
     /// <remarks>
     ///     This handler will be executed when the command execution fails, containing the occurred pipeline exception.
     /// </remarks>
     /// <param name="resultDelegate">The delegate that will handle the failed execution result.</param>
-    public DelegateResultHandler(Func<TContext, Exception, IServiceProvider, ValueTask> resultDelegate)
+    public HandlerDelegate(Func<TContext, Exception, IServiceProvider, ValueTask> resultDelegate)
         => _resultDelegate = resultDelegate;
 
     /// <inheritdoc />
@@ -317,12 +317,8 @@ public abstract class ResultHandler
 
     #endregion
 
-    #region Initializers
-
     /// <summary>
-    ///     Creates a new instance of <see cref="ResultHandler"/> which does not handle any result.
+    ///     Gets an instance of <see cref="ResultHandler"/> which does not handle any result, only resolving the return type of a command delegate.
     /// </summary>
-    public static ResultHandler Empty => new DelegateResultHandler<ICallerContext>();
-
-    #endregion
+    public static ResultHandler Default { get; } = new HandlerDelegate<ICallerContext>();
 }

@@ -5,7 +5,7 @@
 /// </summary>
 /// <typeparam name="TConvertible">The target type of the parser.</typeparam>
 /// <param name="parseDelegate">The execution delegate which will be triggered when a value is to be converted to the provided argument.</param>
-public sealed class DelegateTypeParser<TConvertible>(
+public sealed class ParseDelegate<TConvertible>(
     Func<ICallerContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> parseDelegate)
     : TypeParser<TConvertible>
 {
@@ -58,7 +58,7 @@ public abstract class TypeParser : ITypeParser
 
     internal static IEnumerable<TypeParser> CreateDefaults()
     {
-        var list = TryParseParser.CreateBaseParsers();
+        var list = TryParseParser.GetBCLTypes();
 
         list.Add(new TimeSpanParser());
         list.Add(new ColorParser());

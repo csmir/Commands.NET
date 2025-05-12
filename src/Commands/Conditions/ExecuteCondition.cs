@@ -5,7 +5,7 @@
 /// </summary>
 /// <typeparam name="TEvaluator">The evaluator type which should wrap this condition.</typeparam>
 /// <param name="checkDelegate">The delegate that is triggered when a check is done during command execution to determine if the command can execute or not.</param>
-public sealed class DelegateExecuteCondition<
+public sealed class ConditionDelegate<
 #if NET8_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 #endif
@@ -57,22 +57,4 @@ public abstract class ExecuteCondition : IExecuteCondition
     /// <inheritdoc />
     public ConditionResult Success()
         => ConditionResult.FromSuccess();
-
-    #region Initializers
-
-    /// <inheritdoc cref="From{T}(Func{ICallerContext, Command, IServiceProvider, ValueTask{ConditionResult}})"/>
-    public static ExecuteConditionBuilder<T> For<T>()
-        where T : ConditionEvaluator, new()
-        => new();
-
-    /// <summary>
-    ///     Defines a collection of properties to configure and convert into a new instance of <see cref="ExecuteCondition"/>.
-    /// </summary>
-    /// <param name="executionDelegate">The delegate that should be executed when the condition is invoked.</param>
-    /// <returns>A fluent-pattern property object that can be converted into an instance when configured.</returns>
-    public static ExecuteConditionBuilder<T> From<T>(Func<ICallerContext, Command, IServiceProvider, ValueTask<ConditionResult>> executionDelegate)
-        where T : ConditionEvaluator, new()
-        => new ExecuteConditionBuilder<T>().Delegate(executionDelegate);
-
-    #endregion
 }

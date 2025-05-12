@@ -13,8 +13,8 @@ public class CommandGroup<
 T> : CommandGroup
 where T : CommandModule
 {
-    /// <inheritdoc cref="CommandGroup(Type, CommandGroup?, BuildOptions?)" />
-    public CommandGroup(CommandGroup? parent = null, BuildOptions? options = null)
+    /// <inheritdoc cref="CommandGroup(Type, CommandGroup?, CreationOptions?)" />
+    public CommandGroup(CommandGroup? parent = null, CreationOptions? options = null)
         : base(typeof(T), parent, options) { }
 }
 
@@ -77,7 +77,7 @@ public class CommandGroup : ComponentSet, IComponent
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
-        Type type, CommandGroup? parent = null, BuildOptions? options = null)
+        Type type, CommandGroup? parent = null, CreationOptions? options = null)
     {
         if (!typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters)
             throw new InvalidCastException($"The provided type is not an implementation of {nameof(CommandModule)}.");
@@ -95,7 +95,7 @@ public class CommandGroup : ComponentSet, IComponent
 
         if (!Ignore)
         {
-            var components = ComponentUtilities.GetNestedComponents(options ?? BuildOptions.Default, this);
+            var components = ComponentUtilities.GetNestedComponents(options ?? CreationOptions.Default, this);
 
             AddRange(components);
         }
