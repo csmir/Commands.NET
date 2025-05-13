@@ -25,7 +25,7 @@ public interface IDependencyActivator<T>
     /// <summary>
     ///     Returns the activated instance of the activator.
     /// </summary>
-    /// <param name="services">A collection of services from which the target <typeparamref name="T"/> should be returned, or which should be use to resolve the type immediately.</param>
+    /// <param name="options">The options containing the <see cref="IServiceProvider"/> from which the target <typeparamref name="T"/> should be returned, or which should be use to resolve the type immediately.</param>
     /// <returns>An instance of <typeparamref name="T"/> which was pre-initialized, provided from the <see cref="IServiceProvider"/> or created using a self-defined injection pattern.</returns>
-    public T Activate(IServiceProvider services);
+    public T Activate(ExecutionOptions options);
 }

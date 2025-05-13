@@ -29,9 +29,9 @@ internal readonly struct CommandModuleActivator : IDependencyActivator<CommandMo
         Type = type;
     }
 
-    public CommandModule Activate(IServiceProvider services)
+    public CommandModule Activate(ExecutionOptions options)
     {
-        var obj = services.GetService(Type!);
+        var obj = options.ServiceProvider.GetService(Type!);
 
         if (obj == null)
         {
@@ -41,13 +41,16 @@ internal readonly struct CommandModuleActivator : IDependencyActivator<CommandMo
             {
                 var parameter = Dependencies[i];
 
-                var service = services.GetService(parameter.Type);
+                var service = options.ServiceProvider.GetService(parameter.Type);
 
                 if (service != null || parameter.IsNullable)
                     param[i] = service;
 
                 else if (parameter.Type == typeof(IServiceProvider))
-                    param[i] = services;
+                    param[i] = options.ServiceProvider;
+
+                else if (parameter.Type == typeof(IComponentProvider))
+                    param[i] = options.Provider;
 
                 else if (parameter.IsOptional)
                     param[i] = Type.Missing;
