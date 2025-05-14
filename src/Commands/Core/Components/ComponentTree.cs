@@ -57,7 +57,7 @@ public sealed class ComponentTree : ComponentSet
     /// <param name="type">The type to add to the tree, if possible.</param>
     /// <param name="parsers">Optional parsers to use when creating the components.</param>
     /// <returns><see langword="true"/> if the component was created and succesfully added; otherwise <see langword="false"/>.</returns>
-    public bool Add(Type type, CreationOptions? parsers = null)
+    public bool Add(Type type, ComponentOptions? parsers = null)
         => AddRange([type], parsers) > 0;
 
     /// <summary>
@@ -69,7 +69,7 @@ public sealed class ComponentTree : ComponentSet
     /// <typeparam name="T">The type implementation of <see cref="CommandModule"/> to add.</typeparam>
     /// <param name="parsers">Optional parsers to use when creating the components.</param>
     /// <returns><see langword="true"/> if the component was created and succesfully added; otherwise <see langword="false"/>.</returns>
-    public bool Add<T>(CreationOptions? parsers = null)
+    public bool Add<T>(ComponentOptions? parsers = null)
         where T : CommandModule
         => Add(typeof(T), parsers);
 
@@ -83,9 +83,9 @@ public sealed class ComponentTree : ComponentSet
     /// <param name="types">A collection of types to filter and add to the manager, where possible.</param>
     /// <param name="parsers">Optional parsers to use when creating the components.</param>
     /// <returns>The number of added components; or 0 if no components are added.</returns>
-    public int AddRange(IEnumerable<Type> types, CreationOptions? parsers = null)
+    public int AddRange(IEnumerable<Type> types, ComponentOptions? parsers = null)
     {
-        parsers ??= CreationOptions.Default;
+        parsers ??= ComponentOptions.Default;
 
         var components = ComponentUtilities.GetComponents(types, parsers);
 

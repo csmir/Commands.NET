@@ -19,13 +19,13 @@ public static class ServiceUtilities
     /// <param name="configureAction"></param>
     /// <returns></returns>
     public static IServiceCollection AddComponentProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
-        (this IServiceCollection services, Action<ComponentProviderBuilder> configureAction)
+        (this IServiceCollection services, Action<ComponentBuilder> configureAction)
         where TFactory : class, ICommandExecutionFactory
     {
         Assert.NotNull(services, nameof(services));
         Assert.NotNull(configureAction, nameof(configureAction));
 
-        var properties = new ComponentProviderBuilder();
+        var properties = new ComponentBuilder();
 
         configureAction(properties);
 
@@ -34,7 +34,7 @@ public static class ServiceUtilities
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static IServiceCollection AddComponentProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
-        (IServiceCollection services, ComponentProviderBuilder properties)
+        (IServiceCollection services, ComponentBuilder properties)
         where TFactory : class, ICommandExecutionFactory
     {
         if (services.Contains<ICommandExecutionFactory>())

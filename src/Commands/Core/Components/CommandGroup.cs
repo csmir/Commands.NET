@@ -13,8 +13,8 @@ public class CommandGroup<
 T> : CommandGroup
 where T : CommandModule
 {
-    /// <inheritdoc cref="CommandGroup(Type, CommandGroup?, CreationOptions?)" />
-    public CommandGroup(CommandGroup? parent = null, CreationOptions? options = null)
+    /// <inheritdoc cref="CommandGroup(Type, CommandGroup?, ComponentOptions?)" />
+    public CommandGroup(CommandGroup? parent = null, ComponentOptions? options = null)
         : base(typeof(T), parent, options) { }
 }
 
@@ -67,9 +67,9 @@ public class CommandGroup : ComponentSet, IComponent
     /// </summary>
     /// <param name="names"></param>
     /// <param name="options"></param>
-    public CommandGroup(string[] names, CreationOptions? options = null)
+    public CommandGroup(string[] names, ComponentOptions? options = null)
     {
-        Assert.MatchExpression(names, (options ?? CreationOptions.Default).NameValidation, nameof(names));
+        Assert.MatchExpression(names, (options ?? ComponentOptions.Default).NameValidation, nameof(names));
 
         Ignore = false;
         Attributes = [];
@@ -87,9 +87,9 @@ public class CommandGroup : ComponentSet, IComponent
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
-        Type type, CommandGroup? parent = null, CreationOptions? options = null)
+        Type type, CommandGroup? parent = null, ComponentOptions? options = null)
     {
-        options ??= CreationOptions.Default;
+        options ??= ComponentOptions.Default;
 
         if (!typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters)
             throw new InvalidCastException($"The provided type is not an implementation of {nameof(CommandModule)}.");

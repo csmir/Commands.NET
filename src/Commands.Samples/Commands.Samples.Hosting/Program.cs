@@ -9,7 +9,7 @@ var builder = Host.CreateDefaultBuilder(args);
 
 builder.ConfigureComponents(context =>
 {
-    context.ConfigureOptions(options =>
+    context.Configure(options =>
     {
         options.Parsers[typeof(Version)] = new TryParseParser<Version>(Version.TryParse);
     });

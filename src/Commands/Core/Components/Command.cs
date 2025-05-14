@@ -87,7 +87,7 @@ public class Command : IComponent, IParameterCollection
     /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
     /// <param name="names">The names used to discover this command during execution.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
-    public Command(Delegate executionDelegate, string[] names, CreationOptions? options = null)
+    public Command(Delegate executionDelegate, string[] names, ComponentOptions? options = null)
         : this(executionDelegate, [], names, options) { }
 
     /// <summary>
@@ -97,8 +97,8 @@ public class Command : IComponent, IParameterCollection
     /// <param name="conditions">The conditions bound to the command, which will determine whether it can execute or not.</param>
     /// <param name="names">The names used to discover this command during execution.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
-    public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, CreationOptions? options = null)
-        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), options ??= CreationOptions.Default)
+    public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, ComponentOptions? options = null)
+        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), options ??= ComponentOptions.Default)
     {
         Assert.MatchExpression(names, options.NameValidation, nameof(names));
 
@@ -115,8 +115,8 @@ public class Command : IComponent, IParameterCollection
     /// <param name="executionMethod">The method to run when the command is executed.</param>
     /// <param name="parent">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
-    public Command(MethodInfo executionMethod, CommandGroup? parent = null, CreationOptions? options = null)
-        : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ??= CreationOptions.Default)
+    public Command(MethodInfo executionMethod, CommandGroup? parent = null, ComponentOptions? options = null)
+        : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ??= ComponentOptions.Default)
     {
         var names = Attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
 
@@ -125,7 +125,7 @@ public class Command : IComponent, IParameterCollection
         Names = names;
         Ignore = Attributes.Contains<IgnoreAttribute>();
 
-        if (parent != null)
+        if (parent != null && options.PropagateParentConditions)
             Evaluators = ConditionEvaluator.CreateEvaluators([.. Attributes.OfType<IExecuteCondition>(), .. parent.GetConditions()]);
         else
             Evaluators = ConditionEvaluator.CreateEvaluators(Attributes.OfType<IExecuteCondition>());
@@ -134,7 +134,7 @@ public class Command : IComponent, IParameterCollection
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-    private Command(IActivator activator, CreationOptions options)
+    private Command(IActivator activator, ComponentOptions options)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
         var parameters = ComponentUtilities.GetParameters(activator, options);

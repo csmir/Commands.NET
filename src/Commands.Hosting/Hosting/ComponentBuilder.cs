@@ -3,7 +3,7 @@
 /// <summary>
 ///     A context object used to configure the component provider.
 /// </summary>
-public sealed class ComponentProviderBuilder
+public sealed class ComponentBuilder
 {
     private readonly List<ResultHandler> _handlers = [];
 
@@ -14,12 +14,12 @@ public sealed class ComponentProviderBuilder
     ///     This method can be called multiple times, modifying the options for each call.
     /// </remarks>
     /// <param name="configureOptions">An action that configures the creation of new components.</param>
-    /// <returns>The same <see cref="ComponentProviderBuilder"/> for call-chaining.</returns>
-    public ComponentProviderBuilder ConfigureOptions(Action<CreationOptions> configureOptions)
+    /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
+    public ComponentBuilder Configure(Action<ComponentOptions> configureOptions)
     {
         Assert.NotNull(configureOptions, nameof(configureOptions));
 
-        configureOptions(CreationOptions.Default);
+        configureOptions(ComponentOptions.Default);
 
         return this;
     }
@@ -31,8 +31,8 @@ public sealed class ComponentProviderBuilder
     ///     <see cref="HandlerDelegate{TContext}"/> is a delegate implementation of <see cref="ResultHandler"/> for which no additional implementation is required. This is the default handler used when no other handlers are provided.
     /// </remarks>
     /// <param name="handler">The instance to add.</param>
-    /// <returns>The same <see cref="ComponentProviderBuilder"/> for call-chaining.</returns>
-    public ComponentProviderBuilder AddHandler(ResultHandler handler)
+    /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
+    public ComponentBuilder AddHandler(ResultHandler handler)
     {
         Assert.NotNull(handler, nameof(handler));
 

@@ -9,9 +9,9 @@ public static class HostUtilities
     ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and <see cref="ICommandExecutionFactory"/>.
     /// </summary>
     /// <param name="builder">The builder to configure with the related services.</param>
-    /// <param name="configureComponents">An action to configure the <see cref="ComponentProviderBuilder"/> which will be used to populate all related services.</param>
+    /// <param name="configureComponents">An action to configure the <see cref="ComponentBuilder"/> which will be used to populate all related services.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
-    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentProviderBuilder> configureComponents)
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentBuilder> configureComponents)
     {
         Assert.NotNull(configureComponents, nameof(configureComponents));
 
@@ -23,10 +23,10 @@ public static class HostUtilities
     /// </summary>
     /// <typeparam name="TFactory">The type implementing <see cref="CommandExecutionFactory"/> which will be used to create execution context and fire off commands with.</typeparam>
     /// <param name="builder">The builder to configure with the related services.</param>
-    /// <param name="configureComponents">An action to configure the <see cref="ComponentProviderBuilder"/> which will be used to populate all related services.</param>
+    /// <param name="configureComponents">An action to configure the <see cref="ComponentBuilder"/> which will be used to populate all related services.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
     public static IHostBuilder ConfigureComponents<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>(
-        this IHostBuilder builder, Action<ComponentProviderBuilder> configureComponents)
+        this IHostBuilder builder, Action<ComponentBuilder> configureComponents)
         where TFactory : CommandExecutionFactory
     {
         Assert.NotNull(configureComponents, nameof(configureComponents));
@@ -34,14 +34,14 @@ public static class HostUtilities
         return ConfigureComponents<TFactory>(builder, (_, ctx) => configureComponents(ctx));
     }
 
-    /// <inheritdoc cref="ConfigureComponents{TFactory}(IHostBuilder, Action{ComponentProviderBuilder})"/>
+    /// <inheritdoc cref="ConfigureComponents{TFactory}(IHostBuilder, Action{ComponentBuilder})"/>
     public static IHostBuilder ConfigureComponents<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>(
-        this IHostBuilder builder, Action<HostBuilderContext, ComponentProviderBuilder> configureComponents)
+        this IHostBuilder builder, Action<HostBuilderContext, ComponentBuilder> configureComponents)
         where TFactory : CommandExecutionFactory
     {
         Assert.NotNull(configureComponents, nameof(configureComponents));
 
-        var properties = new ComponentProviderBuilder();
+        var properties = new ComponentBuilder();
 
         builder.ConfigureServices((ctx, services) =>
         {
