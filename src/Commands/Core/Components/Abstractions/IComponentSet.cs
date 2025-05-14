@@ -1,7 +1,7 @@
 ﻿namespace Commands;
 
 /// <summary>
-///     Represents a concurrent, recursive set of components that can be searched and filtered based on their type.
+///     Represents a concurrent, mutable and recursive set of components that can be searched and filtered based on arguments.
 /// </summary>
 public interface IComponentSet : ICollection<IComponent>, IEnumerable<IComponent>
 {
@@ -57,6 +57,9 @@ public interface IComponentSet : ICollection<IComponent>, IEnumerable<IComponent
     /// <param name="components">The components to be added to the set.</param>
     /// <returns>The number of added components, being 0 if no records were added.</returns>
     public int AddRange(IEnumerable<IComponent> components);
+
+    /// <inheritdoc cref="RemoveRange(IEnumerable{IComponent})"/>
+    public int RemoveRange(params IComponent[] components);
 
     /// <summary>
     ///     Removes all provided components from the current set.

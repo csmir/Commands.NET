@@ -15,7 +15,15 @@ public static class ComponentUtilities
     /// <param name="values"></param>
     /// <returns>The first occurrence of <typeparamref name="T"/> in the collection if any exists, otherwise <see langword="null"/>.</returns>
     public static T? FirstOrDefault<T>(this IEnumerable values)
-        => values.OfType<T>().FirstOrDefault();
+    {
+        foreach (var entry in values)
+        {
+            if (entry is T tEntry)
+                return tEntry;
+        }
+
+        return default;
+    }
 
     /// <summary>
     ///     Checks if the collection contains an instance of the specified type.

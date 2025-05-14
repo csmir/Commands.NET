@@ -31,37 +31,33 @@ internal readonly struct CommandModuleActivator : IDependencyActivator<CommandMo
 
     public CommandModule Activate(ExecutionOptions options)
     {
-        var obj = options.ServiceProvider.GetService(Type!);
+        var resolver = options.ServiceProvider.GetService(typeof(IDependencyResolver)) as IDependencyResolver 
+            ?? new DefaultDependencyResolver(options.ServiceProvider);
 
-        if (obj == null)
+        var para = new object?[Dependencies!.Length];
+
+        for (int i = 0; i < Dependencies.Length; i++)
         {
-            var param = new object?[Dependencies!.Length];
+            var dep = Dependencies[i];
 
-            for (int i = 0; i < Dependencies.Length; i++)
-            {
-                var parameter = Dependencies[i];
+            var service = resolver.GetService(dep);
 
-                var service = options.ServiceProvider.GetService(parameter.Type);
+            if (service != null || dep.IsNullable)
+                para[i] = service;
 
-                if (service != null || parameter.IsNullable)
-                    param[i] = service;
+            else if (dep.Type == typeof(IServiceProvider))
+                para[i] = options.ServiceProvider;
 
-                else if (parameter.Type == typeof(IServiceProvider))
-                    param[i] = options.ServiceProvider;
+            else if (dep.Type == typeof(IComponentProvider))
+                para[i] = options.Provider;
 
-                else if (parameter.Type == typeof(IComponentProvider))
-                    param[i] = options.Provider;
+            else if (dep.IsOptional)
+                para[i] = Type.Missing;
 
-                else if (parameter.IsOptional)
-                    param[i] = Type.Missing;
-
-                else
-                    throw new InvalidOperationException($"Module {Type!.Name} defines unknown service {parameter.Type}.");
-            }
-
-            return (CommandModule)_ctor.Invoke(param);
+            else
+                throw new InvalidOperationException($"Module {Type.Name} defines unknown service type {dep.Type}.");
         }
 
-        return (CommandModule)obj;
+        return (CommandModule)_ctor.Invoke(para);
     }
 }

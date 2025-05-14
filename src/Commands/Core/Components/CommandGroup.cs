@@ -56,11 +56,21 @@ public class CommandGroup : ComponentSet, IComponent
         => (Parent?.Position ?? 0) + (Name == null ? 0 : 1);
 
     /// <summary>
-    ///     Initializes a new instance of <see cref="CommandGroup"/> using the specified conditions, names and parent group.
+    ///     Initializes a new instance of <see cref="CommandGroup"/> using the specified names.
     /// </summary>
     /// <param name="names">The names used to discover this group during execution.</param>
     public CommandGroup(params string[] names)
+        : this(names, null) { }
+
+    /// <summary>
+    ///     Initializes a new instance of <see cref="CommandGroup"/> using the specified names and options.
+    /// </summary>
+    /// <param name="names"></param>
+    /// <param name="options"></param>
+    public CommandGroup(string[] names, CreationOptions? options = null)
     {
+        Assert.MatchExpression(names, (options ?? CreationOptions.Default).NameValidation, nameof(names));
+
         Ignore = false;
         Attributes = [];
         Names = names;
@@ -79,6 +89,8 @@ public class CommandGroup : ComponentSet, IComponent
 #endif
         Type type, CommandGroup? parent = null, CreationOptions? options = null)
     {
+        options ??= CreationOptions.Default;
+
         if (!typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters)
             throw new InvalidCastException($"The provided type is not an implementation of {nameof(CommandModule)}.");
 
@@ -88,14 +100,18 @@ public class CommandGroup : ComponentSet, IComponent
 
         Attributes = [.. attributes];
 
+        var names = attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
+
+        Assert.MatchExpression(names, options.NameValidation, nameof(NameAttribute));
+
+        Names = names;
         Ignore = attributes.Contains<IgnoreAttribute>();
-        Names = attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
 
         Activator = new CommandModuleActivator(type);
 
         if (!Ignore)
         {
-            var components = ComponentUtilities.GetNestedComponents(options ?? CreationOptions.Default, this);
+            var components = ComponentUtilities.GetNestedComponents(options, this);
 
             AddRange(components);
         }

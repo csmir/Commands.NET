@@ -3,6 +3,9 @@
 /// <summary>
 ///     Represents a test provider that can be used to test a command.
 /// </summary>
+/// <remarks>
+///     Create new instances of <see cref="Test"/> or define <see cref="TestAttribute"/> on commands to define new tests.
+/// </remarks>
 public interface ITest
 {
     /// <summary>

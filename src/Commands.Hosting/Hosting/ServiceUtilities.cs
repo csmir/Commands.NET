@@ -43,10 +43,12 @@ public static class ServiceUtilities
             services.RemoveAll<ICommandExecutionFactory>();
             services.RemoveAll<IComponentProvider>();
             services.RemoveAll<IExecutionContext>();
+            services.RemoveAll<IDependencyResolver>();
             services.RemoveAll(typeof(ICallerContextAccessor<>));
         }
 
         services.AddSingleton<ICommandExecutionFactory, TFactory>();
+        services.AddSingleton<IDependencyResolver, KeyedDependencyResolver>();
 
         services.AddScoped<IExecutionContext, ExecutionContext>();
         services.AddTransient(typeof(ICallerContextAccessor<>), typeof(CallerContextAccessor<>));

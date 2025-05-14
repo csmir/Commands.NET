@@ -128,6 +128,10 @@ public abstract class ComponentSet : IComponentSet
         => RemoveRange([component]) > 0;
 
     /// <inheritdoc />
+    public int RemoveRange(params IComponent[] components)
+        => RemoveRange((IEnumerable<IComponent>)components);
+
+    /// <inheritdoc />
     public int RemoveRange(IEnumerable<IComponent> components)
     {
         lock (_items)

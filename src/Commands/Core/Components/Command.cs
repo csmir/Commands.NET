@@ -98,8 +98,10 @@ public class Command : IComponent, IParameterCollection
     /// <param name="names">The names used to discover this command during execution.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
     public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, CreationOptions? options = null)
-        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), options ?? CreationOptions.Default)
+        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), options ??= CreationOptions.Default)
     {
+        Assert.MatchExpression(names, options.NameValidation, nameof(names));
+
         Names = names;
         Ignore = false;
 
@@ -114,9 +116,13 @@ public class Command : IComponent, IParameterCollection
     /// <param name="parent">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
     public Command(MethodInfo executionMethod, CommandGroup? parent = null, CreationOptions? options = null)
-        : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ?? CreationOptions.Default)
+        : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ??= CreationOptions.Default)
     {
-        Names = Attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
+        var names = Attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
+
+        Assert.MatchExpression(names, options.NameValidation, nameof(NameAttribute));
+
+        Names = names;
         Ignore = Attributes.Contains<IgnoreAttribute>();
 
         if (parent != null)

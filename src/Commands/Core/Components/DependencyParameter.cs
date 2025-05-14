@@ -4,7 +4,7 @@
 ///     Reveals information about a service parameter.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public sealed class DependencyParameter : IParameter
+public sealed class DependencyParameter : IParameter, IAttributeContainer
 {
     /// <inheritdoc />
     public Type Type { get; }
@@ -17,6 +17,9 @@ public sealed class DependencyParameter : IParameter
 
     /// <inheritdoc />
     public bool IsOptional { get; }
+
+    /// <inheritdoc />
+    public Attribute[] Attributes { get; }
 
     internal DependencyParameter(
         ParameterInfo parameterInfo)
@@ -40,6 +43,8 @@ public sealed class DependencyParameter : IParameter
             IsOptional = false;
 
         ExposedType = parameterInfo.ParameterType;
+
+        Attributes = [.. parameterInfo.GetAttributes(false)];
     }
 
     /// <inheritdoc />

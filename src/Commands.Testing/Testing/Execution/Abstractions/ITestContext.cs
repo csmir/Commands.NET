@@ -3,6 +3,9 @@
 /// <summary>
 ///     A context that is used to execute tests against a command.
 /// </summary>
+/// <remarks>
+///     The collection of <see cref="Tests"/> can be modified before starting test execution to add or remove additional tests.
+/// </remarks>
 public interface ITestContext : IDisposable
 {
     /// <summary>

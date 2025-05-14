@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace Commands;
 
@@ -38,5 +39,22 @@ public static class Assert
         if (string.IsNullOrEmpty(argument))
             throw new ArgumentException("The argument must not be null or empty.", argumentExpression);
 #endif
+    }
+
+    /// <summary>
+    ///     Validates that the specified argument matches the provided validation expression.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void MatchExpression(IEnumerable<string> values, Regex? regex, string argumentExpression)
+    {
+        if (regex == null)
+            return;
+
+        foreach (var value in values)
+        {
+            if (!regex.IsMatch(value))
+                throw new ArgumentException($"The argument '{argumentExpression}' must match the validation expression '{regex}'", argumentExpression);
+        }
     }
 }

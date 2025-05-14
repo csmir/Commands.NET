@@ -3,7 +3,7 @@
 /// <summary>
 ///     An implementation of <see cref="ITestContext"/> that is used to execute tests against a command.
 /// </summary>
-/// <param name="command"></param>
+/// <param name="command">The command that is represented by this context.</param>
 public class TestContext(Command command) : ITestContext
 {
     /// <summary>

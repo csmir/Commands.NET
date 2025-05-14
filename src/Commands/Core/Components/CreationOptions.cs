@@ -1,4 +1,6 @@
 ﻿using Commands.Parsing;
+using System.Drawing;
+using System.Text.RegularExpressions;
 
 namespace Commands;
 
@@ -8,12 +10,40 @@ namespace Commands;
 public sealed class CreationOptions
 {
     /// <summary>
-    ///     A collection of parsers that can be used to parse command arguments into the target type. When creating this object, the default parsers are registered for the most common types.
+    ///     Gets or sets a regular expression that will be used to validate the names of commands and command groups.
     /// </summary>
-    public Dictionary<Type, TypeParser> Parsers { get; }
+    /// <remarks>
+    ///     This value is not present by default. It can -for example- be implemented to validate against restrictions on component naming in certain API environments.
+    /// </remarks>
+    public Regex? NameValidation { get; set; } = null;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="CreationOptions"/> class containing default values.
+    ///     Gets or sets a dictionary of parsers that will be used to parse command arguments into the target type by all components using these options.
+    /// </summary>
+    /// <remarks>
+    ///     By modifying the key value pairs in this dictionary, you can add custom parsers for specific types or override the default parsers. When accessing the default, or creating a new instance of <see cref="CreationOptions"/>, the following types are added by default:
+    ///     <list type="bullet">
+    ///         <item>
+    ///             BCL types: <see cref="ulong"/>, <see cref="long"/>, <see cref="uint"/>, <see cref="int"/>, <see cref="ushort"/>, <see cref="short"/>, <see cref="sbyte"/>, <see cref="byte"/>, <see cref="bool"/>,
+    ///             <see cref="decimal"/>, <see cref="double"/>, <see cref="float"/>,
+    ///             <see cref="string"/> and <see cref="char"/>.
+    ///         </item>
+    ///         <item>
+    ///             Common language structs: <see cref="Color"/>, <see cref="Guid"/> <see cref="DateTime"/>, <see cref="DateTimeOffset"/> and <see cref="TimeSpan"/>.
+    ///         </item>
+    ///         <item>
+    ///             Array implementations of all above types.
+    ///         </item>
+    ///         <item>
+    ///             All <see cref="Enum"/> types.
+    ///         </item>
+    ///     </list>
+    ///     <i>By default, the parsers for arrays are created by wrapping the default parsers. For example, if you add a custom parser for <see cref="int"/>, the <see cref="Array"/> parser for <see cref="int"/>[] will be created by wrapping the custom parser.</i>
+    /// </remarks>
+    public IDictionary<Type, TypeParser> Parsers { get; set; }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="CreationOptions"/> class containing default values for <see cref="Parsers"/>.
     /// </summary>
     public CreationOptions()
     {

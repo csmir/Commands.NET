@@ -1,13 +1,16 @@
 ﻿namespace Commands.Testing;
 
 /// <summary>
-///     The type of result returned from a test.
+///     The type of result returned from a test. This is represented as the different types of <see cref="IResult"/> that can be yielded by the command execution pipeline.
 /// </summary>
 public enum TestResultType : int
 {
     /// <summary>
     ///     The test failed because the provided input arguments do not match the expected arguments.
     /// </summary>
+    /// <remarks>
+    ///     This value represents a failed <see cref="MatchResult"/>
+    /// </remarks>
     MatchFailure,
 
     /// <summary>
