@@ -132,6 +132,41 @@ public static class ComponentUtilities
         return results;
     }
 
+    internal static object?[] Resolve(this DependencyParameter[] dependencies, MemberInfo target, ExecutionOptions options)
+    {
+        if (dependencies.Length == 0)
+            return [];
+
+        var resolver = (options.ServiceProvider.GetService(typeof(IDependencyResolver))
+            ?? new DefaultDependencyResolver(options.ServiceProvider)) as IDependencyResolver;
+
+        var resolvedValues = new object?[dependencies.Length];
+
+        for (var i = 0; i < dependencies.Length; i++)
+        {
+            var dependency = dependencies[i];
+
+            var service = resolver!.GetService(dependency);
+
+            if (service != null || dependency.IsNullable)
+                resolvedValues[i] = service;
+
+            else if (dependency.Type == typeof(IServiceProvider))
+                resolvedValues[i] = options.ServiceProvider;
+
+            else if (dependency.Type == typeof(IComponentProvider))
+                resolvedValues[i] = options.ComponentProvider;
+
+            else if (dependency.IsOptional)
+                resolvedValues[i] = Type.Missing;
+
+            else
+                throw new KeyNotFoundException($"The method or module {target.Name} defines unknown service type {dependency.Type}.");
+        }
+
+        return resolvedValues;
+    }
+
     #endregion
 
     #region Building
@@ -210,8 +245,8 @@ public static class ComponentUtilities
     {
         var parameters = activator.Target.GetParameters();
 
-        if (activator.HasContext)
-            parameters = [.. parameters.Skip(1)];
+        if (activator.ContextIndex != -1)
+            parameters = [.. parameters.Skip(activator.ContextIndex + 1)];
 
         var arr = new ICommandParameter[parameters.Length];
 
@@ -272,13 +307,6 @@ public static class ComponentUtilities
 
     internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
         => provider.GetCustomAttributes(inherit).OfType<Attribute>();
-
-    internal static bool HasContextProvider(this MethodBase method)
-    {
-        var parameters = method.GetParameters();
-
-        return parameters.Length > 0 && parameters[0].ParameterType.IsGenericType && parameters[0].ParameterType.GetGenericTypeDefinition() == typeof(CommandContext<>);
-    }
 
     #endregion
 

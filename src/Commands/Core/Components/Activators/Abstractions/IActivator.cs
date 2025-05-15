@@ -11,9 +11,12 @@ public interface IActivator
     public MethodBase Target { get; }
 
     /// <summary>
-    ///     Gets if the activator has to provide a context to the method as the first parameter.
+    ///     Gets the index of the <see cref="ICallerContext"/> parameter in the target method, which is used to define the context of the command.
     /// </summary>
-    public bool HasContext { get; }
+    /// <remarks>
+    ///     Returns -1 if the target method does not have a <see cref="ICallerContext"/> parameter.
+    /// </remarks>
+    public int ContextIndex { get; }
 
     /// <summary>
     ///     Invokes the target of this <see cref="IActivator"/> with the provided values.

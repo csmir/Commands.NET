@@ -8,9 +8,6 @@ public enum TestResultType : int
     /// <summary>
     ///     The test failed because the provided input arguments do not match the expected arguments.
     /// </summary>
-    /// <remarks>
-    ///     This value represents a failed <see cref="MatchResult"/>
-    /// </remarks>
     MatchFailure,
 
     /// <summary>

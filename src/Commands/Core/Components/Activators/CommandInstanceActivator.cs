@@ -2,15 +2,12 @@
 
 internal readonly struct CommandInstanceActivator(MethodInfo target) : IActivator
 {
-    /// <inheritdoc />
     public MethodBase Target
         => target;
 
-    /// <inheritdoc />
-    public bool HasContext
-        => false;
+    public int ContextIndex
+        => -1;
 
-    /// <inheritdoc />
     public object? Invoke<T>(T caller, Command? command, object?[] args, ExecutionOptions options)
         where T : ICallerContext
     {

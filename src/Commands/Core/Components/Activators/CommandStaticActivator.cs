@@ -1,22 +1,47 @@
 ﻿namespace Commands;
 
-internal readonly struct CommandStaticActivator(MethodInfo target, object? state = null) : IActivator
+internal readonly struct CommandStaticActivator : IActivator
 {
-    public MethodBase Target
-        => target;
+    private readonly DependencyParameter[] _dependencies;
+    private readonly object? _state;
 
-    public bool HasContext { get; } = target.HasContextProvider();
+    public MethodBase Target { get; }
+
+    public int ContextIndex { get; }
+
+    public CommandStaticActivator(MethodInfo target, object? state = null)
+    {
+        Target = target;
+        _state = state;
+
+        ContextIndex = -1;
+
+        var param = target.GetParameters();
+
+        for (var i = 0; i < param.Length; i++)
+        {
+            if (typeof(ICallerContext).IsAssignableFrom(param[i].ParameterType))
+                ContextIndex = i;
+        }
+
+        _dependencies = new DependencyParameter[ContextIndex == -1 ? 0 : ContextIndex];
+
+        if (ContextIndex > 0)
+        {
+            for (var i = 0; i < ContextIndex; i++)
+            {
+                var dep = param[i];
+                _dependencies[i] = new DependencyParameter(dep);
+            }
+        }
+    }
 
     public object? Invoke<T>(T caller, Command? command, object?[] args, ExecutionOptions options)
         where T : ICallerContext
     {
-        if (HasContext)
-        {
-            var context = new CommandContext<T>(caller, command!, options);
+        if (ContextIndex != -1)
+            return Target.Invoke(_state, [.. _dependencies.Resolve(Target, options), caller, .. args]);
 
-            return Target.Invoke(state, [context, .. args]);
-        }
-
-        return Target.Invoke(state, args);
+        return Target.Invoke(_state, args);
     }
 }

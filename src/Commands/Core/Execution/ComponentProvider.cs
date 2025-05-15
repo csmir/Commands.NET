@@ -75,7 +75,7 @@ public class ComponentProvider : IComponentProvider
     protected virtual async Task Work<TContext>(TContext context, ExecutionOptions options)
         where TContext : class, ICallerContext
     {
-        options.Provider ??= this;
+        options.ComponentProvider ??= this;
 
         IResult? result = null;
 

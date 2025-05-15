@@ -29,35 +29,6 @@ internal readonly struct CommandModuleActivator : IDependencyActivator<CommandMo
         Type = type;
     }
 
-    public CommandModule Activate(ExecutionOptions options)
-    {
-        var resolver = options.ServiceProvider.GetService(typeof(IDependencyResolver)) as IDependencyResolver 
-            ?? new DefaultDependencyResolver(options.ServiceProvider);
-
-        var para = new object?[Dependencies!.Length];
-
-        for (int i = 0; i < Dependencies.Length; i++)
-        {
-            var dep = Dependencies[i];
-
-            var service = resolver.GetService(dep);
-
-            if (service != null || dep.IsNullable)
-                para[i] = service;
-
-            else if (dep.Type == typeof(IServiceProvider))
-                para[i] = options.ServiceProvider;
-
-            else if (dep.Type == typeof(IComponentProvider))
-                para[i] = options.Provider;
-
-            else if (dep.IsOptional)
-                para[i] = Type.Missing;
-
-            else
-                throw new InvalidOperationException($"Module {Type.Name} defines unknown service type {dep.Type}.");
-        }
-
-        return (CommandModule)_ctor.Invoke(para);
-    }
+    public CommandModule Activate(ExecutionOptions options) 
+        => (CommandModule)_ctor.Invoke(Dependencies.Resolve(_ctor, options));
 }
