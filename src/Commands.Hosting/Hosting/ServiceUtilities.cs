@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Commands.Testing;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Runtime.CompilerServices;
 
 namespace Commands.Hosting;
@@ -12,12 +13,12 @@ public static class ServiceUtilities
     ///     Adds a <see cref="IComponentProvider"/> to the <see cref="IServiceCollection"/> using the provided <typeparamref name="TFactory"/> as the factory for creating execution contexts.
     /// </summary>
     /// <remarks>
-    ///     This method will remove any existing <see cref="IComponentProvider"/> and <see cref="ICommandExecutionFactory"/> from the collection before adding newly configured instances. Additionally, it configures a <see cref="IExecutionContext"/> and <see cref="ICallerContextAccessor{TCaller}"/> under scoped context.
+    ///     This method will remove any existing <see cref="IComponentProvider"/> and <see cref="ICommandExecutionFactory"/> from the collection before adding newly configured instances. Additionally, it configures a <see cref="IExecutionContext"/> and <see cref="IContextAccessor{TCaller}"/> under scoped context.
     /// </remarks>
     /// <typeparam name="TFactory">The type implementing <see cref="CommandExecutionFactory"/> which will be used to create execution context and fire off commands with.</typeparam>
     /// <param name="services">The <see cref="IServiceProvider"/> to add the configured services to.</param>
     /// <param name="configureAction"></param>
-    /// <returns></returns>
+    /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
     public static IServiceCollection AddComponentProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
         (this IServiceCollection services, Action<ComponentBuilder> configureAction)
         where TFactory : class, ICommandExecutionFactory
@@ -44,21 +45,21 @@ public static class ServiceUtilities
             services.RemoveAll<IComponentProvider>();
             services.RemoveAll<IExecutionContext>();
             services.RemoveAll<IDependencyResolver>();
-            services.RemoveAll(typeof(ICallerContextAccessor<>));
+            services.RemoveAll(typeof(IContextAccessor<>));
         }
 
         services.AddSingleton<ICommandExecutionFactory, TFactory>();
         services.AddSingleton<IDependencyResolver, KeyedDependencyResolver>();
 
         services.AddScoped<IExecutionContext, ExecutionContext>();
-        services.AddTransient(typeof(ICallerContextAccessor<>), typeof(CallerContextAccessor<>));
+        services.AddTransient(typeof(IContextAccessor<>), typeof(CallerContextAccessor<>));
 
         var providerDescriptor = ServiceDescriptor.Singleton(x =>
         {
             // Implement global result handler to dispose of the execution scope. This must be done last, even if the properties are mutated anywhere before.
-            properties.AddHandler(new ExecutionScopeResolver());
+            properties.AddResultHandler(new ExecutionScopeResolver());
 
-            return new ComponentProvider(properties.GetHandlers());
+            return new ComponentProvider(properties.ResultHandlers.ToArray());
         });
 
         services.Add(providerDescriptor);

@@ -1,24 +1,29 @@
 ﻿namespace Commands;
 
 /// <summary>
-///     Reveals a name and potential attributes of a component necessary for execution.
+///     Reveals information about a segment related to a component, which is necessary for execution.
 /// </summary>
-public interface ICommandSegment : IAttributeContainer, IComparable
+public interface ICommandSegment : IComparable
 {
     /// <summary>
-    ///     Gets the name of the component.
+    ///     Gets the name of the segment.
     /// </summary>
     public string? Name { get; }
 
     /// <summary>
-    ///     Builds the full name of the component.
+    ///     Gets all attributes on the segment.
     /// </summary>
-    /// <returns>A string representing the full name of the component.</returns>
+    public Attribute[] Attributes { get; }
+
+    /// <summary>
+    ///     Returns the full name of the segment.
+    /// </summary>
+    /// <returns>A string representing the full name of the segment.</returns>
     public string GetFullName();
 
     /// <summary>
-    ///     Builds the score of the component.
+    ///     Returns the score of the segment.
     /// </summary>
-    /// <returns>A float representing the score of the component.</returns>
+    /// <returns>A float representing the score of the segment.</returns>
     public float GetScore();
 }

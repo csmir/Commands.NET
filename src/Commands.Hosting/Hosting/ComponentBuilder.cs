@@ -5,7 +5,7 @@
 /// </summary>
 public sealed class ComponentBuilder
 {
-    private readonly List<ResultHandler> _handlers = [];
+    internal readonly List<ResultHandler> ResultHandlers = [];
 
     /// <summary>
     ///     Configures the globally available options for building components.
@@ -32,27 +32,12 @@ public sealed class ComponentBuilder
     /// </remarks>
     /// <param name="handler">The instance to add.</param>
     /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
-    public ComponentBuilder AddHandler(ResultHandler handler)
+    public ComponentBuilder AddResultHandler(ResultHandler handler)
     {
         Assert.NotNull(handler, nameof(handler));
 
-        _handlers.Add(handler);
+        ResultHandlers.Add(handler);
 
         return this;
     }
-
-    #region Internals
-
-    internal ResultHandler[] GetHandlers()
-    {
-        if (_handlers.Count == 0)
-            return [];
-
-        var handlers = new ResultHandler[_handlers.Count];
-        _handlers.CopyTo(handlers);
-
-        return handlers;
-    }
-
-    #endregion
 }

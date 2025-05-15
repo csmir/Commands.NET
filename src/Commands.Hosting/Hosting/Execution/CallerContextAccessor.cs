@@ -1,6 +1,6 @@
 ﻿namespace Commands.Hosting;
 
-internal sealed class CallerContextAccessor<TCaller>(IExecutionContext context) : ICallerContextAccessor<TCaller>
+internal sealed class CallerContextAccessor<TCaller>(IExecutionContext context) : IContextAccessor<TCaller>
     where TCaller : ICallerContext
 {
     public TCaller Caller

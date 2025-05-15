@@ -14,7 +14,7 @@ builder.ConfigureComponents(context =>
         options.Parsers[typeof(Version)] = new TryParseParser<Version>(Version.TryParse);
     });
 
-    context.AddHandler(new HandlerDelegate<ConsoleCallerContext>((c, e, s) => c.Respond(e)));
+    context.AddResultHandler(new HandlerDelegate<ConsoleCallerContext>((c, e, s) => c.Respond(e)));
 });
 
 builder.ConfigureServices(services =>
