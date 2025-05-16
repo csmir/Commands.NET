@@ -2,8 +2,8 @@
 
 open Commands
 
-type FSharpModule = class 
-    inherit CommandModule
+type FSharpModule() = class 
+    inherit CommandModule()
         [<Name("echo")>]
         member x.Echo(args: string) = args;
 

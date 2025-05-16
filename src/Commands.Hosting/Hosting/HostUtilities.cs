@@ -13,9 +13,9 @@ public static class HostUtilities
     ///     <list type="bullet">
     ///         <item>A singleton implementation of <see cref="ICommandExecutionFactory"/> as defined by the provided type, if any. This factory manages command scopes and execution lifetime.</item>
     ///         <item>A default singleton implementation of <see cref="IComponentProvider"/>. This provider supplies the defined <see cref="ICommandExecutionFactory"/> with executable commands.</item>
-    ///         <item>A default singleton implementation of <see cref="IDependencyResolver"/> which manages the scope's service injection for modules and statically -or delegate- defined commands.</item>
+    ///         <item>A default scoped implementation of <see cref="IDependencyResolver"/> which manages the scope's service injection for modules and statically -or delegate- defined commands.</item>
     ///         <item>A default scoped implementation of <see cref="IExecutionContext"/> which holds execution metadata for the scope of the command lifetime, and can be injected freely within said scope.</item>
-    ///         <item>A default transient implementation of <see cref="IContextAccessor{TContext}"/>. This accessor exposes the caller context by accessing it from the defined <see cref="IExecutionContext"/>.</item>
+    ///         <item>A default scoped implementation of <see cref="IContextAccessor{TContext}"/>. This accessor exposes the caller context by accessing it from the defined <see cref="IExecutionContext"/>.</item>
     ///     </list>
     /// </remarks>
     /// <param name="builder">The builder to configure with the related services.</param>

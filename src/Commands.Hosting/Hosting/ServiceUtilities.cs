@@ -49,12 +49,12 @@ public static class ServiceUtilities
         }
 
         services.AddSingleton<ICommandExecutionFactory, TFactory>();
-        services.AddSingleton<IDependencyResolver, KeyedDependencyResolver>();
 
+        services.AddScoped<IDependencyResolver, KeyedDependencyResolver>();
         services.AddScoped<IExecutionContext, ExecutionContext>();
-        services.AddTransient(typeof(IContextAccessor<>), typeof(CallerContextAccessor<>));
+        services.AddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
 
-        var providerDescriptor = ServiceDescriptor.Singleton(x =>
+        var providerDescriptor = ServiceDescriptor.Singleton<IComponentProvider, ComponentProvider>(x =>
         {
             // Implement global result handler to dispose of the execution scope. This must be done last, even if the properties are mutated anywhere before.
             properties.AddResultHandler(new ExecutionScopeResolver());

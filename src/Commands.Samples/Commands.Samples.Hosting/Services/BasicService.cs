@@ -12,7 +12,9 @@ public class BasicService(IContextAccessor<ConsoleCallerContext> caller, ICompon
 
         // If no commands were found, return a message indicating that, instead of returning just an empty list.
         if (commands.Length == 0)
-            caller.Caller.Respond("No commands found.");
+            caller.Context.Respond("No commands found.");
+
+        caller.Context.Respond("Commands found:");
 
         return commands;
     }

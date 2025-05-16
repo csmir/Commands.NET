@@ -103,7 +103,7 @@ public struct Arguments
             {
                 Array.Resize(ref unnamedFill, unnamedFill.Length + 1);
 
-                unnamedFill[unnamedFill.Length] = kvp.Key;
+                unnamedFill[unnamedFill.Length - 1] = kvp.Key;
             }
             else
                 _namedArgs[kvp.Key] = kvp.Value;
