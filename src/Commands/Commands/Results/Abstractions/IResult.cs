@@ -6,7 +6,7 @@
 public interface IResult
 {
     /// <summary>
-    ///     Gets the exception that represents the reason and context of a failed operation.
+    ///     Gets the exception that represents the reason of a failed operation.
     /// </summary>
     /// <remarks>
     ///     Will be <see langword="null"/> if <see cref="Success"/> returns <see langword="true"/>.
