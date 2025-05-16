@@ -39,12 +39,6 @@ Define your own checks to ensure commands will only run and succeed when they ar
 
 Manage and create custom parsers for changing raw input into types.
 
-### 🧪 [[Testing Commands|Testing]]
-
-> `using Commands.Testing;`
-
-Learn how to test commands and ensure they function as expected.
-
 ### ⚙️ [[Hosting Commands|Hosting]]
 
 > `using Commands.Hosting;`

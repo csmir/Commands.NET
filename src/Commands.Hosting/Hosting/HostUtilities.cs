@@ -6,8 +6,24 @@
 public static class HostUtilities
 {
     /// <summary>
-    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and <see cref="ICommandExecutionFactory"/>.
+    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and defined <see cref="ICommandExecutionFactory"/>.
     /// </summary>
+    /// <remarks>
+    ///     This method configures the <see cref="IServiceProvider"/> consumed by the <see cref="IHost"/> built from this builder, to implement the following services:
+    ///     <list type="bullet">
+    ///         <item>A singleton implementation of <see cref="ICommandExecutionFactory"/> as defined by the provided type, if any. This factory manages command scopes and execution lifetime.</item>
+    ///         <item>A default singleton implementation of <see cref="IComponentProvider"/>. This provider supplies the defined <see cref="ICommandExecutionFactory"/> with executable commands.</item>
+    ///         <item>A default singleton implementation of <see cref="IDependencyResolver"/> which manages the scope's service injection for modules and statically -or delegate- defined commands.</item>
+    ///         <item>A default scoped implementation of <see cref="IExecutionContext"/> which holds execution metadata for the scope of the command lifetime, and can be injected freely within said scope.</item>
+    ///         <item>A default transient implementation of <see cref="IContextAccessor{TContext}"/>. This accessor exposes the caller context by accessing it from the defined <see cref="IExecutionContext"/>.</item>
+    ///     </list>
+    /// </remarks>
+    /// <param name="builder">The builder to configure with the related services.</param>
+    /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder)
+        => ConfigureComponents<CommandExecutionFactory>(builder, (_, ctx) => { });
+
+    /// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>
     /// <param name="builder">The builder to configure with the related services.</param>
     /// <param name="configureComponents">An action to configure the <see cref="ComponentBuilder"/> which will be used to populate all related services.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
@@ -18,9 +34,7 @@ public static class HostUtilities
         return ConfigureComponents<CommandExecutionFactory>(builder, (_, ctx) => configureComponents(ctx));
     }
 
-    /// <summary>
-    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and provided <typeparamref name="TFactory"/>.
-    /// </summary>
+    /// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>
     /// <typeparam name="TFactory">The type implementing <see cref="CommandExecutionFactory"/> which will be used to create execution context and fire off commands with.</typeparam>
     /// <param name="builder">The builder to configure with the related services.</param>
     /// <param name="configureComponents">An action to configure the <see cref="ComponentBuilder"/> which will be used to populate all related services.</param>

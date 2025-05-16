@@ -46,11 +46,14 @@ By creating a manager to contain said command, you can run it with the provided 
 ```cs
 using Commands;
 
-var command = Command.From(() => "Hello world!", "greet");
+var components = new ComponentTree() 
+{
+    new Command(() => "Hello world!", "greet");
+};
 
-var collection = ComponentProvider.From(command).ToProvider();
+var provider = new ComponentProvider(components);
 
-await collection.Execute(new ConsoleCallerContext(args));
+await provider.Execute(new ConsoleCallerContext(args));
 
 // dotnet run greet -> Hello world!
 ```
@@ -63,19 +66,21 @@ Groups allow for subcommand creation, where the group name is a category for its
 ```cs
 using Commands;
 
-var mathCommands = CommandGroup.From("math")
-    .AddComponents(
-        Command.From((double number, int sumBy)      => number + sumBy, 
-            "sum", "add"), 
-        Command.From((double number, int subtractBy) => number - subtractBy, 
-            "subtract", "sub"), 
-        Command.From((double number, int multiplyBy) => number * multiplyBy, 
-            "multiply", "mul"), 
-        Command.From((double number, int divideBy)   => number / divideBy, 
-            "divide", "div")
-    );
+var mathGroup = new ComponentGroup("math")
+{
+    new Command((double number, int sumBy)      => number + sumBy, 
+        "sum", "add"), 
+    new Command((double number, int subtractBy) => number - subtractBy, 
+        "subtract", "sub"), 
+    new Command((double number, int multiplyBy) => number * multiplyBy, 
+        "multiply", "mul"), 
+    new Command((double number, int divideBy)   => number / divideBy, 
+        "divide", "div")
+};
 
-var collection = ComponentProvider.From(mathCommands).ToProvider();
+var provider = new ComponentProvider();
+
+provider.Components.Add(mathGroup);
 
 await collection.Execute(new ConsoleCallerContext(args));
 
@@ -106,9 +111,12 @@ public class HelpModule : CommandModule
 
 ...
 
-var collection = ComponentProvider.From(mathCommands).AddType<HelpModule>().ToProvider();
+var provider = new ComponentProvider();
 
-await collection.Execute(new ConsoleCallerContext(args));
+provider.Components.Add<HelpModule>();
+provider.Components.Add(mathGroup);
+
+await provider.Execute(new ConsoleCallerContext(args));
 
 // dotnet run help -> Commands: math sum <...> math subtract <...> math ...
 ```
@@ -125,12 +133,15 @@ using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection()
     .AddSingleton<MyService>()
-    .AddSingleton<ComponentProvider>(ComponentProvider.From(mathCommands).AddType<HelpModule>().ToProvider());
+    .AddSingleton<ComponentProvider>(new ComponentProvider());
     .BuildServiceProvider();
 
-var collection = services.GetRequiredService<ComponentProvider>();
+var provider = services.GetRequiredService<ComponentProvider>();
 
-await collection.Execute(new ConsoleCallerContext(args), new CommandOptions() { Services = services });
+provider.Components.Add<HelpModule>();
+provider.Components.Add(mathGroup);
+
+await provider.Execute(new ConsoleCallerContext(args), new CommandOptions() { Services = services });
 ```
 
 Modules can be injected directly from the provider. They themselves are considered transient, being created and disposed of per command execution.
@@ -151,7 +162,6 @@ using Commands.Hosting;
 using Microsoft.Extensions.Hosting;
 
 var host = Host.CreateDefaultBuilder(args)
-    .ConfigureServices(configure => configure.AddHostedService<CommandListener>())
     .ConfigureComponents(configure => ...)
     .Build();
 ```

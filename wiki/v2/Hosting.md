@@ -24,8 +24,7 @@ Alternatively, adding it to your `.csproj` file:
 
 ## Configure the Host
 
-The package extends the `IHostBuilder` interface with the `ConfigureComponents` method, which can be used to configure execution, 
-discovery and configuration of any commands in the assembly or provided types.
+The package extends the `IHostBuilder` interface with the `ConfigureComponents` method, which can be used to configure discovery and configuration of any commands in the assembly or provided types.
 
 > [!IMPORTANT]
 > The ConfigureComponents method also accepts a `TFactory` type, 
@@ -40,29 +39,37 @@ var host = Host.CreateDefaultBuilder(args)
 	.Build();
 ```
 
-The default implementation of this method will scan the assembly for any classes that inherit from `CommandModule` and add them to the host. 
-Additionally, it defines `CommandExecutionFactory` as the standard factory.
-
 The `ConfigureComponents` method can also be used to configure the host with a custom configuration action. 
-This instance can be used to configure the collection of commands, including the build configuration, adding components and adding result handlers:
+This instance can be used to configure the collection of commands, including the build configuration and adding result handlers:
 
 ```csharp
 using Commands;
 using Commands.Hosting;
+using Commands.Parsing;
 using Microsoft.Extensions.Hosting;
 
 var host = Host.CreateDefaultBuilder(args)
-	.ConfigureComponents(configureComponents => 
+	.ConfigureComponents(components => 
 	{
-		configureComponents.WithConfiguration(configureBuild =>
-		{
-			configureBuild.AddParser(new TryParseParser<Version>(Version.TryParse));
-		});
-		configureComponents.AddResultHandler<ConsoleCallerContext>((c, e, s) => c.Respond(e));
-		configureComponents.AddComponentTypes(typeof(Program).Assembly.GetExportedTypes());
+        components.Configure(options =>
+        {
+            options.Parsers[typeof(Version)] = new TryParseParser<Version>(Version.TryParse);
+        });
+
+        components.AddResultHandler(new HandlerDelegate<ConsoleCallerContext>((c, e, s) => c.Respond(e)));
 	})
 	.Build();
+
+host.UseComponents(components => 
+{
+    tree.AddRange(typeof(Program).Assembly.GetExportedTypes());
+});
+
+host.Run();
 ```
+
+After the host has been built, it is of importance to call `UseComponents` to ensure that the components are registered with the host. 
+Doing so after the host has been configured ensures that the components use the correct configuration.
 
 ## Factory Execution
 
@@ -70,11 +77,11 @@ The `ConfigureComponents` method implicitly adds a number of services that are u
 
 | Service                    | Lifetime  | Description																												|
 | :------------------------- | :-------- | :-----------																												|
-| `IExecutionProvider`		 | Singleton | Contains and discovers executable commands based on the factory-provided information.									|
-| `ComponentConfiguration`   | Singleton | Used to configure the component collection.																				|
-| `IExecutionFactory`		 | Singleton | Used to create instances of `IExecutionContext` for each command execution.												|
+| `ICommandExecutionFactory` | Singleton | Used to create instances of `IExecutionContext` for each command execution, and managing the scope lifetime.				|
+| `IComponentProvider`		 | Singleton | Contains and discovers executable commands based on the factory-provided information.									|
+| `IDependencyResolver`	     | Singleton | Used to manage service injection for modules and statically or delegate defined commands.								|
 | `IExecutionContext`		 | Scoped    | Represents the lifetime of a command, containing the caller and possible cancellation.									|
-| `ICallerContextAccessor<>` | Transient | Used to access the caller of the command. This transient service requests the `IExecutionContext` to retrieve the caller.|
+| `IContextAccessor<out T>`  | Transient | Used to access the caller of the command. This transient service requests the `IExecutionContext` to retrieve T.			|
 
 > [!TIP]
 > Service lifetimes determine how the service should be treated and in what context it is available. 
@@ -82,12 +89,12 @@ The `ConfigureComponents` method implicitly adds a number of services that are u
 > it is recommended to have [a good understanding of what lifetimes mean](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection#service-lifetimes). 
 
 In order to execute commands through these interfaces, 
-inject the `IExecutionFactory` into your class and call `CreateExecution` with the execution data you wish to run against.
+inject the `ICommandExecutionFactory` into your class and call `StartExecution` with the execution data you wish to run against.
 
 ## Command Listener
 
-An example usage for the `IExecutionFactory` lies in a generic host console application. 
-A simple command listener can be created by implementing the `BackgroundService` class and using the `IExecutionFactory` 
+An example usage for the `ICommandExecutionFactory` lies in a generic host console application. 
+A simple command listener can be created by implementing the `BackgroundService` class and using the `ICommandExecutionFactory` 
 to create a new execution context for each command:
 
 ```cs
@@ -103,11 +110,22 @@ public sealed class CommandListener(IExecutionFactory factory) : BackgroundServi
         {
             var context = new ConsoleCallerContext(Console.ReadLine());
 
-            await factory.CreateExecution(context);
+            await factory.StartExecution(context);
         }
     }
 }
 ```
 
 This class can be registered with the host using the `ConfigureServices` method, and will be executed when the host is started.
-It is of importance that when adding this service, `.AddHostedService` is used, as this will ensure that the service is started and stopped correctly.
+It is of importance that when adding this service, `.AddHostedService` is used, as this will ensure that the service is started and stopped correctly:
+
+```cs
+...
+
+hostBuilder.ConfigureServices(services =>
+{
+    services.AddHostedService<CommandListener>();
+});
+
+...
+```

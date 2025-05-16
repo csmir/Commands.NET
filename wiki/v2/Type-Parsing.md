@@ -27,7 +27,7 @@ Any user-defined parsers will take precedence over the default parsers.
 ### Functional Pattern
 
 ```cs
-var parser = TypeParser.For<Type>().AddDelegate((ctx, param, value, services) => ...);
+var parser = new ParserDelegate<CustomObject>((ctx, param, value, services) => ...);
 ```
 
 The creation pattern handles conditions as `ValueTask<ParseResult>` where `ParseResult.FromError()` or `ParseResult.FromSuccess()` can be used to return the result. 
@@ -41,7 +41,7 @@ using Commands.Parsing;
 public class CustomTypeParser : TypeParser<Type>
 {
     public override ValueTask<ParseResult> Parse(
-        ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        ICallerContext caller, ICommandParameter parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
         // Your parsing logic here.
     }
@@ -58,7 +58,7 @@ using Commands.Parsing;
 public class CustomTypeParserAttribute : TypeParserAttribute<Type>
 {
     public override ValueTask<ParseResult> Parse(
-        ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        ICallerContext caller, ICommandParameter parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
         // Your parsing logic here.
     }
@@ -72,10 +72,7 @@ The attribute pattern writes similar to `ExecuteCondition` implementations, also
 ### Functional Pattern & Declarative Pattern
 
 ```cs
-ComponentConfiguration.From(...).AddParser(parser);
-```
-```cs
-ComponentConfiguration.From(...).AddParser(new CustomTypeParser());
+ComponentOptions.Default.Parsers[typeof(CustomObject)] = new CustomTypeParser();
 ```
 
 ### Attribute Pattern

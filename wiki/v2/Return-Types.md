@@ -18,7 +18,7 @@ Amongst basic return types, the library supports:
 When returning `void`, the library will not send a response to the caller.
 
 ```cs
-Command.From(() => { }, "void");
+new Command(() => { }, "void");
 ```
 ```cs
 // 'void' is valid
@@ -31,7 +31,7 @@ public void GetVoid()
 When returning `string`, `T` or `object` the library will send the return value to the caller.
 
 ```cs
-Command.From(() => "string", "string");
+new Command(() => "string", "string");
 ```
 ```cs
 // 'string' is valid
@@ -43,7 +43,7 @@ public string GetString()
 ```
 
 ```cs
-Command.From(() => new object(), "object");
+new Command(() => new object(), "object");
 ```
 ```cs
 // 'object' is valid
@@ -57,7 +57,7 @@ public object GetObject()
 When returning `Task`, the library will await the task. If the task returns a value, it *will* be sent to the caller. If there is no value, the library will not send a response.
 
 ```cs
-Command.From(() => Task.CompletedTask, "task");
+new Command(() => Task.CompletedTask, "task");
 ```
 ```cs
 // 'task' is valid
@@ -84,7 +84,7 @@ using Commands;
 
 public class CustomResultHandler : ResultHandler
 {
-    public override ValueTask HandleSuccess(ICallerContext caller, IValueResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected override async ValueTask HandleMethodReturn(ICallerContext caller, IResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (result.Value is int i)
             caller.Respond($"The number is {i}");
