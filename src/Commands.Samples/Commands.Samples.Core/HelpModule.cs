@@ -2,7 +2,7 @@
 
 namespace Commands.Samples;
 
-public class HelpModule : CommandModule
+public class HelpModule(IComponentProvider provider) : CommandModule
 {
     [Name("help")]
     public void Help()
@@ -10,7 +10,7 @@ public class HelpModule : CommandModule
         var builder = new StringBuilder()
             .AppendLine("Commands:");
 
-        foreach (var command in Manager!.GetCommands())
+        foreach (var command in provider.Components.GetCommands())
             builder.AppendLine(command.GetFullName());
 
         Respond(builder.ToString());
@@ -19,7 +19,7 @@ public class HelpModule : CommandModule
     [Name("help")]
     public void Help([Remainder, Name("command-name")] string commandName)
     {
-        var commands = Manager!.GetCommands();
+        var commands = provider.Components.GetCommands();
 
         var command = commands
             .Where(x => x.GetFullName().StartsWith(commandName))

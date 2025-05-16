@@ -3,13 +3,13 @@ using Microsoft.Extensions.Hosting;
 
 namespace Commands.Samples;
 
-public sealed class CommandListener(IExecutionFactory factory) : BackgroundService
+public sealed class CommandListener(ICommandExecutionFactory factory) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var context = new ConsoleCallerContext(Console.ReadLine());
+            var context = new ConsoleContext(Console.ReadLine());
 
             await factory.StartExecution(context);
         }

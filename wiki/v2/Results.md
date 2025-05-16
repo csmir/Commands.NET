@@ -42,7 +42,7 @@ Its `Exception` property contains a `CommandEvaluationException` which holds the
 It will return a failed result if the command execution failed by errors thrown in the user's own codebase.
 
 > [!TIP] 
-> It is good to note that every `IExecuteResult` implementation overrides `ToString()` with a preformatted message to send to the user. 
+> It is good to note that every `IResult` implementation overrides `ToString()` with a preformatted message to send to the user. 
 > This message can be sent to the user by-for example-calling `caller.Respond(result)`.
 
 ## Handling Results
@@ -52,10 +52,10 @@ It will return a failed result if the command execution failed by errors thrown 
 ### Functional Pattern
 
 ```cs
-var handler = ResultHandler.For<TContext>().AddDelegate((ctx, result, services) => ...);
+var handler = new HandlerDelegate<IContext>((ctx, result, services) => ...);
 ```
 
-Here, `TContext` is the `ICallerContext` implementation that this handler will handle. 
+Here, `TContext` is the `IContext` implementation that this handler will handle. 
 If the context is not of a matching type, this handler will not be called.
 
 ### Declarative Pattern
@@ -76,7 +76,7 @@ using Commands;
 
 public class CustomResultHandler : ResultHandler
 {
-    protected override ValueTask CommandNotFound(ICallerContext caller, CommandNotFoundException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected override ValueTask CommandNotFound(IContext context, CommandNotFoundException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         // Your response logic here
     }
@@ -88,7 +88,7 @@ The `CommandNotFound` method is called when the search operation returns no comm
 When you have succesfully constructed the logic for handling the result, you can pass it along when creating a new `ComponentProvider`:
 
 ```cs
-var collection = ComponentProvider.From(...).AddHandler(new CustomResultHandler()).Create();
+var collection = new ComponentProvider(new CustomResultHandler());
 ```
 
 > [!NOTE]

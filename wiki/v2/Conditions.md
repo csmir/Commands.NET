@@ -13,7 +13,7 @@ For the following examples, `ANDEvaluator` will be used. This means that all con
 ### Functional Pattern
 
 ```cs
-var condition = ExecuteCondition.For<ANDEvaluator>().AddDelegate(ctx, cmd, services) => ...);
+var condition = new ConditionDelegate<TEvaluator>((ctx, cmd, services) => ...);
 ```
 
 The creation pattern handles conditions as `ValueTask<ConditionResult>` where `ConditionResult.FromError()` or `ConditionResult.FromSuccess()` can be used to return the result. 
@@ -57,13 +57,8 @@ This pattern writes similar to `ExecuteCondition` implementations, also allowing
 ### Functional Pattern & Declarative Pattern
 
 ```cs
-var command = Command.From(() => { }, "name").AddCondition(condition);
+var command = new Command(..., [new CustomCondition()], ...);
 ```
-```cs
-var group = CommandGroup.From("name").AddCondition(new CustomCondition());
-```
-
-Conditions exposed to `CommandGroup` are passed to every `Command` and `CommandGroup` added to it.
 
 ### Attribute Pattern
 
@@ -76,4 +71,7 @@ public void Command()
 ```
 
 Conditions are applied to the command by adding the attribute to the method. 
-Modules can also be decorated with conditions, which will be applied to all commands and nested modules within the module.
+Modules can also be decorated with conditions, which will be applied to all commands and nested modules within the module, if they are allowed to.
+
+> [!TIP]
+> Condition propagation can be en- or disabled in the ComponentOptions provided when creating components.

@@ -1,23 +1,20 @@
-﻿
-using Commands;
-using Commands.Samples;
+﻿using Commands;
 
-var exit = Command.From("exit")
-    .AddDelegate(() => Environment.Exit(0));
+var exitCommand = new Command(() => Environment.Exit(0), "exit");
 
-var mathCommands = CommandGroup.From("math")
-    .AddComponents(
-        Command.From(Sum, "sum", "add"),
-        Command.From(Subtract, "subtract", "sub"),
-        Command.From(Multiply, "multiply", "mul"),
-        Command.From(Divide, "divide", "div")
-    );
+var mathGroup = new CommandGroup("math")
+{
+    new Command(Sum, "sum", "add"),
+    new Command(Subtract, "subtract", "sub"),
+    new Command(Multiply, "multiply", "mul"),
+    new Command(Divide, "divide", "div")
+};
 
-var components = ExecutableComponentSet.From(exit, mathCommands)
-    .AddComponentType<HelpModule>()
-    .Build();
+var provider = new ComponentProvider();
 
-await components.Execute(new ConsoleCallerContext(args));
+provider.Components.AddRange(mathGroup, exitCommand);
+
+await provider.Execute(new ConsoleContext(args));
 
 static double Sum(double number, int sumBy)
     => number + sumBy;

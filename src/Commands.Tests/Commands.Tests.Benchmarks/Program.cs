@@ -3,16 +3,16 @@ using BenchmarkDotNet.Running;
 
 namespace Commands.Tests;
 
-public class BenchmarkCallerContext(string? input) : AsyncCallerContext
+public class BenchmarkContext(string? input) : AsyncContext
 {
-    public override ArgumentDictionary Arguments { get; } = ArgumentDictionary.FromString(input);
+    public override Arguments Arguments { get; } = new(input);
 
     public override Task Respond(object? response)
         => Task.CompletedTask;
 }
 
 [Name("group")]
-public class CreationAnalysisModule : CommandModule<BenchmarkCallerContext>
+public class CreationAnalysisModule : CommandModule<BenchmarkContext>
 {
     [Name("command")]
     public static void Command1() { }
@@ -27,36 +27,38 @@ public class CreationAnalysisModule : CommandModule<BenchmarkCallerContext>
 [MemoryDiagnoser]
 public class Program
 {
-    private static readonly ArgumentDictionary _args = ArgumentDictionary.FromString("command");
-    private static readonly ExecutableComponentSet _components = ExecutableComponentSet.From()
-        .AddComponentType<CreationAnalysisModule>()
-        .AddComponent(Command.From(() => { }, "command"))
-        .Build();
+    private static readonly Arguments _args = new("command");
+
+    private static readonly ComponentProvider _provider = new(
+    [
+        new CommandGroup<CreationAnalysisModule>(),
+        new Command(() => { }, "command")
+    ]);
 
     static void Main()
         => BenchmarkRunner.Run<Program>();
 
     [Benchmark]
     public void CreateArguments()
-        => ArgumentDictionary.FromString("command");
+        => _ = new Arguments("command");
 
     [Benchmark]
     public void FindCommands()
-        => _components.Find(_args);
+        => _provider.Components.Find(_args);
 
     [Benchmark]
     public Task RunCommand()
-        => _components.Execute(new BenchmarkCallerContext("command"));
+        => _provider.Execute(new BenchmarkContext("command"));
 
     [Benchmark]
     public Task RunCommandNonBlocking()
-        => _components.Execute(new BenchmarkCallerContext("command"), new CommandOptions()
+        => _provider.Execute(new BenchmarkContext("command"), new ExecutionOptions()
         {
             ExecuteAsynchronously = true,
         });
 
     [Benchmark]
-    public ExecutableComponentSet CollectionCreate()
+    public ComponentTree CollectionCreate()
         => [];
 
     [Benchmark]

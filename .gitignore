@@ -362,4 +362,3 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Visual Studio 2022/Visualizers
-/src/Commands.Samples/Commands.Samples.Console/Properties

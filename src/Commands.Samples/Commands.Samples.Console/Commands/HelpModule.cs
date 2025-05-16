@@ -2,12 +2,12 @@
 
 namespace Commands.Samples;
 
-public sealed class HelpModule : CommandModule
+public sealed class HelpModule(IComponentProvider provider) : CommandModule
 {
     [Name("help")]
     public async Task Help()
     {
-        var commands = Manager!.GetCommands();
+        var commands = provider.Components.GetCommands();
 
         foreach (var command in commands)
         {

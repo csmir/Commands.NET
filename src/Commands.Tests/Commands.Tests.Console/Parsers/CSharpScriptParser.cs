@@ -6,13 +6,13 @@ namespace Commands.Tests;
 
 public class CSharpScriptParserAttribute : TypeParserAttribute<Delegate>
 {
-    public override ValueTask<ParseResult> Parse(ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
-        => new CSharpScriptParser().Parse(caller, argument, value, services, cancellationToken);
+    public override ValueTask<ParseResult> Parse(IContext context, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        => new CSharpScriptParser().Parse(context, argument, value, services, cancellationToken);
 }
 
 public class CSharpScriptParser : TypeParser<Delegate>
 {
-    public override async ValueTask<ParseResult> Parse(ICallerContext caller, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
+    public override async ValueTask<ParseResult> Parse(IContext context, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (value is string script)
         {
