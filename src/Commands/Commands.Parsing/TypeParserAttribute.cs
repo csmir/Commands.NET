@@ -11,7 +11,7 @@ public abstract class TypeParserAttribute<TConvertible> : Attribute, IParser
     public Type Type { get; } = typeof(TConvertible);
 
     /// <inheritdoc />
-    public abstract ValueTask<ParseResult> Parse(IContext context, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken);
+    public abstract ValueTask<ParseResult> Parse(IContext context, ICommandParameter parameter, object? argument, IServiceProvider services, CancellationToken cancellationToken);
 
     /// <inheritdoc />
     public ParseResult Error(string error)
