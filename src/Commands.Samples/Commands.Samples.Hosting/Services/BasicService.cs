@@ -2,7 +2,7 @@
 
 namespace Commands.Samples;
 
-public class BasicService(IContextAccessor<ConsoleCallerContext> caller, IComponentProvider provider)
+public class BasicService(IContextAccessor<ConsoleContext> context, IComponentProvider provider)
 {
     public IEnumerable<string> GetCommands()
     {
@@ -12,9 +12,7 @@ public class BasicService(IContextAccessor<ConsoleCallerContext> caller, ICompon
 
         // If no commands were found, return a message indicating that, instead of returning just an empty list.
         if (commands.Length == 0)
-            caller.Context.Respond("No commands found.");
-
-        caller.Context.Respond("Commands found:");
+            context.Context.Respond("No commands found.");
 
         return commands;
     }

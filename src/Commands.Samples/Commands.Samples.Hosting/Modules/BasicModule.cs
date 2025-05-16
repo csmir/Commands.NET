@@ -1,6 +1,6 @@
 ﻿namespace Commands.Samples;
 
-public class BasicModule(BasicService service) : CommandModule<ConsoleCallerContext>
+public class BasicModule(BasicService service) : CommandModule<ConsoleContext>
 {
     [Name("help")]
     public IEnumerable<string> Help()

@@ -84,10 +84,10 @@ using Commands;
 
 public class CustomResultHandler : ResultHandler
 {
-    protected override async ValueTask HandleMethodReturn(ICallerContext caller, IResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected override async ValueTask HandleMethodReturn(IContext context, IResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (result.Value is int i)
-            caller.Respond($"The number is {i}");
+            context.Respond($"The number is {i}");
     }
 }
 ```

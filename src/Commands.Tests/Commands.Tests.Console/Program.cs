@@ -3,7 +3,7 @@
 var components = new ComponentTree();
 
 components.AddRange(typeof(Program).Assembly.GetExportedTypes());
-components.Add(new Command((IComponentProvider provider, ConsoleCallerContext context) =>
+components.Add(new Command((IComponentProvider provider, ConsoleContext context) =>
 {
     foreach (var command in provider.Components.GetCommands())
         context.Respond(command);
@@ -13,4 +13,4 @@ components.Add(new Command((IComponentProvider provider, ConsoleCallerContext co
 var provider = new ComponentProvider(components);
 
 while (true)
-    await provider.Execute(new ConsoleCallerContext(Console.ReadLine()));
+    await provider.Execute(new ConsoleContext(Console.ReadLine()));

@@ -9,7 +9,7 @@ public sealed class BasicModule : CommandModule<SampleContext>
 
     [Name("whoami")]
     public string WhoAmI()
-        => $"You are {Caller.Name}.";
+        => $"You are {Context.Name}.";
 
     [Name("echo")]
     public string Echo([Remainder] string message)

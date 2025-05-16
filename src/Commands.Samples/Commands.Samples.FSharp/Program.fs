@@ -8,4 +8,4 @@ printf "Added %i components." (provider.Components.AddRange(typeof<FSharpModule>
 
 while true do
     let input = Console.ReadLine()
-    provider.Execute<ConsoleCallerContext>(new ConsoleCallerContext(input)) |> Async.AwaitTask |> Async.RunSynchronously
+    provider.Execute<ConsoleContext>(new ConsoleContext(input)) |> Async.AwaitTask |> Async.RunSynchronously

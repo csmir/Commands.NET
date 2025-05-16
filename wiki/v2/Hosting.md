@@ -56,7 +56,7 @@ var host = Host.CreateDefaultBuilder(args)
             options.Parsers[typeof(Version)] = new TryParseParser<Version>(Version.TryParse);
         });
 
-        components.AddResultHandler(new HandlerDelegate<ConsoleCallerContext>((c, e, s) => c.Respond(e)));
+        components.AddResultHandler(new HandlerDelegate<ConsoleContext>((c, e, s) => c.Respond(e)));
 	})
 	.Build();
 
@@ -80,7 +80,7 @@ The `ConfigureComponents` method implicitly adds a number of services that are u
 | `ICommandExecutionFactory` | Singleton | Used to create instances of `IExecutionContext` for each command execution, and managing the scope lifetime.				|
 | `IComponentProvider`		 | Singleton | Contains and discovers executable commands based on the factory-provided information.									|
 | `IDependencyResolver`	     | Singleton | Used to manage service injection for modules and statically or delegate defined commands.								|
-| `IExecutionContext`		 | Scoped    | Represents the lifetime of a command, containing the caller and possible cancellation.									|
+| `IExecutionScope`	         | Scoped    | Represents the lifetime of a command, containing the caller and possible cancellation.									|
 | `IContextAccessor<out T>`  | Transient | Used to access the caller of the command. This transient service requests the `IExecutionContext` to retrieve T.			|
 
 > [!TIP]
@@ -108,7 +108,7 @@ public sealed class CommandListener(IExecutionFactory factory) : BackgroundServi
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var context = new ConsoleCallerContext(Console.ReadLine());
+            var context = new ConsoleContext(Console.ReadLine());
 
             await factory.StartExecution(context);
         }

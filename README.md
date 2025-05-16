@@ -17,7 +17,7 @@ It provides a modular and intuitive API for registering and executing commands.
 
 ## Documentation
 
-Browse the [wiki](https://github.com/csmir/Commands.NET/wiki) for a full overview of the library.
+**Browse the [wiki](https://github.com/csmir/Commands.NET/wiki) for a full overview of the library.**
 
 ## Installation
 
@@ -53,7 +53,7 @@ var components = new ComponentTree()
 
 var provider = new ComponentProvider(components);
 
-await provider.Execute(new ConsoleCallerContext(args));
+await provider.Execute(new ConsoleContext(args));
 
 // dotnet run greet -> Hello world!
 ```
@@ -82,7 +82,7 @@ var provider = new ComponentProvider();
 
 provider.Components.Add(mathGroup);
 
-await collection.Execute(new ConsoleCallerContext(args));
+await collection.Execute(new ConsoleContext(args));
 
 // dotnet run math sum 5 3 -> 8
 ```
@@ -116,7 +116,7 @@ var provider = new ComponentProvider();
 provider.Components.Add<HelpModule>();
 provider.Components.Add(mathGroup);
 
-await provider.Execute(new ConsoleCallerContext(args));
+await provider.Execute(new ConsoleContext(args));
 
 // dotnet run help -> Commands: math sum <...> math subtract <...> math ...
 ```
@@ -141,7 +141,7 @@ var provider = services.GetRequiredService<ComponentProvider>();
 provider.Components.Add<HelpModule>();
 provider.Components.Add(mathGroup);
 
-await provider.Execute(new ConsoleCallerContext(args), new CommandOptions() { Services = services });
+await provider.Execute(new ConsoleContext(args), new ExecutionOptions() { Services = services });
 ```
 
 Modules can be injected directly from the provider. They themselves are considered transient, being created and disposed of per command execution.

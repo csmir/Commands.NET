@@ -14,7 +14,7 @@ var provider = new ComponentProvider();
 
 provider.Components.AddRange(mathGroup, exitCommand);
 
-await provider.Execute(new ConsoleCallerContext(args));
+await provider.Execute(new ConsoleContext(args));
 
 static double Sum(double number, int sumBy)
     => number + sumBy;

@@ -41,7 +41,7 @@ using Commands.Parsing;
 public class CustomTypeParser : TypeParser<Type>
 {
     public override ValueTask<ParseResult> Parse(
-        ICallerContext caller, ICommandParameter parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        IContext context, ICommandParameter parameter, object? argument, IServiceProvider services, CancellationToken cancellationToken)
     {
         // Your parsing logic here.
     }
@@ -58,7 +58,7 @@ using Commands.Parsing;
 public class CustomTypeParserAttribute : TypeParserAttribute<Type>
 {
     public override ValueTask<ParseResult> Parse(
-        ICallerContext caller, ICommandParameter parameter, object? value, IServiceProvider services, CancellationToken cancellationToken)
+        IContext context, ICommandParameter parameter, object? argument, IServiceProvider services, CancellationToken cancellationToken)
     {
         // Your parsing logic here.
     }

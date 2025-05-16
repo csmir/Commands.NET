@@ -3,7 +3,7 @@ using BenchmarkDotNet.Running;
 
 namespace Commands.Tests;
 
-public class BenchmarkCallerContext(string? input) : AsyncCallerContext
+public class BenchmarkContext(string? input) : AsyncContext
 {
     public override Arguments Arguments { get; } = new(input);
 
@@ -12,7 +12,7 @@ public class BenchmarkCallerContext(string? input) : AsyncCallerContext
 }
 
 [Name("group")]
-public class CreationAnalysisModule : CommandModule<BenchmarkCallerContext>
+public class CreationAnalysisModule : CommandModule<BenchmarkContext>
 {
     [Name("command")]
     public static void Command1() { }
@@ -48,11 +48,11 @@ public class Program
 
     [Benchmark]
     public Task RunCommand()
-        => _provider.Execute(new BenchmarkCallerContext("command"));
+        => _provider.Execute(new BenchmarkContext("command"));
 
     [Benchmark]
     public Task RunCommandNonBlocking()
-        => _provider.Execute(new BenchmarkCallerContext("command"), new ExecutionOptions()
+        => _provider.Execute(new BenchmarkContext("command"), new ExecutionOptions()
         {
             ExecuteAsynchronously = true,
         });
