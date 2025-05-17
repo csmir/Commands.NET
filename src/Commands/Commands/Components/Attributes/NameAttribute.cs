@@ -29,10 +29,7 @@ public sealed class NameAttribute : Attribute
     /// </summary>
     /// <param name="name">The target name.</param>
     public NameAttribute(string name)
-        : this([name])
-    {
-
-    }
+        : this([name]) { }
 
     /// <summary>
     ///     Creates a new <see cref="NameAttribute"/> with defined name and names.

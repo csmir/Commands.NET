@@ -184,25 +184,25 @@ public class CommandGroup : ComponentSet, IComponent
         => GetScore().CompareTo(component?.GetScore());
 
     /// <inheritdoc />
-    public override IEnumerable<IComponent> Find(Arguments args)
+    public override IComponent[] Find(Arguments args)
     {
-        List<IComponent> discovered = [this];
+        IComponent[] discovered = [this];
 
         var enumerator = GetSpanEnumerator();
 
         while (enumerator.MoveNext())
         {
             if (enumerator.Current.IsDefault)
-                discovered.Add(enumerator.Current);
+                CollectionUtilities.Add(ref discovered, enumerator.Current);
             else
             {
                 if (!args.TryGetElementAt(Position, out var value) || !enumerator.Current.Names.Contains(value))
                     continue;
 
                 if (enumerator.Current is CommandGroup group)
-                    discovered.AddRange(group.Find(args));
+                    CollectionUtilities.AddRange(ref discovered, group.Find(args));
                 else
-                    discovered.Add(enumerator.Current);
+                    CollectionUtilities.Add(ref discovered, enumerator.Current);
             }
         }
 

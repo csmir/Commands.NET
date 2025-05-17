@@ -14,7 +14,7 @@ public abstract class ComponentSet : IComponentSet
         => _items.Length;
 
     /// <inheritdoc />
-    public abstract IEnumerable<IComponent> Find(Arguments args);
+    public abstract IComponent[] Find(Arguments args);
 
     /// <inheritdoc />
     public bool Contains(IComponent component)

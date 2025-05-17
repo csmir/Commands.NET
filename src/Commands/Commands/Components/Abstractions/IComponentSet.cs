@@ -10,7 +10,7 @@ public interface IComponentSet : ICollection<IComponent>, IEnumerable<IComponent
     /// </summary>
     /// <param name="args">The arguments to base the search operation on.</param>
     /// <returns>A lazily evaluated enumerable containing the discovered commands of this operation.</returns>
-    public IEnumerable<IComponent> Find(Arguments args);
+    public IComponent[] Find(Arguments args);
 
     /// <summary>
     ///     Filters all components in the current set that are of <see cref="Command"/>.

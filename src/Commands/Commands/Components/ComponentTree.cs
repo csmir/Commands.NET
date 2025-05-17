@@ -26,9 +26,9 @@ public sealed class ComponentTree : ComponentSet
     }
 
     /// <inheritdoc />
-    public override IEnumerable<IComponent> Find(Arguments args)
+    public override IComponent[] Find(Arguments args)
     {
-        List<IComponent> discovered = [];
+        IComponent[] discovered = [];
 
         var enumerator = GetSpanEnumerator();
 
@@ -38,10 +38,10 @@ public sealed class ComponentTree : ComponentSet
                 continue;
 
             if (enumerator.Current is CommandGroup group)
-                discovered.AddRange(group.Find(args));
+                CollectionUtilities.AddRange(ref discovered, group.Find(args));
 
             else
-                discovered.Add(enumerator.Current);
+                CollectionUtilities.Add(ref discovered, enumerator.Current);
         }
 
         return discovered;
