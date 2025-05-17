@@ -10,16 +10,12 @@
 public interface IExecutionScope : IDisposable
 {
     /// <summary>
+    ///     Gets the <see cref="IContext"/> resembling the metadata and response mechanism of the command being executed in the scope.
+    /// </summary>
+    public IContext Context { get; }
+
+    /// <summary>
     ///     Gets a reference to the <see cref="CancellationToken"/> propagated through the execution pipeline. When this token is cancelled, the execution pipeline will be cancelled.
     /// </summary>
     public CancellationTokenSource CancellationSource { get; }
-
-    /// <summary>
-    ///     Attempts to obtain an implementation of <see cref="IContext"/> currently used by the execution pipeline.
-    /// </summary>
-    /// <typeparam name="TContext">The implementation of <see cref="IContext"/> this operation should output.</typeparam>
-    /// <param name="context">The output value, being an implementation of <see cref="IContext"/> constrained to <typeparamref name="TContext"/>.</param>
-    /// <returns><see langword="true"/> when the <see cref="IContext"/> is an implementation of <typeparamref name="TContext"/>; otherwise <see langword="false"/>.</returns>
-    public bool TryGetContext<TContext>([NotNullWhen(true)] out TContext? context)
-        where TContext : IContext;
 }

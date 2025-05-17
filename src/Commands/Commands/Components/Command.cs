@@ -7,6 +7,13 @@ namespace Commands;
 /// <summary>
 ///     Contains information about a command that can be executed using an <see cref="IComponentProvider"/>.
 /// </summary>
+/// <remarks>
+///     A <see cref="Command"/> is the target of an execution request. 
+///     It is the final destination of the execution pipeline, which can be invoked using an <see cref="IComponentProvider"/> or by directly calling <see cref="Run{TContext}(TContext, ExecutionOptions)"/> on this type. 
+///     <br/>
+///     A command can be added to a parent <see cref="CommandGroup"/>, or be added to a <see cref="ComponentTree"/> directly. When added to a group, the <see cref="Parent"/> property will be set, and it is not required to have a name.
+///     Otherwise, the <see cref="Parent"/> will be <see langword="null"/> and <see cref="Names"/> requires a value.
+/// </remarks>
 [DebuggerDisplay("{ToString()}")]
 public class Command : IComponent, IParameterCollection
 {
@@ -73,34 +80,29 @@ public class Command : IComponent, IParameterCollection
     public int Position
         => (Parent?.Position ?? 0) + (Name == null ? 0 : 1);
 
-    /// <summary>
-    ///     Initializes a new instance of <see cref="Command"/> with the provided execution delegate, conditions, names, configuration, and parent group.
-    /// </summary>
-    /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
-    /// <param name="names">The names used to discover this command during execution.</param>
+    /// <inheritdoc cref="Command(Delegate, IEnumerable{ExecuteCondition}, string[], ComponentOptions?)"/>
     public Command(Delegate executionDelegate, params string[] names)
         : this(executionDelegate, [], names) { }
 
-    /// <summary>
-    ///     Initializes a new instance of <see cref="Command"/> with the provided execution delegate, conditions, names, configuration, and parent group.
-    /// </summary>
-    /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
-    /// <param name="names">The names used to discover this command during execution.</param>
-    /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
+    /// <inheritdoc cref="Command(Delegate, IEnumerable{ExecuteCondition}, string[], ComponentOptions?)"/>
     public Command(Delegate executionDelegate, string[] names, ComponentOptions? options = null)
         : this(executionDelegate, [], names, options) { }
 
     /// <summary>
-    ///     Initializes a new instance of <see cref="Command"/> with the provided execution delegate, conditions, names, configuration, and parent group.
+    ///     Initializes a new instance of <see cref="Command"/>.
     /// </summary>
     /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
     /// <param name="conditions">The conditions bound to the command, which will determine whether it can execute or not.</param>
     /// <param name="names">The names used to discover this command during execution.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
+    /// <exception cref="ArgumentNullException">The provided delegate or conditions are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">The provided <paramref name="names"/> is <see langword="null"/> or does not match the <see cref="ComponentOptions.NameValidation"/> if any.</exception>
+    /// <exception cref="ParameterFormatException">A <see cref="RemainderAttribute"/> is not placed on the last parameter of the target, <see cref="DeconstructAttribute"/> is defined on a non-deconstructible parameter type, or no <see cref="IParser"/> is available to represent a parameter type.</exception>
     public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, ComponentOptions? options = null)
-        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), options ??= ComponentOptions.Default)
+        : this(new CommandStaticActivator(executionDelegate?.Method!, executionDelegate?.Target), options ??= ComponentOptions.Default)
     {
-        Assert.MatchExpression(names, options.NameValidation, nameof(names));
+        Assert.NotNull(conditions, nameof(conditions));
+        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(names));
 
         Names = names;
         Ignore = false;
@@ -110,17 +112,20 @@ public class Command : IComponent, IParameterCollection
     }
 
     /// <summary>
-    ///     Initializes a new instance of <see cref="Command"/> with the provided execution method, configuration, and parent group.
+    ///     Initializes a new instance of <see cref="Command"/>.
     /// </summary>
     /// <param name="executionMethod">The method to run when the command is executed.</param>
     /// <param name="parent">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
+    /// <exception cref="ArgumentNullException">The provided method is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">The provided <paramref name="executionMethod"/> defines names, but those names do not match the provided <see cref="ComponentOptions.NameValidation"/>.</exception>
+    /// <exception cref="ParameterFormatException">A <see cref="RemainderAttribute"/> is not placed on the last parameter of the target, <see cref="DeconstructAttribute"/> is defined on a non-deconstructible parameter type, or no <see cref="IParser"/> is available to represent a parameter type.</exception>
     public Command(MethodInfo executionMethod, CommandGroup? parent = null, ComponentOptions? options = null)
         : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ??= ComponentOptions.Default)
     {
         var names = Attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
 
-        Assert.MatchExpression(names, options.NameValidation, nameof(NameAttribute));
+        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(NameAttribute));
 
         Names = names;
         Ignore = Attributes.Contains<IgnoreAttribute>();
@@ -150,7 +155,7 @@ public class Command : IComponent, IParameterCollection
             var parameter = parameters[i];
 
             if (parameter.IsRemainder && i != parameters.Length - 1)
-                throw new NotSupportedException("Remainder arguments must be the last argument in the method signature.");
+                throw new ParameterFormatException("Remainder arguments must be the last argument in the method signature.");
         }
 
         Parameters = parameters;

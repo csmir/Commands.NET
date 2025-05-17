@@ -27,6 +27,7 @@ public static class HostUtilities
     /// <param name="builder">The builder to configure with the related services.</param>
     /// <param name="configureComponents">An action to configure the <see cref="ComponentBuilder"/> which will be used to populate all related services.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureComponents"/> is <see langword="null"/>.</exception>
     public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentBuilder> configureComponents)
     {
         Assert.NotNull(configureComponents, nameof(configureComponents));
@@ -39,6 +40,7 @@ public static class HostUtilities
     /// <param name="builder">The builder to configure with the related services.</param>
     /// <param name="configureComponents">An action to configure the <see cref="ComponentBuilder"/> which will be used to populate all related services.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureComponents"/> is <see langword="null"/>.</exception>
     public static IHostBuilder ConfigureComponents<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>(
         this IHostBuilder builder, Action<ComponentBuilder> configureComponents)
         where TFactory : CommandExecutionFactory
@@ -49,6 +51,7 @@ public static class HostUtilities
     }
 
     /// <inheritdoc cref="ConfigureComponents{TFactory}(IHostBuilder, Action{ComponentBuilder})"/>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureComponents"/> is <see langword="null"/>.</exception>
     public static IHostBuilder ConfigureComponents<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>(
         this IHostBuilder builder, Action<HostBuilderContext, ComponentBuilder> configureComponents)
         where TFactory : CommandExecutionFactory
@@ -72,6 +75,7 @@ public static class HostUtilities
     /// <param name="host">The host to configure with the related components.</param>
     /// <param name="configureTree">An action to configure the <see cref="ComponentTree"/> with available components.</param>
     /// <returns>The same <see cref="IHost"/> for call chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureTree"/> is <see langword="null"/>.</exception>
     public static IHost UseComponents(this IHost host, Action<ComponentTree> configureTree)
     {
         Assert.NotNull(configureTree, nameof(configureTree));

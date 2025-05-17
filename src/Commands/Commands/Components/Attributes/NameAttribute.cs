@@ -38,10 +38,11 @@ public sealed class NameAttribute : Attribute
     ///     Creates a new <see cref="NameAttribute"/> with defined name and names.
     /// </summary>
     /// <param name="names">The target's names. Names are not considered for parameter names.</param>
+    /// <exception cref="ArgumentException">Thrown when no names are provided.</exception>
     public NameAttribute(params string[] names)
     {
         if (names.Length == 0)
-            throw new ArgumentException("At least one alias must be provided.", nameof(names));
+            throw new ArgumentException("At least one name must be provided when defining this attribute on a component.", nameof(names));
 
         Names = names;
     }

@@ -32,7 +32,7 @@ public sealed class TryParseParser<T>(TryParseParser<T>.ParseDelegate parser) : 
 
 internal static class TryParseParser
 {
-    public static List<TypeParser> GetBCLTypes()
+    public static List<TypeParser> GetCommon()
         => [
             // char
             new TryParseParser<char>(char.TryParse),

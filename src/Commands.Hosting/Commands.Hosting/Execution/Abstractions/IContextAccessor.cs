@@ -10,5 +10,9 @@ public interface IContextAccessor<out TContext>
     /// <summary>
     ///     Gets the <see cref="IContext"/> of the current execution pipeline.
     /// </summary>
+    /// <remarks>
+    ///     This property assumes the type of <typeparamref name="TContext"/> is the same as the provided <see cref="IContext"/>.
+    /// </remarks>
+    /// <exception cref="InvalidCastException">Thrown when the context cannot be cast to <typeparamref name="TContext"/></exception>
     public TContext Context { get; }
 }

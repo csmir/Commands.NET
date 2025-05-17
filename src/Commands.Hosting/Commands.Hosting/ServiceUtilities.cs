@@ -19,6 +19,7 @@ public static class ServiceUtilities
     /// <param name="services">The <see cref="IServiceProvider"/> to add the configured services to.</param>
     /// <param name="configureAction"></param>
     /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configureAction"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddComponentProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
         (this IServiceCollection services, Action<ComponentBuilder> configureAction)
         where TFactory : class, ICommandExecutionFactory

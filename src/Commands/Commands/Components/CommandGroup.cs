@@ -21,6 +21,13 @@ where T : CommandModule
 /// <summary>
 ///     A concurrently accessible set of components, where <see cref="CommandGroup"/> instances are branches and <see cref="Command"/> instances are leaves.
 /// </summary>
+/// <remarks>
+///     A group is a recursively browsable collection of <see cref="Command"/>, or subsequent <see cref="CommandGroup"/> instances. Browsing its branches is done using the <see cref="Find(Arguments)"/> method.
+///     The group can be added to a <see cref="ComponentTree"/> or another <see cref="CommandGroup"/>. If added to a <see cref="ComponentTree"/>, it will be considered a top-level group. 
+///     <br/>
+///     Top level groups are not required to have <see cref="Names"/>, trimming the parent and accessing its members directly by their respective names. 
+///     Components of a nameless top-level group are required to be named. If added to another <see cref="CommandGroup"/>, it will be bound to that group, and is required to have <see cref="Names"/>.
+/// </remarks>
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
 public class CommandGroup : ComponentSet, IComponent
 {
@@ -55,21 +62,19 @@ public class CommandGroup : ComponentSet, IComponent
     public int Position
         => (Parent?.Position ?? 0) + (Name == null ? 0 : 1);
 
-    /// <summary>
-    ///     Initializes a new instance of <see cref="CommandGroup"/> using the specified names.
-    /// </summary>
-    /// <param name="names">The names used to discover this group during execution.</param>
+    /// <inheritdoc cref="CommandGroup(string[], ComponentOptions?)"/>
     public CommandGroup(params string[] names)
         : this(names, null) { }
 
     /// <summary>
-    ///     Initializes a new instance of <see cref="CommandGroup"/> using the specified names and options.
+    ///     Initializes a new instance of <see cref="CommandGroup"/>.
     /// </summary>
-    /// <param name="names"></param>
-    /// <param name="options"></param>
+    /// <param name="names">The names used to discover this group during execution.</param>
+    /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
+    /// <exception cref="ArgumentException">The provided <paramref name="names"/> is <see langword="null"/> or does not match the <see cref="ComponentOptions.NameValidation"/> if any.</exception>
     public CommandGroup(string[] names, ComponentOptions? options = null)
     {
-        Assert.MatchExpression(names, (options ?? ComponentOptions.Default).NameValidation, nameof(names));
+        Assert.NotNullOrInvalid(names, (options ?? ComponentOptions.Default).NameValidation, nameof(names));
 
         Ignore = false;
         Attributes = [];
@@ -77,11 +82,13 @@ public class CommandGroup : ComponentSet, IComponent
     }
 
     /// <summary>
-    ///     Initializes a new instance of <see cref="CommandGroup"/> using the specified type and parent group.
+    ///     Initializes a new instance of <see cref="CommandGroup"/>.
     /// </summary>
     /// <param name="type">The implementation of <see cref="CommandModule"/> that holds commands to be executed.</param>
     /// <param name="parent">The parent of this group, if any. Irrespective of this value being set, the group can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
+    /// <exception cref="ArgumentNullException">The provided <paramref name="type"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">The provided <paramref name="type"/> defines names, but those names do not match the provided <see cref="ComponentOptions.NameValidation"/>.</exception>
     /// <exception cref="InvalidCastException">The provided type is not an implementation of <see cref="CommandModule"/>.</exception>
     public CommandGroup(
 #if NET8_0_OR_GREATER
@@ -90,6 +97,8 @@ public class CommandGroup : ComponentSet, IComponent
         Type type, CommandGroup? parent = null, ComponentOptions? options = null)
     {
         options ??= ComponentOptions.Default;
+
+        Assert.NotNull(type, nameof(type));
 
         if (!typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters)
             throw new InvalidCastException($"The provided type is not an implementation of {nameof(CommandModule)}.");
@@ -102,7 +111,7 @@ public class CommandGroup : ComponentSet, IComponent
 
         var names = attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
 
-        Assert.MatchExpression(names, options.NameValidation, nameof(NameAttribute));
+        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(NameAttribute));
 
         Names = names;
         Ignore = attributes.Contains<IgnoreAttribute>();

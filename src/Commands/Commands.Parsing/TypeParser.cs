@@ -43,6 +43,7 @@ public abstract class TypeParser : IParser
         IContext context, ICommandParameter parameter, object? argument, IServiceProvider services, CancellationToken cancellationToken);
 
     /// <inheritdoc />
+    /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="error"/> is <see langword="null"/> or empty.</exception>
     public ParseResult Error(string error)
     {
         Assert.NotNullOrEmpty(error, nameof(error));
@@ -58,7 +59,7 @@ public abstract class TypeParser : IParser
 
     internal static IEnumerable<TypeParser> CreateDefaults()
     {
-        var list = TryParseParser.GetBCLTypes();
+        var list = TryParseParser.GetCommon();
 
         list.Add(new TimeSpanParser());
         list.Add(new ColorParser());

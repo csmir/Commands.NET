@@ -22,8 +22,7 @@ public class ComponentProvider : IComponentProvider
     /// <param name="handlers">An extensible array of <see cref="ResultHandler"/> implementations, which provide custom behavior for handling the result of commands, the return type of delegates, and the disposal of resources.</param>
     public ComponentProvider(params ResultHandler[] handlers)
     {
-        Assert.NotNull(handlers, nameof(handlers));
-
+        handlers ??= [];
         Components = [];
 
         // A default handler is added if none are provided, which allows the command result to be processed with no further implications.
@@ -38,6 +37,7 @@ public class ComponentProvider : IComponentProvider
     /// </summary>
     /// <param name="components">A pre-initialized set of components which this provider should treat as the instance of <see cref="Components"/> targetted to find and execute commands from.</param>
     /// <param name="handlers">An extensible array of <see cref="ResultHandler"/> implementations, which provide custom behavior for handling the result of commands, the return type of delegates, and the disposal of resources.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="components"/> is <see langword="null"/>.</exception>
     public ComponentProvider(ComponentTree components, params ResultHandler[] handlers)
         : this(handlers)
     {

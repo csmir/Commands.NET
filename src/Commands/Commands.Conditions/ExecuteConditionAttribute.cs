@@ -31,6 +31,7 @@ TEvaluator>() : Attribute, ICondition
         IContext context, Command command, IServiceProvider services, CancellationToken cancellationToken);
 
     /// <inheritdoc />
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="error"/> is <see langword="null"/> or empty.</exception>
     public ConditionResult Error(string error)
     {
         Assert.NotNullOrEmpty(error, nameof(error));

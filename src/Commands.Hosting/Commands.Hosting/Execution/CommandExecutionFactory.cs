@@ -11,9 +11,13 @@
 public class CommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider) : ICommandExecutionFactory
 {
     /// <inheritdoc />
+    /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="context"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the <see cref="IServiceProvider"/> cannot resolve the scoped <see cref="IExecutionScope"/> as its internal implementation. When customizing the <see cref="IExecutionScope"/> implementation, the factory must be overridden to support it.</exception>
     public virtual async Task StartExecution<TContext>(TContext context, HostedCommandOptions? options = null)
         where TContext : class, IContext
     {
+        Assert.NotNull(context, nameof(context));
+
         var scope = serviceProvider.CreateScope();
 
         var executeOptions = new ExecutionOptions()

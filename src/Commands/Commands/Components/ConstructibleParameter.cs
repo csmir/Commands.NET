@@ -3,7 +3,7 @@
 namespace Commands;
 
 /// <summary>
-///     Reveals information about a type with a defined complex constructor.
+///     A deconstructed parameter. This is the type that represents a type of which a constructor is considered part of a command signature, and is reconstructed using the discovered constructor for that type.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
 public class ConstructibleParameter : ICommandParameter, IParameterCollection
@@ -88,7 +88,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
         var parameters = ComponentUtilities.GetParameters(Activator, configuration);
 
         if (parameters.Length == 0)
-            throw new NotSupportedException($"Complex argument of type {Type} must have at least one parameter.");
+            throw new ParameterFormatException($"Complex argument of type {Type} must have at least one parameter.");
 
         (MinLength, MaxLength) = parameters.GetLength();
 

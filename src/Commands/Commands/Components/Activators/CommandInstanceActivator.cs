@@ -1,12 +1,18 @@
 ﻿namespace Commands;
 
-internal readonly struct CommandInstanceActivator(MethodInfo target) : IActivator
+internal readonly struct CommandInstanceActivator : IActivator
 {
-    public MethodBase Target
-        => target;
+    public MethodBase Target { get; }
 
     public int ContextIndex
         => -1;
+
+    public CommandInstanceActivator(MethodInfo target)
+    {
+        Assert.NotNull(target, nameof(target));
+
+        Target = target;
+    }
 
     public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options)
         where TContext : IContext

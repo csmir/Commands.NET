@@ -16,6 +16,7 @@ public static class TestUtilities
     /// <param name="contextCreationDelegate">A delegate that yields an implementation of <typeparamref name="TContext"/> based on the input value for every new test.</param>
     /// <param name="options">A collection of options that determine how every test against this command is ran.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> containing an <see cref="IEnumerable{T}"/> with the result of every test yielded by this operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="command"/> or <paramref name="contextCreationDelegate"/> is <see langword="null"/>.</exception>
     public static async ValueTask<IEnumerable<TestResult>> Test<TContext>(this Command command, Func<string, TContext> contextCreationDelegate, ExecutionOptions? options = null)
         where TContext : class, IContext
     {
@@ -31,7 +32,7 @@ public static class TestUtilities
         options ??= ExecutionOptions.Default;
 
         if (options.ExecuteAsynchronously)
-            throw new InvalidOperationException("The test execution cannot be run asynchronously. Please set the ExecuteAsynchronously option to false.");
+            options.ExecuteAsynchronously = false;
 
         var tests = command.Attributes.OfType<ITest>().ToArray();
 

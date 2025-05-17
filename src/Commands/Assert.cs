@@ -42,12 +42,14 @@ public static class Assert
     }
 
     /// <summary>
-    ///     Validates that the specified argument matches the provided validation expression.
+    ///     Validates that the specified arguments are not null, and match the provided validation expression.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void MatchExpression(IEnumerable<string> values, Regex? regex, string argumentExpression)
+    public static void NotNullOrInvalid(IEnumerable<string> values, Regex? regex, string argumentExpression)
     {
+        NotNull(values, nameof(values));
+
         if (regex == null)
             return;
 

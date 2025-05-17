@@ -8,19 +8,6 @@ internal sealed class ExecutionContext : IExecutionScope
 
     public IServiceScope Scope { get; set; } = null!;
 
-    public bool TryGetContext<T>([NotNullWhen(true)] out T context)
-        where T : IContext
-    {
-        if (Context is T t)
-        {
-            context = t;
-            return true;
-        }
-
-        context = default!;
-        return false;
-    }
-
     public void Dispose()
     {
         // Dispose of the scope if it was created.

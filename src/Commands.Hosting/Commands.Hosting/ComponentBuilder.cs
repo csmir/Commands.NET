@@ -15,6 +15,7 @@ public sealed class ComponentBuilder
     /// </remarks>
     /// <param name="configureOptions">An action that configures the creation of new components.</param>
     /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureOptions"/> is <see langword="null"/>.</exception>
     public ComponentBuilder Configure(Action<ComponentOptions> configureOptions)
     {
         Assert.NotNull(configureOptions, nameof(configureOptions));
@@ -32,6 +33,7 @@ public sealed class ComponentBuilder
     /// </remarks>
     /// <param name="handler">The instance to add.</param>
     /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="handler"/> is <see langword="null"/>.</exception>
     public ComponentBuilder AddResultHandler(ResultHandler handler)
     {
         Assert.NotNull(handler, nameof(handler));
