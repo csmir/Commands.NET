@@ -12,7 +12,7 @@ public class CommandExecutionFactory(IComponentProvider executionProvider, IServ
 {
     /// <inheritdoc />
     /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="context"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the <see cref="IServiceProvider"/> cannot resolve the scoped <see cref="IExecutionScope"/> as its internal implementation. When customizing the <see cref="IExecutionScope"/> implementation, the factory must be overridden to support it.</exception>
+    /// <exception cref="NotSupportedException">Thrown when the <see cref="IServiceProvider"/> cannot resolve the scoped <see cref="IExecutionScope"/> as its internal implementation. When customizing the <see cref="IExecutionScope"/> implementation, the factory must be overridden to support it.</exception>
     public virtual async Task StartExecution<TContext>(TContext context, HostedCommandOptions? options = null)
         where TContext : class, IContext
     {
@@ -43,7 +43,7 @@ public class CommandExecutionFactory(IComponentProvider executionProvider, IServ
     /// <param name="scope">The scope created to be configured by this method.</param>
     /// <param name="options">A set of options that change the pipeline behavior. This factory overrides a couple of settings, which are applied to the options provided to this method.</param>
     /// <returns>A configured implementation of <see cref="IExecutionScope"/> that represents the lifetime of the execution pipeline.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the <see cref="IServiceProvider"/> cannot resolve the scoped <see cref="IExecutionScope"/> as its internal implementation. When customizing the <see cref="IExecutionScope"/> implementation, the factory must be overridden to support it.</exception>
+    /// <exception cref="NotSupportedException">Thrown when the <see cref="IServiceProvider"/> cannot resolve the scoped <see cref="IExecutionScope"/> as its internal implementation. When customizing the <see cref="IExecutionScope"/> implementation, the factory must be overridden to support it.</exception>
     protected virtual IExecutionScope CreateExecutionScope<TContext>(TContext context, IServiceScope scope, ExecutionOptions options)
         where TContext : class, IContext
     {
@@ -52,7 +52,7 @@ public class CommandExecutionFactory(IComponentProvider executionProvider, IServ
         var executionScope = scope.ServiceProvider.GetRequiredService<IExecutionScope>();
 
         if (executionScope is not ExecutionContext scopeImplementation)
-            throw new InvalidOperationException($"Custom implementations of {nameof(IExecutionScope)} are not supported within the default {nameof(CommandExecutionFactory)}.");
+            throw new NotSupportedException($"Custom implementations of {nameof(IExecutionScope)} are not supported within the default {nameof(CommandExecutionFactory)}.");
 
         scopeImplementation.CancellationSource ??= token;
         scopeImplementation.Context ??= context;
