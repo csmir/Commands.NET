@@ -88,7 +88,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
         var parameters = ComponentUtilities.GetParameters(Activator, configuration);
 
         if (parameters.Length == 0)
-            throw new ParameterFormatException($"Complex argument of type {Type} must have at least one parameter.");
+            throw new ParameterFormatException($"Deconstruct-marked parameter of type {Type} must have at least one parameter in one of its public constructors.");
 
         (MinLength, MaxLength) = parameters.GetLength();
 
@@ -136,5 +136,5 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
         => $"{Type.Name}{(includeArgumentNames ? $" {Name} " : "")}({string.Join<ICommandParameter>(", ", Parameters)})";
 
     ValueTask<ParseResult> ICommandParameter.Parse(IContext context, object? value, IServiceProvider services, CancellationToken cancellationToken)
-        => throw new NotSupportedException("Complex arguments do not support parsing.");
+        => throw new NotSupportedException("Deconstruct-marked parameters do not support parsing.");
 }

@@ -155,7 +155,7 @@ public class Command : IComponent, IParameterCollection
             var parameter = parameters[i];
 
             if (parameter.IsRemainder && i != parameters.Length - 1)
-                throw new ParameterFormatException("Remainder arguments must be the last argument in the method signature.");
+                throw new ParameterFormatException($"Remainder-marked parameters must be the last parameter in the parameter list of a the command.");
         }
 
         Parameters = parameters;

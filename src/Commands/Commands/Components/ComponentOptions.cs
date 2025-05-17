@@ -88,7 +88,7 @@ public sealed class ComponentOptions
                 return EnumParser.GetOrCreate(type);
         }
 
-        throw new ParameterFormatException($"The provided component options defines no parser implementation of {type}.");
+        throw new ParameterFormatException($"The provided component options defines no parser implementation for parameter with type {type}.");
     }
 
     #endregion
