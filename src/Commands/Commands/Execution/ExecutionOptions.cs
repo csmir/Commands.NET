@@ -14,33 +14,21 @@ public sealed class ExecutionOptions
     /// <summary>
     ///     Gets or sets the services for running the request.
     /// </summary>
-    /// <remarks>
-    ///     Default: <see cref="EmptyServiceProvider.Instance" />
-    /// </remarks>
     public IServiceProvider ServiceProvider { get; set; } = EmptyServiceProvider.Instance;
 
     /// <summary>
     ///     Gets or sets a token that can be provided from a <see cref="CancellationTokenSource"/> and later used to cancel asynchronous execution
     /// </summary>
-    /// <remarks>
-    ///     Default: <see langword="default"/>
-    /// </remarks> 
     public CancellationToken CancellationToken { get; set; } = default;
 
     /// <summary>
     ///     Gets or sets whether the defined <see cref="ExecuteConditionAttribute{T}"/>'s for this execution should be ran.
     /// </summary>
-    /// <remarks>
-    ///     Default: <see langword="false"/>
-    /// </remarks> 
     public bool SkipConditions { get; set; } = false;
 
     /// <summary>
     ///     Gets or sets the separator used to join remaining arguments in a command.
     /// </summary>
-    /// <remarks>
-    ///     Default: <c>' '</c>
-    /// </remarks> 
     public char RemainderSeparator { get; set; } = ' ';
 
     /// <summary>
@@ -57,8 +45,6 @@ public sealed class ExecutionOptions
     ///         </item>
     ///     </list>
     ///     When considering thread-safety, it is important to know what this actually means.
-    ///     <br/>
-    ///     Default: <see langword="false"/>
     /// </remarks>
     public bool ExecuteAsynchronously { get; set; } = false;
 

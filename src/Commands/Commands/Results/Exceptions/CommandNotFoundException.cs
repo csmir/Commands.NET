@@ -6,5 +6,4 @@
 public sealed class CommandNotFoundException()
     : Exception
 {
-
 }
