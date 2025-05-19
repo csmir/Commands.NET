@@ -30,30 +30,30 @@ public static class ComponentUtilities
 
     #region Internals
 
-    internal static async ValueTask<ParseResult[]> Parse(IParameterCollection collection, IContext context, Arguments args, ExecutionOptions options)
+    internal static async ValueTask<ParseResult[]> Parse(IParameterCollection collection, IContext context, ExecutionOptions options)
     {
         var results = new ParseResult[collection.Parameters.Length];
 
         for (int i = 0; i < collection.Parameters.Length; i++)
         {
-            var argument = collection.Parameters[i];
+            var param = collection.Parameters[i];
 
-            if (argument.IsRemainder)
+            if (param.IsRemainder)
             {
-                results[i] = await argument.Parse(context, argument.IsCollection ? args.TakeRemaining(argument.Name!) : args.TakeRemaining(argument.Name!, options.RemainderSeparator), options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
+                results[i] = await param.Parse(context, param.IsCollection ? context.Arguments.TakeRemaining(param.Name!) : context.Arguments.TakeRemaining(param.Name!, options.RemainderSeparator), options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
 
                 break;
             }
 
-            if (argument is ConstructibleParameter complexParameter)
+            if (param is ConstructibleParameter constructible)
             {
-                var result = await Parse(complexParameter, context, args, options).ConfigureAwait(false);
+                var result = await Parse(constructible, context, options).ConfigureAwait(false);
 
                 if (result.All(x => x.Success))
                 {
                     try
                     {
-                        results[i] = ParseResult.FromSuccess(complexParameter.Activator.Invoke(context, null, [.. result.Select(x => x.Value)], options));
+                        results[i] = ParseResult.FromSuccess(constructible.Activator.Invoke(context, null, [.. result.Select(x => x.Value)], options));
                     }
                     catch (Exception ex)
                     {
@@ -63,18 +63,18 @@ public static class ComponentUtilities
                     continue;
                 }
 
-                if (complexParameter.IsOptional)
+                if (constructible.IsOptional)
                     results[i] = ParseResult.FromSuccess(Type.Missing);
 
                 continue;
             }
 
-            if (args.TryGetValue(argument.Name!, out var value))
-                results[i] = await argument.Parse(context, value, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
-            else if (argument.IsOptional)
+            if (context.Arguments.TryGetValue(param.Name!, out var value))
+                results[i] = await param.Parse(context, value, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
+            else if (param.IsOptional)
                 results[i] = ParseResult.FromSuccess(Type.Missing);
             else
-                results[i] = ParseResult.FromError(new ArgumentNullException(argument.Name));
+                results[i] = ParseResult.FromError(new ArgumentNullException(param.Name));
         }
 
         return results;

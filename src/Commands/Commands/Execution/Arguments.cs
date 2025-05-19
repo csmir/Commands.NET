@@ -17,8 +17,8 @@ public struct Arguments
 
     private int _index = 0;
 
-    private readonly string[] _unnamedArgs;
-    private readonly Dictionary<string, object?> _namedArgs;
+    private readonly string[] _keys;
+    private readonly KeyValuePair<string, object?>[] _flaggedKeys;
 
     internal int RemainingLength { get; private set; }
 
@@ -26,7 +26,7 @@ public struct Arguments
     ///     Gets the number of keys present in the dictionary.
     /// </summary>
     public readonly int Count
-        => _unnamedArgs.Length + _namedArgs.Count;
+        => _keys.Length + _flaggedKeys.Length;
 
     /// <summary>
     ///     Gets the value from the set of arguments, known by the provided <paramref name="key"/>.
@@ -38,19 +38,19 @@ public struct Arguments
     {
         get
         {
-            if (_namedArgs.TryGetValue(key, out var value))
+            if (TryGetValueInternal(key, out var value))
                 return value;
 
-            if (_unnamedArgs.Contains(key, StringComparer.OrdinalIgnoreCase))
+            if (_keys.Contains(key))
                 return null;
 
             throw new KeyNotFoundException();
         }
     }
 
-    /// <inheritdoc cref="Arguments(string, char[], StringComparer?)"/>
-    public Arguments(string? input, StringComparer? comparer = null)
-        : this(input, [' '], comparer) { }
+    /// <inheritdoc cref="Arguments(string, char[])"/>
+    public Arguments(string? input)
+        : this(input, [' ']) { }
 
     /// <summary>
     ///     Creates a new <see cref="Arguments"/> from a string input.
@@ -75,45 +75,48 @@ public struct Arguments
     /// </remarks>
     /// <param name="input">The input to parse into a set of arguments.</param>
     /// <param name="separators">The characters to use as separators when splitting the input.</param>
-    /// <param name="comparer">The comparer to use when comparing argument names.</param>
     /// <returns>
     ///     An array of arguments that can be used to search for a command or parse into a delegate.
     /// </returns>
-    public Arguments(string? input, char[] separators, StringComparer? comparer = null)
-        : this(input?.Split(separators) ?? [], comparer) { }
+    public Arguments(string? input, char[] separators)
+        : this(input?.Split(separators) ?? []) { }
 
-    /// <inheritdoc cref="Arguments(string, char[], StringComparer?)"/>
-    public Arguments(string[] input, StringComparer? comparer = null)
-        : this(ReadInternal(input), comparer) { }
+    /// <inheritdoc cref="Arguments(string, char[])"/>
+    public Arguments(string[] input)
+        : this(ReadInternal(input)) { }
 
     /// <summary>
     ///     Creates a new <see cref="Arguments"/> from an enumerable of named arguments.
     /// </summary>
     /// <param name="args">The range of named arguments to enumerate in this set.</param>
-    /// <param name="comparer">The comparer to evaluate keys in the inner dictionary.</param>
-    public Arguments(IEnumerable<KeyValuePair<string, object?>> args, StringComparer? comparer)
+    public Arguments(IEnumerable<KeyValuePair<string, object?>> args)
     {
-        _namedArgs = new(comparer);
+        //_namedArgs = new(comparer);
 
-        var unnamedFill = Array.Empty<string>();
+        var keySet = Array.Empty<string>();
+        var flagSet = Array.Empty<KeyValuePair<string, object?>>();
 
         foreach (var kvp in args)
         {
             if (kvp.Value == null)
             {
-                Array.Resize(ref unnamedFill, unnamedFill.Length + 1);
+                Array.Resize(ref keySet, keySet.Length + 1);
 
-                unnamedFill[unnamedFill.Length - 1] = kvp.Key;
+                keySet[keySet.Length - 1] = kvp.Key;
             }
             else
-                _namedArgs[kvp.Key] = kvp.Value;
+            {
+                Array.Resize(ref flagSet, flagSet.Length + 1);
+
+                flagSet[flagSet.Length - 1] = kvp;
+            }
         }
 
-        _unnamedArgs = unnamedFill;
-        RemainingLength = _unnamedArgs.Length + _namedArgs.Count;
-    }
+        _keys = keySet;
+        _flaggedKeys = flagSet;
 
-    #region Internals
+        RemainingLength = _keys.Length + _flaggedKeys.Length;
+    }
 
 #if NET8_0_OR_GREATER
     internal bool TryGetValue(string parameterName, [NotNullWhen(true)] out object? value)
@@ -121,13 +124,13 @@ public struct Arguments
     internal bool TryGetValue(string parameterName, out object? value)
 #endif
     {
-        if (_namedArgs.TryGetValue(parameterName, out value!))
+        if (TryGetValueInternal(parameterName, out value!))
             return true;
 
-        if (_index >= _unnamedArgs.Length)
+        if (_index >= _keys.Length)
             return false;
 
-        value = _unnamedArgs[_index++];
+        value = _keys[_index++];
 
         return true;
     }
@@ -138,9 +141,9 @@ public struct Arguments
     internal readonly bool TryGetElementAt(int index, out string? value)
 #endif
     {
-        if (index < _unnamedArgs.Length)
+        if (index < _keys.Length)
         {
-            value = _unnamedArgs[index];
+            value = _keys[index];
             return true;
         }
 
@@ -157,16 +160,33 @@ public struct Arguments
 
     internal readonly IEnumerable<object> TakeRemaining(string parameterName)
     {
-        if (_namedArgs.TryGetValue(parameterName, out var value))
-            return [value!, .. _unnamedArgs.Skip(_index)];
+        if (TryGetValueInternal(parameterName, out var value))
+            return [value!, .. _keys.Skip(_index)];
 
-        return _unnamedArgs.Skip(_index);
+        return _keys.Skip(_index);
     }
 
-    internal void SetParseIndex(int index)
+    internal void SetIndex(int index)
     {
         _index = index;
         RemainingLength -= index;
+    }
+
+    #region Internals
+
+    private readonly bool TryGetValueInternal(string parameterName, out object? value)
+    {
+        foreach (var kvp in _flaggedKeys)
+        {
+            if (kvp.Key == parameterName)
+            {
+                value = kvp.Value;
+                return true;
+            }
+        }
+
+        value = null;
+        return false;
     }
 
     private static IEnumerable<KeyValuePair<string, object?>> ReadInternal(string[] input)
