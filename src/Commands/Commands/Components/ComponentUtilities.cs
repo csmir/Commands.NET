@@ -1,6 +1,5 @@
 ﻿using Commands.Parsing;
 using System.ComponentModel;
-using System.Text.Json.Serialization;
 
 namespace Commands;
 
@@ -130,7 +129,7 @@ public static class ComponentUtilities
 
         return results;
     }
-    9
+
     internal static object?[] Resolve(this DependencyParameter[] dependencies, MemberInfo target, ExecutionOptions options)
     {
         if (dependencies.Length == 0)

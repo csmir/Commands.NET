@@ -29,6 +29,6 @@ internal readonly struct CommandModuleActivator : IDependencyActivator<CommandMo
         Type = type;
     }
 
-    public CommandModule Activate(ExecutionOptions options) 
+    public CommandModule Activate(ExecutionOptions options)
         => (CommandModule)_ctor.Invoke(Dependencies.Resolve(_ctor, options));
 }

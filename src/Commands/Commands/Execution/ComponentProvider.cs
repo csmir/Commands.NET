@@ -95,7 +95,7 @@ public class ComponentProvider : IComponentProvider
         }
 
         result ??= new SearchResult(new CommandNotFoundException());
-        
+
         foreach (var handler in _handlers)
             await handler.HandleResult(context, result, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
     }

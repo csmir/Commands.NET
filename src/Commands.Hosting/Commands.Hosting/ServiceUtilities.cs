@@ -1,5 +1,4 @@
-﻿using Commands.Testing;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Runtime.CompilerServices;
 
 namespace Commands.Hosting;

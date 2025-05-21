@@ -14,7 +14,7 @@ internal readonly struct ConstructibleParameterActivator(
     public int ContextIndex
         => -1;
 
-    public object? Invoke<TContext>(TContext context, Command? command, object?[]? args, ExecutionOptions options) 
+    public object? Invoke<TContext>(TContext context, Command? command, object?[]? args, ExecutionOptions options)
         where TContext : IContext
         => _ctor.Invoke(args);
 }

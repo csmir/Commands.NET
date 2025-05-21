@@ -12,30 +12,30 @@ internal sealed partial class TimeSpanParser : TypeParser<TimeSpan>
     {
         _callback = new Dictionary<string, Func<string, TimeSpan>>
         {
-            ["second"]  = Seconds,
+            ["second"] = Seconds,
             ["seconds"] = Seconds,
-            ["sec"]     = Seconds,
-            ["s"]       = Seconds,
+            ["sec"] = Seconds,
+            ["s"] = Seconds,
 
-            ["minute"]  = Minutes,
+            ["minute"] = Minutes,
             ["minutes"] = Minutes,
-            ["min"]     = Minutes,
-            ["m"]       = Minutes,
+            ["min"] = Minutes,
+            ["m"] = Minutes,
 
-            ["hour"]    = Hours,
-            ["hours"]   = Hours,
-            ["h"]       = Hours,
+            ["hour"] = Hours,
+            ["hours"] = Hours,
+            ["h"] = Hours,
 
-            ["day"]     = Days,
-            ["days"]    = Days,
-            ["d"]       = Days,
+            ["day"] = Days,
+            ["days"] = Days,
+            ["d"] = Days,
 
-            ["week"]    = Weeks,
-            ["weeks"]   = Weeks,
-            ["w"]       = Weeks,
+            ["week"] = Weeks,
+            ["weeks"] = Weeks,
+            ["w"] = Weeks,
 
-            ["month"]   = Months,
-            ["months"]  = Months
+            ["month"] = Months,
+            ["months"] = Months
         };
     }
 
