@@ -3,7 +3,7 @@
 namespace Commands;
 
 /// <summary>
-///     Represents an exception that is thrown when a parser fails to parse input.
+///     Represents an exception that is created when a parser fails to parse input.
 /// </summary>
 public sealed class ParserException(IParser parser, string reason)
     : Exception(reason)

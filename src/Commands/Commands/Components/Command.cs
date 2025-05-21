@@ -97,7 +97,7 @@ public class Command : IComponent, IParameterCollection
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
     /// <exception cref="ArgumentNullException">The provided delegate or conditions are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">The provided <paramref name="names"/> is <see langword="null"/> or does not match the <see cref="ComponentOptions.NameValidation"/> if any.</exception>
-    /// <exception cref="ParameterFormatException">A <see cref="RemainderAttribute"/> is not placed on the last parameter of the target, <see cref="DeconstructAttribute"/> is defined on a non-deconstructible parameter type, or no <see cref="IParser"/> is available to represent a parameter type.</exception>
+    /// <exception cref="ComponentFormatException">A <see cref="RemainderAttribute"/> is not placed on the last parameter of the target, <see cref="DeconstructAttribute"/> is defined on a non-deconstructible parameter type, or no <see cref="IParser"/> is available to represent a parameter type.</exception>
     public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, ComponentOptions? options = null)
         : this(new CommandStaticActivator(executionDelegate?.Method!, executionDelegate?.Target), options ??= ComponentOptions.Default)
     {
@@ -119,7 +119,7 @@ public class Command : IComponent, IParameterCollection
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
     /// <exception cref="ArgumentNullException">The provided method is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">The provided <paramref name="executionMethod"/> defines names, but those names do not match the provided <see cref="ComponentOptions.NameValidation"/>.</exception>
-    /// <exception cref="ParameterFormatException">A <see cref="RemainderAttribute"/> is not placed on the last parameter of the target, <see cref="DeconstructAttribute"/> is defined on a non-deconstructible parameter type, or no <see cref="IParser"/> is available to represent a parameter type.</exception>
+    /// <exception cref="ComponentFormatException">A <see cref="RemainderAttribute"/> is not placed on the last parameter of the target, <see cref="DeconstructAttribute"/> is defined on a non-deconstructible parameter type, or no <see cref="IParser"/> is available to represent a parameter type.</exception>
     public Command(MethodInfo executionMethod, CommandGroup? parent = null, ComponentOptions? options = null)
         : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ??= ComponentOptions.Default)
     {
@@ -155,7 +155,7 @@ public class Command : IComponent, IParameterCollection
             var parameter = parameters[i];
 
             if (parameter.IsRemainder && i != parameters.Length - 1)
-                throw new ParameterFormatException($"Remainder-marked parameters must be the last parameter in the parameter list of a the command.");
+                throw new ComponentFormatException($"Remainder-marked parameters must be the last parameter in the parameter list of a the command.");
         }
 
         Parameters = parameters;
@@ -199,9 +199,9 @@ public class Command : IComponent, IParameterCollection
 
         if (!options.SkipConditions)
         {
-            foreach (var condition in Evaluators)
+            foreach (var evaluator in Evaluators)
             {
-                var checkResult = await condition.Evaluate(context, this, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
+                var checkResult = await evaluator.Evaluate(context, this, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
 
                 if (!checkResult.Success)
                     return ConditionResult.FromError(new CommandEvaluationException(this, checkResult.Exception));

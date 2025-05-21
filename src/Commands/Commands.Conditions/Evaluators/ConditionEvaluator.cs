@@ -20,6 +20,9 @@ public abstract class ConditionEvaluator
     /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
     public abstract ValueTask<ConditionResult> Evaluate(IContext context, Command command, IServiceProvider services, CancellationToken cancellationToken);
 
+#if NET8_0_OR_GREATER
+    [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "IGrouping<>.Key is a value of ICondition.EvaluatorType, and is marked as dynamically accessible, allowing it to be accessible to the activator.")]
+#endif
     internal static ConditionEvaluator[] CreateEvaluators(IEnumerable<ICondition> conditions)
     {
         if (!conditions.Any())
@@ -33,14 +36,7 @@ public abstract class ConditionEvaluator
 
         foreach (var group in evaluatorGroups)
         {
-            // Unable to access group.Key in this context as IGrouping does not have dynamic access to required type info.
-            // Rather, it does, but the compiler doesn't know it does.
-
-#if NET8_0_OR_GREATER
-            var instance = (ConditionEvaluator)Activator.CreateInstance(group.First().EvaluatorType)!;
-#else
-            var instance = (ConditionEvaluator)Activator.CreateInstance(group.Key);
-#endif
+            var instance = (ConditionEvaluator)Activator.CreateInstance(group.Key)!;
             instance.Conditions = [.. group];
             arr[i++] = instance;
         }

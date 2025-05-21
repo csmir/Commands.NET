@@ -89,7 +89,7 @@ public class CommandGroup : ComponentSet, IComponent
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
     /// <exception cref="ArgumentNullException">The provided <paramref name="type"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">The provided <paramref name="type"/> defines names, but those names do not match the provided <see cref="ComponentOptions.NameValidation"/>.</exception>
-    /// <exception cref="InvalidCastException">The provided type is not an implementation of <see cref="CommandModule"/>.</exception>
+    /// <exception cref="ComponentFormatException">The provided type is not an implementation of <see cref="CommandModule"/>.</exception>
     public CommandGroup(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
@@ -101,7 +101,7 @@ public class CommandGroup : ComponentSet, IComponent
         Assert.NotNull(type, nameof(type));
 
         if (!typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters)
-            throw new InvalidCastException($"The provided type is not an implementation of {nameof(CommandModule)}.");
+            throw new ComponentFormatException($"The provided type is not an implementation of {nameof(CommandModule)}.");
 
         Parent = parent;
 

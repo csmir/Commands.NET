@@ -1,7 +1,7 @@
 ﻿namespace Commands;
 
 /// <summary>
-///     Represents an exception that is thrown when a command route is incomplete.
+///     Represents an exception that is created when a command route is incomplete.
 /// </summary>
 public sealed class CommandRouteIncompleteException(IComponent discoveredComponent)
     : Exception

@@ -26,6 +26,7 @@ public interface IActivator
     /// <param name="args">The converted arguments to invoke the command with.</param>
     /// <param name="options">The options that determine the execution pattern of this invoker.</param>
     /// <returns>The result of the invocation. This result is <see langword="null"/> if the method signature returns void.</returns>
+    /// <exception cref="ComponentFormatException">Thrown when the service provider could not resolve the service signature, being a set of services defined on the member or module.</exception>
     public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options)
         where TContext : IContext;
 }

@@ -1,7 +1,7 @@
 ﻿namespace Commands;
 
 /// <summary>
-///     Represents an exception that is thrown when provided arguments are out of range of a command.
+///     Represents an exception that is created when provided arguments are out of range of a command.
 /// </summary>
 public sealed class CommandOutOfRangeException(Command command, int argsLength)
     : Exception

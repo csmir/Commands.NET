@@ -88,7 +88,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
         var parameters = ComponentUtilities.GetParameters(Activator, configuration);
 
         if (parameters.Length == 0)
-            throw new ParameterFormatException($"Deconstruct-marked parameter of type {Type} must have at least one parameter in one of its public constructors.");
+            throw new ComponentFormatException($"Deconstruct-marked parameter of type {Type} must have at least one parameter in one of its public constructors.");
 
         (MinLength, MaxLength) = parameters.GetLength();
 

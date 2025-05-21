@@ -1,5 +1,6 @@
 ﻿using Commands.Parsing;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace Commands;
 
@@ -75,7 +76,7 @@ public static class ComponentUtilities
         Assert.NotNull(types, nameof(types));
         Assert.NotNull(options, nameof(options));
 
-        return GetComponents(options, types.Select(x => new DynamicType(x)), parent, isNested);
+        return GetComponents(options, types.Select(x => new TypeWrapper(x)), parent, isNested);
     }
 
     #region Internals
@@ -129,7 +130,7 @@ public static class ComponentUtilities
 
         return results;
     }
-
+    9
     internal static object?[] Resolve(this DependencyParameter[] dependencies, MemberInfo target, ExecutionOptions options)
     {
         if (dependencies.Length == 0)
@@ -159,13 +160,13 @@ public static class ComponentUtilities
                 resolvedValues[i] = Type.Missing;
 
             else
-                throw new KeyNotFoundException($"The method or module {target.Name} defines unknown service type {dependency.Type}.");
+                throw new ComponentFormatException($"The method or module {target.Name} defines unknown service type {dependency.Type}.");
         }
 
         return resolvedValues;
     }
 
-    internal static IEnumerable<CommandGroup> GetComponents(ComponentOptions configuration, IEnumerable<DynamicType> types, CommandGroup? parent, bool isNested)
+    internal static IEnumerable<CommandGroup> GetComponents(ComponentOptions configuration, IEnumerable<TypeWrapper> types, CommandGroup? parent, bool isNested)
     {
         Assert.NotNull(types, nameof(types));
 
@@ -182,7 +183,7 @@ public static class ComponentUtilities
             {
                 group = new CommandGroup(type, parent, configuration);
             }
-            catch
+            catch (ComponentFormatException)
             {
                 // This will throw if the type does not implement CommandModule. We can safely ignore this.
                 continue;
@@ -262,16 +263,16 @@ public static class ComponentUtilities
 
         foreach (var parameter in arguments)
         {
-            if (parameter is ConstructibleParameter complexArgument)
+            if (parameter is ConstructibleParameter constructibleParameter)
             {
-                maxLength += complexArgument.MaxLength;
-                minLength += complexArgument.MinLength;
+                maxLength += constructibleParameter.MaxLength;
+                minLength += constructibleParameter.MinLength;
             }
 
-            if (parameter is CommandParameter defaultArgument)
+            if (parameter is CommandParameter defaultParameter)
             {
                 maxLength++;
-                if (!defaultArgument.IsOptional)
+                if (!defaultParameter.IsOptional)
                     minLength++;
             }
         }
@@ -296,7 +297,7 @@ public static class ComponentUtilities
             return ctor;
         }
 
-        throw new InvalidOperationException($"{type} has no publically available constructors to use in creating instances of this type.");
+        throw new ComponentFormatException($"{type} has no publically available constructors to use in creating instances of this type.");
     }
 
     internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)

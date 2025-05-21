@@ -14,7 +14,10 @@ public interface IResult
     public Exception? Exception { get; }
 
     /// <summary>
-    ///     Gets the result of the preceding operation. Returns <see langword="true"/> if the operation was successful, <see langword="false"/> otherwise.
+    ///     Gets the result of the preceding operation.
     /// </summary>
+    /// <remarks>
+    ///     Will be <see langword="true"/> if the operation was successful, <see langword="false"/> otherwise.
+    /// </remarks>
     public bool Success { get; }
 }

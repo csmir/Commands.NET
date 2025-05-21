@@ -3,7 +3,7 @@
 namespace Commands;
 
 /// <summary>
-///     Represents an exception that is thrown when a condition fails to evaluate.
+///     Represents an exception that is created when a condition fails to evaluate.
 /// </summary>
 public sealed class ConditionException(ICondition condition, string reason)
     : Exception(reason)
