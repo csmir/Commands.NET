@@ -337,5 +337,32 @@ public abstract class ComponentSet : IComponentSet
         }
     }
 
+
+    // This method is used to add a component to the array of components with low allocation overhead.
+    internal static void Yield(ref IComponent[] array, IComponent component)
+    {
+        var newArray = new IComponent[array.Length + 1];
+
+        Array.Copy(array, newArray, array.Length);
+
+        newArray[array.Length] = component;
+
+        array = newArray;
+    }
+
+    // This method is used to add a range of components to the array of components with low allocation overhead.
+    internal static void Yield(ref IComponent[] array, IComponent[] components)
+    {
+        var newArray = new IComponent[array.Length + components.Length];
+
+        Array.Copy(array, newArray, array.Length);
+
+        var i = array.Length;
+
+        foreach (var component in components)
+            newArray[i++] = component;
+
+        array = newArray;
+    }
     #endregion
 }

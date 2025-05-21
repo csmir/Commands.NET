@@ -38,10 +38,9 @@ public sealed class ComponentTree : ComponentSet
                 continue;
 
             if (enumerator.Current is CommandGroup group)
-                CollectionUtilities.AddRange(ref discovered, group.Find(args));
-
+                Yield(ref discovered, group.Find(args));
             else
-                CollectionUtilities.Add(ref discovered, enumerator.Current);
+                Yield(ref discovered, enumerator.Current);
         }
 
         return discovered;

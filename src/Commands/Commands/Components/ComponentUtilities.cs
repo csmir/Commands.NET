@@ -9,6 +9,56 @@ namespace Commands;
 public static class ComponentUtilities
 {
     /// <summary>
+    ///     Gets the first entry of the specified type, or <see langword="null"/> if it does not exist.
+    /// </summary>
+    /// <typeparam name="T">The type to filter.</typeparam>
+    /// <param name="values"></param>
+    /// <returns>The first occurrence of <typeparamref name="T"/> in the collection if any exists, otherwise <see langword="null"/>.</returns>
+    public static T? FirstOrDefault<T>(this IEnumerable values)
+    {
+        foreach (var entry in values)
+        {
+            if (entry is T tEntry)
+                return tEntry;
+        }
+
+        return default;
+    }
+
+    /// <summary>
+    ///     Checks if the collection contains an instance of the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type to filter.</typeparam>
+    /// <param name="values"></param>
+    /// <returns><see langword="true"/> if a any <typeparamref name="T"/> was found, otherwise <see langword="false"/>.</returns>
+    public static bool Contains<T>(this IEnumerable values)
+    {
+        foreach (var entry in values)
+        {
+            if (entry is T)
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    ///     Gets all instances of the specified type, matching the provided predicate.
+    /// </summary>
+    /// <typeparam name="T">The type to filter.</typeparam>
+    /// <param name="values"></param>
+    /// <param name="predicate">The predicate which determines whether the component can be returned or not.</param>
+    /// <returns>A new <see cref="IEnumerable{T}"/> containing all legible values of <typeparamref name="T"/> in the initial collection.</returns>
+    public static IEnumerable<T> OfType<T>(this IEnumerable values, Predicate<T> predicate)
+    {
+        foreach (var entry in values)
+        {
+            if (entry is T tEntry && predicate(tEntry))
+                yield return tEntry;
+        }
+    }
+
+    /// <summary>
     ///     Gets an <see cref="IEnumerable{T}"/> containing all implementations of <see cref="CommandModule"/> from the provided types.
     /// </summary>
     /// <param name="types">A collection of types to create modules from.</param>
