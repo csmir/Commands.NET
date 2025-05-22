@@ -17,6 +17,8 @@ namespace Commands;
 [DebuggerDisplay("{ToString()}")]
 public class Command : IComponent, IParameterCollection
 {
+    private bool _bound;
+
     /// <summary>
     ///     Gets all evaluations that this component should do during the execution process, determined by a set of defined <see cref="ICondition"/>'s pointing at the component.
     /// </summary>
@@ -226,14 +228,15 @@ public class Command : IComponent, IParameterCollection
     {
         var sb = new StringBuilder();
 
-        if (Parent != null && Parent.Name != null)
+        if (Parent?.Name != null)
         {
             sb.Append(Parent.GetFullName());
 
             if (Name != null)
+            {
                 sb.Append(' ');
-
-            sb.Append(Name);
+                sb.Append(Name);
+            }
         }
         else if (Name != null)
             sb.Append(Name);
@@ -303,10 +306,27 @@ public class Command : IComponent, IParameterCollection
         return sb.ToString();
     }
 
-    // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
-    void IComponent.Bind(CommandGroup parent)
-        => Parent ??= parent;
+    #region Internals
 
     int IComparable.CompareTo(object? obj)
         => obj is IComponent component ? CompareTo(component) : -1;
+
+    void IComponent.Bind(ComponentSet parent)
+    {
+        if (_bound)
+            throw new InvalidOperationException($"{GetFullName()} is already bound to a {(Parent != null ? nameof(CommandGroup) : nameof(ComponentSet))}. Call {nameof(IComponentSet.Remove)} to remove -and unbind- this component and register it on the target set.");
+
+        if (parent is CommandGroup group)
+            Parent = group;
+
+        _bound = true;
+    }
+
+    void IComponent.Unbind()
+    {
+        _bound = false;
+        Parent = null;
+    }
+
+    #endregion
 }

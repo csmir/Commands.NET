@@ -7,7 +7,7 @@ public abstract class ComponentSet : IComponentSet
 {
     private IComponent[] _items = [];
 
-    private Action<IEnumerable<IComponent>, bool>? _mutateParent;
+    internal Action<IEnumerable<IComponent>, bool>? _mutateTree;
 
     /// <inheritdoc />
     public int Count
@@ -115,7 +115,7 @@ public abstract class ComponentSet : IComponentSet
 
                 Array.Sort(copy);
 
-                _mutateParent?.Invoke(components, false);
+                _mutateTree?.Invoke(components, false);
                 _items = copy;
             }
 
@@ -144,12 +144,18 @@ public abstract class ComponentSet : IComponentSet
             {
                 Assert.NotNull(component, nameof(component));
 
-                mutations += copy.Remove(component) ? 1 : 0;
+                var output = copy.Remove(component);
+
+                if (output)
+                {
+                    mutations += 1;
+                    component.Unbind();
+                }
             }
 
             if (mutations > 0)
             {
-                _mutateParent?.Invoke(components, true);
+                _mutateTree?.Invoke(components, true);
                 _items = [.. copy];
             }
 
@@ -254,9 +260,6 @@ public abstract class ComponentSet : IComponentSet
                         throw new InvalidOperationException($"{nameof(Command)} instances without names can only be added to a {nameof(CommandGroup)}.");
 
                     discovered.AddRange(FilterComponents(group._items));
-
-                    // By binding a top-level group without a name to the manager, the manager will be notified of any changes made so it can update its state.
-                    group.Bind(rootSet);
                 }
                 else
                     discovered.Add(component);
@@ -275,27 +278,13 @@ public abstract class ComponentSet : IComponentSet
                 }
                 else
                     discovered.Add(component);
-
-                // We always ensure the parent of the component is bound when it is added, ensuring that the component is able to access global state.
-                component.Bind(collection);
             }
+
+            component.Bind(this);
         }
 
         return discovered;
     }
-
-    // Mutates the parent collection from the child collection, if bind is called by the parent collection.
-    private void MutateFromChild(IEnumerable<IComponent> components, bool removing)
-    {
-        if (removing)
-            RemoveRange(components);
-        else
-            AddRange(components);
-    }
-
-    // Binds the parent collection to the child collection.
-    private void Bind(ComponentSet collection)
-        => _mutateParent = collection.MutateFromChild;
 
     IEnumerator IEnumerable.GetEnumerator()
         => GetEnumerator();
@@ -337,7 +326,6 @@ public abstract class ComponentSet : IComponentSet
         }
     }
 
-
     // This method is used to add a component to the array of components with low allocation overhead.
     internal static void Yield(ref IComponent[] array, IComponent component)
     {
@@ -364,5 +352,6 @@ public abstract class ComponentSet : IComponentSet
 
         array = newArray;
     }
+
     #endregion
 }

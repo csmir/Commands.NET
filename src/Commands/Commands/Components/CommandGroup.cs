@@ -31,6 +31,8 @@ where T : CommandModule
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
 public class CommandGroup : ComponentSet, IComponent
 {
+    private bool _bound;
+
     /// <inheritdoc />
     public CommandGroup? Parent { get; private set; }
 
@@ -48,7 +50,7 @@ public class CommandGroup : ComponentSet, IComponent
 
     /// <inheritdoc />
     public string? Name
-        => Names.Length > 0 ? Names[0] : null;
+        => IsSearchable ? Names[0] : null;
 
     /// <inheritdoc />
     public bool IsSearchable
@@ -60,7 +62,7 @@ public class CommandGroup : ComponentSet, IComponent
 
     /// <inheritdoc />
     public int Position
-        => (Parent?.Position ?? 0) + (Name == null ? 0 : 1);
+        => (Parent?.Position ?? 0) + (IsSearchable ? 1 : 0);
 
     /// <inheritdoc cref="CommandGroup(string[], ComponentOptions?)"/>
     public CommandGroup(params string[] names)
@@ -100,7 +102,7 @@ public class CommandGroup : ComponentSet, IComponent
 
         Assert.NotNull(type, nameof(type));
 
-        if (!typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters)
+        if (!typeof(CommandModule).IsAssignableFrom(type) || !type.IsAbstract || !type.ContainsGenericParameters)
             throw new ComponentFormatException($"The provided type is not an implementation of {nameof(CommandModule)}.");
 
         Parent = parent;
@@ -143,7 +145,7 @@ public class CommandGroup : ComponentSet, IComponent
     {
         var sb = new StringBuilder();
 
-        if (Parent != null && Parent.Name != null)
+        if (Parent?.Name != null)
         {
             sb.Append(Parent.GetFullName());
 
@@ -169,7 +171,7 @@ public class CommandGroup : ComponentSet, IComponent
         var enumerator = GetSpanEnumerator();
 
         while (enumerator.MoveNext())
-            score += enumerator.Current!.GetScore();
+            score += enumerator.Current.GetScore();
 
         if (Name != Activator?.Type?.Name)
             score += 1.0f;
@@ -222,10 +224,7 @@ public class CommandGroup : ComponentSet, IComponent
 
         // When type is null this group has been created manually.
         // We can only assume it is a group, as it does not have a type.
-        if (Activator == null)
-            sb.Append("Group");
-        else
-            sb.Append(Activator.Type?.Name);
+        sb.Append(Activator?.Type?.Name ?? "Group");
 
         if (Name != null)
         {
@@ -237,10 +236,38 @@ public class CommandGroup : ComponentSet, IComponent
         return sb.ToString();
     }
 
-    // When a command is not yet bound to a parent, it can be bound when it is added to a CommandGroup. If it is added to a ComponentManager, it will not be bound.
-    void IComponent.Bind(CommandGroup parent)
-        => Parent ??= parent;
+    #region Internals
 
     int IComparable.CompareTo(object? obj)
         => obj is IComponent component ? CompareTo(component) : -1;
+
+    void IComponent.Bind(ComponentSet parent)
+    {
+        if (_bound)
+            throw new InvalidOperationException($"{GetFullName()} is already bound to a {(Parent != null ? nameof(CommandGroup) : nameof(ComponentSet))}. Call {nameof(IComponentSet.Remove)} to remove -and unbind- this component and register it on the target set.");
+
+        if (parent is CommandGroup group)
+            Parent = group;
+        
+        if (parent is ComponentTree tree)
+            _mutateTree = (components, removing) =>
+            {
+                if (removing)
+                    tree.RemoveRange(components);
+                else
+                    tree.AddRange(components);
+            };
+
+        _bound = true;
+    }
+
+    void IComponent.Unbind()
+    {
+        _mutateTree = null;
+        Parent = null;
+
+        _bound = false;
+    }
+
+    #endregion
 }
