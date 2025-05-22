@@ -314,7 +314,7 @@ public class Command : IComponent, IParameterCollection
     void IComponent.Bind(ComponentSet parent)
     {
         if (_bound)
-            throw new InvalidOperationException($"{GetFullName()} is already bound to a {(Parent != null ? nameof(CommandGroup) : nameof(ComponentSet))}. Call {nameof(IComponentSet.Remove)} to remove -and unbind- this component and register it on the target set.");
+            throw new ComponentFormatException($"{this} is already bound to a {(Parent != null ? nameof(CommandGroup) : nameof(ComponentSet))}. Remove this component from the parent set before adding it to another.");
 
         if (parent is CommandGroup group)
             Parent = group;
