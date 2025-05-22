@@ -89,15 +89,21 @@ public abstract class ComponentSet : IComponentSet
         return sum;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Adds a component to the current set.
+    /// </summary>
+    /// <param name="component">The component to be added to the set.</param>
+    /// <exception cref="ComponentFormatException">Thrown when the added <paramref name="component"/> is already added to another <see cref="ComponentSet"/>.</exception>
     public void Add(IComponent component)
         => AddRange([component]);
 
     /// <inheritdoc />
+    /// <exception cref="ComponentFormatException">Thrown when the added <paramref name="components"/> are already added to another <see cref="ComponentSet"/>.</exception>
     public int AddRange(params IComponent[] components)
         => AddRange((IEnumerable<IComponent>)components);
 
     /// <inheritdoc />
+    /// <exception cref="ComponentFormatException">Thrown when the added <paramref name="components"/> are already added to another <see cref="ComponentSet"/>.</exception>
     public int AddRange(IEnumerable<IComponent> components)
     {
         lock (_items)
@@ -123,7 +129,12 @@ public abstract class ComponentSet : IComponentSet
         }
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Removes a component from the current set.
+    /// </summary>
+    /// <returns>
+    ///     <see langword="true"/> if the component was removed; otherwise <see langword="false"/>.
+    /// </returns>
     public bool Remove(IComponent component)
         => RemoveRange([component]) > 0;
 
