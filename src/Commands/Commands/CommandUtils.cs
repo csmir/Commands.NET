@@ -6,7 +6,8 @@ namespace Commands;
 /// <summary>
 ///     Provides a set of helper functions for working with components.
 /// </summary>
-public static class ComponentUtilities
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class CommandUtils
 {
     /// <summary>
     ///     Gets the first entry of the specified type, or <see langword="null"/> if it does not exist.
@@ -163,6 +164,31 @@ public static class ComponentUtilities
         }
 
         return resolvedValues;
+    }
+
+    internal static void CopyTo(ref IComponent[] array, IComponent component)
+    {
+        var newArray = new IComponent[array.Length + 1];
+
+        Array.Copy(array, newArray, array.Length);
+
+        newArray[array.Length] = component;
+
+        array = newArray;
+    }
+
+    internal static void CopyTo(ref IComponent[] array, IComponent[] components)
+    {
+        var newArray = new IComponent[array.Length + components.Length];
+
+        Array.Copy(array, newArray, array.Length);
+
+        var i = array.Length;
+
+        foreach (var component in components)
+            newArray[i++] = component;
+
+        array = newArray;
     }
 
     internal static IEnumerable<CommandGroup> GetComponents(ComponentOptions configuration, IEnumerable<TypeWrapper> types, CommandGroup? parent, bool isNested)

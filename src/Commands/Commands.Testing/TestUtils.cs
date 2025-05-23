@@ -1,9 +1,12 @@
-﻿namespace Commands.Testing;
+﻿using System.ComponentModel;
+
+namespace Commands.Testing;
 
 /// <summary>
 ///     A static class containing methods for testing commands.
 /// </summary>
-public static class TestUtilities
+[EditorBrowsable(EditorBrowsableState.Never)]
+public static class TestUtils
 {
     /// <summary>
     ///     Tests the target command using the provided <paramref name="contextCreationDelegate"/> function to create the context for each individual execution.

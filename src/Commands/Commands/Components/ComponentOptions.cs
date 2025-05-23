@@ -22,7 +22,7 @@ public sealed class ComponentOptions
     ///     Gets or sets a dictionary of parsers that will be used to parse command arguments into the target type by all components using these options.
     /// </summary>
     /// <remarks>
-    ///     By modifying the key value pairs in this dictionary, you can add custom parsers for specific types or override the default parsers. When accessing the default, or creating a new instance of <see cref="ComponentOptions"/>, the following types are added by default:
+    ///     By modifying the key value pairs in this dictionary, you can add custom parsers for specific types or override the default parsers. When accessing the default, or creating a new instance of <see cref="ComponentOptions"/>, the following types are prepopulated:
     ///     <list type="bullet">
     ///         <item>
     ///             BCL types: <see cref="ulong"/>, <see cref="long"/>, <see cref="uint"/>, <see cref="int"/>, <see cref="ushort"/>, <see cref="short"/>, <see cref="sbyte"/>, <see cref="byte"/>, <see cref="bool"/>,

@@ -9,7 +9,7 @@ namespace Commands;
 /// </summary>
 /// <remarks>
 ///     A <see cref="Command"/> is the target of an execution request. 
-///     It is the final destination of the execution pipeline, which can be invoked using an <see cref="IComponentProvider"/> or by directly calling <see cref="Run{TContext}(TContext, ExecutionOptions)"/> on this type. 
+///     It is the final destination of the execution pipeline, which can be invoked using an <see cref="IComponentProvider"/> or by directly calling <see cref="Run{TContext}(TContext, ExecutionOptions)"/>. 
 ///     <br/>
 ///     A command can be added to a parent <see cref="CommandGroup"/>, or be added to a <see cref="ComponentTree"/> directly. When added to a group, the <see cref="Parent"/> property will be set, and it is not required to have a name.
 ///     Otherwise, the <see cref="Parent"/> will be <see langword="null"/> and <see cref="Names"/> requires a value.
@@ -144,7 +144,7 @@ public class Command : IComponent, IParameterCollection
     private Command(IActivator activator, ComponentOptions options)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
-        var parameters = ComponentUtilities.GetParameters(activator, options);
+        var parameters = CommandUtils.GetParameters(activator, options);
         var attributes = activator.Target.GetAttributes(true);
 
         Attributes = [.. attributes];
@@ -184,7 +184,7 @@ public class Command : IComponent, IParameterCollection
             parameters = [];
         else if (MaxLength == args.RemainingLength || (MaxLength <= args.RemainingLength && HasRemainder) || (MaxLength > args.RemainingLength && MinLength <= args.RemainingLength))
         {
-            var arguments = await ComponentUtilities.Parse(this, context, args, options).ConfigureAwait(false);
+            var arguments = await CommandUtils.Parse(this, context, args, options).ConfigureAwait(false);
 
             parameters = new object[arguments.Length];
 

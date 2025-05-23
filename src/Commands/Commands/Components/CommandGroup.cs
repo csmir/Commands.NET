@@ -122,7 +122,7 @@ public class CommandGroup : ComponentSet, IComponent
 
         if (!Ignore)
         {
-            var components = ComponentUtilities.GetNestedComponents(options, this);
+            var components = CommandUtils.GetNestedComponents(options, this);
 
             AddRange(components);
         }
@@ -195,16 +195,16 @@ public class CommandGroup : ComponentSet, IComponent
         while (enumerator.MoveNext())
         {
             if (enumerator.Current.IsDefault)
-                Yield(ref discovered, enumerator.Current);
+                CommandUtils.CopyTo(ref discovered, enumerator.Current);
             else
             {
                 if (!args.TryGetElementAt(Position, out var value) || !enumerator.Current.Names.Contains(value))
                     continue;
 
                 if (enumerator.Current is CommandGroup group)
-                    Yield(ref discovered, group.Find(args));
+                    CommandUtils.CopyTo(ref discovered, group.Find(args));
                 else
-                    Yield(ref discovered, enumerator.Current);
+                    CommandUtils.CopyTo(ref discovered, enumerator.Current);
             }
         }
 
@@ -253,9 +253,9 @@ public class CommandGroup : ComponentSet, IComponent
             _mutateTree = (components, removing) =>
             {
                 if (removing)
-                    tree.RemoveRange(components);
+                    tree.UnbindRange(components);
                 else
-                    tree.AddRangeInternal(components, true);
+                    tree.BindRange(components, true);
             };
 
         _bound = true;
@@ -263,10 +263,12 @@ public class CommandGroup : ComponentSet, IComponent
 
     void IComponent.Unbind()
     {
-        _mutateTree = null;
-        Parent = null;
+        if (_mutateTree != null)
+            _mutateTree = null;
+        else
+            Parent = null;
 
-        _bound = false;
+        _bound = _mutateTree != null || Parent != null;
     }
 
     #endregion

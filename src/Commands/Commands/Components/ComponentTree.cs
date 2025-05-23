@@ -38,39 +38,39 @@ public sealed class ComponentTree : ComponentSet
                 continue;
 
             if (enumerator.Current is CommandGroup group)
-                Yield(ref discovered, group.Find(args));
+                CommandUtils.CopyTo(ref discovered, group.Find(args));
             else
-                Yield(ref discovered, enumerator.Current);
+                CommandUtils.CopyTo(ref discovered, enumerator.Current);
         }
 
         return discovered;
     }
 
     /// <summary>
-    ///     Attempts to add a type to the tree, using the <paramref name="parsers"/> to create a new <see cref="IComponent"/> implementation.
+    ///     Attempts to add a type to the tree, using the <paramref name="options"/> to create a new <see cref="IComponent"/> implementation.
     /// </summary>
     /// <remarks>
     ///     This operation will add an implementation type of <see cref="CommandModule"/> that is public and non-abstract to the current tree.
     ///     Any type that does not implement either of these base types will be ignored.
     /// </remarks>
     /// <param name="type">The type to add to the tree, if possible.</param>
-    /// <param name="parsers">Optional parsers to use when creating the components.</param>
+    /// <param name="options">Options to use when creating the components.</param>
     /// <returns><see langword="true"/> if the component was created and succesfully added; otherwise <see langword="false"/>.</returns>
-    public bool Add(Type type, ComponentOptions? parsers = null)
-        => AddRange([type], parsers) > 0;
+    public bool Add(Type type, ComponentOptions? options = null)
+        => AddRange([type], options) > 0;
 
     /// <summary>
-    ///     Attempts to add the provided type to the tree, using the <paramref name="parsers"/> to create a new <see cref="IComponent"/> implementation.
+    ///     Attempts to add the provided type to the tree, using the <paramref name="options"/> to create a new <see cref="IComponent"/> implementation.
     /// </summary>
     /// <remarks>
     ///     This operation will not add the provided type if it is not a public, non-abstract implementation of <see cref="CommandModule"/>.
     /// </remarks>
     /// <typeparam name="T">The type implementation of <see cref="CommandModule"/> to add.</typeparam>
-    /// <param name="parsers">Optional parsers to use when creating the components.</param>
+    /// <param name="options">Options to use when creating the components.</param>
     /// <returns><see langword="true"/> if the component was created and succesfully added; otherwise <see langword="false"/>.</returns>
-    public bool Add<T>(ComponentOptions? parsers = null)
+    public bool Add<T>(ComponentOptions? options = null)
         where T : CommandModule
-        => Add(typeof(T), parsers);
+        => Add(typeof(T), options);
 
     /// <summary>
     ///     Attempts to add all provided types to the tree, using the <paramref name="options"/> to create new <see cref="IComponent"/> implementations.
@@ -86,7 +86,7 @@ public sealed class ComponentTree : ComponentSet
     {
         options ??= ComponentOptions.Default;
 
-        var components = ComponentUtilities.GetComponents(types, options);
+        var components = CommandUtils.GetComponents(types, options);
 
         return AddRange(components);
     }

@@ -93,19 +93,26 @@ public abstract class ComponentSet : IComponentSet
     ///     Adds a component to the current set.
     /// </summary>
     /// <param name="component">The component to be added to the set.</param>
-    /// <exception cref="ComponentFormatException">Thrown when the added <paramref name="component"/> is already added to another <see cref="ComponentSet"/>.</exception>
+    /// <exception cref="ComponentFormatException">Thrown when the added <paramref name="component"/> is already added to another <see cref="ComponentSet"/>, or when they cannot be added to the specified type.</exception>
     public void Add(IComponent component)
         => AddRange([component]);
 
     /// <inheritdoc />
-    /// <exception cref="ComponentFormatException">Thrown when the added <paramref name="components"/> are already added to another <see cref="ComponentSet"/>.</exception>
+    /// <exception cref="ComponentFormatException">Thrown when the added <paramref name="components"/> are already added to another <see cref="ComponentSet"/>, or when they cannot be added to the specified type.</exception>
     public int AddRange(params IComponent[] components)
         => AddRange((IEnumerable<IComponent>)components);
 
     /// <inheritdoc />
-    /// <exception cref="ComponentFormatException">Thrown when the added <paramref name="components"/> are already added to another <see cref="ComponentSet"/>.</exception>
+    /// <exception cref="ComponentFormatException">Thrown when the added <paramref name="components"/> are already added to another <see cref="ComponentSet"/>, or when they cannot be added to the specified type.</exception>
     public int AddRange(IEnumerable<IComponent> components)
-        => AddRangeInternal(components);
+    {
+        Assert.NotNull(components, nameof(components));
+
+        if (!components.Any())
+            return 0;
+
+        return BindRange(components, false);
+    }
 
     /// <summary>
     ///     Removes a component from the current set.
@@ -122,6 +129,46 @@ public abstract class ComponentSet : IComponentSet
 
     /// <inheritdoc />
     public int RemoveRange(IEnumerable<IComponent> components)
+    {
+        Assert.NotNull(components, nameof(components));
+
+        if (!components.Any())
+            return 0;
+
+        return UnbindRange(components);
+    }
+
+    /// <inheritdoc />
+    public void Clear()
+    {
+        if (Count == 0)
+            return;
+
+        lock (_items)
+        {
+            foreach (var component in _items)
+                component.Unbind();
+
+            _items = [];
+        }
+    }
+
+    /// <inheritdoc />
+    public void CopyTo(IComponent[] array, int arrayIndex)
+        => _items.CopyTo(array, arrayIndex);
+
+    /// <inheritdoc />
+    public IEnumerator<IComponent> GetEnumerator()
+        => new StateEnumerator(this);
+
+    #region Internals
+
+    // Gets an stale enumerator which copies the current state of the collection into a span and iterates it.
+    internal SpanStateEnumerator GetSpanEnumerator()
+        => new(this);
+
+    // This method is used to remove a range of components from the array of components with low allocation overhead.
+    internal int UnbindRange(IEnumerable<IComponent> components)
     {
         lock (_items)
         {
@@ -152,28 +199,39 @@ public abstract class ComponentSet : IComponentSet
         }
     }
 
-    /// <inheritdoc />
-    public void Clear()
+    // This method is used to add a range of components to the array of components with low allocation overhead.
+    internal int BindRange(IEnumerable<IComponent> components, bool extracted)
     {
         lock (_items)
-            _items = [];
+        {
+            var validatedComponents = Validate(components, extracted);
+
+            if (validatedComponents.Count > 0)
+            {
+                var copy = new IComponent[_items.Length + validatedComponents.Count];
+
+                _items.CopyTo(copy, 0);
+
+                for (int i = 0; i < validatedComponents.Count; i++)
+                    copy[_items.Length + i] = validatedComponents[i];
+
+                Array.Sort(copy);
+
+                _mutateTree?.Invoke(components, false);
+                _items = copy;
+            }
+
+            return validatedComponents.Count;
+        }
     }
 
-    /// <inheritdoc />
-    public void CopyTo(IComponent[] array, int arrayIndex)
-        => _items.CopyTo(array, arrayIndex);
+    IEnumerator IEnumerable.GetEnumerator()
+        => GetEnumerator();
 
-    /// <inheritdoc />
-    public IEnumerator<IComponent> GetEnumerator()
-        => new StateEnumerator(this);
+    bool ICollection<IComponent>.IsReadOnly
+        => false;
 
-    /// <summary>
-    ///     An enumerator for the current state of the collection.
-    /// </summary>
-    /// <remarks>
-    ///     This enumerator does not reflect changes made to the collection after the enumerator was created, nor does it reject iterations after modifications to the root collection.
-    /// </remarks>
-    public struct StateEnumerator : IEnumerator<IComponent>
+    internal struct StateEnumerator : IEnumerator<IComponent>
     {
         private readonly IComponent[] _items;
         private int _index;
@@ -220,18 +278,6 @@ public abstract class ComponentSet : IComponentSet
             => Current;
     }
 
-    #region Internals
-
-    // Gets an stale enumerator which copies the current state of the collection into a span and iterates it.
-    internal SpanStateEnumerator GetSpanEnumerator()
-        => new(this);
-
-    IEnumerator IEnumerable.GetEnumerator()
-        => GetEnumerator();
-
-    bool ICollection<IComponent>.IsReadOnly
-        => false;
-
     internal ref struct SpanStateEnumerator
     {
         private readonly Span<IComponent> _items;
@@ -266,61 +312,8 @@ public abstract class ComponentSet : IComponentSet
         }
     }
 
-    // This method is used to add a component to the array of components with low allocation overhead.
-    internal static void Yield(ref IComponent[] array, IComponent component)
-    {
-        var newArray = new IComponent[array.Length + 1];
-
-        Array.Copy(array, newArray, array.Length);
-
-        newArray[array.Length] = component;
-
-        array = newArray;
-    }
-
-    // This method is used to add a range of components to the array of components with low allocation overhead.
-    internal static void Yield(ref IComponent[] array, IComponent[] components)
-    {
-        var newArray = new IComponent[array.Length + components.Length];
-
-        Array.Copy(array, newArray, array.Length);
-
-        var i = array.Length;
-
-        foreach (var component in components)
-            newArray[i++] = component;
-
-        array = newArray;
-    }
-
-    // This method is used to add a range of components to the array of components with low allocation overhead.
-    internal int AddRangeInternal(IEnumerable<IComponent> components, bool extracted = false)
-    {
-        lock (_items)
-        {
-            var additions = FilterComponents(components, extracted);
-
-            if (additions.Count > 0)
-            {
-                var copy = new IComponent[_items.Length + additions.Count];
-
-                _items.CopyTo(copy, 0);
-
-                for (int i = 0; i < additions.Count; i++)
-                    copy[_items.Length + i] = additions[i];
-
-                Array.Sort(copy);
-
-                _mutateTree?.Invoke(components, false);
-                _items = copy;
-            }
-
-            return additions.Count;
-        }
-    }
-
     // Returns which of the provided components should be added to the collection.
-    private List<IComponent> FilterComponents(IEnumerable<IComponent> components, bool extracted)
+    private List<IComponent> Validate(IEnumerable<IComponent> components, bool extracted)
     {
         var discovered = new List<IComponent>();
 
@@ -339,9 +332,9 @@ public abstract class ComponentSet : IComponentSet
                     // Anything added to the manager should be considered top-level.
                     // Because a command realistically can never be executed if it has no name, we reject it from being added.
                     if (component is not CommandGroup group)
-                        throw new InvalidOperationException($"{nameof(Command)} instances without names can only be added to a {nameof(CommandGroup)}.");
+                        throw new ComponentFormatException($"{nameof(Command)} instances without names can only be added to a {nameof(CommandGroup)}.");
 
-                    discovered.AddRange(FilterComponents(group._items, true));
+                    discovered.AddRange(Validate(group._items, true));
                 }
                 else
                     discovered.Add(component);
@@ -354,7 +347,7 @@ public abstract class ComponentSet : IComponentSet
                     // Anything added to a group should be considered nested.
                     // Because of the nature of this design, we want to avoid folding anything but top level. This means that nested groups must be named.
                     if (component is not Command)
-                        throw new InvalidOperationException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ComponentTree)}.");
+                        throw new ComponentFormatException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ComponentTree)}.");
 
                     discovered.Add(component);
                 }

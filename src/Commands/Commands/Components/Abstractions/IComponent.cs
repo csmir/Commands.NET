@@ -44,15 +44,13 @@ public interface IComponent : ICommandSegment, IComparable<IComponent>
     ///     Sets the parent group of the component.
     /// </summary>
     /// <param name="parent">The new parent group of the component. When the set is a <see cref="CommandGroup"/>, it is set as the <see cref="Parent"/> of the component. Otherwise, it is considered bound.</param>
-    /// <exception cref="ArgumentNullException">The provided <paramref name="parent"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">The component is already bound to a group or tree.</exception>
+    /// <exception cref="ComponentFormatException">The component is already bound to a group or tree.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public void Bind(ComponentSet parent);
 
     /// <summary>
     ///     Unbinds the component from its parent group, if it is bound.
     /// </summary>
-    /// <exception cref="InvalidOperationException">The component is not bound to a group or tree.</exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public void Unbind();
 }
