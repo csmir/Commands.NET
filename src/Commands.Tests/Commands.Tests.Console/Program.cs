@@ -1,4 +1,5 @@
 ﻿using Commands;
+using Commands.Testing;
 
 var components = new ComponentTree();
 
@@ -10,7 +11,17 @@ components.Add(new Command((IComponentProvider provider, ConsoleContext context)
 
 }, "help"));
 
-var provider = new ComponentProvider(components);
+var commands = components.GetCommands();
+
+foreach (var command in commands)
+{
+    var testResult = await command.Test((input) => new ConsoleContext(input));
+
+    if (!testResult.All(x => x.Success))
+        Console.WriteLine($"Test failed for command: {command}");
+}
+
+var provider = new ComponentProvider(components, new HandlerDelegate<IContext>((c, e, s) => c.Respond(e)));
 
 while (true)
     await provider.Execute(new ConsoleContext(Console.ReadLine()));

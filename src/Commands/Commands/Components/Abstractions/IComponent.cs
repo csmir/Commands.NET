@@ -8,8 +8,11 @@ namespace Commands;
 public interface IComponent : ICommandSegment, IComparable<IComponent>
 {
     /// <summary>
-    ///     Gets the parent group of this component. This property can be <see langword="null"/>.
+    ///     Gets the parent group of this component.
     /// </summary>
+    /// <remarks>
+    ///      This property can be <see langword="null"/> when the component is bound to a <see cref="ComponentTree"/> rather than a <see cref="CommandGroup"/>.
+    /// </remarks>
     public CommandGroup? Parent { get; }
 
     /// <summary>

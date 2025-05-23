@@ -29,6 +29,7 @@ public static class TestUtilities
 
         Assert.NotNull(command, nameof(command));
         Assert.NotNull(contextCreationDelegate, nameof(contextCreationDelegate));
+
         options ??= ExecutionOptions.Default;
 
         if (options.ExecuteAsynchronously)

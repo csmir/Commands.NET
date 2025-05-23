@@ -80,7 +80,7 @@ public static class ComponentUtilities
 
     #region Internals
 
-    internal static async ValueTask<ParseResult[]> Parse(IParameterCollection collection, IContext context, ExecutionOptions options)
+    internal static async ValueTask<ParseResult[]> Parse(IParameterCollection collection, IContext context, Arguments args, ExecutionOptions options)
     {
         var results = new ParseResult[collection.Parameters.Length];
 
@@ -90,14 +90,14 @@ public static class ComponentUtilities
 
             if (param.IsRemainder)
             {
-                results[i] = await param.Parse(context, param.IsCollection ? context.Arguments.TakeRemaining(param.Name!) : context.Arguments.TakeRemaining(param.Name!, options.RemainderSeparator), options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
+                results[i] = await param.Parse(context, param.IsCollection ? args.TakeRemaining(param.Name!) : args.TakeRemaining(param.Name!, options.RemainderSeparator), options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
 
                 break;
             }
 
             if (param is ConstructibleParameter constructible)
             {
-                var result = await Parse(constructible, context, options).ConfigureAwait(false);
+                var result = await Parse(constructible, context, args, options).ConfigureAwait(false);
 
                 if (result.All(x => x.Success))
                 {
@@ -119,7 +119,7 @@ public static class ComponentUtilities
                 continue;
             }
 
-            if (context.Arguments.TryGetValue(param.Name!, out var value))
+            if (args.TryGetValue(param.Name!, out var value))
                 results[i] = await param.Parse(context, value, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
             else if (param.IsOptional)
                 results[i] = ParseResult.FromSuccess(Type.Missing);

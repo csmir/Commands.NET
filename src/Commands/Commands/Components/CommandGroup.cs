@@ -102,8 +102,8 @@ public class CommandGroup : ComponentSet, IComponent
 
         Assert.NotNull(type, nameof(type));
 
-        if (!typeof(CommandModule).IsAssignableFrom(type) || !type.IsAbstract || !type.ContainsGenericParameters)
-            throw new ComponentFormatException($"The provided type is not an implementation of {nameof(CommandModule)}.");
+        if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
+            throw new ComponentFormatException($"The provided type is not a valid implementation of {nameof(CommandModule)}. Ensure it is not abstract, and does not contain unimplemented generic parameters.");
 
         Parent = parent;
 
@@ -249,13 +249,13 @@ public class CommandGroup : ComponentSet, IComponent
         if (parent is CommandGroup group)
             Parent = group;
         
-        if (parent is ComponentTree tree)
+        if (parent is ComponentTree tree && !IsSearchable)
             _mutateTree = (components, removing) =>
             {
                 if (removing)
                     tree.RemoveRange(components);
                 else
-                    tree.AddRange(components);
+                    tree.AddRangeInternal(components, true);
             };
 
         _bound = true;

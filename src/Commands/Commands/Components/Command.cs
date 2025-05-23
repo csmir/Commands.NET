@@ -184,7 +184,7 @@ public class Command : IComponent, IParameterCollection
             parameters = [];
         else if (MaxLength == args.RemainingLength || (MaxLength <= args.RemainingLength && HasRemainder) || (MaxLength > args.RemainingLength && MinLength <= args.RemainingLength))
         {
-            var arguments = await ComponentUtilities.Parse(this, context, options).ConfigureAwait(false);
+            var arguments = await ComponentUtilities.Parse(this, context, args, options).ConfigureAwait(false);
 
             parameters = new object[arguments.Length];
 

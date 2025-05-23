@@ -105,29 +105,7 @@ public abstract class ComponentSet : IComponentSet
     /// <inheritdoc />
     /// <exception cref="ComponentFormatException">Thrown when the added <paramref name="components"/> are already added to another <see cref="ComponentSet"/>.</exception>
     public int AddRange(IEnumerable<IComponent> components)
-    {
-        lock (_items)
-        {
-            var additions = FilterComponents(components);
-
-            if (additions.Count > 0)
-            {
-                var copy = new IComponent[_items.Length + additions.Count];
-
-                _items.CopyTo(copy, 0);
-
-                for (int i = 0; i < additions.Count; i++)
-                    copy[_items.Length + i] = additions[i];
-
-                Array.Sort(copy);
-
-                _mutateTree?.Invoke(components, false);
-                _items = copy;
-            }
-
-            return additions.Count;
-        }
-    }
+        => AddRangeInternal(components);
 
     /// <summary>
     ///     Removes a component from the current set.
@@ -248,55 +226,6 @@ public abstract class ComponentSet : IComponentSet
     internal SpanStateEnumerator GetSpanEnumerator()
         => new(this);
 
-    // Returns which of the provided components should be added to the collection.
-    private List<IComponent> FilterComponents(IEnumerable<IComponent> components)
-    {
-        var discovered = new List<IComponent>();
-
-        foreach (var component in components)
-        {
-            Assert.NotNull(component, nameof(component));
-
-            if (_items.Contains(component))
-                continue;
-
-            if (this is ComponentTree rootSet)
-            {
-                // When a component is not searchable it means it has no names. Between a manager and a group, a different restriction applies to how this should be done.
-                if (!component.IsSearchable)
-                {
-                    // Anything added to the manager should be considered top-level.
-                    // Because a command realistically can never be executed if it has no name, we reject it from being added.
-                    if (component is not CommandGroup group)
-                        throw new InvalidOperationException($"{nameof(Command)} instances without names can only be added to a {nameof(CommandGroup)}.");
-
-                    discovered.AddRange(FilterComponents(group._items));
-                }
-                else
-                    discovered.Add(component);
-            }
-
-            if (this is CommandGroup collection)
-            {
-                if (!component.IsSearchable)
-                {
-                    // Anything added to a group should be considered nested.
-                    // Because of the nature of this design, we want to avoid folding anything but top level. This means that nested groups must be named.
-                    if (component is not Command)
-                        throw new InvalidOperationException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ComponentTree)}.");
-
-                    discovered.Add(component);
-                }
-                else
-                    discovered.Add(component);
-            }
-
-            component.Bind(this);
-        }
-
-        return discovered;
-    }
-
     IEnumerator IEnumerable.GetEnumerator()
         => GetEnumerator();
 
@@ -362,6 +291,82 @@ public abstract class ComponentSet : IComponentSet
             newArray[i++] = component;
 
         array = newArray;
+    }
+
+    // This method is used to add a range of components to the array of components with low allocation overhead.
+    internal int AddRangeInternal(IEnumerable<IComponent> components, bool extracted = false)
+    {
+        lock (_items)
+        {
+            var additions = FilterComponents(components, extracted);
+
+            if (additions.Count > 0)
+            {
+                var copy = new IComponent[_items.Length + additions.Count];
+
+                _items.CopyTo(copy, 0);
+
+                for (int i = 0; i < additions.Count; i++)
+                    copy[_items.Length + i] = additions[i];
+
+                Array.Sort(copy);
+
+                _mutateTree?.Invoke(components, false);
+                _items = copy;
+            }
+
+            return additions.Count;
+        }
+    }
+
+    // Returns which of the provided components should be added to the collection.
+    private List<IComponent> FilterComponents(IEnumerable<IComponent> components, bool extracted)
+    {
+        var discovered = new List<IComponent>();
+
+        foreach (var component in components)
+        {
+            Assert.NotNull(component, nameof(component));
+
+            if (_items.Contains(component))
+                continue;
+
+            if (this is ComponentTree rootSet)
+            {
+                // When a component is not searchable it means it has no names. Between a manager and a group, a different restriction applies to how this should be done.
+                if (!component.IsSearchable)
+                {
+                    // Anything added to the manager should be considered top-level.
+                    // Because a command realistically can never be executed if it has no name, we reject it from being added.
+                    if (component is not CommandGroup group)
+                        throw new InvalidOperationException($"{nameof(Command)} instances without names can only be added to a {nameof(CommandGroup)}.");
+
+                    discovered.AddRange(FilterComponents(group._items, true));
+                }
+                else
+                    discovered.Add(component);
+            }
+
+            if (this is CommandGroup collection)
+            {
+                if (!component.IsSearchable)
+                {
+                    // Anything added to a group should be considered nested.
+                    // Because of the nature of this design, we want to avoid folding anything but top level. This means that nested groups must be named.
+                    if (component is not Command)
+                        throw new InvalidOperationException($"{nameof(CommandGroup)} instances without names can only be added to a {nameof(ComponentTree)}.");
+
+                    discovered.Add(component);
+                }
+                else
+                    discovered.Add(component);
+            }
+
+            if (!extracted)
+                component.Bind(this);
+        }
+
+        return discovered;
     }
 
     #endregion
