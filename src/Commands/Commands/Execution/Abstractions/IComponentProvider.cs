@@ -27,7 +27,7 @@ public interface IComponentProvider
     ///             When <see cref="IResult"/> is <see cref="SearchResult"/>, the exception can be <see cref="CommandNotFoundException"/> or <see cref="CommandRouteIncompleteException"/>.
     ///         </item>
     ///         <item>
-    ///             When <see cref="IResult"/> is <see cref="ParseResult"/>, the exception can be <see cref="ParserException"/> or <see cref="Exception"/> types emitted by custom <see cref="IParser"/> implementations.
+    ///             When <see cref="IResult"/> is <see cref="ParseResult"/>, the exception can be <see cref="ParserException"/>, <see cref="CommandOutOfRangeException"/> or <see cref="Exception"/> types emitted by custom <see cref="IParser"/> implementations.
     ///         </item>
     ///         <item>
     ///             When <see cref="IResult"/> is <see cref="ConditionResult"/>, the exception can be <see cref="ConditionException"/> or <see cref="Exception"/> types emitted by custom <see cref="ICondition"/> implementations.

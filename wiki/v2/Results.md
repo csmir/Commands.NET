@@ -1,12 +1,12 @@
-Command results are handled by implementations of the `IExecuteResult` interface.
-When handling results, the different types of results are handled by the `ResultHandler` implementations. This document elaborates on how this process works.
+Command results are handled by implementations of the `IResult` interface.
+When handling results, events can be implemented within the `IComponentProvider`. This document elaborates on how this process works.
 
 - [Result Types](#result-types)
 - [Handling Results](#handling-results)
 
 ## Result types
 
-There are four different types of results that can be returned from the command pipeline. Between these results, the `IExecuteResult` interface is implemented. 
+There are four different types of results that can be returned from the command pipeline. Between these results, the `IResult` interface is implemented. 
 
 > [!NOTE] 
 > Each result implements a `Success` property, which is used to determine if the result was successful or not. 
@@ -47,50 +47,22 @@ It will return a failed result if the command execution failed by errors thrown 
 
 ## Handling Results
 
-`ResultHandler` implementations are used to handle the different types of results. It is possible to define multiple custom handlers of your own make.
+Results can be handled by implementing one of two events exposed by the `IComponentProvider`: `OnSuccess` and `OnFailure`.
 
-### Functional Pattern
-
-```cs
-var handler = new HandlerDelegate<IContext>((ctx, result, services) => ...);
-```
-
-Here, `TContext` is the `IContext` implementation that this handler will handle. 
-If the context is not of a matching type, this handler will not be called.
-
-### Declarative Pattern
+These events are invoked when a result is returned from the command pipeline, and can be implemented as follows:
 
 ```cs
 using Commands;
 
-public class CustomHandler : ResultHandler
+var provider = new ComponentProvider();
+
+provider.OnSuccess += (context, result, services) => 
 {
-}
-```
+	// Logic
+};
 
-Unlike other customizable pipeline components, the `Evaluate` method in the `ResultHandler` implementation is not abstract. 
-It is possible to filter your implementation by certain results, exclusively failed results:
-
-```cs
-using Commands;
-
-public class CustomResultHandler : ResultHandler
+provider.OnFailure += (context, result, exception, services) => 
 {
-    protected override ValueTask CommandNotFound(IContext context, CommandNotFoundException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
-    {
-        // Your response logic here
-    }
-}
+	// Logic
+};
 ```
-
-The `CommandNotFound` method is called when the search operation returns no commands or groups.
-
-When you have succesfully constructed the logic for handling the result, you can pass it along when creating a new `ComponentProvider`:
-
-```cs
-var collection = new ComponentProvider(new CustomResultHandler());
-```
-
-> [!NOTE]
-> `ResultHandler<TContext>` can be used to filter by a specific context type. 
-> This is useful when you want to handle results differently depending on the context.
