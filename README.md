@@ -133,7 +133,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection()
     .AddSingleton<MyService>()
-    .AddSingleton<ComponentProvider>(new ComponentProvider());
+    .AddSingleton<ComponentProvider>();
     .BuildServiceProvider();
 
 var provider = services.GetRequiredService<ComponentProvider>();
