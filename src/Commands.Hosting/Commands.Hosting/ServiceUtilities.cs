@@ -35,7 +35,7 @@ public static class ServiceUtilities
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static IServiceCollection AddComponentProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
-        (IServiceCollection services, ComponentBuilder properties)
+        (IServiceCollection services, ComponentBuilder _)
         where TFactory : class, ICommandExecutionFactory
     {
         if (services.Contains<ICommandExecutionFactory>())
