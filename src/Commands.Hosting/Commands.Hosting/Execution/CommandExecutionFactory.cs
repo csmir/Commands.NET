@@ -6,10 +6,36 @@
 /// <remarks>
 ///     To customize the factory pattern, implement this class and override the available methods. When customizing the scope creation, you must also implement a custom <see cref="IExecutionScope"/> and populate it when the factory creates the scope.
 /// </remarks>
-/// <param name="executionProvider">The component collection representing all configured commands for the current host.</param>
-/// <param name="serviceProvider">The global collection of services available for this host.</param>
-public class CommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider) : ICommandExecutionFactory
+public class CommandExecutionFactory : ICommandExecutionFactory
 {
+    private readonly IComponentProvider _executionProvider;
+    private readonly IServiceProvider _serviceProvider;
+
+    /// <summary>
+    ///     Creates a new instance of the <see cref="CommandExecutionFactory"/> using the provided services.
+    /// </summary>
+    public CommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, IEnumerable<ResultHandler> resultHandlers)
+    {
+        executionProvider.OnFailure += async (context, result, exception, services) =>
+        {
+            foreach (var handler in resultHandlers)
+                await handler.Failure(context, result, exception, services);
+
+            services.GetService<IExecutionScope>()?.Dispose();
+        };
+
+        executionProvider.OnSuccess += async (context, result, services) =>
+        {
+            foreach (var handler in resultHandlers)
+                await handler.Success(context, result, services);
+
+            services.GetService<IExecutionScope>()?.Dispose();
+        };
+
+        _executionProvider = executionProvider;
+        _serviceProvider = serviceProvider;
+    }
+
     /// <inheritdoc />
     /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="context"/> is null.</exception>
     /// <exception cref="NotSupportedException">Thrown when the <see cref="IServiceProvider"/> cannot resolve the scoped <see cref="IExecutionScope"/> as its internal implementation. When customizing the <see cref="IExecutionScope"/> implementation, the factory must be overridden to support it.</exception>
@@ -18,7 +44,7 @@ public class CommandExecutionFactory(IComponentProvider executionProvider, IServ
     {
         Assert.NotNull(context, nameof(context));
 
-        var scope = serviceProvider.CreateScope();
+        var scope = _serviceProvider.CreateScope();
 
         var executeOptions = new ExecutionOptions()
         {
@@ -32,7 +58,7 @@ public class CommandExecutionFactory(IComponentProvider executionProvider, IServ
 
         executeOptions.CancellationToken = execScope.CancellationSource.Token;
 
-        await executionProvider.Execute(context, executeOptions);
+        await _executionProvider.Execute(context, executeOptions);
     }
 
     /// <summary>

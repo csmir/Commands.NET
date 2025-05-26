@@ -21,4 +21,14 @@ public abstract class AsyncContext : IContext
 
     void IContext.Respond(object? message)
         => Respond(message).Wait();
+
+    internal static Task Respond(IContext context, object? message)
+    {
+        if (context is AsyncContext asyncContext)
+            return asyncContext.Respond(message);
+        else
+            context.Respond(message);
+
+        return Task.CompletedTask;
+    }
 }

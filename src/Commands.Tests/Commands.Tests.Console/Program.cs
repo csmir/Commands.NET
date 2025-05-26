@@ -21,7 +21,7 @@ foreach (var command in commands)
         Console.WriteLine($"Test failed for command: {command}");
 }
 
-var provider = new ComponentProvider(components, new HandlerDelegate<IContext>((c, e, s) => c.Respond(e)));
+var provider = new ComponentProvider(components);
 
 while (true)
     await provider.Execute(new ConsoleContext(Console.ReadLine()));

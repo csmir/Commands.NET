@@ -1,4 +1,7 @@
-﻿namespace Commands;
+﻿using Commands.Conditions;
+using Commands.Parsing;
+
+namespace Commands;
 
 /// <summary>
 ///     A provider containing a root set of components representing a tree of commands. The provider is responsible for starting, executing, and finalizing the command pipeline.
@@ -12,6 +15,34 @@ public interface IComponentProvider
     ///     Components added to this tree are available in runtime. The tree is concurrently accessible, meaning it is safe to add or remove components while the tree is being used.
     /// </remarks>
     public ComponentTree Components { get; }
+
+
+    /// <summary>
+    ///     Invoked when a command has failed to be executed.
+    /// </summary>
+    /// <remarks>
+    ///     The exception in this operation represents where in the pipeline the failure has occurred, and how it failed. Depending on the <see cref="IResult"/> of the operation, it will contain different data:
+    ///     <list type="bullet">
+    ///         <item>
+    ///             When <see cref="IResult"/> is <see cref="SearchResult"/>, the exception can be <see cref="CommandNotFoundException"/> or <see cref="CommandRouteIncompleteException"/>.
+    ///         </item>
+    ///         <item>
+    ///             When <see cref="IResult"/> is <see cref="ParseResult"/>, the exception can be <see cref="ParserException"/> or <see cref="Exception"/> types emitted by custom <see cref="IParser"/> implementations.
+    ///         </item>
+    ///         <item>
+    ///             When <see cref="IResult"/> is <see cref="ConditionResult"/>, the exception can be <see cref="ConditionException"/> or <see cref="Exception"/> types emitted by custom <see cref="ICondition"/> implementations.
+    ///         </item>
+    ///         <item>
+    ///             When <see cref="IResult"/> is <see cref="InvokeResult"/>, the exception can be any exception thrown by the command handler, or where the command failed to execute properly.
+    ///         </item>
+    ///     </list>
+    /// </remarks>
+    public event Action<IContext, IResult, Exception, IServiceProvider>? OnFailure;
+
+    /// <summary>
+    ///     Invoked when a command has succesfully been executed.
+    /// </summary>
+    public event Action<IContext, IResult, IServiceProvider>? OnSuccess;
 
     /// <summary>
     ///     Executes the command pipeline using the provided <see cref="IContext"/>. 

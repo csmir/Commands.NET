@@ -19,7 +19,7 @@ var components = new ComponentTree()
     }, "asyncwork"),
 };
 
-var provider = new ComponentProvider(components, new HandlerDelegate<ConsoleContext>((c, e, s) => c.Respond(e)));
+var provider = new ComponentProvider(components);
 
 while (true)
     await provider.Execute(new ConsoleContext(Console.ReadLine()));

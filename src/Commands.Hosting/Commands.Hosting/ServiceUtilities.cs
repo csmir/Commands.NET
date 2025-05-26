@@ -54,13 +54,7 @@ public static class ServiceUtilities
         services.AddScoped<IExecutionScope, ExecutionContext>();
         services.AddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
 
-        var providerDescriptor = ServiceDescriptor.Singleton<IComponentProvider, ComponentProvider>(x =>
-        {
-            // Implement global result handler to dispose of the execution scope. This must be done last, even if the properties are mutated anywhere before.
-            properties.AddResultHandler(new ExecutionScopeResolver());
-
-            return new ComponentProvider(properties.ResultHandlers.ToArray());
-        });
+        var providerDescriptor = ServiceDescriptor.Singleton<IComponentProvider, ComponentProvider>();
 
         services.Add(providerDescriptor);
 

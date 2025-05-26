@@ -13,9 +13,9 @@ public class CommandGroup<
 T> : CommandGroup
 where T : CommandModule
 {
-    /// <inheritdoc cref="CommandGroup(Type, CommandGroup?, ComponentOptions?)" />
-    public CommandGroup(CommandGroup? parent = null, ComponentOptions? options = null)
-        : base(typeof(T), parent, options) { }
+    /// <inheritdoc cref="CommandGroup(Type, ComponentOptions?)" />
+    public CommandGroup(ComponentOptions? options = null)
+        : base(typeof(T), options) { }
 }
 
 /// <summary>
@@ -87,7 +87,6 @@ public class CommandGroup : ComponentSet, IComponent
     ///     Initializes a new instance of <see cref="CommandGroup"/>.
     /// </summary>
     /// <param name="type">The implementation of <see cref="CommandModule"/> that holds commands to be executed.</param>
-    /// <param name="parent">The parent of this group, if any. Irrespective of this value being set, the group can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
     /// <exception cref="ArgumentNullException">The provided <paramref name="type"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">The provided <paramref name="type"/> defines names, but those names do not match the provided <see cref="ComponentOptions.NameValidation"/>.</exception>
@@ -96,7 +95,7 @@ public class CommandGroup : ComponentSet, IComponent
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
-        Type type, CommandGroup? parent = null, ComponentOptions? options = null)
+        Type type, ComponentOptions? options = null)
     {
         options ??= ComponentOptions.Default;
 
@@ -104,8 +103,6 @@ public class CommandGroup : ComponentSet, IComponent
 
         if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
             throw new ComponentFormatException($"The provided type is not a valid implementation of {nameof(CommandModule)}. Ensure it is not abstract, and does not contain unimplemented generic parameters.");
-
-        Parent = parent;
 
         var attributes = type.GetAttributes(true);
 

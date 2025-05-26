@@ -5,7 +5,7 @@ namespace Commands.Samples;
 public class HelpModule(IComponentProvider provider) : CommandModule
 {
     [Name("help")]
-    public void Help()
+    public string Help()
     {
         var builder = new StringBuilder()
             .AppendLine("Commands:");
@@ -13,11 +13,11 @@ public class HelpModule(IComponentProvider provider) : CommandModule
         foreach (var command in provider.Components.GetCommands())
             builder.AppendLine(command.GetFullName());
 
-        Respond(builder.ToString());
+        return builder.ToString();
     }
 
     [Name("help")]
-    public void Help([Remainder, Name("command-name")] string commandName)
+    public string Help([Remainder, Name("command-name")] string commandName)
     {
         var commands = provider.Components.GetCommands();
 
@@ -26,10 +26,7 @@ public class HelpModule(IComponentProvider provider) : CommandModule
             .ToArray();
 
         if (command.Length == 0)
-        {
-            Respond("Command not found.");
-            return;
-        }
+            return "Command not found.";
 
         if (command.Length > 1)
         {
@@ -39,11 +36,9 @@ public class HelpModule(IComponentProvider provider) : CommandModule
             for (var i = 0; i < command.Length; i++)
                 builder.AppendLine(command[i].GetFullName());
 
-            Respond(builder.ToString());
-
-            return;
+            return builder.ToString();
         }
 
-        Respond(command[0]);
+        return command[0].ToString();
     }
 }

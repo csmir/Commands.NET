@@ -206,7 +206,7 @@ public static class CommandUtils
 
             try
             {
-                group = new CommandGroup(type, parent, configuration);
+                group = new CommandGroup(type, configuration);
             }
             catch (ComponentFormatException)
             {

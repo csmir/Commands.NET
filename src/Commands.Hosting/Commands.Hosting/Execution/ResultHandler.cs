@@ -1,133 +1,26 @@
 ﻿using Commands.Conditions;
 using Commands.Parsing;
-using System.ComponentModel;
 
-namespace Commands;
-
-/// <summary>
-///     A delegate-based handler for post-execution processes.
-/// </summary>
-/// <remarks>
-///     This implementation of <see cref="ResultHandler"/> allows you to define a delegate that will be executed when the command execution is completed. This delegate is only executed if the command failed.
-/// </remarks>
-/// <typeparam name="TContext">The context type this handler should cover.</typeparam>
-public sealed class HandlerDelegate<TContext>
-    : ResultHandler<TContext>
-    where TContext : class, IContext
-{
-    private readonly Func<TContext, Exception, IServiceProvider, ValueTask>? _resultDelegate;
-
-    /// <summary>
-    ///     Creates a new instance of <see cref="HandlerDelegate{TContext}"/>, which only responds to the context with the result of the command execution.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public HandlerDelegate() { }
-
-    /// <summary>
-    ///     Creates a new instance of <see cref="HandlerDelegate{TContext}"/> using the provided handler.
-    /// </summary>
-    /// <remarks>
-    ///     This handler will be executed when the command execution fails, containing the occurred pipeline exception.
-    /// </remarks>
-    /// <param name="resultDelegate">The delegate that will handle the failed execution result.</param>
-    public HandlerDelegate(Action<TContext, Exception, IServiceProvider> resultDelegate)
-        => _resultDelegate = (context, result, services) =>
-        {
-            resultDelegate(context, result, services);
-            return default;
-        };
-
-    /// <summary>
-    ///     Creates a new instance of <see cref="HandlerDelegate{TContext}"/> using the provided handler.
-    /// </summary>
-    /// <remarks>
-    ///     This handler will be executed when the command execution fails, containing the occurred pipeline exception.
-    /// </remarks>
-    /// <param name="resultDelegate">The delegate that will handle the failed execution result.</param>
-    public HandlerDelegate(Func<TContext, Exception, IServiceProvider, ValueTask> resultDelegate)
-        => _resultDelegate = resultDelegate;
-
-    /// <inheritdoc />
-    public override ValueTask HandleResult(TContext context, IResult result, IServiceProvider services, CancellationToken cancellationToken)
-    {
-        static Exception Unfold(Exception exception)
-        {
-            if (exception.InnerException != null)
-                return Unfold(exception.InnerException);
-
-            return exception;
-        }
-
-        if (result.Success)
-            return HandleMethodReturn(context, result, services, cancellationToken);
-
-        if (_resultDelegate != null)
-            return _resultDelegate.Invoke(context, Unfold(result.Exception!), services);
-
-        return default;
-    }
-}
+namespace Commands.Hosting;
 
 /// <summary>
-///     A handler for post-execution processes bound to specific types of <see cref="IContext"/>. This generic handler filters results based on the context type.
+///     Represents a handler for command execution results, allowing for custom handling of different result types and exceptions.
 /// </summary>
-/// <remarks>
-///     Implementing this type allows you to treat result data and scope finalization of all commands executed by the provided <see cref="IContext"/>, regardless on whether the command execution succeeded or not.
-/// </remarks>
-/// <typeparam name="TContext">The context type this handler should cover.</typeparam>
-public abstract class ResultHandler<TContext> : ResultHandler
-    where TContext : class, IContext
-{
-    /// <inheritdoc cref="ResultHandler.HandleResult(IContext, IResult, IServiceProvider, CancellationToken)"/>.
-    /// <remarks>
-    ///     This method is only executed when the provided <paramref name="context"/> is of type <typeparamref name="TContext"/>.
-    /// </remarks>
-    public virtual ValueTask HandleResult(TContext context, IResult result, IServiceProvider services, CancellationToken cancellationToken)
-        => base.HandleResult(context, result, services, cancellationToken);
-
-    /// <inheritdoc />
-    public override ValueTask HandleResult(IContext context, IResult result, IServiceProvider services, CancellationToken cancellationToken)
-    {
-        if (context is TContext typedContext)
-            return HandleResult(typedContext, result, services, cancellationToken);
-
-        // If the context is not of type T, return default, not handling the result.
-        return default;
-    }
-}
-
-/// <summary>
-///     A handler for post-execution processes.
-/// </summary>
-/// <remarks>
-///     Implementing this type allows you to treat result data and scope finalization, regardless on whether the command execution succeeded or not.
-/// </remarks>
 public abstract class ResultHandler
 {
-    private static MethodInfo? _taskGetValue;
-
     /// <summary>
-    ///     Evaluates post-execution data, carrying result, context data and the scoped <see cref="IServiceProvider"/> for the current execution.
+    ///     Handles the result of a command execution, allowing for custom handling of different result types and exceptions.
     /// </summary>
     /// <param name="context">The context of the command.</param>
     /// <param name="result">The result of the command execution.</param>
+    /// <param name="exception">The exception that occurred during execution.</param>
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    public virtual ValueTask HandleResult(IContext context, IResult result, IServiceProvider services, CancellationToken cancellationToken)
+    public virtual ValueTask Failure(IContext context, IResult result, Exception exception, IServiceProvider services, CancellationToken cancellationToken = default)
     {
-        static Exception? Unfold(Exception? exception)
-        {
-            if (exception?.InnerException != null)
-                return Unfold(exception.InnerException);
-
-            return exception;
-        }
-
         try
         {
-            var exception = Unfold(result.Exception!); // On failure, the exception message is always present.
-
             switch (result)
             {
                 case SearchResult searchResult:
@@ -155,12 +48,7 @@ public abstract class ResultHandler
                     }
                     break;
                 case InvokeResult invokeResult:
-                    {
-                        if (exception is null)
-                            return HandleMethodReturn(context, invokeResult, services, cancellationToken);
-
                         return InvokeFailed(context, exception, invokeResult, services, cancellationToken);
-                    }
             }
 
             return Unhandled(context, exception, result, services, cancellationToken);
@@ -173,63 +61,15 @@ public abstract class ResultHandler
     }
 
     /// <summary>
-    ///     Holds the evaluation data of a successful command execution.
+    ///     Handles the successful result of a command execution, allowing for custom handling of the result and services used in the execution.
     /// </summary>
-    /// <remarks>
-    ///     Implement this method to handle the result of a successful command execution. By default, this method will respond to the <paramref name="context"/> with the result of the command execution.
-    /// </remarks>
     /// <param name="context">The context of the command.</param>
     /// <param name="result">The result of the command execution.</param>
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-#if NET8_0_OR_GREATER
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Task<>))]
-    [UnconditionalSuppressMessage("AotAnalysis", "IL2075", Justification = "The availability of Task<> is ensured at compile-time.")]
-#endif
-    protected virtual async ValueTask HandleMethodReturn(IContext context, IResult result, IServiceProvider services, CancellationToken cancellationToken)
-    {
-        async ValueTask Respond(object? obj)
-        {
-            if (context is AsyncContext asyncCtx)
-                await asyncCtx.Respond(obj).ConfigureAwait(false);
-            else
-                context.Respond(obj);
-        }
-
-        if (result is not InvokeResult invokeResult)
-            return;
-
-        switch (invokeResult.ReturnValue)
-        {
-            case null: // (void)
-                return;
-
-            case Task task:
-                await task.ConfigureAwait(false);
-
-                var taskType = task.GetType();
-
-                // If the task is a generic task, and the result is not a void task result, get the result and respond with it.
-                // Unfortunately we cannot do a type comparison on VoidTaskResult, because it is an internal corelib struct.
-                if (taskType.IsGenericType && taskType.GenericTypeArguments[0].Name != "VoidTaskResult")
-                {
-                    _taskGetValue ??= taskType.GetProperty("Result")!.GetMethod;
-
-                    var output = _taskGetValue?.Invoke(task, null);
-
-                    if (output != null)
-                        await Respond(output).ConfigureAwait(false);
-                }
-                return;
-
-            case object obj:
-                await Respond(obj).ConfigureAwait(false);
-                return;
-        }
-    }
-
-    #region Result Types
+    public virtual ValueTask Success(IContext context, IResult result, IServiceProvider services, CancellationToken cancellationToken = default)
+        => default;
 
     /// <summary>
     ///     Holds the evaluation data of a search operation where a command is not found from the provided match.
@@ -314,11 +154,4 @@ public abstract class ResultHandler
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
     protected virtual ValueTask Unhandled(IContext context, Exception? exception, IResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
-
-    #endregion
-
-    /// <summary>
-    ///     Gets an instance of <see cref="ResultHandler"/> which does not handle any result, only resolving the return type of a command delegate.
-    /// </summary>
-    public static ResultHandler Default { get; } = new HandlerDelegate<IContext>();
 }
