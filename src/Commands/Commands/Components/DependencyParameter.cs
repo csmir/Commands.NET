@@ -1,7 +1,7 @@
 ﻿namespace Commands;
 
 /// <summary>
-///     Reveals information about a service parameter.
+///     Reveals information about a service parameter. This class cannot be inherited.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
 public sealed class DependencyParameter : IParameter

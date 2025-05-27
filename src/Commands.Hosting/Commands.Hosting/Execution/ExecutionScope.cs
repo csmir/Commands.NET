@@ -1,6 +1,6 @@
 ﻿namespace Commands.Hosting;
 
-internal sealed class ExecutionContext : IExecutionScope
+internal sealed class ExecutionScope : IExecutionScope
 {
     public IContext Context { get; set; } = null!;
 

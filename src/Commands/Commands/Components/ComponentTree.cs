@@ -1,7 +1,7 @@
 ﻿namespace Commands;
 
 /// <summary>
-///     A concurrently accessible, rooted set of components, where <see cref="CommandGroup"/> instances are branches and <see cref="Command"/> instances are leaves.
+///     A concurrently accessible, rooted set of components, where <see cref="CommandGroup"/> instances are branches and <see cref="Command"/> instances are leaves. This class cannot be inherited.
 /// </summary>
 /// <remarks>
 ///     Execute items in this tree by implementing the instance into a <see cref="ComponentProvider"/> or by writing a custom execution pipeline.

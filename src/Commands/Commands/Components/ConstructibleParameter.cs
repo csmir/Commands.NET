@@ -3,7 +3,9 @@
 namespace Commands;
 
 /// <summary>
-///     A deconstructed parameter. This is the type that represents a type of which a constructor is considered part of a command signature, and is reconstructed using the discovered constructor for that type.
+///     A deconstructed parameter. 
+///     This is the type that represents a type of which a constructor is considered part of a command signature, and is reconstructed using the discovered constructor for that type.
+///     This class cannot be inherited.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
 public class ConstructibleParameter : ICommandParameter, IParameterCollection

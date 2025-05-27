@@ -21,7 +21,7 @@ public static class HostUtilities
     /// <param name="builder">The builder to configure with the related services.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
     public static IHostBuilder ConfigureComponents(this IHostBuilder builder)
-        => ConfigureComponents<CommandExecutionFactory>(builder, (_, ctx) => { });
+        => ConfigureComponents(builder, (_, ctx) => { });
 
     /// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>
     /// <param name="builder">The builder to configure with the related services.</param>
@@ -32,29 +32,12 @@ public static class HostUtilities
     {
         Assert.NotNull(configureComponents, nameof(configureComponents));
 
-        return ConfigureComponents<CommandExecutionFactory>(builder, (_, ctx) => configureComponents(ctx));
+        return ConfigureComponents(builder, (_, ctx) => configureComponents(ctx));
     }
 
-    /// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>
-    /// <typeparam name="TFactory">The type implementing <see cref="CommandExecutionFactory"/> which will be used to create execution context and fire off commands with.</typeparam>
-    /// <param name="builder">The builder to configure with the related services.</param>
-    /// <param name="configureComponents">An action to configure the <see cref="ComponentBuilder"/> which will be used to populate all related services.</param>
-    /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
+    /// <inheritdoc cref="ConfigureComponents(IHostBuilder, Action{ComponentBuilder})"/>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureComponents"/> is <see langword="null"/>.</exception>
-    public static IHostBuilder ConfigureComponents<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>(
-        this IHostBuilder builder, Action<ComponentBuilder> configureComponents)
-        where TFactory : CommandExecutionFactory
-    {
-        Assert.NotNull(configureComponents, nameof(configureComponents));
-
-        return ConfigureComponents<TFactory>(builder, (_, ctx) => configureComponents(ctx));
-    }
-
-    /// <inheritdoc cref="ConfigureComponents{TFactory}(IHostBuilder, Action{ComponentBuilder})"/>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureComponents"/> is <see langword="null"/>.</exception>
-    public static IHostBuilder ConfigureComponents<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>(
-        this IHostBuilder builder, Action<HostBuilderContext, ComponentBuilder> configureComponents)
-        where TFactory : CommandExecutionFactory
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<HostBuilderContext, ComponentBuilder> configureComponents)
     {
         Assert.NotNull(configureComponents, nameof(configureComponents));
 
@@ -63,7 +46,8 @@ public static class HostUtilities
         builder.ConfigureServices((ctx, services) =>
         {
             configureComponents(ctx, properties);
-            ServiceUtilities.AddComponentProvider<TFactory>(services, properties);
+
+            ServiceUtilities.AddComponentProvider(services, properties);
         });
 
         return builder;

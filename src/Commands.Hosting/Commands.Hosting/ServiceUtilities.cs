@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Commands.Hosting;
 
@@ -9,19 +8,16 @@ namespace Commands.Hosting;
 public static class ServiceUtilities
 {
     /// <summary>
-    ///     Adds a <see cref="IComponentProvider"/> to the <see cref="IServiceCollection"/> using the provided <typeparamref name="TFactory"/> as the factory for creating execution contexts.
+    ///     Adds a <see cref="IComponentProvider"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <remarks>
     ///     This method will remove any existing <see cref="IComponentProvider"/> and <see cref="ICommandExecutionFactory"/> from the collection before adding newly configured instances. Additionally, it configures a <see cref="IExecutionScope"/> and <see cref="IContextAccessor{TContext}"/> under scoped context.
     /// </remarks>
-    /// <typeparam name="TFactory">The type implementing <see cref="CommandExecutionFactory"/> which will be used to create execution context and fire off commands with.</typeparam>
     /// <param name="services">The <see cref="IServiceProvider"/> to add the configured services to.</param>
     /// <param name="configureAction"></param>
     /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configureAction"/> is <see langword="null"/>.</exception>
-    public static IServiceCollection AddComponentProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
-        (this IServiceCollection services, Action<ComponentBuilder> configureAction)
-        where TFactory : class, ICommandExecutionFactory
+    public static IServiceCollection AddComponentProvider(this IServiceCollection services, Action<ComponentBuilder> configureAction)
     {
         Assert.NotNull(services, nameof(services));
         Assert.NotNull(configureAction, nameof(configureAction));
@@ -30,34 +26,12 @@ public static class ServiceUtilities
 
         configureAction(properties);
 
-        return AddComponentProvider<TFactory>(services, properties);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static IServiceCollection AddComponentProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>
-        (IServiceCollection services, ComponentBuilder _)
-        where TFactory : class, ICommandExecutionFactory
-    {
-        if (services.Contains<ICommandExecutionFactory>())
-        {
-            // Remove the existing factory to avoid conflicts.
-            services.RemoveAll<ICommandExecutionFactory>();
-            services.RemoveAll<IComponentProvider>();
-            services.RemoveAll<IExecutionScope>();
-            services.RemoveAll<IDependencyResolver>();
-            services.RemoveAll(typeof(IContextAccessor<>));
-        }
-
-        services.AddSingleton<ICommandExecutionFactory, TFactory>();
-
-        services.AddScoped<IDependencyResolver, KeyedDependencyResolver>();
-        services.AddScoped<IExecutionScope, ExecutionContext>();
-        services.AddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
-
-        var providerDescriptor = ServiceDescriptor.Singleton<IComponentProvider, ComponentProvider>();
-
-        services.Add(providerDescriptor);
+        AddComponentProvider(services, properties);
 
         return services;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void AddComponentProvider(IServiceCollection services, ComponentBuilder properties)
+        => properties.DefineServices(services);
 }

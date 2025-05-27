@@ -22,6 +22,8 @@ public abstract class AsyncContext : IContext
     void IContext.Respond(object? message)
         => Respond(message).Wait();
 
+    #region Internals
+
     internal static Task Respond(IContext context, object? message)
     {
         if (context is AsyncContext asyncContext)
@@ -31,4 +33,6 @@ public abstract class AsyncContext : IContext
 
         return Task.CompletedTask;
     }
+
+    #endregion
 }

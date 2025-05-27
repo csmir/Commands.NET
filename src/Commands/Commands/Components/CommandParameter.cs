@@ -3,7 +3,9 @@
 namespace Commands;
 
 /// <summary>
-///     A parsible command parameter. This is the base type of all non-deconstructible parameters, and is used to convert raw arguments into their respective types in order to execute the command and its according target.
+///     A parsible command parameter. 
+///     This is the base type of all non-deconstructible parameters, and is used to convert raw arguments into their respective types in order to execute the command and its according target.
+///     This class cannot be inherited.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
 public sealed class CommandParameter : ICommandParameter

@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 namespace Commands;
 
 /// <summary>
-///     A set of options that can be used to configure command, group and tree creation.
+///     A set of options that can be used to configure command, group and tree creation. This class cannot be inherited.
 /// </summary>
 public sealed class ComponentOptions
 {

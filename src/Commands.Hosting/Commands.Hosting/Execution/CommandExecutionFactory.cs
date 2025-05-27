@@ -77,13 +77,10 @@ public class CommandExecutionFactory : ICommandExecutionFactory
 
         var executionScope = scope.ServiceProvider.GetRequiredService<IExecutionScope>();
 
-        if (executionScope is not ExecutionContext scopeImplementation)
-            throw new NotSupportedException($"Custom implementations of {nameof(IExecutionScope)} are not supported within the default {nameof(CommandExecutionFactory)}.");
+        executionScope.CancellationSource ??= token;
+        executionScope.Context ??= context;
+        executionScope.Scope ??= scope;
 
-        scopeImplementation.CancellationSource ??= token;
-        scopeImplementation.Context ??= context;
-        scopeImplementation.Scope ??= scope;
-
-        return scopeImplementation;
+        return executionScope;
     }
 }

@@ -12,10 +12,15 @@ public interface IExecutionScope : IDisposable
     /// <summary>
     ///     Gets the <see cref="IContext"/> resembling the metadata and response mechanism of the command being executed in the scope.
     /// </summary>
-    public IContext Context { get; }
+    public IContext Context { get; set; }
+
+    /// <summary>
+    ///     Gets the <see cref="IServiceScope"/> that contains the services used to execute the command in this scope. This scope is created when the command execution starts and disposed of when the command execution ends.
+    /// </summary>
+    public IServiceScope Scope { get; set; }
 
     /// <summary>
     ///     Gets a reference to the <see cref="CancellationToken"/> propagated through the execution pipeline. When this token is cancelled, the execution pipeline will be cancelled.
     /// </summary>
-    public CancellationTokenSource CancellationSource { get; }
+    public CancellationTokenSource CancellationSource { get; set; }
 }
