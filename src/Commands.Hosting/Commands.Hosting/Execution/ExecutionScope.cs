@@ -16,6 +16,11 @@ internal sealed class ExecutionScope : IExecutionScope
             disposable.Dispose();
         }
 
+        if (Context is IDisposable contextDisposable)
+        {
+            contextDisposable.Dispose();
+        }
+
         // Dispose of the cancellation token source.
         CancellationSource?.Dispose();
     }

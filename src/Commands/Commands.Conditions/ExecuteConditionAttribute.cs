@@ -32,7 +32,7 @@ TEvaluator>() : Attribute, ICondition
 
     /// <inheritdoc />
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="error"/> is <see langword="null"/> or empty.</exception>
-    public ConditionResult Error(string error)
+    public virtual ConditionResult Error(string error)
     {
         Assert.NotNullOrEmpty(error, nameof(error));
 

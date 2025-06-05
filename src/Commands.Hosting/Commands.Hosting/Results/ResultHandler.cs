@@ -33,22 +33,14 @@ public abstract class ResultHandler
                     }
                     break;
                 case ParseResult parseResult:
-                    {
-                        if (exception is ParserException parseEx)
-                            return ParseFailed(context, parseEx, parseResult, services, cancellationToken);
+                    if (exception is CommandOutOfRangeException rangeEx)
+                        return ParamsOutOfRange(context, rangeEx, parseResult, services, cancellationToken);
 
-                        if (exception is CommandOutOfRangeException rangeEx)
-                            return ParamsOutOfRange(context, rangeEx, parseResult, services, cancellationToken);
-                    }
-                    break;
+                        return ParseFailed(context, exception, parseResult, services, cancellationToken);
                 case ConditionResult conditionResult:
-                    {
-                        if (exception is ConditionException conditionEx)
-                            return ConditionUnmet(context, conditionEx, conditionResult, services, cancellationToken);
-                    }
-                    break;
+                    return ConditionUnmet(context, exception, conditionResult, services, cancellationToken);
                 case InvokeResult invokeResult:
-                        return InvokeFailed(context, exception, invokeResult, services, cancellationToken);
+                    return InvokeFailed(context, exception, invokeResult, services, cancellationToken);
             }
 
             return Unhandled(context, exception, result, services, cancellationToken);
@@ -116,7 +108,7 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask ParseFailed(IContext context, ParserException exception, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask ParseFailed(IContext context, Exception exception, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>
@@ -128,7 +120,7 @@ public abstract class ResultHandler
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation.</returns>
-    protected virtual ValueTask ConditionUnmet(IContext context, ConditionException exception, ConditionResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected virtual ValueTask ConditionUnmet(IContext context, Exception exception, ConditionResult result, IServiceProvider services, CancellationToken cancellationToken)
         => default;
 
     /// <summary>

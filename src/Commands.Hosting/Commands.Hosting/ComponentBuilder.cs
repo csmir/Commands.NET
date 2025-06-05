@@ -6,7 +6,7 @@ namespace Commands.Hosting;
 /// <summary>
 ///     A context object used to configure the component provider.
 /// </summary>
-public sealed class ComponentBuilder
+public class ComponentBuilder
 {
     [field: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
     private Type _execContextType = typeof(ExecutionScope);
@@ -25,7 +25,7 @@ public sealed class ComponentBuilder
     /// </summary>
     /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public ComponentBuilder SetDefaults()
+    public virtual ComponentBuilder SetDefaults()
     {
         _execContextType = typeof(ExecutionScope);
         _depResolverType = typeof(KeyedDependencyResolver);

@@ -60,6 +60,67 @@ public static class CommandUtils
     }
 
     /// <summary>
+    ///     Copies the provided items to the end of the array, creating a new array if necessary.
+    /// </summary>
+    /// <typeparam name="T">The type of array to copy to</typeparam>
+    /// <param name="array">The array to copy to.</param>
+    /// <param name="item">The item to add to the copy.</param>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static void CopyTo<T>(ref T[] array, T item)
+    {
+        var newArray = new T[array.Length + 1];
+
+        Array.Copy(array, newArray, array.Length);
+
+        newArray[array.Length] = item;
+
+        array = newArray;
+    }
+
+    /// <summary>
+    ///     Copies the provided items to the end of the array, creating a new array if necessary.
+    /// </summary>
+    /// <typeparam name="T">The type of array to copy to.</typeparam>
+    /// <param name="array">The array to copy to.</param>
+    /// <param name="items">The items to add to the copy.</param>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static void CopyTo<T>(ref T[] array, T[] items)
+    {
+        var newArray = new T[array.Length + items.Length];
+
+        Array.Copy(array, newArray, array.Length);
+
+        var i = array.Length;
+
+        foreach (var component in items)
+            newArray[i++] = component;
+
+        array = newArray;
+    }
+
+    /// <summary>
+    ///     Copies the provided items to the end of the array, creating a new array if necessary.
+    /// </summary>
+    /// <typeparam name="T">The type of array to copy to.</typeparam>
+    /// <param name="array">The array to copy to.</param>
+    /// <param name="items">The items to add to the copy.</param>
+    /// <param name="newItemCount">How many items to copy from the provided <paramref name="items"/>.</param>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static void CopyTo<T>(ref T[] array, IEnumerable<T> items, int newItemCount)
+    {
+        var newArray = new T[array.Length + newItemCount];
+
+        Array.Copy(array, newArray, array.Length);
+
+        var i = array.Length;
+
+        foreach (var component in items)
+            newArray[i++] = component;
+
+        array = newArray;
+    }
+
+    /// <summary>
     ///     Gets an <see cref="IEnumerable{T}"/> containing all implementations of <see cref="CommandModule"/> from the provided types.
     /// </summary>
     /// <param name="types">A collection of types to create modules from.</param>
@@ -164,31 +225,6 @@ public static class CommandUtils
         }
 
         return resolvedValues;
-    }
-
-    internal static void CopyTo(ref IComponent[] array, IComponent component)
-    {
-        var newArray = new IComponent[array.Length + 1];
-
-        Array.Copy(array, newArray, array.Length);
-
-        newArray[array.Length] = component;
-
-        array = newArray;
-    }
-
-    internal static void CopyTo(ref IComponent[] array, IComponent[] components)
-    {
-        var newArray = new IComponent[array.Length + components.Length];
-
-        Array.Copy(array, newArray, array.Length);
-
-        var i = array.Length;
-
-        foreach (var component in components)
-            newArray[i++] = component;
-
-        array = newArray;
     }
 
     internal static IEnumerable<CommandGroup> GetComponents(ComponentOptions configuration, IEnumerable<TypeWrapper> types, CommandGroup? parent, bool isNested)
