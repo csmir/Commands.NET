@@ -7,8 +7,12 @@ public class BasicModule(BasicService service) : CommandModule<ConsoleContext>
         => service.GetCommands();
 
     [Name("version")]
-    public Version AssemblyVersion()
-        => typeof(BasicModule).Assembly.GetName().Version ?? new(1, 0);
+    public Version Version()
+        => service.GetVersion();
+
+    [Name("version")]
+    public void SetVersion(Version version)
+        => service.SetVersion(version);
 
     [Name("echo")]
     public string Echo(string message)

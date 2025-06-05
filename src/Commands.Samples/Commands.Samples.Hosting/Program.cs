@@ -17,6 +17,7 @@ builder.ConfigureComponents(context =>
 builder.ConfigureServices(services =>
 {
     services.AddHostedService<CommandListener>();
+    services.AddSingleton<VersionManager>();
     services.AddScoped<BasicService>();
 });
 
