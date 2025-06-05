@@ -8,17 +8,10 @@ namespace Commands.Hosting;
 /// </summary>
 public class ComponentBuilder
 {
-    [field: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-    private Type _execContextType = typeof(ExecutionScope);
-
-    [field: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-    private Type _depResolverType = typeof(KeyedDependencyResolver);
-
-    [field: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-    private Type _providerType = typeof(ComponentProvider);
-
-    [field: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-    private Type _factoryType = typeof(CommandExecutionFactory);
+    /// <summary>
+    ///     Gets a dictionary holding types required to be registered when attaching the component logistics to a service collection.
+    /// </summary>
+    protected Dictionary<string, TypeWrapper> ServiceDictionary { get; } = [];
 
     /// <summary>
     ///     Resets the component builder to its default state, using the default types for execution scope, dependency resolver, component provider, and command execution factory.
@@ -27,10 +20,13 @@ public class ComponentBuilder
     [EditorBrowsable(EditorBrowsableState.Never)]
     public virtual ComponentBuilder SetDefaults()
     {
-        _execContextType = typeof(ExecutionScope);
-        _depResolverType = typeof(KeyedDependencyResolver);
-        _providerType = typeof(ComponentProvider);
-        _factoryType = typeof(CommandExecutionFactory);
+        ServiceDictionary.Clear();
+
+        // Reset to the default types.
+        ServiceDictionary["ExecutionScope"] = new TypeWrapper(typeof(ExecutionScope));
+        ServiceDictionary["DependencyResolver"] = new TypeWrapper(typeof(KeyedDependencyResolver));
+        ServiceDictionary["ComponentProvider"] = new TypeWrapper(typeof(ComponentProvider));
+        ServiceDictionary["CommandExecutionFactory"] = new TypeWrapper(typeof(CommandExecutionFactory));
 
         return this;
     }
@@ -61,10 +57,10 @@ public class ComponentBuilder
     /// </remarks>
     /// <typeparam name="TScope">The type implementing <see cref="IExecutionScope"/> that should be the underlying implementation used by the hosted factory.</typeparam>
     /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
-    public ComponentBuilder AddExecutionScope<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TScope>()
+    public ComponentBuilder AddExecutionScope<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TScope>()
         where TScope : class, IExecutionScope
     {
-        _execContextType = typeof(TScope);
+        ServiceDictionary["ExecutionScope"] = new TypeWrapper(typeof(TScope));
 
         return this;
     }
@@ -77,10 +73,10 @@ public class ComponentBuilder
     /// </remarks>
     /// <typeparam name="TResolver">The type implementing <see cref="IDependencyResolver"/> that should be the underlying implementation used by the hosted factory.</typeparam>
     /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
-    public ComponentBuilder AddDependencyResolver<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TResolver>()
+    public ComponentBuilder AddDependencyResolver<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TResolver>()
         where TResolver : class, IDependencyResolver
     {
-        _depResolverType = typeof(TResolver);
+        ServiceDictionary["DependencyResolver"] = new TypeWrapper(typeof(TResolver));
 
         return this;
     }
@@ -93,10 +89,10 @@ public class ComponentBuilder
     /// </remarks>
     /// <typeparam name="TProvider">The type implementing <see cref="IComponentProvider"/> that should be the underlying implementation used by the hosted factory.</typeparam>
     /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
-    public ComponentBuilder AddProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TProvider>()
+    public ComponentBuilder AddProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TProvider>()
         where TProvider : class, IComponentProvider
     {
-        _providerType = typeof(TProvider);
+        ServiceDictionary["ComponentProvider"] = new TypeWrapper(typeof(TProvider));
 
         return this;
     }
@@ -106,10 +102,10 @@ public class ComponentBuilder
     /// </summary>
     /// <typeparam name="TFactory">The type implementing <see cref="ICommandExecutionFactory"/> that should be the underlying implementation for the hosted factory.</typeparam>
     /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
-    public ComponentBuilder AddFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TFactory>()
+    public ComponentBuilder AddFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TFactory>()
         where TFactory : class, ICommandExecutionFactory
     {
-        _factoryType = typeof(TFactory);
+        ServiceDictionary["CommandExecutionFactory"] = new TypeWrapper(typeof(TFactory));
 
         return this;
     }
@@ -131,11 +127,11 @@ public class ComponentBuilder
             collection.RemoveAll(typeof(IContextAccessor<>));
         }
 
-        collection.AddSingleton(typeof(ICommandExecutionFactory), _factoryType);
-        collection.AddSingleton(typeof(IComponentProvider), _providerType);
+        collection.AddSingleton(typeof(ICommandExecutionFactory), ServiceDictionary["CommandExecutionFactory"].Value);
+        collection.AddSingleton(typeof(IComponentProvider), ServiceDictionary["ComponentProvider"].Value);
 
-        collection.AddScoped(typeof(IDependencyResolver), _depResolverType);
-        collection.AddScoped(typeof(IExecutionScope), _execContextType);
+        collection.AddScoped(typeof(IDependencyResolver), ServiceDictionary["DependencyResolver"].Value);
+        collection.AddScoped(typeof(IExecutionScope), ServiceDictionary["ExecutionScope"].Value);
 
         // This isn't customizable, as the logic is tightly coupled with the execution scope.
         collection.AddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));

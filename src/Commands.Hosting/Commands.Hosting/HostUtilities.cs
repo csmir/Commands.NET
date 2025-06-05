@@ -1,4 +1,6 @@
-﻿namespace Commands.Hosting;
+﻿using System.ComponentModel;
+
+namespace Commands.Hosting;
 
 /// <summary>
 ///     A static class containing methods for configuring a .NET Generic host -being any implementation of <see cref="IHostBuilder"/>- with Commands.NET functionality.
@@ -48,6 +50,22 @@ public static class HostUtilities
             configureComponents(ctx, properties);
 
             ServiceUtilities.AddComponentProvider(services, properties);
+        });
+
+        return builder;
+    }
+
+    /// <inheritdoc cref="ConfigureComponents(IHostBuilder, Action{ComponentBuilder})"/>
+    /// <param name="builder">The builder to configure with the related services.</param>
+    /// <param name="componentBuilder">The configuration to use for these components.</param>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, ComponentBuilder componentBuilder)
+    {
+        Assert.NotNull(componentBuilder, nameof(componentBuilder));
+
+        builder.ConfigureServices((ctx, services) =>
+        {
+            ServiceUtilities.AddComponentProvider(services, componentBuilder);
         });
 
         return builder;
