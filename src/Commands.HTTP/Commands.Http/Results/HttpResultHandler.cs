@@ -11,83 +11,81 @@ namespace Commands.Http;
 public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
 {
     /// <inheritdoc />
-    protected override ValueTask ConditionUnmet(IContext context, Exception exception, ConditionResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected override ValueTask<bool> ConditionUnmet(IContext context, Exception exception, ConditionResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (exception is HttpConditionException httpException)
-            context.Respond(new HttpResponse(httpException.StatusCode, Encoding.UTF8.GetBytes(httpException.Message), httpException.ContentType));
-
-        else if (hostEnvironment.IsDevelopment())
-            context.Respond(new HttpResponse(HttpStatusCode.Forbidden, exception.Message));
-
+            context.Respond(httpException.Response);
         else
-            context.Respond(new HttpResponse(HttpStatusCode.Forbidden));
+            context.Respond(hostEnvironment.IsDevelopment()
+                ? HttpResponse.Forbidden(exception.Message)
+                : HttpResponse.Forbidden());
 
-        return default;
+        return ValueTask.FromResult(true);
     }
 
     /// <inheritdoc />
-    protected override ValueTask InvokeFailed(IContext context, Exception exception, InvokeResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected override ValueTask<bool> InvokeFailed(IContext context, Exception exception, InvokeResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (hostEnvironment.IsDevelopment())
-            context.Respond(new HttpResponse(HttpStatusCode.InternalServerError, exception.Message));
+        if (exception is HttpConditionException httpException)
+            context.Respond(httpException.Response);
         else
-            context.Respond(new HttpResponse(HttpStatusCode.InternalServerError));
+            context.Respond(hostEnvironment.IsDevelopment()
+                ? HttpResponse.InternalServerError(exception.Message)
+                : HttpResponse.InternalServerError());
 
-        return default;
+        return ValueTask.FromResult(true);
     }
 
     /// <inheritdoc />
-    protected override ValueTask CommandNotFound(IContext context, CommandNotFoundException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected override ValueTask<bool> CommandNotFound(IContext context, CommandNotFoundException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (hostEnvironment.IsDevelopment())
-            context.Respond(new HttpResponse(HttpStatusCode.NotFound, exception.Message));
-        else
-            context.Respond(new HttpResponse(HttpStatusCode.NotFound));
+        context.Respond(hostEnvironment.IsDevelopment()
+            ? HttpResponse.NotFound(exception.Message)
+            : HttpResponse.NotFound());
 
-        return default;
+        return ValueTask.FromResult(true);
     }
 
     /// <inheritdoc />
-    protected override ValueTask RouteIncomplete(IContext context, CommandRouteIncompleteException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected override ValueTask<bool> RouteIncomplete(IContext context, CommandRouteIncompleteException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (hostEnvironment.IsDevelopment())
-            context.Respond(new HttpResponse(HttpStatusCode.NotFound, exception.Message));
-        else
-            context.Respond(new HttpResponse(HttpStatusCode.NotFound));
+        context.Respond(hostEnvironment.IsDevelopment()
+            ? HttpResponse.NotFound(exception.Message)
+            : HttpResponse.NotFound());
 
-        return default;
+        return ValueTask.FromResult(true);
     }
 
     /// <inheritdoc />
-    protected override ValueTask ParamsOutOfRange(IContext context, CommandOutOfRangeException exception, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected override ValueTask<bool> ParamsOutOfRange(IContext context, CommandOutOfRangeException exception, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (hostEnvironment.IsDevelopment())
-            context.Respond(new HttpResponse(HttpStatusCode.BadRequest, exception.Message));
-        else
-            context.Respond(new HttpResponse(HttpStatusCode.BadRequest));
+        context.Respond(hostEnvironment.IsDevelopment()
+            ? HttpResponse.BadRequest(exception.Message)
+            : HttpResponse.BadRequest());
 
-        return default;
+        return ValueTask.FromResult(true);
     }
 
     /// <inheritdoc />
-    protected override ValueTask ParseFailed(IContext context, Exception exception, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected override ValueTask<bool> ParseFailed(IContext context, Exception exception, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (hostEnvironment.IsDevelopment())
-            context.Respond(new HttpResponse(HttpStatusCode.BadRequest, exception.Message));
+        if (exception is HttpConditionException httpException)
+            context.Respond(httpException.Response);
         else
-            context.Respond(new HttpResponse(HttpStatusCode.BadRequest));
+            context.Respond(hostEnvironment.IsDevelopment()
+                ? HttpResponse.BadRequest(exception.Message)
+                : HttpResponse.BadRequest());
 
-        return default;
+        return ValueTask.FromResult(true);
     }
 
     /// <inheritdoc />
-    protected override ValueTask Unhandled(IContext context, Exception? exception, IResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected override ValueTask<bool> Unhandled(IContext context, Exception? exception, IResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (hostEnvironment.IsDevelopment() && exception != null)
-            context.Respond(new HttpResponse(HttpStatusCode.InternalServerError, exception.Message));
-        else
-            context.Respond(new HttpResponse(HttpStatusCode.InternalServerError));
+        context.Respond(hostEnvironment.IsDevelopment()
+            ? HttpResponse.InternalServerError(exception?.Message ?? "An unhandled error occurred.")
+            : HttpResponse.InternalServerError());
 
-        return default;
+        return ValueTask.FromResult(true);
     }
 }

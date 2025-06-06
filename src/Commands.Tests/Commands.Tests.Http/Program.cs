@@ -1,16 +1,24 @@
 ﻿
+using Commands;
 using Commands.Hosting;
 using Commands.Http;
 using Commands.Parsing;
 using Microsoft.Extensions.Hosting;
+using System.Net;
 
 var builder = Host.CreateDefaultBuilder(args);
 
 builder.ConfigureHttpComponents(context =>
 {
-    context.Configure(options =>
+    context.ConfigureOptions(options =>
     {
         options.Parsers[typeof(Version)] = new TryParseParser<Version>(Version.TryParse);
+    });
+
+    context.ConfigureListener(listener =>
+    {
+        listener.Prefixes.Add("http://*:3000/");
+        listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
     });
 });
 
@@ -19,6 +27,8 @@ var host = builder.Build();
 host.UseComponents(components =>
 {
     components.AddRange(typeof(Program).Assembly.GetExportedTypes());
+
+    components.Add(new Command([HttpGet] () => HttpResponse.NoContent(), "ping"));
 });
 
 await host.RunAsync();

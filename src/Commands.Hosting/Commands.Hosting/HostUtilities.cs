@@ -27,23 +27,23 @@ public static class HostUtilities
 
     /// <inheritdoc cref="ConfigureComponents(IHostBuilder)"/>
     /// <param name="builder">The builder to configure with the related services.</param>
-    /// <param name="configureComponents">An action to configure the <see cref="ComponentBuilder"/> which will be used to populate all related services.</param>
+    /// <param name="configureComponents">An action to configure the <see cref="ComponentBuilderContext"/> which will be used to populate all related services.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureComponents"/> is <see langword="null"/>.</exception>
-    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentBuilder> configureComponents)
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentBuilderContext> configureComponents)
     {
         Assert.NotNull(configureComponents, nameof(configureComponents));
 
         return ConfigureComponents(builder, (_, ctx) => configureComponents(ctx));
     }
 
-    /// <inheritdoc cref="ConfigureComponents(IHostBuilder, Action{ComponentBuilder})"/>
+    /// <inheritdoc cref="ConfigureComponents(IHostBuilder, Action{ComponentBuilderContext})"/>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureComponents"/> is <see langword="null"/>.</exception>
-    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<HostBuilderContext, ComponentBuilder> configureComponents)
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<HostBuilderContext, ComponentBuilderContext> configureComponents)
     {
         Assert.NotNull(configureComponents, nameof(configureComponents));
 
-        var properties = new ComponentBuilder();
+        var properties = new ComponentBuilderContext();
 
         builder.ConfigureServices((ctx, services) =>
         {
@@ -55,11 +55,11 @@ public static class HostUtilities
         return builder;
     }
 
-    /// <inheritdoc cref="ConfigureComponents(IHostBuilder, Action{ComponentBuilder})"/>
+    /// <inheritdoc cref="ConfigureComponents(IHostBuilder, Action{ComponentBuilderContext})"/>
     /// <param name="builder">The builder to configure with the related services.</param>
     /// <param name="componentBuilder">The configuration to use for these components.</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, ComponentBuilder componentBuilder)
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, ComponentBuilderContext componentBuilder)
     {
         Assert.NotNull(componentBuilder, nameof(componentBuilder));
 

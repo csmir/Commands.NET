@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Runtime.CompilerServices;
 
 namespace Commands.Hosting;
 
@@ -17,21 +18,61 @@ public static class ServiceUtilities
     /// <param name="configureAction"></param>
     /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configureAction"/> is <see langword="null"/>.</exception>
-    public static IServiceCollection AddComponentProvider(this IServiceCollection services, Action<ComponentBuilder> configureAction)
+    public static IServiceCollection AddComponentProvider(this IServiceCollection services, Action<ComponentBuilderContext> configureAction)
     {
         Assert.NotNull(services, nameof(services));
         Assert.NotNull(configureAction, nameof(configureAction));
 
-        var properties = new ComponentBuilder();
+        var builder = new ComponentBuilderContext();
 
-        configureAction(properties);
+        configureAction(builder);
 
-        AddComponentProvider(services, properties);
+        AddComponentProvider(services, builder);
 
         return services;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void AddComponentProvider(IServiceCollection services, ComponentBuilder properties)
-        => properties.DefineServices(services);
+    internal static void AddComponentProvider(IServiceCollection services, ComponentBuilderContext builder)
+        => DefineServices(services, builder);
+
+    #region Internals
+
+    // A method that defines the services to be added to the service collection.
+    internal static void DefineServices(IServiceCollection collection, ComponentBuilderContext builder)
+    {
+        Assert.NotNull(collection, nameof(collection));
+
+        if (collection.Contains<ICommandExecutionFactory>())
+        {
+            // Remove the existing factory to avoid conflicts.
+            collection.RemoveAll<ICommandExecutionFactory>();
+            collection.RemoveAll<IComponentProvider>();
+            collection.RemoveAll<IExecutionScope>();
+            collection.RemoveAll<IDependencyResolver>();
+            collection.RemoveAll(typeof(IContextAccessor<>));
+        }
+
+        if (builder.Properties.TryGetValue("ComponentProvider", out var prop) && prop is TypeWrapper providerType)
+            collection.AddSingleton(typeof(IComponentProvider), providerType.Value);
+
+        if (builder.Properties.TryGetValue("CommandExecutionFactory", out prop) && prop is TypeWrapper factoryType)
+            collection.AddSingleton(typeof(ICommandExecutionFactory), factoryType.Value);
+
+        if (builder.Properties.TryGetValue("ExecutionScope", out prop) && prop is TypeWrapper scopeType)
+            collection.AddScoped(typeof(IExecutionScope), scopeType.Value);
+
+        if (builder.Properties.TryGetValue("DependencyResolver", out prop) && prop is TypeWrapper resolverType)
+            collection.AddScoped(typeof(IDependencyResolver), resolverType.Value);
+
+        // Register the result handlers if any are defined.
+        if (builder.Properties.TryGetValue("ResultHandlers", out prop) && prop is List<TypeWrapper> handlers)
+            foreach (var handler in handlers)
+                collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ResultHandler), handler.Value));
+
+        // This isn't customizable, as the logic is tightly coupled with the execution scope.
+        collection.AddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
+    }
+
+    #endregion
 }

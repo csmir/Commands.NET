@@ -6,6 +6,7 @@
 public class HttpCommandContext : IContext
 {
     private bool _closed;
+    private object? _body;
 
     private readonly HttpListenerContext _httpContext;
 
@@ -13,6 +14,11 @@ public class HttpCommandContext : IContext
     ///     Gets the HTTP request associated with this command context.
     /// </summary>
     public HttpListenerRequest Request => _httpContext.Request;
+
+    /// <summary>
+    ///     Gets the HTTP response associated with this command context, allowing you to set headers, status codes, and content to respond to the request.
+    /// </summary>
+    public HttpListenerResponse Response => _httpContext.Response;
 
     /// <summary>
     ///     Gets the arguments provided to the command for which this context was created.
@@ -63,7 +69,20 @@ public class HttpCommandContext : IContext
     /// <exception cref="InvalidOperationException">Thrown if the HTTP response has already been sent.</exception>
     public virtual void Respond(HttpResponse result)
     {
-        SetResponse(result);
+        Assert.NotNull(result, nameof(result));
+
+        Response.StatusCode = (int)result.StatusCode;
+        Response.StatusDescription = result.StatusCode.ToString();
+
+        if (result.Content != null)
+        {
+            Response.ContentType = result.ContentType ?? "text/plain";
+            Response.ContentLength64 = result.Content.LongLength;
+            Response.ContentEncoding = result.ContentEncoding;
+
+            using var outputStream = Response.OutputStream;
+            outputStream.Write(result.Content, 0, result.Content.Length);
+        }
 
         Respond();
     }
@@ -80,47 +99,8 @@ public class HttpCommandContext : IContext
         if (_closed)
             throw new InvalidOperationException("The HTTP response has already been sent.");
 
-        _httpContext.Response.Close();
+        Response.Close();
         _closed = true;
-    }
-
-    /// <summary>
-    ///     Sets the HTTP response based on the provided <see cref="HttpResponse"/> object. This method will set the status code, status description, content type, and content of the response.
-    /// </summary>
-    /// <param name="result">The result to send to the caller.</param>
-    public virtual void SetResponse(HttpResponse result)
-    {
-        Assert.NotNull(result, nameof(result));
-
-        var resp = _httpContext.Response;
-
-        resp.StatusCode = (int)result.StatusCode;
-        resp.StatusDescription = result.StatusDescription ?? string.Empty;
-
-        if (result.Content != null)
-        {
-            resp.ContentType = result.ContentType ?? "text/plain";
-            resp.ContentLength64 = result.Content.LongLength;
-            resp.ContentEncoding = result.ContentEncoding;
-
-            using var outputStream = resp.OutputStream;
-            outputStream.Write(result.Content, 0, result.Content.Length);
-        }
-    }
-
-    /// <summary>
-    ///     Sets a response header for the HTTP response. This method allows you to add custom headers to the response, which can be useful for metadata or additional information.
-    /// </summary>
-    /// <param name="name">The name of the header.</param>
-    /// <param name="value">The value of the header.</param>
-    public virtual void SetResponseHeader(string name, object value)
-    {
-        Assert.NotNullOrEmpty(name, nameof(name));
-        Assert.NotNull(value, nameof(value));
-
-        _httpContext.Response.Headers[name] = value is string str
-            ? str
-            : value.ToString();
     }
 
     /// <summary>
@@ -139,6 +119,9 @@ public class HttpCommandContext : IContext
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
     public T? GetJsonBody<T>(JsonSerializerOptions? options = null)
     {
+        if (_body is T cachedBody)
+            return cachedBody;
+
         Request.InputStream.Position = 0;
 
         using var reader = new StreamReader(Request.InputStream, Request.ContentEncoding);
@@ -150,19 +133,26 @@ public class HttpCommandContext : IContext
 
         try
         {
-            return JsonSerializer.Deserialize<T>(body, options);
+            _body = JsonSerializer.Deserialize<T>(body, options);
         }
         catch (JsonException ex)
         {
             throw new InvalidOperationException("Failed to deserialize the request body.", ex);
         }
+
+        if (_body is not T result)
+            throw new InvalidCastException($"The request body could not be interpreted as an instance of '{typeof(T)}'.");
+
+        return result;
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL3050")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
     void IContext.Respond(object? message)
     {
         if (message is HttpResponse httpResult)
             Respond(httpResult);
         else
-            throw new NotSupportedException($"The provided message type '{message?.GetType()}' is not supported for HTTP responses. Use {nameof(HttpResponse)} instead.");
+            Respond(HttpResponse.Json(message!));
     }
 }

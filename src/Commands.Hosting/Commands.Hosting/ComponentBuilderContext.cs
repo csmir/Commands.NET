@@ -6,29 +6,25 @@ namespace Commands.Hosting;
 /// <summary>
 ///     A context object used to configure the component provider.
 /// </summary>
-public class ComponentBuilder
+public class ComponentBuilderContext
 {
     /// <summary>
     ///     Gets a dictionary holding types required to be registered when attaching the component logistics to a service collection.
     /// </summary>
-    protected Dictionary<string, TypeWrapper> ServiceDictionary { get; } = [];
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public Dictionary<string, object?> Properties { get; } = [];
 
     /// <summary>
-    ///     Resets the component builder to its default state, using the default types for execution scope, dependency resolver, component provider, and command execution factory.
+    ///     Initializes a new instance of the <see cref="ComponentBuilderContext"/> class, setting up the default services required for component execution.
     /// </summary>
-    /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public virtual ComponentBuilder SetDefaults()
+    public ComponentBuilderContext()
     {
-        ServiceDictionary.Clear();
-
-        // Reset to the default types.
-        ServiceDictionary["ExecutionScope"] = new TypeWrapper(typeof(ExecutionScope));
-        ServiceDictionary["DependencyResolver"] = new TypeWrapper(typeof(KeyedDependencyResolver));
-        ServiceDictionary["ComponentProvider"] = new TypeWrapper(typeof(ComponentProvider));
-        ServiceDictionary["CommandExecutionFactory"] = new TypeWrapper(typeof(CommandExecutionFactory));
-
-        return this;
+        // Initialize the default service properties with their respective types.
+        Properties["ExecutionScope"] = new TypeWrapper(typeof(ExecutionScope));
+        Properties["DependencyResolver"] = new TypeWrapper(typeof(KeyedDependencyResolver));
+        Properties["ComponentProvider"] = new TypeWrapper(typeof(ComponentProvider));
+        Properties["CommandExecutionFactory"] = new TypeWrapper(typeof(CommandExecutionFactory));
+        Properties["ResultHandlers"] = new List<TypeWrapper>();
     }
 
     /// <summary>
@@ -38,9 +34,9 @@ public class ComponentBuilder
     ///     This method can be called multiple times, modifying the options for each call.
     /// </remarks>
     /// <param name="configureOptions">An action that configures the creation of new components.</param>
-    /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
+    /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureOptions"/> is <see langword="null"/>.</exception>
-    public ComponentBuilder Configure(Action<ComponentOptions> configureOptions)
+    public ComponentBuilderContext ConfigureOptions(Action<ComponentOptions> configureOptions)
     {
         Assert.NotNull(configureOptions, nameof(configureOptions));
 
@@ -56,11 +52,11 @@ public class ComponentBuilder
     ///     This method can be called multiple times, replacing the previously defined scope type for a new one. If this method is not called, the default <see cref="ExecutionScope"/> will be used as the execution scope type.
     /// </remarks>
     /// <typeparam name="TScope">The type implementing <see cref="IExecutionScope"/> that should be the underlying implementation used by the hosted factory.</typeparam>
-    /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
-    public ComponentBuilder AddExecutionScope<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TScope>()
+    /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
+    public ComponentBuilderContext WithExecutionScope<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TScope>()
         where TScope : class, IExecutionScope
     {
-        ServiceDictionary["ExecutionScope"] = new TypeWrapper(typeof(TScope));
+        Properties["ExecutionScope"] = new TypeWrapper(typeof(TScope));
 
         return this;
     }
@@ -72,11 +68,11 @@ public class ComponentBuilder
     ///     This method can be called multiple times, replacing the previously defined resolver type for a new one. If this method is not called, the default <see cref="KeyedDependencyResolver"/> will be used as the dependency resolver type.
     /// </remarks>
     /// <typeparam name="TResolver">The type implementing <see cref="IDependencyResolver"/> that should be the underlying implementation used by the hosted factory.</typeparam>
-    /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
-    public ComponentBuilder AddDependencyResolver<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TResolver>()
+    /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
+    public ComponentBuilderContext WithDependencyResolver<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TResolver>()
         where TResolver : class, IDependencyResolver
     {
-        ServiceDictionary["DependencyResolver"] = new TypeWrapper(typeof(TResolver));
+        Properties["DependencyResolver"] = new TypeWrapper(typeof(TResolver));
 
         return this;
     }
@@ -88,11 +84,11 @@ public class ComponentBuilder
     ///     This method can be called multiple times, replacing the previously defined provider type for a new one. If this method is not called, the default <see cref="ComponentProvider"/> will be used as the component provider type.
     /// </remarks>
     /// <typeparam name="TProvider">The type implementing <see cref="IComponentProvider"/> that should be the underlying implementation used by the hosted factory.</typeparam>
-    /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
-    public ComponentBuilder AddProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TProvider>()
+    /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
+    public ComponentBuilderContext WithComponentProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TProvider>()
         where TProvider : class, IComponentProvider
     {
-        ServiceDictionary["ComponentProvider"] = new TypeWrapper(typeof(TProvider));
+        Properties["ComponentProvider"] = new TypeWrapper(typeof(TProvider));
 
         return this;
     }
@@ -101,41 +97,32 @@ public class ComponentBuilder
     ///     Configures the command execution factory type to be used by the hosted component factory to manage command execution. This factory is responsible for creating and managing the execution scope, resolving dependencies, and executing commands.
     /// </summary>
     /// <typeparam name="TFactory">The type implementing <see cref="ICommandExecutionFactory"/> that should be the underlying implementation for the hosted factory.</typeparam>
-    /// <returns>The same <see cref="ComponentBuilder"/> for call-chaining.</returns>
-    public ComponentBuilder AddFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TFactory>()
+    /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
+    public ComponentBuilderContext WithExecutionFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TFactory>()
         where TFactory : class, ICommandExecutionFactory
     {
-        ServiceDictionary["CommandExecutionFactory"] = new TypeWrapper(typeof(TFactory));
+        Properties["CommandExecutionFactory"] = new TypeWrapper(typeof(TFactory));
 
         return this;
     }
 
-    #region Internals
-
-    // A method that defines the services to be added to the service collection.
-    internal void DefineServices(IServiceCollection collection)
+    /// <summary>
+    ///     Adds a result handler type to the component builder. Result handlers are used to process the results of command execution, allowing for custom handling of success and failure cases.
+    /// </summary>
+    /// <typeparam name="THandler">The type implementing <see cref="ResultHandler"/> that should be an enumerated implementation to handle command results.</typeparam>
+    /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
+    public ComponentBuilderContext AddResultHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] THandler>()
+        where THandler : ResultHandler
     {
-        Assert.NotNull(collection, nameof(collection));
-
-        if (collection.Contains<ICommandExecutionFactory>())
+        if (!Properties.TryGetValue("ResultHandlers", out var handlers) || handlers is not List<TypeWrapper> handlerContainer)
         {
-            // Remove the existing factory to avoid conflicts.
-            collection.RemoveAll<ICommandExecutionFactory>();
-            collection.RemoveAll<IComponentProvider>();
-            collection.RemoveAll<IExecutionScope>();
-            collection.RemoveAll<IDependencyResolver>();
-            collection.RemoveAll(typeof(IContextAccessor<>));
+            handlerContainer = [];
+            
+            Properties["ResultHandlers"] = handlerContainer;
         }
 
-        collection.AddSingleton(typeof(ICommandExecutionFactory), ServiceDictionary["CommandExecutionFactory"].Value);
-        collection.AddSingleton(typeof(IComponentProvider), ServiceDictionary["ComponentProvider"].Value);
+        handlerContainer.Add(new TypeWrapper(typeof(THandler)));
 
-        collection.AddScoped(typeof(IDependencyResolver), ServiceDictionary["DependencyResolver"].Value);
-        collection.AddScoped(typeof(IExecutionScope), ServiceDictionary["ExecutionScope"].Value);
-
-        // This isn't customizable, as the logic is tightly coupled with the execution scope.
-        collection.AddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
+        return this;
     }
-
-    #endregion
 }

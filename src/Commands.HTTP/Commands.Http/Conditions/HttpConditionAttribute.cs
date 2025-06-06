@@ -30,15 +30,13 @@ public abstract class HttpConditionAttribute<T> : ExecuteConditionAttribute<T>
 
     /// <inheritdoc />
     public override ConditionResult Error(string error)
-        => Error(HttpStatusCode.BadRequest, error);
+        => Error(HttpResponse.BadRequest(error));
 
     /// <summary>
     ///     Creates a <see cref="ConditionResult"/> that represents an error condition with the provided status code and error message.
     /// </summary>
-    /// <param name="statusCode">The statuscode that should be yielded when this result is returned to the caller.</param>
-    /// <param name="content">The error that should be yielded when this result is returned to the caller. If not specified, it is not provided.</param>
-    /// <param name="contentType">The content type of the response.</param>
-    /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
-    public virtual ConditionResult Error(HttpStatusCode statusCode, object? content, string? contentType = null)
-        => ConditionResult.FromError(new HttpConditionException(this, statusCode, content, contentType));
+    /// <param name="response">The HTTP response that contains the error details.</param>
+    /// <returns>A <see cref="ConditionResult"/> representing the failed evaluation.</returns>
+    public virtual ConditionResult Error(HttpResponse response)
+        => ConditionResult.FromError(new HttpConditionException(this, response));
 }

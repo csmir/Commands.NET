@@ -1,4 +1,6 @@
-﻿namespace Commands.Hosting;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Commands.Hosting;
 
 /// <summary>
 ///     Represents a factory for firing commands in a hosted environment, creating and configuring the scope for the execution.
@@ -19,7 +21,11 @@ public class CommandExecutionFactory : ICommandExecutionFactory
         executionProvider.OnFailure += async (context, result, exception, services) =>
         {
             foreach (var handler in resultHandlers)
-                await handler.Failure(context, result, exception, services);
+            {
+                // If handled, break the loop to avoid multiple handlers processing the same result.
+                if (await handler.Failure(context, result, exception, services))
+                    break;
+            }
 
             services.GetService<IExecutionScope>()?.Dispose();
         };
@@ -27,7 +33,11 @@ public class CommandExecutionFactory : ICommandExecutionFactory
         executionProvider.OnSuccess += async (context, result, services) =>
         {
             foreach (var handler in resultHandlers)
-                await handler.Success(context, result, services);
+            {
+                // If handled, break the loop to avoid multiple handlers processing the same result.
+                if (await handler.Success(context, result, services))
+                    break;
+            }
 
             services.GetService<IExecutionScope>()?.Dispose();
         };

@@ -8,32 +8,16 @@ namespace Commands.Http;
 public sealed class HttpConditionException : ConditionException
 {
     /// <summary>
-    ///     Gets the HTTP status code that was returned when the condition failed to evaluate.
+    ///     Gets the response that will be sent if this exception reaches the end of the pipeline.
     /// </summary>
-    public HttpStatusCode StatusCode { get; }
+    public HttpResponse? Response { get; }
 
     /// <summary>
-    ///     Gets the content type of the response that was returned when the condition failed to evaluate.
-    /// </summary>
-    public string? ContentType { get; }
-
-    /// <summary>
-    ///     Gets the content of the response that was returned when the condition failed to evaluate.
-    /// </summary>
-    public object? Content { get; }
-
-    /// <summary>
-    ///     /Creates a new instance of <see cref="HttpConditionException"/> with the specified condition, status code, content, and content type.
+    ///     Creates a new instance of <see cref="HttpConditionException"/> with the specified response, which will be sent if this exception reaches to the end of the pipeline.
     /// </summary>
     /// <param name="condition">The condition that failed.</param>
-    /// <param name="statusCode">The status code that represents the failure.</param>
-    /// <param name="content">The content that should be sent back to the caller on failure.</param>
-    /// <param name="contentType">The content type of <paramref name="content"/>.</param>
-    public HttpConditionException(ICondition condition, HttpStatusCode statusCode, object? content, string? contentType = null)
-        : base(condition, "An error occurred during evaluation of an execution condition.")
-    {
-        StatusCode = statusCode;
-        ContentType = contentType;
-        Content = content;
-    }
+    /// <param name="response">The response which will be sent if this exception reaches to the end of the pipeline.</param>
+    public HttpConditionException(ICondition condition, HttpResponse response)
+        : base(condition, "An error occurred during evaluation of an execution condition.") 
+        => Response = response;
 }

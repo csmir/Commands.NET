@@ -5,15 +5,17 @@ namespace Commands.Http;
 /// <summary>
 ///     Represents a factory for executing commands over HTTP, using an <see cref="HttpListener"/> to listen for incoming requests.
 /// </summary>
-public class HttpCommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, IEnumerable<ResultHandler> resultHandlers, HttpListener httpListener) 
+public class HttpCommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, IEnumerable<ResultHandler> resultHandlers, HttpListener httpListener)
     : CommandExecutionFactory(executionProvider, serviceProvider, resultHandlers), IHostedService
 {
+    private Task? _listenerTask;
+
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
         httpListener.Start();
 
-        new Task(() =>
+        _listenerTask = new Task(() =>
         {
             while (httpListener.IsListening)
             {
@@ -28,7 +30,9 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
                     break;
                 }
             }
-        }, cancellationToken).Start();
+        }, cancellationToken);
+
+        _listenerTask.Start();
 
         return Task.CompletedTask;
     }
@@ -39,8 +43,10 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
         httpListener.Stop();
         httpListener.Close();
 
-        return Task.CompletedTask;
+        return _listenerTask?.WaitAsync(cancellationToken) ?? Task.CompletedTask;
     }
+
+    #region Internals
 
     private Task OnRequestReceived(IAsyncResult result)
     {
@@ -63,4 +69,6 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
             ExecuteAsynchronously = true,
         });
     }
+
+    #endregion
 }

@@ -7,34 +7,27 @@ namespace Commands.Tests;
 public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
 {
     [HttpGet]
-    [Name("simple-get")]
-    public Task<HttpResponse> SimpleGet(int initialValue, Guid anotherValue)
-    {
-        return Ok("Hello World");
-    }
+    [Name("get")]
+    public Task<HttpResponse> Get(int initialValue, Guid anotherValue) 
+        => HttpResponse.Ok($"Hello World; {initialValue}, {anotherValue}");
 
     [HttpPost]
-    [Name("simple-post")]
-    public Task<HttpResponse> SimplePost(int initialValue, Guid anotherValue)
-    {
-        return Json("Hello World", HttpStatusCode.Created);
-    }
+    [Name("post")]
+    public Task<HttpResponse> Post(int initialValue, Guid anotherValue) 
+        => HttpResponse.Json(new { InitialValue = initialValue, AnotherValue = anotherValue }, HttpStatusCode.Created);
 
     [HttpDelete]
-    [Name("simple-delete")]
-    public Task<HttpResponse> SimpleDelete(int initialValue, Guid anotherValue)
-    {
-        return Forbidden();
-    }
+    [Name("delete")]
+    public Task<HttpResponse> Delete() 
+        => HttpResponse.Forbidden();
 
     [HttpGet]
     [Name("dowork")]
-    public async Task SimpleDetachedProcess()
+    public async Task DoWork()
     {
-        SetResponseHeader("X-ProcessDuration-MS", "10000");
-        SetResponse(Ok("Doing work"));
+        Context.Response.Headers.Add("X-Detached-Process", "true");
 
-        Respond();
+        Respond(HttpResponse.Ok("Doing work"));
 
         // Simulate a long-running process
         await Task.Delay(10000);
