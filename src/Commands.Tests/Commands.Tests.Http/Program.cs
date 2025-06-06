@@ -17,7 +17,7 @@ builder.ConfigureHttpComponents(context =>
 
     context.ConfigureListener(listener =>
     {
-        listener.Prefixes.Add("http://*:3000/");
+        listener.Prefixes.Add("http://localhost:5000/");
         listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
     });
 });
@@ -28,7 +28,10 @@ host.UseComponents(components =>
 {
     components.AddRange(typeof(Program).Assembly.GetExportedTypes());
 
-    components.Add(new Command([HttpGet] () => HttpResponse.NoContent(), "ping"));
+    components.Add(new Command([HttpGet] () => 
+    { 
+        return HttpResponse.Ok("OK!"); 
+    }, "ping"));
 });
 
 await host.RunAsync();

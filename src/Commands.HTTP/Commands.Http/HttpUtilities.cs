@@ -8,11 +8,28 @@ namespace Commands.Http;
 /// </summary>
 public static class HttpUtilities
 {
-    /// <inheritdoc cref="HostUtilities.ConfigureComponents(IHostBuilder, Action{ComponentBuilderContext})"/>
+    /// <summary>
+    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and predefined <see cref="HttpCommandExecutionFactory"/> for HTTP command execution.
+    /// </summary>
+    /// <remarks>
+    ///     This method configures the <see cref="IServiceProvider"/> consumed by the <see cref="IHost"/> built from this builder, to implement the following services:
+    ///     <list type="bullet">
+    ///         <item>A required hosted singleton of <see cref="HttpCommandExecutionFactory"/>. This factory manages command scopes and execution lifetime.</item>
+    ///         <item>A required singleton of <see cref="HttpListener"/>. This listener can be configured using <see cref="ConfigureListener(ComponentBuilderContext, Action{HttpListener})"/>.</item>
+    ///         <item>A default singleton implementation of <see cref="ResultHandler"/>. This handler is exclusively to handle unhandled HTTP results, and can be replaced or ignored by self-registered handlers of higher priority.</item>
+    ///         <item>A default singleton implementation of <see cref="IComponentProvider"/>. This provider supplies the defined <see cref="CommandExecutionFactory"/> with executable commands.</item>
+    ///         <item>A default scoped implementation of <see cref="IDependencyResolver"/> which manages the scope's service injection for modules and statically -or delegate- defined commands.</item>
+    ///         <item>A default scoped implementation of <see cref="IExecutionScope"/> which holds execution metadata for the scope of the command lifetime, and can be injected freely within said scope.</item>
+    ///         <item>A default scoped implementation of <see cref="IContextAccessor{TContext}"/>. This accessor exposes the context by accessing it from the defined <see cref="IExecutionScope"/>.</item>
+    ///     </list>
+    /// </remarks>
+    /// <param name="builder">The builder to configure with the related services.</param>
+    /// <param name="configureComponents">An action to configure the <see cref="ComponentBuilderContext"/> which will be used to populate all related services.</param>
+    /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
     public static IHostBuilder ConfigureHttpComponents(this IHostBuilder builder, Action<ComponentBuilderContext> configureComponents)
         => ConfigureHttpComponents(builder, (context, httpBuilder) => configureComponents(httpBuilder));
 
-    /// <inheritdoc cref="HostUtilities.ConfigureComponents(IHostBuilder, Action{ComponentBuilderContext})"/>
+    /// <inheritdoc cref="ConfigureHttpComponents(IHostBuilder, Action{ComponentBuilderContext})"/>
     public static IHostBuilder ConfigureHttpComponents(this IHostBuilder builder, Action<HostBuilderContext, ComponentBuilderContext> configureComponents)
     {
         Assert.NotNull(configureComponents, nameof(configureComponents));
@@ -22,11 +39,17 @@ public static class HttpUtilities
         builder.ConfigureServices((context, services) =>
         {
             configureComponents(context, httpBuilder);
+        });
 
+        // Do the lower level configuration of the core components first.
+        builder.ConfigureComponents(httpBuilder);
+
+        builder.ConfigureServices((context, services) =>
+        {
             DefineServices(services, httpBuilder);
         });
 
-        return builder.ConfigureComponents(httpBuilder);
+        return builder;
     }
 
     /// <summary>
@@ -78,6 +101,10 @@ public static class HttpUtilities
             // Remove the existing listener to avoid conflicts.
             collection.RemoveAll<HttpListener>();
         }
+
+        // Force remove the factory; we use a different one for HTTP;
+        collection.RemoveAll<CommandExecutionFactory>();
+        collection.AddHostedService<HttpCommandExecutionFactory>();
 
         if (builder.Properties.TryGetValue(nameof(HttpListener), out var prop) && prop is HttpListener listener)
             collection.AddSingleton(listener);

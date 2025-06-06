@@ -12,7 +12,7 @@ public static class ServiceUtilities
     ///     Adds a <see cref="IComponentProvider"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <remarks>
-    ///     This method will remove any existing <see cref="IComponentProvider"/> and <see cref="ICommandExecutionFactory"/> from the collection before adding newly configured instances. Additionally, it configures a <see cref="IExecutionScope"/> and <see cref="IContextAccessor{TContext}"/> under scoped context.
+    ///     This method will remove any existing <see cref="IComponentProvider"/> and <see cref="CommandExecutionFactory"/> from the collection before adding newly configured instances. Additionally, it configures a <see cref="IExecutionScope"/> and <see cref="IContextAccessor{TContext}"/> under scoped context.
     /// </remarks>
     /// <param name="services">The <see cref="IServiceProvider"/> to add the configured services to.</param>
     /// <param name="configureAction"></param>
@@ -43,10 +43,10 @@ public static class ServiceUtilities
     {
         Assert.NotNull(collection, nameof(collection));
 
-        if (collection.Contains<ICommandExecutionFactory>())
+        if (collection.Contains<IComponentProvider>())
         {
             // Remove the existing factory to avoid conflicts.
-            collection.RemoveAll<ICommandExecutionFactory>();
+            collection.RemoveAll<CommandExecutionFactory>();
             collection.RemoveAll<IComponentProvider>();
             collection.RemoveAll<IExecutionScope>();
             collection.RemoveAll<IDependencyResolver>();
@@ -55,9 +55,6 @@ public static class ServiceUtilities
 
         if (builder.Properties.TryGetValue("ComponentProvider", out var prop) && prop is TypeWrapper providerType)
             collection.AddSingleton(typeof(IComponentProvider), providerType.Value);
-
-        if (builder.Properties.TryGetValue("CommandExecutionFactory", out prop) && prop is TypeWrapper factoryType)
-            collection.AddSingleton(typeof(ICommandExecutionFactory), factoryType.Value);
 
         if (builder.Properties.TryGetValue("ExecutionScope", out prop) && prop is TypeWrapper scopeType)
             collection.AddScoped(typeof(IExecutionScope), scopeType.Value);
@@ -72,6 +69,7 @@ public static class ServiceUtilities
 
         // This isn't customizable, as the logic is tightly coupled with the execution scope.
         collection.AddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
+        collection.AddSingleton<CommandExecutionFactory>();
     }
 
     #endregion

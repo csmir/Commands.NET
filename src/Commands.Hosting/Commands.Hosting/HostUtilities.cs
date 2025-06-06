@@ -8,13 +8,13 @@ namespace Commands.Hosting;
 public static class HostUtilities
 {
     /// <summary>
-    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and defined <see cref="ICommandExecutionFactory"/>.
+    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and defined <see cref="CommandExecutionFactory"/>.
     /// </summary>
     /// <remarks>
     ///     This method configures the <see cref="IServiceProvider"/> consumed by the <see cref="IHost"/> built from this builder, to implement the following services:
     ///     <list type="bullet">
-    ///         <item>A singleton implementation of <see cref="ICommandExecutionFactory"/> as defined by the provided type, if any. This factory manages command scopes and execution lifetime.</item>
-    ///         <item>A default singleton implementation of <see cref="IComponentProvider"/>. This provider supplies the defined <see cref="ICommandExecutionFactory"/> with executable commands.</item>
+    ///         <item>A singleton implementation of <see cref="CommandExecutionFactory"/>. This factory manages command scopes and execution lifetime.</item>
+    ///         <item>A default singleton implementation of <see cref="IComponentProvider"/>. This provider supplies the defined <see cref="CommandExecutionFactory"/> with executable commands.</item>
     ///         <item>A default scoped implementation of <see cref="IDependencyResolver"/> which manages the scope's service injection for modules and statically -or delegate- defined commands.</item>
     ///         <item>A default scoped implementation of <see cref="IExecutionScope"/> which holds execution metadata for the scope of the command lifetime, and can be injected freely within said scope.</item>
     ///         <item>A default scoped implementation of <see cref="IContextAccessor{TContext}"/>. This accessor exposes the context by accessing it from the defined <see cref="IExecutionScope"/>.</item>

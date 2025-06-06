@@ -1,11 +1,12 @@
-﻿namespace Commands.Hosting;
+﻿using System.ComponentModel;
+
+namespace Commands.Hosting;
 
 /// <summary>
-///     Represents the execution of a command. This context can be accessed during the hosted execution process through an implementation of <see cref="ICommandExecutionFactory"/>.
+///     Represents the execution of a command.
 /// </summary>
 /// <remarks>
 ///     The context is scoped to the command execution. A scope is created when the factory begins executing a command, and is disposed of when the command finishes executing.
-///     When implementing a custom <see cref="ICommandExecutionFactory"/>, you must also implement a custom <see cref="IExecutionScope"/> and populate it when the factory creates the scope.
 /// </remarks>
 public interface IExecutionScope : IDisposable
 {
@@ -23,4 +24,13 @@ public interface IExecutionScope : IDisposable
     ///     Gets a reference to the <see cref="CancellationToken"/> propagated through the execution pipeline. When this token is cancelled, the execution pipeline will be cancelled.
     /// </summary>
     public CancellationTokenSource CancellationSource { get; set; }
+
+    /// <summary>
+    ///     Populates the execution scope with the provided context, scope, and cancellation token source. This method is called when the factory creates a new scope for the command execution.
+    /// </summary>
+    /// <param name="context">The context for execution.</param>
+    /// <param name="scope">The scope for execution.</param>
+    /// <param name="cancellationSource">The cancellation token source for execution.</param>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void Populate(IContext context, IServiceScope scope, CancellationTokenSource cancellationSource);
 }

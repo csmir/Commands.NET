@@ -6,6 +6,11 @@ namespace Commands.Hosting;
 /// <summary>
 ///     Represents a handler for command execution results, allowing for custom handling of different result types and exceptions.
 /// </summary>
+/// <remarks>
+///     Implementations of this class can override the methods to provide custom handling for specific result types or exceptions that occur during command execution.
+///     <br/>
+///     Additionally, <see cref="PriorityAttribute"/> can be used to control the order in which handlers are executed when multiple handlers are registered.
+/// </remarks>
 public abstract class ResultHandler
 {
     /// <summary>

@@ -34,7 +34,7 @@ public class HttpCommandContext : IContext
     {
         _httpContext = httpContext;
 
-        var url = _httpContext.Request.RawUrl!.Split('?');
+        var url = _httpContext.Request.Url!.AbsoluteUri.Split('?');
 
         var rawArg = url[0][acquiredPrefixLength..].Split('/');
         var rawQuery = url.Length > 1 ? url[1].Split('&') : [];

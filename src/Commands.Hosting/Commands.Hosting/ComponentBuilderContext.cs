@@ -94,19 +94,6 @@ public class ComponentBuilderContext
     }
 
     /// <summary>
-    ///     Configures the command execution factory type to be used by the hosted component factory to manage command execution. This factory is responsible for creating and managing the execution scope, resolving dependencies, and executing commands.
-    /// </summary>
-    /// <typeparam name="TFactory">The type implementing <see cref="ICommandExecutionFactory"/> that should be the underlying implementation for the hosted factory.</typeparam>
-    /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
-    public ComponentBuilderContext WithExecutionFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TFactory>()
-        where TFactory : class, ICommandExecutionFactory
-    {
-        Properties["CommandExecutionFactory"] = new TypeWrapper(typeof(TFactory));
-
-        return this;
-    }
-
-    /// <summary>
     ///     Adds a result handler type to the component builder. Result handlers are used to process the results of command execution, allowing for custom handling of success and failure cases.
     /// </summary>
     /// <typeparam name="THandler">The type implementing <see cref="ResultHandler"/> that should be an enumerated implementation to handle command results.</typeparam>
