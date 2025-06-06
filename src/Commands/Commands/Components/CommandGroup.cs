@@ -245,7 +245,7 @@ public class CommandGroup : ComponentSet, IComponent
 
         if (parent is CommandGroup group)
             Parent = group;
-        
+
         if (parent is ComponentTree tree && !IsSearchable)
             _mutateTree = (components, removing) =>
             {

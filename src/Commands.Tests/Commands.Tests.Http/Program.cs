@@ -28,9 +28,9 @@ host.UseComponents(components =>
 {
     components.AddRange(typeof(Program).Assembly.GetExportedTypes());
 
-    components.Add(new Command([HttpGet] () => 
-    { 
-        return HttpResponse.Ok("OK!"); 
+    components.Add(new Command([HttpGet] () =>
+    {
+        return HttpResponse.Ok("OK!");
     }, "ping"));
 });
 

@@ -1,7 +1,4 @@
-﻿using Commands.Conditions;
-using Commands.Parsing;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     A provider hosting a <see cref="ComponentTree"/> that can be executed through a pipeline. Begin using this provider by initializing it using any of the public constructors. 

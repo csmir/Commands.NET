@@ -21,14 +21,14 @@ public struct HttpResponse : IHttpResult
     /// <summary>
     ///     Initializes a new instance of the <see cref="HttpResponse"/> class with a default status code of 204 No Content.
     /// </summary>
-    public HttpResponse() 
+    public HttpResponse()
         => StatusCode = HttpStatusCode.NoContent;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="HttpResponse"/> class with the specified status code.
     /// </summary>
     /// <param name="code">The status code of this result.</param>
-    public HttpResponse(HttpStatusCode code) 
+    public HttpResponse(HttpStatusCode code)
         => StatusCode = code;
 
     /// <summary>
@@ -309,6 +309,6 @@ public struct HttpResponse : IHttpResult
     ///     Implicitly converts an <see cref="HttpResponse"/> to a <see cref="Task{HttpResult}"/> for asynchronous handling.
     /// </summary>
     /// <param name="result">The result to wrap in a task.</param>
-    public static implicit operator Task<HttpResponse>(HttpResponse result) 
+    public static implicit operator Task<HttpResponse>(HttpResponse result)
         => Task.FromResult(result);
 }

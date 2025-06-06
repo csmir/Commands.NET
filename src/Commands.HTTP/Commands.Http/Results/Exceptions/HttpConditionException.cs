@@ -18,6 +18,6 @@ public sealed class HttpConditionException : ConditionException
     /// <param name="condition">The condition that failed.</param>
     /// <param name="response">The response which will be sent if this exception reaches to the end of the pipeline.</param>
     public HttpConditionException(ICondition condition, HttpResponse response)
-        : base(condition, "An error occurred during evaluation of an execution condition.") 
+        : base(condition, "An error occurred during evaluation of an execution condition.")
         => Response = response;
 }

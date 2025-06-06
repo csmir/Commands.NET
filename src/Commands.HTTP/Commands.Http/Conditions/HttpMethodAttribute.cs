@@ -5,32 +5,37 @@ namespace Commands.Http;
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to GET requests.
 /// </summary>
-public class HttpGetAttribute() 
-    : HttpMethodAttribute("GET") { }
+public class HttpGetAttribute()
+    : HttpMethodAttribute("GET")
+{ }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to POST requests.
 /// </summary>
-public class HttpPostAttribute() 
-    : HttpMethodAttribute("POST") { }
+public class HttpPostAttribute()
+    : HttpMethodAttribute("POST")
+{ }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to PUT requests.
 /// </summary>
-public class HttpPutAttribute() 
-    : HttpMethodAttribute("PUT") { }
+public class HttpPutAttribute()
+    : HttpMethodAttribute("PUT")
+{ }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to DELETE requests.
 /// </summary>
-public class HttpDeleteAttribute() 
-    : HttpMethodAttribute("DELETE") { }
+public class HttpDeleteAttribute()
+    : HttpMethodAttribute("DELETE")
+{ }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to PATCH requests.
 /// </summary>
-public class HttpPatchAttribute() 
-    : HttpMethodAttribute("PATCH") { }
+public class HttpPatchAttribute()
+    : HttpMethodAttribute("PATCH")
+{ }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command.

@@ -8,17 +8,17 @@ public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
 {
     [HttpGet]
     [Name("get")]
-    public Task<HttpResponse> Get(int initialValue, Guid anotherValue) 
+    public Task<HttpResponse> Get(int initialValue, Guid anotherValue)
         => HttpResponse.Ok($"Hello World; {initialValue}, {anotherValue}");
 
     [HttpPost]
     [Name("post")]
-    public Task<HttpResponse> Post(int initialValue, Guid anotherValue) 
+    public Task<HttpResponse> Post(int initialValue, Guid anotherValue)
         => HttpResponse.Json(new { InitialValue = initialValue, AnotherValue = anotherValue }, HttpStatusCode.Created);
 
     [HttpDelete]
     [Name("delete")]
-    public Task<HttpResponse> Delete() 
+    public Task<HttpResponse> Delete()
         => HttpResponse.Forbidden();
 
     [HttpGet]

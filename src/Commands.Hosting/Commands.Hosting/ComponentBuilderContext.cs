@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace Commands.Hosting;
 
@@ -104,7 +103,7 @@ public class ComponentBuilderContext
         if (!Properties.TryGetValue("ResultHandlers", out var handlers) || handlers is not List<TypeWrapper> handlerContainer)
         {
             handlerContainer = [];
-            
+
             Properties["ResultHandlers"] = handlerContainer;
         }
 

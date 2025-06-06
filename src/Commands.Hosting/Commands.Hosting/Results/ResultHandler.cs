@@ -41,7 +41,7 @@ public abstract class ResultHandler
                     if (exception is CommandOutOfRangeException rangeEx)
                         return ParamsOutOfRange(context, rangeEx, parseResult, services, cancellationToken);
 
-                        return ParseFailed(context, exception, parseResult, services, cancellationToken);
+                    return ParseFailed(context, exception, parseResult, services, cancellationToken);
                 case ConditionResult conditionResult:
                     return ConditionUnmet(context, exception, conditionResult, services, cancellationToken);
                 case InvokeResult invokeResult:

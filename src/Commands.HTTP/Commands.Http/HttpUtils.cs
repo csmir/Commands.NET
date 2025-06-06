@@ -6,7 +6,7 @@ namespace Commands.Http;
 /// <summary>
 ///     A utility class containing methods for working with HTTP hosts in the Commands.NET framework.
 /// </summary>
-public static class HttpUtilities
+public static class HttpUtils
 {
     /// <summary>
     ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and predefined <see cref="HttpCommandExecutionFactory"/> for HTTP command execution.

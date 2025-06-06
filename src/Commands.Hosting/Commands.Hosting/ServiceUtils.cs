@@ -6,7 +6,7 @@ namespace Commands.Hosting;
 /// <summary>
 ///     A static class containing methods for configuring a <see cref="IServiceProvider"/> with Commands.NET functionality.
 /// </summary>
-public static class ServiceUtilities
+public static class ServiceUtils
 {
     /// <summary>
     ///     Adds a <see cref="IComponentProvider"/> to the <see cref="IServiceCollection"/>.
