@@ -17,10 +17,10 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-		<PackageId>Commands.NET.HTTP</PackageId>
+		<PackageId>Commands.NET.Http</PackageId>
 
 		<Authors>Commands.NET contributors.</Authors>
-		<Title>Commands.NET.HTTP</Title>
+		<Title>Commands.NET.Http</Title>
 		<Description>A package that allows Commands.NET functionality to enable complex, modular HTTP REST communication.</Description>
 		<PackageTags>commands, http, rest, modular, aot, hosting</PackageTags>
 		<NeutralLanguage>en-US</NeutralLanguage>

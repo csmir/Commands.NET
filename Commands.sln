@@ -25,7 +25,7 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Commands.Samples.FSharp", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Hosting", "src\Commands.Hosting\Commands.Hosting.csproj", "{4B8BF3EF-9C08-41B6-9DCC-4AB2EA7FCFE8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Http", "src\Commands.HTTP\Commands.Http.csproj", "{0F59689D-80CD-47C6-A075-E47E2B24B5E5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Http", "src\Commands.Http\Commands.Http.csproj", "{0F59689D-80CD-47C6-A075-E47E2B24B5E5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Tests.Http", "src\Commands.Tests\Commands.Tests.Http\Commands.Tests.Http.csproj", "{4FDAAD40-A564-4A67-AF2C-F4C3A4836E33}"
 EndProject
