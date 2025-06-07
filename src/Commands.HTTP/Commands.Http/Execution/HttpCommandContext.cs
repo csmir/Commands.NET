@@ -1,12 +1,12 @@
-﻿namespace Commands.Http;
+﻿
+namespace Commands.Http;
 
 /// <summary>
 ///     Represents a context for handling HTTP commands, providing access to the HTTP request and response, as well as command arguments.
 /// </summary>
-public class HttpCommandContext : IContext
+public class HttpCommandContext : IResourceContext
 {
     private bool _closed;
-    private object? _body;
 
     private readonly HttpListenerContext _httpContext;
 
@@ -20,9 +20,7 @@ public class HttpCommandContext : IContext
     /// </summary>
     public HttpListenerResponse Response => _httpContext.Response;
 
-    /// <summary>
-    ///     Gets the arguments provided to the command for which this context was created.
-    /// </summary>
+    /// <inheritdoc />
     public Arguments Arguments { get; }
 
     /// <summary>
@@ -60,14 +58,14 @@ public class HttpCommandContext : IContext
     }
 
     /// <summary>
-    ///     Responds to the HTTP request with the specified <see cref="HttpResponse"/> object.
+    ///     Responds to the HTTP request with the specified <see cref="HttpResult"/> object.
     /// </summary>
     /// <remarks>
     ///     Additional calls to this method after the response has been sent will throw an exception.
     /// </remarks>
     /// <param name="result">The result to send to the caller.</param>
     /// <exception cref="InvalidOperationException">Thrown if the HTTP response has already been sent.</exception>
-    public virtual void Respond(HttpResponse result)
+    public virtual void Respond(HttpResult result)
     {
         Assert.NotNull(result, nameof(result));
 
@@ -103,56 +101,20 @@ public class HttpCommandContext : IContext
         _closed = true;
     }
 
-    /// <summary>
-    ///     Gets the body of the HTTP request as a stream and deserializes it into an object of type <typeparamref name="T"/>.
-    /// </summary>
-    /// <remarks>
-    ///     When using this method, ensure that the request body is a valid JSON representation of the type <typeparamref name="T"/>. If the body is empty, it will return the default value for <typeparamref name="T"/>.
-    ///     <br/>
-    ///     When using Native-AOT compilation, ensure that the type <typeparamref name="T"/> is registered in a <see cref="JsonSerializerContext"/> with the required TypeInfo for serialization and deserialization to work correctly.
-    /// </remarks>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="options"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException">Thrown when the body is not a valid json, and could not be interpreted as an instance of <typeparamref name="T"/>.</exception>
-    [UnconditionalSuppressMessage("AOT", "IL3050")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
-    public T? GetJsonBody<T>(JsonSerializerOptions? options = null)
-    {
-        if (_body is T cachedBody)
-            return cachedBody;
-
-        Request.InputStream.Position = 0;
-
-        using var reader = new StreamReader(Request.InputStream, Request.ContentEncoding);
-
-        var body = reader.ReadToEnd();
-
-        if (string.IsNullOrEmpty(body))
-            return default;
-
-        try
-        {
-            _body = JsonSerializer.Deserialize<T>(body, options);
-        }
-        catch (JsonException ex)
-        {
-            throw new InvalidOperationException("Failed to deserialize the request body.", ex);
-        }
-
-        if (_body is not T result)
-            throw new InvalidCastException($"The request body could not be interpreted as an instance of '{typeof(T)}'.");
-
-        return result;
-    }
-
     [UnconditionalSuppressMessage("AOT", "IL3050")]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
     void IContext.Respond(object? message)
     {
-        if (message is HttpResponse httpResult)
+        if (message is HttpResult httpResult)
             Respond(httpResult);
         else
-            Respond(HttpResponse.Json(message!));
+            Respond(HttpResult.Json(message!));
+    }
+
+    async ValueTask<object?> IResourceContext.GetResource()
+    {
+        using var reader = new StreamReader(Request.InputStream, Request.ContentEncoding);
+
+        return await reader.ReadToEndAsync();
     }
 }

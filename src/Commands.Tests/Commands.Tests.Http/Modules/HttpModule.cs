@@ -6,28 +6,28 @@ namespace Commands.Tests;
 [Name("http-module")]
 public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
 {
-    [HttpGet]
-    [Name("get")]
-    public Task<HttpResponse> Get(int initialValue, Guid anotherValue)
-        => HttpResponse.Ok($"Hello World; {initialValue}, {anotherValue}");
+    [HttpGet("get")]
+    public Task<HttpResult> Get(int initialValue, Guid anotherValue)
+        => HttpResult.Ok($"Hello World; {initialValue}, {anotherValue}");
 
-    [HttpPost]
-    [Name("post")]
-    public Task<HttpResponse> Post(int initialValue, Guid anotherValue)
-        => HttpResponse.Json(new { InitialValue = initialValue, AnotherValue = anotherValue }, HttpStatusCode.Created);
+    [HttpPost("post")]
+    public Task<HttpResult> Post(string queryTest, [JsonBody] Dictionary<string, string> dictionary)
+    {
+        dictionary["key3"] = queryTest;
 
-    [HttpDelete]
-    [Name("delete")]
-    public Task<HttpResponse> Delete()
-        => HttpResponse.Forbidden();
+        return HttpResult.Json(dictionary, HttpStatusCode.Created);
+    }
 
-    [HttpGet]
-    [Name("dowork")]
+    [HttpDelete("delete")]
+    public Task<HttpResult> Delete()
+        => HttpResult.Forbidden();
+
+    [HttpGet("dowork")]
     public async Task DoWork()
     {
         Context.Response.Headers.Add("X-Detached-Process", "true");
 
-        Respond(HttpResponse.Ok("Doing work"));
+        Respond(HttpResult.Ok("Doing work"));
 
         // Simulate a long-running process
         await Task.Delay(10000);

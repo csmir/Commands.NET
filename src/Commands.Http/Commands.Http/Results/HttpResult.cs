@@ -4,7 +4,7 @@
 ///     Represents the response of an HTTP request, containing the status code, content, and content type.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public struct HttpResponse : IHttpResult
+public struct HttpResult : IHttpResult
 {
     /// <inheritdoc />
     public HttpStatusCode StatusCode { get; set; }
@@ -19,25 +19,25 @@ public struct HttpResponse : IHttpResult
     public byte[]? Content { get; set; }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="HttpResponse"/> class with a default status code of 204 No Content.
+    ///     Initializes a new instance of the <see cref="HttpResult"/> class with a default status code of 204 No Content.
     /// </summary>
-    public HttpResponse()
+    public HttpResult()
         => StatusCode = HttpStatusCode.NoContent;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="HttpResponse"/> class with the specified status code.
+    ///     Initializes a new instance of the <see cref="HttpResult"/> class with the specified status code.
     /// </summary>
     /// <param name="code">The status code of this result.</param>
-    public HttpResponse(HttpStatusCode code)
+    public HttpResult(HttpStatusCode code)
         => StatusCode = code;
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="HttpResponse"/> class with the specified status code, content, and content type.
+    ///     Initializes a new instance of the <see cref="HttpResult"/> class with the specified status code, content, and content type.
     /// </summary>
     /// <param name="code">The status code of this result.</param>
     /// <param name="content">The content of this result.</param>
     /// <param name="contentType">The content type of this result.</param>
-    public HttpResponse(HttpStatusCode code, byte[] content, string? contentType = null)
+    public HttpResult(HttpStatusCode code, byte[] content, string? contentType = null)
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
@@ -66,14 +66,14 @@ public struct HttpResponse : IHttpResult
     /// <param name="content">The response to send</param>
     /// <param name="statusCode">The status code of the response.</param>
     /// <param name="serializerOptions">Additional options for serializing this response.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
     [UnconditionalSuppressMessage("AOT", "IL3050")]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
-    public static HttpResponse Json<TObject>(TObject content, HttpStatusCode statusCode = HttpStatusCode.OK, JsonSerializerOptions? serializerOptions = null)
+    public static HttpResult Json<TObject>(TObject content, HttpStatusCode statusCode = HttpStatusCode.OK, JsonSerializerOptions? serializerOptions = null)
     {
         Assert.NotNull(content, nameof(content));
 
-        return new HttpResponse(statusCode, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(content, typeof(TObject), serializerOptions)), "application/json");
+        return new HttpResult(statusCode, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(content, typeof(TObject), serializerOptions)), "application/json");
     }
 
     /// <summary>
@@ -85,21 +85,21 @@ public struct HttpResponse : IHttpResult
     /// <param name="content">The response to send</param>
     /// <param name="statusCode">The status code of the response.</param>
     /// <param name="serializerOptions">Additional options for serializing this response.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
     [UnconditionalSuppressMessage("AOT", "IL3050")]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
-    public static HttpResponse Json(object content, HttpStatusCode statusCode = HttpStatusCode.OK, JsonSerializerOptions? serializerOptions = null)
+    public static HttpResult Json(object content, HttpStatusCode statusCode = HttpStatusCode.OK, JsonSerializerOptions? serializerOptions = null)
     {
         Assert.NotNull(content, nameof(content));
 
-        return new HttpResponse(statusCode, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(content, content.GetType(), serializerOptions)), "application/json");
+        return new HttpResult(statusCode, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(content, content.GetType(), serializerOptions)), "application/json");
     }
 
     /// <summary>
     ///     Creates a new HTTP response as 204 No Content.
     /// </summary>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse NoContent()
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult NoContent()
         => new(HttpStatusCode.NoContent);
 
     /// <summary>
@@ -107,13 +107,13 @@ public struct HttpResponse : IHttpResult
     /// </summary>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse Ok(string content, string contentType = "text/plain")
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult Ok(string content, string contentType = "text/plain")
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResponse(HttpStatusCode.OK, Encoding.UTF8.GetBytes(content), contentType);
+        return new HttpResult(HttpStatusCode.OK, Encoding.UTF8.GetBytes(content), contentType);
     }
 
     /// <summary>
@@ -121,20 +121,20 @@ public struct HttpResponse : IHttpResult
     /// </summary>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse Ok(byte[] content, string contentType)
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult Ok(byte[] content, string contentType)
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResponse(HttpStatusCode.OK, content, contentType);
+        return new HttpResult(HttpStatusCode.OK, content, contentType);
     }
 
     /// <summary>
     ///     Creates a new HTTP response as 400 Bad Request.
     /// </summary>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse BadRequest()
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult BadRequest()
         => new(HttpStatusCode.BadRequest);
 
     /// <summary>
@@ -142,13 +142,13 @@ public struct HttpResponse : IHttpResult
     /// </summary>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse BadRequest(string content, string contentType = "text/plain")
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult BadRequest(string content, string contentType = "text/plain")
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResponse(HttpStatusCode.BadRequest, Encoding.UTF8.GetBytes(content), contentType);
+        return new HttpResult(HttpStatusCode.BadRequest, Encoding.UTF8.GetBytes(content), contentType);
     }
 
     /// <summary>
@@ -156,20 +156,20 @@ public struct HttpResponse : IHttpResult
     /// </summary>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse BadRequest(byte[] content, string contentType)
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult BadRequest(byte[] content, string contentType)
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResponse(HttpStatusCode.BadRequest, content, contentType);
+        return new HttpResult(HttpStatusCode.BadRequest, content, contentType);
     }
 
     /// <summary>
     ///     Creates a new HTTP response as 401 Unauthorized.
     /// </summary>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse Unauthorized()
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult Unauthorized()
         => new(HttpStatusCode.Unauthorized);
 
     /// <summary>
@@ -177,13 +177,13 @@ public struct HttpResponse : IHttpResult
     /// </summary>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse Unauthorized(string content, string contentType = "text/plain")
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult Unauthorized(string content, string contentType = "text/plain")
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResponse(HttpStatusCode.Unauthorized, Encoding.UTF8.GetBytes(content), contentType);
+        return new HttpResult(HttpStatusCode.Unauthorized, Encoding.UTF8.GetBytes(content), contentType);
     }
 
     /// <summary>
@@ -191,20 +191,20 @@ public struct HttpResponse : IHttpResult
     /// </summary>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse Unauthorized(byte[] content, string contentType)
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult Unauthorized(byte[] content, string contentType)
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResponse(HttpStatusCode.Unauthorized, content, contentType);
+        return new HttpResult(HttpStatusCode.Unauthorized, content, contentType);
     }
 
     /// <summary>
     ///     Creates a new HTTP response as 403 Forbidden.
     /// </summary>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse Forbidden()
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult Forbidden()
         => new(HttpStatusCode.Forbidden);
 
     /// <summary>
@@ -212,13 +212,13 @@ public struct HttpResponse : IHttpResult
     /// </summary>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse Forbidden(string content, string contentType = "text/plain")
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult Forbidden(string content, string contentType = "text/plain")
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResponse(HttpStatusCode.Forbidden, Encoding.UTF8.GetBytes(content), contentType);
+        return new HttpResult(HttpStatusCode.Forbidden, Encoding.UTF8.GetBytes(content), contentType);
     }
 
     /// <summary>
@@ -226,20 +226,20 @@ public struct HttpResponse : IHttpResult
     /// </summary>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse Forbidden(byte[] content, string contentType)
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult Forbidden(byte[] content, string contentType)
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResponse(HttpStatusCode.Forbidden, content, contentType);
+        return new HttpResult(HttpStatusCode.Forbidden, content, contentType);
     }
 
     /// <summary>
     ///     Creates a new HTTP response as 404 Not Found.
     /// </summary>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse NotFound()
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult NotFound()
         => new(HttpStatusCode.NotFound);
 
     /// <summary>
@@ -247,13 +247,13 @@ public struct HttpResponse : IHttpResult
     /// </summary>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse NotFound(string content, string contentType = "text/plain")
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult NotFound(string content, string contentType = "text/plain")
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResponse(HttpStatusCode.NotFound, Encoding.UTF8.GetBytes(content), contentType);
+        return new HttpResult(HttpStatusCode.NotFound, Encoding.UTF8.GetBytes(content), contentType);
     }
 
     /// <summary>
@@ -261,20 +261,20 @@ public struct HttpResponse : IHttpResult
     /// </summary>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse NotFound(byte[] content, string contentType)
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult NotFound(byte[] content, string contentType)
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResponse(HttpStatusCode.NotFound, content, contentType);
+        return new HttpResult(HttpStatusCode.NotFound, content, contentType);
     }
 
     /// <summary>
     ///     Creates a new HTTP response as 500 Internal Server Error.
     /// </summary>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse InternalServerError()
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult InternalServerError()
         => new(HttpStatusCode.InternalServerError);
 
     /// <summary>
@@ -282,13 +282,13 @@ public struct HttpResponse : IHttpResult
     /// </summary>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse InternalServerError(string content, string contentType = "text/plain")
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult InternalServerError(string content, string contentType = "text/plain")
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResponse(HttpStatusCode.InternalServerError, Encoding.UTF8.GetBytes(content), contentType);
+        return new HttpResult(HttpStatusCode.InternalServerError, Encoding.UTF8.GetBytes(content), contentType);
     }
 
     /// <summary>
@@ -296,19 +296,19 @@ public struct HttpResponse : IHttpResult
     /// </summary>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
-    /// <returns>A new instance of <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResponse InternalServerError(byte[] content, string contentType)
+    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
+    public static HttpResult InternalServerError(byte[] content, string contentType)
     {
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResponse(HttpStatusCode.InternalServerError, content, contentType);
+        return new HttpResult(HttpStatusCode.InternalServerError, content, contentType);
     }
 
     /// <summary>
-    ///     Implicitly converts an <see cref="HttpResponse"/> to a <see cref="Task{HttpResult}"/> for asynchronous handling.
+    ///     Implicitly converts an <see cref="HttpResult"/> to a <see cref="Task{HttpResult}"/> for asynchronous handling.
     /// </summary>
     /// <param name="result">The result to wrap in a task.</param>
-    public static implicit operator Task<HttpResponse>(HttpResponse result)
+    public static implicit operator Task<HttpResult>(HttpResult result)
         => Task.FromResult(result);
 }

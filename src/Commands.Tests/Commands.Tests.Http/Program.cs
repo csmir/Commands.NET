@@ -2,6 +2,7 @@
 using Commands.Hosting;
 using Commands.Http;
 using Microsoft.Extensions.Hosting;
+using System.Text;
 
 var builder = Host.CreateDefaultBuilder(args);
 
@@ -21,8 +22,20 @@ host.UseComponents(components =>
 
     components.Add(new Command([HttpGet] () =>
     {
-        return HttpResponse.Ok("OK!");
+        return HttpResult.Ok("OK!");
     }, "ping"));
+
+    components.Add(new Command([HttpGet] (IComponentProvider components, IContext context) =>
+    {
+        var commands = components.Components.GetCommands();
+
+        var response = new StringBuilder("Available commands:\n");
+
+        foreach (var command in commands)
+            response.AppendLine($"- {command}");
+
+        return HttpResult.Ok(response.ToString());
+    }, "help"));
 });
 
 await host.RunAsync();

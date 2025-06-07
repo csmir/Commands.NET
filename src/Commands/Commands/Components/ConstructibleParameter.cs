@@ -55,6 +55,10 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
         => false;
 
     /// <inheritdoc />
+    public bool IsResource
+        => false;
+
+    /// <inheritdoc />
     public bool HasParameters
         => Parameters.Length > 0;
 

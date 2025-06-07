@@ -18,13 +18,13 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
         => Context.Respond();
 
     /// <summary>
-    ///     Responds to the HTTP request with the specified <see cref="HttpResponse"/> object, closing and disposing the used resources. 
+    ///     Responds to the HTTP request with the specified <see cref="HttpResult"/> object, closing and disposing the used resources. 
     /// </summary>
     /// <remarks>
     ///     Additional calls to this method after the response has been sent will throw an exception.
     /// </remarks>
-    /// <param name="response">The <see cref="HttpResponse"/> containing the values to be served to the caller invoking this operation.</param>
+    /// <param name="response">The <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</param>
     /// <exception cref="InvalidOperationException">Thrown when the response has already been sent or closed.</exception>
-    public virtual void Respond(HttpResponse response)
+    public virtual void Respond(HttpResult response)
         => Context.Respond(response);
 }

@@ -17,8 +17,8 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
             context.Respond(httpException.Response);
         else
             context.Respond(hostEnvironment.IsDevelopment()
-                ? HttpResponse.Forbidden(exception.Message)
-                : HttpResponse.Forbidden());
+                ? HttpResult.Forbidden(exception.Message)
+                : HttpResult.Forbidden());
 
         return ValueTask.FromResult(true);
     }
@@ -30,8 +30,8 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
             context.Respond(httpException.Response);
         else
             context.Respond(hostEnvironment.IsDevelopment()
-                ? HttpResponse.InternalServerError(exception.Message)
-                : HttpResponse.InternalServerError());
+                ? HttpResult.InternalServerError(exception.Message)
+                : HttpResult.InternalServerError());
 
         return ValueTask.FromResult(true);
     }
@@ -40,8 +40,8 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
     protected override ValueTask<bool> CommandNotFound(IContext context, CommandNotFoundException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         context.Respond(hostEnvironment.IsDevelopment()
-            ? HttpResponse.NotFound(exception.Message)
-            : HttpResponse.NotFound());
+            ? HttpResult.NotFound(exception.Message)
+            : HttpResult.NotFound());
 
         return ValueTask.FromResult(true);
     }
@@ -50,8 +50,8 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
     protected override ValueTask<bool> RouteIncomplete(IContext context, CommandRouteIncompleteException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         context.Respond(hostEnvironment.IsDevelopment()
-            ? HttpResponse.NotFound(exception.Message)
-            : HttpResponse.NotFound());
+            ? HttpResult.NotFound(exception.Message)
+            : HttpResult.NotFound());
 
         return ValueTask.FromResult(true);
     }
@@ -60,8 +60,8 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
     protected override ValueTask<bool> ParamsOutOfRange(IContext context, CommandOutOfRangeException exception, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         context.Respond(hostEnvironment.IsDevelopment()
-            ? HttpResponse.BadRequest(exception.Message)
-            : HttpResponse.BadRequest());
+            ? HttpResult.BadRequest(exception.Message)
+            : HttpResult.BadRequest());
 
         return ValueTask.FromResult(true);
     }
@@ -73,8 +73,8 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
             context.Respond(httpException.Response);
         else
             context.Respond(hostEnvironment.IsDevelopment()
-                ? HttpResponse.BadRequest(exception.Message)
-                : HttpResponse.BadRequest());
+                ? HttpResult.BadRequest(exception.Message)
+                : HttpResult.BadRequest());
 
         return ValueTask.FromResult(true);
     }
@@ -83,8 +83,8 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
     protected override ValueTask<bool> Unhandled(IContext context, Exception? exception, IResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
         context.Respond(hostEnvironment.IsDevelopment()
-            ? HttpResponse.InternalServerError(exception?.Message ?? "An unhandled error occurred.")
-            : HttpResponse.InternalServerError());
+            ? HttpResult.InternalServerError(exception?.Message ?? "An unhandled error occurred.")
+            : HttpResult.InternalServerError());
 
         return ValueTask.FromResult(true);
     }

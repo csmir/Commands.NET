@@ -125,19 +125,18 @@ public static class CommandUtils
     /// </summary>
     /// <param name="types">A collection of types to create modules from.</param>
     /// <param name="options">The configuration which determines certain settings for the creation process for contained commands.</param>
-    /// <param name="parent">The parent of this collection of types, if any.</param>
     /// <param name="isNested">Determines whether the current iteration of additions is nested or not.</param>
     /// <returns>A new <see cref="IEnumerable{T}"/> containing all created component groups in the initial collection of types.</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
 #if NET8_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL2067", Justification = "The types are supplied from user-facing implementation, it is up to the user to ensure that these types are available in AOT context.")]
 #endif
-    public static IEnumerable<CommandGroup> GetComponents(IEnumerable<Type> types, ComponentOptions options, CommandGroup? parent = null, bool isNested = false)
+    public static IEnumerable<CommandGroup> GetComponents(IEnumerable<Type> types, ComponentOptions options, bool isNested = false)
     {
         Assert.NotNull(types, nameof(types));
         Assert.NotNull(options, nameof(options));
 
-        return GetComponents(options, types.Select(x => new TypeWrapper(x)), parent, isNested);
+        return GetComponents(options, types.Select(x => new TypeWrapper(x)), isNested);
     }
 
     #region Internals
@@ -155,6 +154,13 @@ public static class CommandUtils
                 results[i] = await param.Parse(context, param.IsCollection ? args.TakeRemaining(param.Name!) : args.TakeRemaining(param.Name!, options.RemainderSeparator), options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
 
                 break;
+            }
+
+            if (param.IsResource)
+            {
+                results[i] = await param.Parse(context, null, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
+
+                continue;
             }
 
             if (param is ConstructibleParameter constructible)
@@ -227,7 +233,7 @@ public static class CommandUtils
         return resolvedValues;
     }
 
-    internal static IEnumerable<CommandGroup> GetComponents(ComponentOptions configuration, IEnumerable<TypeWrapper> types, CommandGroup? parent, bool isNested)
+    internal static IEnumerable<CommandGroup> GetComponents(ComponentOptions configuration, IEnumerable<TypeWrapper> types, bool isNested)
     {
         Assert.NotNull(types, nameof(types));
 
@@ -286,7 +292,7 @@ public static class CommandUtils
         {
             var nestedTypes = parent.Activator.Type.GetNestedTypes(BindingFlags.Public);
 
-            var groups = GetComponents(configuration, [.. nestedTypes], parent, true);
+            var groups = GetComponents(configuration, [.. nestedTypes], true);
 
             return commands.Concat(groups);
         }
@@ -332,10 +338,15 @@ public static class CommandUtils
 
             if (parameter is CommandParameter defaultParameter)
             {
+                if (defaultParameter.IsResource)
+                    continue;
+
                 maxLength++;
                 if (!defaultParameter.IsOptional)
                     minLength++;
             }
+
+            // Resource parameters are not counted in the length, as they are skipped during parsing.
         }
 
         return new(minLength, maxLength);

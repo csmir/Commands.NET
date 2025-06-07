@@ -70,11 +70,9 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
 
         var commandContext = new HttpCommandContext(requestContext, acquiredPrefixLength);
 
-        logger.LogInformation("Creating command context for request: {Context}", commandContext);
-
         await StartExecution(commandContext, new HostedCommandOptions()
         {
-            ExecuteAsynchronously = true,
+            ExecuteAsynchronously = false,
         });
     }
 }

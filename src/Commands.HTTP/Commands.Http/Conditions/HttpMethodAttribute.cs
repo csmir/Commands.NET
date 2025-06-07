@@ -5,36 +5,46 @@ namespace Commands.Http;
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to GET requests.
 /// </summary>
-public class HttpGetAttribute()
-    : HttpMethodAttribute("GET")
+/// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class HttpGetAttribute(params string[] routeNames)
+    : HttpMethodAttribute("GET", routeNames)
 { }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to POST requests.
 /// </summary>
-public class HttpPostAttribute()
-    : HttpMethodAttribute("POST")
+/// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class HttpPostAttribute(params string[] routeNames)
+    : HttpMethodAttribute("POST", routeNames)
 { }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to PUT requests.
 /// </summary>
-public class HttpPutAttribute()
-    : HttpMethodAttribute("PUT")
+/// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class HttpPutAttribute(params string[] routeNames)
+    : HttpMethodAttribute("PUT", routeNames)
 { }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to DELETE requests.
 /// </summary>
-public class HttpDeleteAttribute()
-    : HttpMethodAttribute("DELETE")
+/// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class HttpDeleteAttribute(params string[] routeNames)
+    : HttpMethodAttribute("DELETE", routeNames)
 { }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to PATCH requests.
 /// </summary>
-public class HttpPatchAttribute()
-    : HttpMethodAttribute("PATCH")
+/// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class HttpPatchAttribute(params string[] routeNames)
+    : HttpMethodAttribute("PATCH", routeNames)
 { }
 
 /// <summary>
@@ -44,15 +54,29 @@ public class HttpPatchAttribute()
 ///     This attribute can be used to constrain a command to a specific HTTP method, such as GET, POST, PUT, DELETE, etc. Consider using the specific method attributes like <see cref="HttpGetAttribute"/>, <see cref="HttpPostAttribute"/>, etc., for better readability and clarity if possible.
 /// </remarks>
 /// <param name="method">The name of the HTTP method required to execute the provided operation.</param>
-[AttributeUsage(AttributeTargets.Method)]
-public class HttpMethodAttribute(string method) : HttpConditionAttribute<OREvaluator>
+/// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class HttpMethodAttribute(string method, params string[] routeNames) : NameAttribute(routeNames), ICondition
 {
     /// <inheritdoc />
-    public override ValueTask<ConditionResult> Evaluate(HttpCommandContext context, Command command, IServiceProvider services, CancellationToken cancellationToken)
-    {
-        if (context.Request.HttpMethod.Equals(method, StringComparison.InvariantCultureIgnoreCase))
-            return Success();
+    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+    public Type EvaluatorType => typeof(HttpMethodEvaluator);
 
-        return Error(new HttpResponse(HttpStatusCode.MethodNotAllowed, Encoding.UTF8.GetBytes($"Provided HTTP method ({context.Request.HttpMethod}) is not allowed for this operation.")));
+    /// <inheritdoc />
+    public ValueTask<ConditionResult> Evaluate(IContext context, Command command, IServiceProvider services, CancellationToken cancellationToken)
+    {
+        if (context is not HttpCommandContext httpContext)
+            return ConditionResult.FromError(new ConditionException(this, $"The provided context is no implementation of {nameof(HttpCommandContext)}."));
+
+        if (httpContext.Request.HttpMethod.Equals(method, StringComparison.InvariantCultureIgnoreCase))
+            return ConditionResult.FromSuccess();
+
+        return ConditionResult.FromError(new HttpConditionException(this, new HttpResult(HttpStatusCode.MethodNotAllowed, Encoding.UTF8.GetBytes($"Provided HTTP method ({httpContext.Request.HttpMethod}) is not allowed for this operation."))));
     }
+
+    ConditionResult ICondition.Error(string error)
+        => default;
+
+    ConditionResult ICondition.Success()
+        => default;
 }

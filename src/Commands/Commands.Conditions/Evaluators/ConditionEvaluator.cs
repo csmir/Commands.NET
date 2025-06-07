@@ -6,6 +6,11 @@
 public abstract class ConditionEvaluator
 {
     /// <summary>
+    ///     Gets or sets whether multiple conditions can be evaluated within the same evaluator, or if only one condition of said group can exist on a target at once.
+    /// </summary>
+    public int? MaximumAllowedConditions { get; set; } = null;
+
+    /// <summary>
     ///     Gets or sets the conditions that are being evaluated.
     /// </summary>
     public ICondition[] Conditions { get; set; } = [];
@@ -36,8 +41,14 @@ public abstract class ConditionEvaluator
 
         foreach (var group in evaluatorGroups)
         {
+            var groupArr = group.ToArray();
+
             var instance = (ConditionEvaluator)Activator.CreateInstance(group.Key)!;
-            instance.Conditions = [.. group];
+
+            if (instance.MaximumAllowedConditions.HasValue && groupArr.Length > instance.MaximumAllowedConditions.Value)
+                throw new ComponentFormatException($"The evaluator {instance.GetType()} specifies that only {instance.MaximumAllowedConditions.Value} conditions of its scope are permitted per signature, but it discovered {groupArr.Length} conditions.");
+
+            instance.Conditions = groupArr;
             arr[i++] = instance;
         }
 
