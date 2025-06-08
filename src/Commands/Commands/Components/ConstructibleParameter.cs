@@ -104,7 +104,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
 
         ExposedType = parameterInfo.ParameterType;
 
-        Name = attributes.FirstOrDefault<NameAttribute>()?.Name ?? parameterInfo.Name ?? "";
+        Name = attributes.FirstOrDefault<INameBinding>()?.Name ?? parameterInfo.Name ?? "";
     }
 
     /// <inheritdoc />

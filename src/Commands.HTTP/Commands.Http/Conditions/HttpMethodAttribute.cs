@@ -56,27 +56,21 @@ public class HttpPatchAttribute(params string[] routeNames)
 /// <param name="method">The name of the HTTP method required to execute the provided operation.</param>
 /// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class HttpMethodAttribute(string method, params string[] routeNames) : NameAttribute(routeNames), ICondition
+public class HttpMethodAttribute(string method, params string[] routeNames) : HttpConditionAttribute<HttpMethodEvaluator>, INameBinding
 {
     /// <inheritdoc />
-    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-    public Type EvaluatorType => typeof(HttpMethodEvaluator);
+    public string Name
+        => Names.Length > 0 ? Names[0] : string.Empty;
 
     /// <inheritdoc />
-    public ValueTask<ConditionResult> Evaluate(IContext context, Command command, IServiceProvider services, CancellationToken cancellationToken)
-    {
-        if (context is not HttpCommandContext httpContext)
-            return ConditionResult.FromError(new ConditionException(this, $"The provided context is no implementation of {nameof(HttpCommandContext)}."));
+    public string[] Names { get; } = routeNames;
 
-        if (httpContext.Request.HttpMethod.Equals(method, StringComparison.InvariantCultureIgnoreCase))
+    /// <inheritdoc />
+    public override ValueTask<ConditionResult> Evaluate(HttpCommandContext context, Command command, IServiceProvider services, CancellationToken cancellationToken)
+    {
+        if (context.Request.HttpMethod.Equals(method, StringComparison.InvariantCultureIgnoreCase))
             return ConditionResult.FromSuccess();
 
-        return ConditionResult.FromError(new HttpConditionException(this, new HttpResult(HttpStatusCode.MethodNotAllowed, Encoding.UTF8.GetBytes($"Provided HTTP method ({httpContext.Request.HttpMethod}) is not allowed for this operation."))));
+        return ConditionResult.FromError(new HttpConditionException(this, new HttpResult(HttpStatusCode.MethodNotAllowed, Encoding.UTF8.GetBytes($"Provided HTTP method ({context.Request.HttpMethod}) is not allowed for this operation."))));
     }
-
-    ConditionResult ICondition.Error(string error)
-        => default;
-
-    ConditionResult ICondition.Success()
-        => default;
 }

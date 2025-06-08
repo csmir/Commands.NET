@@ -8,7 +8,7 @@
 ///     If a <see cref="CommandModule"/> is named and its invokable members (command methods) are not, they will take on the name of the module instead, serving as default overloads.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Parameter)]
-public class NameAttribute : Attribute
+public class NameAttribute : Attribute, INameBinding
 {
     /// <summary>
     ///     Gets the name of the target.

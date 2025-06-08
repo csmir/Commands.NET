@@ -125,9 +125,9 @@ public class Command : IComponent, IParameterCollection
     public Command(MethodInfo executionMethod, CommandGroup? parent = null, ComponentOptions? options = null)
         : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ??= ComponentOptions.Default)
     {
-        var names = Attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
+        var names = Attributes.FirstOrDefault<INameBinding>()?.Names ?? [];
 
-        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(NameAttribute));
+        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
 
         Names = names;
         Ignore = Attributes.Contains<IgnoreAttribute>();

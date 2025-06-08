@@ -108,9 +108,9 @@ public class CommandGroup : ComponentSet, IComponent
 
         Attributes = [.. attributes];
 
-        var names = attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
+        var names = attributes.FirstOrDefault<INameBinding>()?.Names ?? [];
 
-        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(NameAttribute));
+        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
 
         Names = names;
         Ignore = attributes.Contains<IgnoreAttribute>();

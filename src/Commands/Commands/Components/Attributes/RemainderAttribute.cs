@@ -16,5 +16,4 @@ namespace Commands;
 /// </remarks>
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
 public sealed class RemainderAttribute : Attribute
-{
-}
+{ }

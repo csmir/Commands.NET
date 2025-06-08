@@ -9,5 +9,4 @@
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Constructor, AllowMultiple = false)]
 public sealed class IgnoreAttribute : Attribute
-{
-}
+{ }

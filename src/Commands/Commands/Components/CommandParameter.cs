@@ -75,7 +75,7 @@ public sealed class CommandParameter : ICommandParameter
 
         Attributes = [.. attributes];
 
-        Name = attributes.FirstOrDefault<NameAttribute>()?.Name ?? parameterInfo.Name ?? "";
+        Name = attributes.FirstOrDefault<INameBinding>()?.Name ?? parameterInfo.Name ?? "";
 
         if (attributes.Contains<IResourceBinding>())
             IsResource = true;
