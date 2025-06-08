@@ -19,11 +19,12 @@ public class ComponentBuilderContext
     public ComponentBuilderContext()
     {
         // Initialize the default service properties with their respective types.
-        Properties["ExecutionScope"] = new TypeWrapper(typeof(ExecutionScope));
-        Properties["DependencyResolver"] = new TypeWrapper(typeof(KeyedDependencyResolver));
-        Properties["ComponentProvider"] = new TypeWrapper(typeof(ComponentProvider));
-        Properties["CommandExecutionFactory"] = new TypeWrapper(typeof(CommandExecutionFactory));
-        Properties["ResultHandlers"] = new List<TypeWrapper>();
+        Properties[nameof(IExecutionScope)] = new TypeWrapper(typeof(ExecutionScope));
+        Properties[nameof(IDependencyResolver)] = new TypeWrapper(typeof(KeyedDependencyResolver));
+        Properties[nameof(IComponentProvider)] = new TypeWrapper(typeof(ComponentProvider));
+
+        // Initialize the range of result handlers. These will hold the types of handlers that will be added on post-configure; These are hashsets to avoid duplicates.
+        Properties[nameof(IResultHandler)] = new HashSet<TypeWrapper>();
     }
 
     /// <summary>
@@ -95,12 +96,12 @@ public class ComponentBuilderContext
     /// <summary>
     ///     Adds a result handler type to the component builder. Result handlers are used to process the results of command execution, allowing for custom handling of success and failure cases.
     /// </summary>
-    /// <typeparam name="THandler">The type implementing <see cref="ResultHandler"/> that should be an enumerated implementation to handle command results.</typeparam>
+    /// <typeparam name="THandler">The type implementing <see cref="IResultHandler"/> that should be an enumerated implementation to handle command results.</typeparam>
     /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
     public ComponentBuilderContext AddResultHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] THandler>()
-        where THandler : ResultHandler
+        where THandler : IResultHandler
     {
-        if (!Properties.TryGetValue("ResultHandlers", out var handlers) || handlers is not List<TypeWrapper> handlerContainer)
+        if (!Properties.TryGetValue("ResultHandlers", out var handlers) || handlers is not HashSet<TypeWrapper> handlerContainer)
         {
             handlerContainer = [];
 

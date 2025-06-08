@@ -4,6 +4,7 @@ The HTTP package extends the core library with additional features to support HT
 - [Package Download](#download)
 - [Configure the Host](#configure-the-host)
 - [Endpoints](#endpoints)
+- [Input Definitions](#input-definitions)
 - [Response Formatting](#response-formatting)
 
 ## Download
@@ -22,9 +23,10 @@ Alternatively, adding it to your `.csproj` file:
 
 ## Configure the Host
 
-HTTP execution builds upon the Hosted command pipeline. 
-In order to begin configuring, a new API is available in the `Commands.Http` namespace, which can be used to configure the HTTP server and the integration with Commands.NET.
-All configuration as available in the `Commands.Hosting` package is also available here, so you can use the same method to configure the complete hosted pipeline.
+HTTP execution builds upon the hosted command pipeline available in the `Commands.NET.Hosting` package.
+
+In order to begin configuring, an API is available in the `Commands.Http` namespace, which can be used to configure the HTTP server and the integration with Commands.NET.
+All configuration as available in the `Commands.Hosting` namespace is also available here, so you can use the same methods to configure the complete pipeline.
 
 ```csharp
 // ...
@@ -64,15 +66,15 @@ With this setup, the command `ping` will be available at the endpoint `http://lo
 
 ## Endpoints
 
-When defining commands, the `HttpMethodAttribute` or any of its derived attributes can be used to specify the HTTP method for the command. If none is specified, it will accept all HTTP methods.
-This works in conjunction with the `NameAttribute` to define the endpoint path.
+When defining commands, the `HttpMethodAttribute` or any of its derived attributes can be used to specify the HTTP method for the command.
+
+### GET
 
 ```csharp
 [Name("http-module")]
 public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
 {
-    [HttpGet]
-    [Name("get")]
+    [HttpGet("get")]
     public Task<HttpResponse> Get(int initialValue, Guid anotherValue)
         => HttpResponse.Ok($"Hello World; {initialValue}, {anotherValue}");
 }
@@ -80,19 +82,48 @@ public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
 
 This example defines a command that responds to `GET` requests at the endpoint `http://localhost:5000/http-module/get`. The parameters `initialValue` and `anotherValue` will be parsed from the url.
 
-For example, you can call `http://localhost:5000/http-module/get?initialValue=42&anotherValue=123e4567-e89b-12d3-a456-426614174000` to get a response.
+For example, you can call `http://localhost:5000/http-module/get?initialValue=42&anotherValue=123e4567-e89b-12d3-a456-426614174000` to get a response, 
+or do so using snailing: `http://localhost:5000/http-module/get/42/123e4567-e89b-12d3-a456-426614174000`.
 
-Or, do so using snailing: `http://localhost:5000/http-module/get/42/123e4567-e89b-12d3-a456-426614174000`.
+### POST
+
+```csharp
+[Name("http-module")]
+public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
+{
+    [HttpPost("post")]
+    public Task<HttpResponse> Post([JsonBody] string content)
+        => HttpResponse.Ok($"Received: {content}");
+}
+```
+
+This example defines a command that responds to `POST` requests at the endpoint `http://localhost:5000/http-module/post`. The body of the request will be parsed as JSON and passed to the command.
+
+The `[JsonBody]` attribute indicates that the content of the request body should be deserialized from JSON into the `string content` parameter.
+
+> [!TIP]
+> The `[JsonBody]` attribute can be used with any type. It is available at any position in the command signature, and will attempt to deserialize the request body into the specified type. 
+> If no request body is provided and the type is not nullable, an error will be returned.
+
+### Other HTTP Methods
+
+PUT, DELETE and PATCH are supported in the same way as GET and POST, using the respective attributes: `HttpPut`, `HttpDelete`, and `HttpPatch`.
+
+It is also possible to define methods not bound to any standard HTTP method by using the `HttpMethodAttribute` directly, allowing you to specify any HTTP method you desire.
+
+```csharp
+[Name("http-module")]
+public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
+{
+    [HttpMethod("CUSTOM", "custom")]
+    public Task<HttpResponse> CustomMethod()
+        => HttpResponse.Ok("This is a custom HTTP method response.");
+}
+```
 
 ## Response Formatting
 
-When a command returns an `HttpResponse` or `IHttpResult`, it will be sent directly to the caller. If the command returns a different type, it will be converted to an `HttpResponse` using the default response formatter.
+When a command returns an `HttpResult` or `IHttpResult`, it will be sent directly to the caller. 
+If the command returns a different type, it will be converted to an `HttpResult` using the default response formatter.
 
-`HttpResponse` has a set of static methods that can be used to create responses with different status codes and content types:
-
-```csharp
-HttpResponse.Ok("Success!"); // 200 OK
-HttpResponse.BadRequest("Invalid request"); // 400 Bad Request
-HttpResponse.NotFound("Resource not found"); // 404 Not Found
-HttpResponse.InternalServerError("An error occurred"); // 500 Internal Server Error
-```
+`HttpResult` has a set of static methods that can be used to create responses with different status codes and content types, including JSON formatting.

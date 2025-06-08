@@ -16,7 +16,7 @@ public class CommandExecutionFactory
     /// <summary>
     ///     Creates a new instance of the <see cref="CommandExecutionFactory"/> using the provided services.
     /// </summary>
-    public CommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, IEnumerable<ResultHandler> resultHandlers)
+    public CommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, IEnumerable<IResultHandler> resultHandlers)
     {
         var orderedHandlers = resultHandlers.OrderBy(x => x.GetType().GetCustomAttribute<PriorityAttribute>()?.Priority ?? 0).ToList();
 

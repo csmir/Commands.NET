@@ -11,7 +11,7 @@ namespace Commands.Hosting;
 ///     <br/>
 ///     Additionally, <see cref="PriorityAttribute"/> can be used to control the order in which handlers are executed when multiple handlers are registered.
 /// </remarks>
-public abstract class ResultHandler
+public abstract class ResultHandler : IResultHandler
 {
     /// <summary>
     ///     Handles the result of a command execution, allowing for custom handling of different result types and exceptions.
@@ -64,7 +64,7 @@ public abstract class ResultHandler
     /// <param name="result">The result of the command execution.</param>
     /// <param name="services">The <see cref="IServiceProvider"/> used to populate and run modules in this scope.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation. When the result contains <see langword="true"/>, the handler will stop processing </returns>
+    /// <returns>An awaitable <see cref="ValueTask"/> representing the result of this operation. When the result contains <see langword="true"/>, the handler will stop processing.</returns>
     public virtual ValueTask<bool> Success(IContext context, IResult result, IServiceProvider services, CancellationToken cancellationToken = default)
         => default;
 

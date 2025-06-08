@@ -12,7 +12,7 @@ public static class ServiceUtils
     ///     Adds a <see cref="IComponentProvider"/> to the <see cref="IServiceCollection"/>.
     /// </summary>
     /// <remarks>
-    ///     This method will remove any existing <see cref="IComponentProvider"/> and <see cref="CommandExecutionFactory"/> from the collection before adding newly configured instances. Additionally, it configures a <see cref="IExecutionScope"/> and <see cref="IContextAccessor{TContext}"/> under scoped context.
+    ///     This method will try to add any resources not yet added to the service collection.
     /// </remarks>
     /// <param name="services">The <see cref="IServiceProvider"/> to add the configured services to.</param>
     /// <param name="configureAction"></param>
@@ -34,42 +34,32 @@ public static class ServiceUtils
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void AddComponentProvider(IServiceCollection services, ComponentBuilderContext builder)
-        => DefineServices(services, builder);
+        => TryAddServices(services, builder);
 
     #region Internals
 
     // A method that defines the services to be added to the service collection.
-    internal static void DefineServices(IServiceCollection collection, ComponentBuilderContext builder)
+    internal static void TryAddServices(IServiceCollection collection, ComponentBuilderContext builder)
     {
-        Assert.NotNull(collection, nameof(collection));
+        if (builder.Properties.TryGetValue(nameof(IComponentProvider), out var prop) && prop is TypeWrapper providerType)
+            collection.TryAddSingleton(typeof(IComponentProvider), providerType.Value);
 
-        if (collection.Contains<IComponentProvider>())
-        {
-            // Remove the existing factory to avoid conflicts.
-            collection.RemoveAll<CommandExecutionFactory>();
-            collection.RemoveAll<IComponentProvider>();
-            collection.RemoveAll<IExecutionScope>();
-            collection.RemoveAll<IDependencyResolver>();
-            collection.RemoveAll(typeof(IContextAccessor<>));
-        }
+        if (builder.Properties.TryGetValue(nameof(IExecutionScope), out prop) && prop is TypeWrapper scopeType)
+            collection.TryAddScoped(typeof(IExecutionScope), scopeType.Value);
 
-        if (builder.Properties.TryGetValue("ComponentProvider", out var prop) && prop is TypeWrapper providerType)
-            collection.AddSingleton(typeof(IComponentProvider), providerType.Value);
-
-        if (builder.Properties.TryGetValue("ExecutionScope", out prop) && prop is TypeWrapper scopeType)
-            collection.AddScoped(typeof(IExecutionScope), scopeType.Value);
-
-        if (builder.Properties.TryGetValue("DependencyResolver", out prop) && prop is TypeWrapper resolverType)
-            collection.AddScoped(typeof(IDependencyResolver), resolverType.Value);
+        if (builder.Properties.TryGetValue(nameof(IDependencyResolver), out prop) && prop is TypeWrapper resolverType)
+            collection.TryAddScoped(typeof(IDependencyResolver), resolverType.Value);
 
         // Register the result handlers if any are defined.
-        if (builder.Properties.TryGetValue("ResultHandlers", out prop) && prop is List<TypeWrapper> handlers)
+        if (builder.Properties.TryGetValue(nameof(IResultHandler), out prop) && prop is HashSet<TypeWrapper> handlers)
             foreach (var handler in handlers)
-                collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ResultHandler), handler.Value));
+                collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IResultHandler), handler.Value));
 
         // This isn't customizable, as the logic is tightly coupled with the execution scope.
-        collection.AddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
-        collection.AddSingleton<CommandExecutionFactory>();
+        collection.TryAddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
+
+        // Attempts to add the component provider to the service collection.
+        collection.TryAddSingleton<CommandExecutionFactory>();
     }
 
     #endregion

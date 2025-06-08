@@ -9,7 +9,8 @@ namespace Commands.Http;
 public static class HttpUtils
 {
     /// <summary>
-    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and predefined <see cref="HttpCommandExecutionFactory"/> for HTTP command execution.
+    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and <see cref="HttpCommandExecutionFactory"/> for HTTP command execution.
+    ///     Calling this method multiple times will attempt to add new services if they are not already registered, otherwise ignoring them.
     /// </summary>
     /// <remarks>
     ///     This method configures the <see cref="IServiceProvider"/> consumed by the <see cref="IHost"/> built from this builder, to implement the following services:
@@ -46,7 +47,7 @@ public static class HttpUtils
 
         builder.ConfigureServices((context, services) =>
         {
-            DefineServices(services, httpBuilder);
+            TryAddServices(services, httpBuilder);
         });
 
         return builder;
@@ -80,7 +81,7 @@ public static class HttpUtils
     /// <typeparam name="THandler">The type of handler which will be the default for handling HTTP results.</typeparam>
     /// <param name="builder">The builder to configure.</param>
     /// <returns>The same <see cref="ComponentBuilderContext"/> for call chaining.</returns>
-    public static ComponentBuilderContext WithDefaultResultHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] THandler>
+    public static ComponentBuilderContext WithHttpHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] THandler>
         (this ComponentBuilderContext builder)
         where THandler : HttpResultHandler
     {
@@ -92,29 +93,19 @@ public static class HttpUtils
     #region Internals
 
     // A method that defines the services to be added to the service collection.
-    internal static void DefineServices(IServiceCollection collection, ComponentBuilderContext builder)
+    internal static void TryAddServices(IServiceCollection collection, ComponentBuilderContext builder)
     {
-        Assert.NotNull(collection, nameof(collection));
-
-        if (collection.Contains<HttpListener>())
-        {
-            // Remove the existing listener to avoid conflicts.
-            collection.RemoveAll<HttpListener>();
-        }
-
-        // Force remove the factory; we use a different one for HTTP;
-        collection.RemoveAll<CommandExecutionFactory>();
-        collection.AddHostedService<HttpCommandExecutionFactory>();
-
         if (builder.Properties.TryGetValue(nameof(HttpListener), out var prop) && prop is HttpListener listener)
-            collection.AddSingleton(listener);
+            collection.TryAddSingleton(listener);
         else // Configuring the listener is mandatory.
             throw new InvalidOperationException($"No {nameof(HttpListener)} configured. Use {nameof(ConfigureListener)} to configure the listener with the required prefixes and additional properties.");
 
         if (builder.Properties.TryGetValue(nameof(HttpResultHandler), out prop) && prop is TypeWrapper handlerType)
-            collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ResultHandler), handlerType.Value));
+            collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IResultHandler), handlerType.Value));
         else
-            collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ResultHandler), typeof(HttpResultHandler)));
+            collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IResultHandler), typeof(HttpResultHandler)));
+
+        collection.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, HttpCommandExecutionFactory>());
     }
 
     #endregion

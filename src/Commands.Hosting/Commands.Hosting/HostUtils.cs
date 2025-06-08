@@ -8,7 +8,8 @@ namespace Commands.Hosting;
 public static class HostUtils
 {
     /// <summary>
-    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and defined <see cref="CommandExecutionFactory"/>.
+    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and <see cref="CommandExecutionFactory"/>. 
+    ///     Calling this method multiple times will attempt to add new services if they are not already registered, otherwise ignoring them.
     /// </summary>
     /// <remarks>
     ///     This method configures the <see cref="IServiceProvider"/> consumed by the <see cref="IHost"/> built from this builder, to implement the following services:
