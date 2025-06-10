@@ -9,7 +9,7 @@ namespace Commands.Http;
 public static class Utilities
 {
     /// <summary>
-    ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and <see cref="HttpCommandExecutionFactory"/> for HTTP command execution.
+    ///     Configures the <see cref="IHostBuilder"/> to use an <see cref="IComponentProvider"/> and <see cref="HttpCommandExecutionFactory"/> for HTTP command execution.
     ///     Calling this method multiple times will attempt to add new services if they are not already registered, otherwise ignoring them.
     /// </summary>
     /// <remarks>
@@ -17,11 +17,12 @@ public static class Utilities
     ///     <list type="bullet">
     ///         <item>A required hosted singleton of <see cref="HttpCommandExecutionFactory"/>. This factory manages command scopes and execution lifetime.</item>
     ///         <item>A required singleton of <see cref="HttpListener"/>. This listener can be configured using <see cref="ConfigureListener(ComponentBuilderContext, Action{HttpListener})"/>.</item>
-    ///         <item>A default singleton implementation of <see cref="ResultHandler"/>. This handler is exclusively to handle unhandled HTTP results, and can be replaced or ignored by self-registered handlers of higher priority.</item>
-    ///         <item>A default singleton implementation of <see cref="IComponentProvider"/>. This provider supplies the defined <see cref="CommandExecutionFactory"/> with executable commands.</item>
-    ///         <item>A default scoped implementation of <see cref="IDependencyResolver"/> which manages the scope's service injection for modules and statically -or delegate- defined commands.</item>
-    ///         <item>A default scoped implementation of <see cref="IExecutionScope"/> which holds execution metadata for the scope of the command lifetime, and can be injected freely within said scope.</item>
-    ///         <item>A default scoped implementation of <see cref="IContextAccessor{TContext}"/>. This accessor exposes the context by accessing it from the defined <see cref="IExecutionScope"/>.</item>
+    ///         <item>A singleton implementation of <see cref="HttpResultHandler"/>. This handler is exclusively to handle unhandled HTTP results, and can be replaced or ignored by self-registered handlers of higher priority.</item>
+    ///         <item>A singleton implementation of <see cref="IComponentProvider"/>. This provider supplies the defined <see cref="CommandExecutionFactory"/> with executable commands.</item>
+    ///         <item>A scoped implementation of <see cref="IDependencyResolver"/> which manages the scope's service injection for modules and statically -or delegate- defined commands.</item>
+    ///         <item>A scoped implementation of <see cref="IExecutionScope"/> which holds execution metadata for the scope of the command lifetime, and can be injected freely within said scope.</item>
+    ///         <item>A scoped implementation of <see cref="IContextAccessor{TContext}"/>. This accessor exposes the context by accessing it from the defined <see cref="IExecutionScope"/>.</item>
+    ///         <item>A collection of singleton <see cref="IResultHandler"/> implementations. These handlers can process command results irrespective of the response logic handled by the <see cref="HttpResultHandler"/>.</item>
     ///     </list>
     /// </remarks>
     /// <param name="builder">The builder to configure with the related services.</param>

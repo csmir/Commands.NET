@@ -16,10 +16,10 @@
 /// </remarks>
 /// <param name="priority">The priority of this command, which adds to the score calculation of the command.</param>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
-public sealed class PriorityAttribute(float priority) : Attribute
+public sealed class PriorityAttribute(int priority) : Attribute
 {
     /// <summary>
     ///     Gets the priority of a command, where higher values take priority over lower ones.
     /// </summary>
-    public float Priority { get; } = priority;
+    public int Priority { get; } = priority;
 }

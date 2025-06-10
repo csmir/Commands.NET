@@ -41,7 +41,7 @@ public abstract class ConditionEvaluator
 
         foreach (var group in evaluatorGroups)
         {
-            var groupArr = group.ToArray();
+            var groupArr = group.OrderBy(x => x.GetType().GetCustomAttribute<PriorityAttribute>()?.Priority ?? 0).ToArray();
 
             var instance = (ConditionEvaluator)Activator.CreateInstance(group.Key)!;
 
