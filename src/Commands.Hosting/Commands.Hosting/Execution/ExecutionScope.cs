@@ -8,7 +8,7 @@ internal sealed class ExecutionScope : IExecutionScope
 
     public IServiceScope Scope { get; set; } = null!;
 
-    public void Populate(IContext context, IServiceScope scope, CancellationTokenSource cancellationSource)
+    public void CreateState(IContext context, IServiceScope scope, CancellationTokenSource cancellationSource)
     {
         Scope = scope;
         Context = context;

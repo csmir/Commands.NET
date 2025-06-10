@@ -144,7 +144,7 @@ public class Command : IComponent, IParameterCollection
     private Command(IActivator activator, ComponentOptions options)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
-        var parameters = CommandUtils.GetParameters(activator, options);
+        var parameters = activator.GetParameters(options);
         var attributes = activator.Target.GetAttributes(true);
 
         Attributes = [.. attributes];
@@ -184,7 +184,7 @@ public class Command : IComponent, IParameterCollection
             parameters = [];
         else if (MaxLength == args.RemainingLength || (MaxLength <= args.RemainingLength && HasRemainder) || (MaxLength > args.RemainingLength && MinLength <= args.RemainingLength))
         {
-            var arguments = await CommandUtils.Parse(this, context, args, options).ConfigureAwait(false);
+            var arguments = await this.Parse(context, args, options).ConfigureAwait(false);
 
             parameters = new object[arguments.Length];
 

@@ -79,7 +79,7 @@ public class CommandExecutionFactory
 
         var executionScope = scope.ServiceProvider.GetRequiredService<IExecutionScope>();
 
-        executionScope.Populate(context, scope, token);
+        executionScope.CreateState(context, scope, token);
         executeOptions.CancellationToken = executionScope.CancellationSource.Token;
 
         await _executionProvider.Execute(context, executeOptions);

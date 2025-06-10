@@ -1,17 +1,11 @@
-﻿using System.ComponentModel;
-
-namespace Commands.Hosting;
+﻿namespace Commands.Hosting;
 
 /// <summary>
 ///     A context object used to configure the component provider.
 /// </summary>
 public class ComponentBuilderContext
 {
-    /// <summary>
-    ///     Gets a dictionary holding types required to be registered when attaching the component logistics to a service collection.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public Dictionary<string, object?> Properties { get; } = [];
+    internal Dictionary<string, object?> Properties { get; } = [];
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ComponentBuilderContext"/> class, setting up the default services required for component execution.
@@ -19,12 +13,12 @@ public class ComponentBuilderContext
     public ComponentBuilderContext()
     {
         // Initialize the default service properties with their respective types.
-        Properties[nameof(IExecutionScope)] = new TypeWrapper(typeof(ExecutionScope));
-        Properties[nameof(IDependencyResolver)] = new TypeWrapper(typeof(KeyedDependencyResolver));
-        Properties[nameof(IComponentProvider)] = new TypeWrapper(typeof(ComponentProvider));
+        Properties[nameof(IExecutionScope)] = typeof(ExecutionScope);
+        Properties[nameof(IDependencyResolver)] = typeof(KeyedDependencyResolver);
+        Properties[nameof(IComponentProvider)] = typeof(ComponentProvider);
 
         // Initialize the range of result handlers. These will hold the types of handlers that will be added on post-configure; These are hashsets to avoid duplicates.
-        Properties[nameof(IResultHandler)] = new HashSet<TypeWrapper>();
+        Properties[nameof(IResultHandler)] = new HashSet<Type>();
     }
 
     /// <summary>
@@ -53,10 +47,10 @@ public class ComponentBuilderContext
     /// </remarks>
     /// <typeparam name="TScope">The type implementing <see cref="IExecutionScope"/> that should be the underlying implementation used by the hosted factory.</typeparam>
     /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
-    public ComponentBuilderContext WithExecutionScope<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TScope>()
+    public ComponentBuilderContext WithExecutionScope<TScope>()
         where TScope : class, IExecutionScope
     {
-        Properties["ExecutionScope"] = new TypeWrapper(typeof(TScope));
+        Properties[nameof(IExecutionScope)] = typeof(TScope);
 
         return this;
     }
@@ -69,10 +63,10 @@ public class ComponentBuilderContext
     /// </remarks>
     /// <typeparam name="TResolver">The type implementing <see cref="IDependencyResolver"/> that should be the underlying implementation used by the hosted factory.</typeparam>
     /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
-    public ComponentBuilderContext WithDependencyResolver<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TResolver>()
+    public ComponentBuilderContext WithDependencyResolver<TResolver>()
         where TResolver : class, IDependencyResolver
     {
-        Properties["DependencyResolver"] = new TypeWrapper(typeof(TResolver));
+        Properties[nameof(IDependencyResolver)] = typeof(TResolver);
 
         return this;
     }
@@ -85,10 +79,10 @@ public class ComponentBuilderContext
     /// </remarks>
     /// <typeparam name="TProvider">The type implementing <see cref="IComponentProvider"/> that should be the underlying implementation used by the hosted factory.</typeparam>
     /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
-    public ComponentBuilderContext WithComponentProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] TProvider>()
+    public ComponentBuilderContext WithComponentProvider<TProvider>()
         where TProvider : class, IComponentProvider
     {
-        Properties["ComponentProvider"] = new TypeWrapper(typeof(TProvider));
+        Properties[nameof(IComponentProvider)] = typeof(TProvider);
 
         return this;
     }
@@ -98,18 +92,46 @@ public class ComponentBuilderContext
     /// </summary>
     /// <typeparam name="THandler">The type implementing <see cref="IResultHandler"/> that should be an enumerated implementation to handle command results.</typeparam>
     /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
-    public ComponentBuilderContext AddResultHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] THandler>()
+    public ComponentBuilderContext AddResultHandler<THandler>()
         where THandler : IResultHandler
     {
-        if (!Properties.TryGetValue("ResultHandlers", out var handlers) || handlers is not HashSet<TypeWrapper> handlerContainer)
+        if (!TryGetProperty<HashSet<Type>>(nameof(IResultHandler), out var handlersProperty))
         {
-            handlerContainer = [];
+            // If the property is not found, create a new HashSet and add it to the properties.
+            handlersProperty = [];
 
-            Properties["ResultHandlers"] = handlerContainer;
+            Properties[nameof(IResultHandler)] = handlersProperty;
         }
 
-        handlerContainer.Add(new TypeWrapper(typeof(THandler)));
+        handlersProperty.Add(typeof(THandler));
 
         return this;
     }
+
+    #region Internals
+
+    internal bool TryGetProperty<T>(string key, [NotNullWhen(true)] out T? property)
+    {
+        Assert.NotNull(key, nameof(key));
+
+        if (Properties.TryGetValue(key, out var value) && value is T typed)
+        {
+            property = typed;
+            return true;
+        }
+
+        property = default;
+        return false;
+    }
+
+    [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+    internal Type GetTypeProperty(string key, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type defaultValue)
+    {
+        if (Properties.TryGetValue(key, out var value) && value is Type type)
+            return type;
+
+        return defaultValue;
+    }
+
+    #endregion
 }

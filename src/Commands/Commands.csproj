@@ -53,4 +53,9 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="Commands.Hosting"/>
+		<InternalsVisibleTo Include="Commands.Http"/>
+	</ItemGroup>
+
 </Project>

@@ -38,9 +38,9 @@ public sealed class ComponentTree : ComponentSet
                 continue;
 
             if (enumerator.Current is CommandGroup group)
-                CommandUtils.CopyTo(ref discovered, group.Find(args));
+                Collection.CopyTo(ref discovered, group.Find(args));
             else
-                CommandUtils.CopyTo(ref discovered, enumerator.Current);
+                Collection.CopyTo(ref discovered, enumerator.Current);
         }
 
         return discovered;
@@ -86,7 +86,7 @@ public sealed class ComponentTree : ComponentSet
     {
         options ??= ComponentOptions.Default;
 
-        var components = CommandUtils.GetComponents(types, options);
+        var components = types.GetComponents(options);
 
         return AddRange(components);
     }

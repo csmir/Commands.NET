@@ -1,19 +1,10 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Commands;
 
-/// <summary>
-///     Provides a set of assertion methods for validating arguments.
-/// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
-public static class Assert
+internal static class Assert
 {
-    /// <summary>
-    ///     Validates that the specified argument is not null.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void NotNull(object? argument, string argumentExpression)
     {
@@ -25,10 +16,6 @@ public static class Assert
 #endif
     }
 
-    /// <summary>
-    ///     Validates that the specified argument is not null or empty.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void NotNullOrEmpty(string? argument, string argumentExpression)
     {
@@ -41,10 +28,6 @@ public static class Assert
 #endif
     }
 
-    /// <summary>
-    ///     Validates that the specified arguments are not null, and match the provided validation expression.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void NotNullOrInvalid(IEnumerable<string> values, Regex? regex, string argumentExpression)
     {

@@ -1,12 +1,10 @@
 ﻿using Commands.Conditions;
-using System.ComponentModel;
 
 namespace Commands.Http;
 
 /// <summary>
 ///     An evaluator that checks if the HTTP method of a command matches the specified method condition.
 /// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class HttpMethodEvaluator : ConditionEvaluator
 {
     /// <summary>

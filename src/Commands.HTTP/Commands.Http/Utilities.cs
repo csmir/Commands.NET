@@ -6,7 +6,7 @@ namespace Commands.Http;
 /// <summary>
 ///     A utility class containing methods for working with HTTP hosts in the Commands.NET framework.
 /// </summary>
-public static class HttpUtils
+public static class Utilities
 {
     /// <summary>
     ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and <see cref="HttpCommandExecutionFactory"/> for HTTP command execution.
@@ -63,14 +63,14 @@ public static class HttpUtils
     {
         Assert.NotNull(configure, nameof(configure));
 
-        if (!builder.Properties.TryGetValue(nameof(HttpListener), out var listenerObj) || listenerObj is not HttpListener listener)
+        if (!builder.TryGetProperty<HttpListener>(nameof(HttpListener), out var listenerProperty))
         {
-            listener = new HttpListener();
+            listenerProperty = new HttpListener();
 
-            builder.Properties[nameof(HttpListener)] = listener;
+            builder.Properties[nameof(HttpListener)] = listenerProperty;
         }
 
-        configure(listener);
+        configure(listenerProperty);
 
         return builder;
     }
@@ -81,11 +81,11 @@ public static class HttpUtils
     /// <typeparam name="THandler">The type of handler which will be the default for handling HTTP results.</typeparam>
     /// <param name="builder">The builder to configure.</param>
     /// <returns>The same <see cref="ComponentBuilderContext"/> for call chaining.</returns>
-    public static ComponentBuilderContext WithHttpHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicNestedTypes)] THandler>
+    public static ComponentBuilderContext WithHttpHandler<THandler>
         (this ComponentBuilderContext builder)
         where THandler : HttpResultHandler
     {
-        builder.Properties[nameof(HttpResultHandler)] = new TypeWrapper(typeof(THandler));
+        builder.Properties[nameof(HttpResultHandler)] = typeof(THandler);
 
         return builder;
     }
@@ -95,16 +95,11 @@ public static class HttpUtils
     // A method that defines the services to be added to the service collection.
     internal static void TryAddServices(IServiceCollection collection, ComponentBuilderContext builder)
     {
-        if (builder.Properties.TryGetValue(nameof(HttpListener), out var prop) && prop is HttpListener listener)
-            collection.TryAddSingleton(listener);
-        else // Configuring the listener is mandatory.
+        if (!builder.TryGetProperty<HttpListener>(nameof(HttpListener), out var listenerProperty))
             throw new InvalidOperationException($"No {nameof(HttpListener)} configured. Use {nameof(ConfigureListener)} to configure the listener with the required prefixes and additional properties.");
 
-        if (builder.Properties.TryGetValue(nameof(HttpResultHandler), out prop) && prop is TypeWrapper handlerType)
-            collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IResultHandler), handlerType.Value));
-        else
-            collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IResultHandler), typeof(HttpResultHandler)));
-
+        collection.TryAddSingleton(listenerProperty);
+        collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IResultHandler), builder.GetTypeProperty(nameof(HttpResultHandler), typeof(HttpResultHandler))));
         collection.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, HttpCommandExecutionFactory>());
     }
 

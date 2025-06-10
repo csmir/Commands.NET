@@ -119,7 +119,7 @@ public class CommandGroup : ComponentSet, IComponent
 
         if (!Ignore)
         {
-            var components = CommandUtils.GetNestedComponents(options, this);
+            var components = this.GetNestedComponents(options);
 
             AddRange(components);
         }
@@ -192,16 +192,16 @@ public class CommandGroup : ComponentSet, IComponent
         while (enumerator.MoveNext())
         {
             if (enumerator.Current.IsDefault)
-                CommandUtils.CopyTo(ref discovered, enumerator.Current);
+                Collection.CopyTo(ref discovered, enumerator.Current);
             else
             {
                 if (!args.TryGetElementAt(Position, out var value) || !enumerator.Current.Names.Contains(value))
                     continue;
 
                 if (enumerator.Current is CommandGroup group)
-                    CommandUtils.CopyTo(ref discovered, group.Find(args));
+                    Collection.CopyTo(ref discovered, group.Find(args));
                 else
-                    CommandUtils.CopyTo(ref discovered, enumerator.Current);
+                    Collection.CopyTo(ref discovered, enumerator.Current);
             }
         }
 

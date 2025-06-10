@@ -1,11 +1,13 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Commands.Hosting;
 
 /// <summary>
 ///     A static class containing methods for configuring a .NET Generic host -being any implementation of <see cref="IHostBuilder"/>- with Commands.NET functionality.
 /// </summary>
-public static class HostUtils
+public static class Utilities
 {
     /// <summary>
     ///     Configures the <see cref="IHostBuilder"/> to use the default <see cref="IComponentProvider"/> and <see cref="CommandExecutionFactory"/>. 
@@ -50,23 +52,7 @@ public static class HostUtils
         {
             configureComponents(ctx, properties);
 
-            ServiceUtils.AddComponentProvider(services, properties);
-        });
-
-        return builder;
-    }
-
-    /// <inheritdoc cref="ConfigureComponents(IHostBuilder, Action{ComponentBuilderContext})"/>
-    /// <param name="builder">The builder to configure with the related services.</param>
-    /// <param name="componentBuilder">The configuration to use for these components.</param>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, ComponentBuilderContext componentBuilder)
-    {
-        Assert.NotNull(componentBuilder, nameof(componentBuilder));
-
-        builder.ConfigureServices((ctx, services) =>
-        {
-            ServiceUtils.AddComponentProvider(services, componentBuilder);
+            AddComponentProvider(services, properties);
         });
 
         return builder;
@@ -97,4 +83,69 @@ public static class HostUtils
 
         return host;
     }
+
+    /// <summary>
+    ///     Adds a <see cref="IComponentProvider"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <remarks>
+    ///     This method will try to add any resources not yet added to the service collection.
+    /// </remarks>
+    /// <param name="services">The <see cref="IServiceProvider"/> to add the configured services to.</param>
+    /// <param name="configureAction"></param>
+    /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configureAction"/> is <see langword="null"/>.</exception>
+    public static IServiceCollection AddComponentProvider(this IServiceCollection services, Action<ComponentBuilderContext> configureAction)
+    {
+        Assert.NotNull(services, nameof(services));
+        Assert.NotNull(configureAction, nameof(configureAction));
+
+        var builder = new ComponentBuilderContext();
+
+        configureAction(builder);
+
+        AddComponentProvider(services, builder);
+
+        return services;
+    }
+
+    #region Internals
+
+    internal static IHostBuilder ConfigureComponents(this IHostBuilder builder, ComponentBuilderContext componentBuilder)
+    {
+        Assert.NotNull(componentBuilder, nameof(componentBuilder));
+
+        builder.ConfigureServices((ctx, services) =>
+        {
+            AddComponentProvider(services, componentBuilder);
+        });
+
+        return builder;
+    }
+
+    private static void AddComponentProvider(IServiceCollection services, ComponentBuilderContext builder)
+        => TryAddServices(services, builder);
+
+    private static void TryAddServices(IServiceCollection collection, ComponentBuilderContext builder)
+    {
+        collection.TryAddSingleton(typeof(IComponentProvider), builder.GetTypeProperty(nameof(IComponentProvider), typeof(ComponentProvider)));
+        collection.TryAddScoped(typeof(IDependencyResolver), builder.GetTypeProperty(nameof(IDependencyResolver), typeof(KeyedDependencyResolver)));
+        collection.TryAddScoped(typeof(IExecutionScope), builder.GetTypeProperty(nameof(IExecutionScope), typeof(ExecutionScope)));
+
+        collection.TryAddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
+
+        collection.TryAddSingleton<CommandExecutionFactory>();
+
+        if (builder.TryGetProperty<HashSet<Type>>(nameof(IResultHandler), out var resultsProperty))
+        {
+            var descriptors = resultsProperty.Select(([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] type) =>
+            {
+                return ServiceDescriptor.Singleton(typeof(IResultHandler), type);
+            });
+
+            foreach (var descriptor in descriptors)
+                collection.TryAddEnumerable(descriptor);
+        }
+    }
+
+    #endregion
 }
