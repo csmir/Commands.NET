@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace Commands.Hosting;
 
@@ -96,7 +94,6 @@ public static class Utilities
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configureAction"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddComponentProvider(this IServiceCollection services, Action<ComponentBuilderContext> configureAction)
     {
-        Assert.NotNull(services, nameof(services));
         Assert.NotNull(configureAction, nameof(configureAction));
 
         var builder = new ComponentBuilderContext();

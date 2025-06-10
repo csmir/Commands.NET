@@ -7,12 +7,8 @@ internal readonly struct CommandInstanceActivator : IActivator
     public int ContextIndex
         => -1;
 
-    public CommandInstanceActivator(MethodInfo target)
-    {
-        Assert.NotNull(target, nameof(target));
-
-        Target = target;
-    }
+    public CommandInstanceActivator(MethodInfo target) 
+        => Target = target;
 
     public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options)
         where TContext : IContext

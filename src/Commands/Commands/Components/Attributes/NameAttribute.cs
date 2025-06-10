@@ -36,6 +36,6 @@ public class NameAttribute : Attribute, INameBinding
     /// </summary>
     /// <param name="names">The target's names. Names are not considered for parameter names.</param>
     /// <exception cref="ArgumentException">Thrown when no names are provided.</exception>
-    public NameAttribute(params string[] names) 
+    public NameAttribute(params string[] names)
         => Names = names;
 }

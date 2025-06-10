@@ -40,7 +40,6 @@ public struct HttpResult : IHttpResult
     public HttpResult(HttpStatusCode code, byte[] content, string? contentType = null)
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         Content = content;
         ContentType = contentType;

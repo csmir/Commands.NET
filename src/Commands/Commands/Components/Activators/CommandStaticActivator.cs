@@ -11,8 +11,6 @@ internal readonly struct CommandStaticActivator : IActivator
 
     public CommandStaticActivator(MethodInfo target, object? state = null)
     {
-        Assert.NotNull(target, nameof(target));
-
         Target = target;
         _state = state;
 

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace Commands.Hosting;
+﻿namespace Commands.Hosting;
 
 /// <summary>
 ///     Represents the execution of a command.

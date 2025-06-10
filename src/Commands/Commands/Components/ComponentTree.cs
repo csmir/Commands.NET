@@ -18,12 +18,8 @@ public sealed class ComponentTree : ComponentSet
     ///     Initializes a new instance of <see cref="ComponentTree"/> using the specified components and configuration.
     /// </summary>
     /// <param name="components">The components to add to this tree.</param>
-    public ComponentTree(IEnumerable<IComponent> components)
-    {
-        Assert.NotNull(components, nameof(components));
-
-        AddRange(components);
-    }
+    public ComponentTree(IEnumerable<IComponent> components) 
+        => AddRange(components);
 
     /// <inheritdoc />
     public override IComponent[] Find(Arguments args)

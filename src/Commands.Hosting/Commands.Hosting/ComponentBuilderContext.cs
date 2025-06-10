@@ -112,8 +112,6 @@ public class ComponentBuilderContext
 
     internal bool TryGetProperty<T>(string key, [NotNullWhen(true)] out T? property)
     {
-        Assert.NotNull(key, nameof(key));
-
         if (Properties.TryGetValue(key, out var value) && value is T typed)
         {
             property = typed;

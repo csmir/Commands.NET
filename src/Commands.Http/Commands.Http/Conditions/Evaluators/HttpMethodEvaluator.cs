@@ -10,10 +10,10 @@ public sealed class HttpMethodEvaluator : ConditionEvaluator
     /// <summary>
     ///     Initializes a new instance of the <see cref="HttpMethodEvaluator"/> class.
     /// </summary>
-    public HttpMethodEvaluator() 
+    public HttpMethodEvaluator()
         => MaximumAllowedConditions = 1; // Only one HTTP method condition can exist for a command at a time.
 
     /// <inheritdoc />
-    public override ValueTask<ConditionResult> Evaluate(IContext context, Command command, IServiceProvider services, CancellationToken cancellationToken) 
+    public override ValueTask<ConditionResult> Evaluate(IContext context, Command command, IServiceProvider services, CancellationToken cancellationToken)
         => Conditions[0].Evaluate(context, command, services, cancellationToken);
 }

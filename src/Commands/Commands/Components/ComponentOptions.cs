@@ -69,8 +69,6 @@ public sealed class ComponentOptions
 
     internal TypeParser GetParser(Type type)
     {
-        Assert.NotNull(type, nameof(type));
-
         if (Parsers.TryGetValue(type, out var parser))
             return parser;
 

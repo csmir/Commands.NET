@@ -1,5 +1,4 @@
-﻿using Commands;
-using Commands.Hosting;
+﻿using Commands.Hosting;
 using Commands.Parsing;
 using Commands.Samples;
 using Microsoft.Extensions.DependencyInjection;
