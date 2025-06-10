@@ -24,7 +24,49 @@ public static class Utilities
 
     #region Internals
 
-    internal static async ValueTask<ParseResult[]> Parse(this IParameterCollection collection, IContext context, Arguments args, ExecutionOptions options)
+    #region Collections
+
+    internal static T? FirstOrDefault<T>(this IEnumerable values)
+    {
+        foreach (var entry in values)
+        {
+            if (entry is T tEntry)
+                return tEntry;
+        }
+
+        return default;
+    }
+
+    internal static void CopyTo<T>(ref T[] array, T item)
+    {
+        var newArray = new T[array.Length + 1];
+
+        Array.Copy(array, newArray, array.Length);
+
+        newArray[array.Length] = item;
+
+        array = newArray;
+    }
+
+    internal static void CopyTo<T>(ref T[] array, T[] items)
+    {
+        var newArray = new T[array.Length + items.Length];
+
+        Array.Copy(array, newArray, array.Length);
+
+        var i = array.Length;
+
+        foreach (var component in items)
+            newArray[i++] = component;
+
+        array = newArray;
+    }
+
+    #endregion
+
+    #region Execution
+
+    internal static async ValueTask<ParseResult[]> ParseParameters(IParameterCollection collection, IContext context, Arguments args, ExecutionOptions options)
     {
         var results = new ParseResult[collection.Parameters.Length];
 
@@ -48,7 +90,7 @@ public static class Utilities
 
             if (param is ConstructibleParameter constructible)
             {
-                var result = await Parse(constructible, context, args, options).ConfigureAwait(false);
+                var result = await ParseParameters(constructible, context, args, options).ConfigureAwait(false);
 
                 if (result.All(x => x.Success))
                 {
@@ -81,7 +123,7 @@ public static class Utilities
         return results;
     }
 
-    internal static object?[] Resolve(this DependencyParameter[] dependencies, MemberInfo target, ExecutionOptions options)
+    internal static object?[] ResolveDependencies(DependencyParameter[] dependencies, MemberInfo target, ExecutionOptions options)
     {
         if (dependencies.Length == 0)
             return [];
@@ -116,33 +158,46 @@ public static class Utilities
         return resolvedValues;
     }
 
-    internal static IEnumerable<IComponent> GetNestedComponents(this CommandGroup parent, ComponentOptions configuration)
+    #endregion
+
+    #region Components
+
+    internal static CommandGroup[] GetComponents(ComponentOptions configuration, IEnumerable<Type> types, bool isNested)
     {
-        if (parent.Activator!.Type == null)
-            return [];
+        var output = Array.Empty<CommandGroup>();
 
-        var members = parent.Activator!.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
-        var commands = new Command[members.Length];
-
-        for (var i = 0; i < members.Length; i++)
-            commands[i] = new Command(members[i], parent, configuration);
-
-        try
+        var action = new Action<Type>((
+#if NET8_0_OR_GREATER
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
+#endif
+            type) =>
         {
-            var nestedTypes = parent.Activator.Type.GetNestedTypes(BindingFlags.Public);
+            if (isNested && !type.IsNested)
+                return;
 
-            var groups = GetComponents(configuration, nestedTypes, true);
+            CommandGroup? group;
 
-            return [.. commands.Where(x => !x.Ignore), .. groups];
-        }
-        catch
-        {
-            // Do nothing, we can't access nested types.
-            return commands;
-        }
+            try
+            {
+                group = new CommandGroup(type, configuration);
+            }
+            catch (ComponentFormatException)
+            {
+                // This will throw if the type does not implement CommandModule. We can safely ignore this.
+                return;
+            }
+
+            if (group != null && !group.Ignore)
+                CopyTo(ref output, group);
+        });
+
+        foreach (var type in types)
+            action(type);
+
+        return output;
     }
 
-    internal static ICommandParameter[] GetParameters(this IActivator activator, ComponentOptions configuration)
+    internal static ICommandParameter[] GetParameters(IActivator activator, ComponentOptions configuration)
     {
         var parameters = activator.Target.GetParameters();
 
@@ -153,7 +208,7 @@ public static class Utilities
 
         for (var i = 0; i < parameters.Length; i++)
         {
-            if (parameters[i].GetCustomAttributes().Contains<DeconstructAttribute>())
+            if (parameters[i].GetCustomAttributes().Any(x => x is DeconstructAttribute))
                 arr[i] = new ConstructibleParameter(parameters[i], configuration);
             else
                 arr[i] = new CommandParameter(parameters[i], configuration);
@@ -162,7 +217,7 @@ public static class Utilities
         return arr;
     }
 
-    internal static Tuple<int, int> GetLength(this IEnumerable<ICommandParameter> arguments)
+    internal static Tuple<int, int> GetLength(IEnumerable<ICommandParameter> arguments)
     {
         var minLength = 0;
         var maxLength = 0;
@@ -191,6 +246,10 @@ public static class Utilities
         return new(minLength, maxLength);
     }
 
+    #endregion
+
+    #region Reflection
+
     internal static ConstructorInfo GetAvailableConstructor(
 #if NET8_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
@@ -214,37 +273,7 @@ public static class Utilities
     internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)
         => provider.GetCustomAttributes(inherit).OfType<Attribute>();
 
-    private static CommandGroup[] GetComponents(ComponentOptions configuration, IEnumerable<Type> types, bool isNested)
-    {
-        var output = Array.Empty<CommandGroup>();
-
-        types.ForEach((
-#if NET8_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
-#endif
-            type) =>
-        {
-            if (isNested && !type.IsNested)
-                return;
-
-            CommandGroup? group;
-
-            try
-            {
-                group = new CommandGroup(type, configuration);
-            }
-            catch (ComponentFormatException)
-            {
-                // This will throw if the type does not implement CommandModule. We can safely ignore this.
-                return;
-            }
-
-            if (group != null && !group.Ignore)
-                Collection.CopyTo(ref output, group);
-        });
-
-        return output;
-    }
+    #endregion
 
     #endregion
 }

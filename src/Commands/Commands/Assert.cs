@@ -22,7 +22,6 @@ internal static class Assert
 #if NET8_0_OR_GREATER
         ArgumentException.ThrowIfNullOrEmpty(argument, argumentExpression);
 #else
-
         if (string.IsNullOrEmpty(argument))
             throw new ArgumentException("The argument must not be null or empty.", argumentExpression);
 #endif
@@ -33,21 +32,21 @@ internal static class Assert
     {
         NotNull(values, nameof(values));
 
-        if (regex == null)
-            return;
-
-        var valueCount = 0;
-        foreach (var value in values)
+        if (regex != null)
         {
-            valueCount++;
+            var valueCount = 0;
+            foreach (var value in values)
+            {
+                valueCount++;
 
-            NotNullOrEmpty(value, argumentExpression);
+                NotNullOrEmpty(value, argumentExpression);
 
-            if (!regex.IsMatch(value))
-                throw new ArgumentException($"The argument '{argumentExpression}' must match the validation expression '{regex}'", argumentExpression);
+                if (!regex.IsMatch(value))
+                    throw new ArgumentException($"The argument '{argumentExpression}' must match the validation expression '{regex}'", argumentExpression);
+            }
+
+            if (valueCount == 0)
+                throw new ArgumentException($"The argument '{argumentExpression}' must not be empty.", argumentExpression);
         }
-
-        if (valueCount == 0)
-            throw new ArgumentException($"The argument '{argumentExpression}' must not be empty.", argumentExpression);
     }
 }

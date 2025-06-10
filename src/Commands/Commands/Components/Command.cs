@@ -131,7 +131,7 @@ public class Command : IComponent, IParameterCollection
         Assert.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
 
         Names = names;
-        Ignore = Attributes.Contains<IgnoreAttribute>();
+        Ignore = Attributes.Any(x => x is IgnoreAttribute);
 
         if (parent != null && options.PropagateParentConditions)
             Evaluators = ConditionEvaluator.CreateEvaluators([.. Attributes.OfType<ICondition>(), .. parent.GetConditions()]);
@@ -145,13 +145,13 @@ public class Command : IComponent, IParameterCollection
     private Command(IActivator activator, ComponentOptions options)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
-        var parameters = activator.GetParameters(options);
+        var parameters = Utilities.GetParameters(activator, options);
         var attributes = activator.Target.GetAttributes(true);
 
         Attributes = [.. attributes];
         Activator = activator;
 
-        (MinLength, MaxLength) = parameters.GetLength();
+        (MinLength, MaxLength) = Utilities.GetLength(parameters);
 
         for (var i = 0; i < parameters.Length; i++)
         {
@@ -185,7 +185,7 @@ public class Command : IComponent, IParameterCollection
             parameters = [];
         else if (MaxLength == args.RemainingLength || (MaxLength <= args.RemainingLength && HasRemainder) || (MaxLength > args.RemainingLength && MinLength <= args.RemainingLength))
         {
-            var arguments = await this.Parse(context, args, options).ConfigureAwait(false);
+            var arguments = await Utilities.ParseParameters(this, context, args, options).ConfigureAwait(false);
 
             parameters = new object[arguments.Length];
 

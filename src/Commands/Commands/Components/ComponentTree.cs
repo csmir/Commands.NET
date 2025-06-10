@@ -34,9 +34,9 @@ public sealed class ComponentTree : ComponentSet
                 continue;
 
             if (enumerator.Current is CommandGroup group)
-                Collection.CopyTo(ref discovered, group.Find(args));
+                Utilities.CopyTo(ref discovered, group.Find(args));
             else
-                Collection.CopyTo(ref discovered, enumerator.Current);
+                Utilities.CopyTo(ref discovered, enumerator.Current);
         }
 
         return discovered;

@@ -25,7 +25,7 @@ public interface IComponentSet : ICollection<IComponent>, IEnumerable<IComponent
     /// <param name="predicate">The filter predicate to retrieve commands with.</param>
     /// <param name="browseNestedComponents">Defines if all subcomponents of this set should also be scanned and return their commands.</param>
     /// <returns>A lazily evaluated enumerable containing the discovered commands in this operation.</returns>
-    public IEnumerable<Command> GetCommands(Predicate<Command> predicate, bool browseNestedComponents = true);
+    public IEnumerable<Command> GetCommands(Func<Command, bool> predicate, bool browseNestedComponents = true);
 
     /// <summary>
     ///     Filters all components in the current set that are of <see cref="CommandGroup"/>.
@@ -40,7 +40,7 @@ public interface IComponentSet : ICollection<IComponent>, IEnumerable<IComponent
     /// <param name="predicate">The filter predicate to retrieve groups with.</param>
     /// <param name="browseNestedComponents">Defines if all subcomponents of this set should also be scanned and return their groups.</param>    
     /// <returns>A lazily evaluated enumerable containing the discovered groups in this operation.</returns>
-    public IEnumerable<CommandGroup> GetGroups(Predicate<CommandGroup> predicate, bool browseNestedComponents = true);
+    public IEnumerable<CommandGroup> GetGroups(Func<CommandGroup, bool> predicate, bool browseNestedComponents = true);
 
     /// <summary>
     ///     Retrieves the count of all subcomponents in the current set of components, including their own subcomponents. The result is the amount of commands and groups available in this set.

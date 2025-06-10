@@ -113,15 +113,34 @@ public class CommandGroup : ComponentSet, IComponent
         Assert.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
 
         Names = names;
-        Ignore = attributes.Contains<IgnoreAttribute>();
+        Ignore = attributes.Any(x => x is IgnoreAttribute);
 
         Activator = new CommandModuleActivator(type);
 
         if (!Ignore)
         {
-            var components = this.GetNestedComponents(options);
+            if (Activator!.Type == null)
+                return;
 
-            AddRange(components);
+            var members = Activator!.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
+            var commands = new Command[members.Length];
+
+            for (var i = 0; i < members.Length; i++)
+                commands[i] = new Command(members[i], this, options);
+
+            try
+            {
+                var nestedTypes = Activator.Type.GetNestedTypes(BindingFlags.Public);
+
+                var groups = Utilities.GetComponents(options, nestedTypes, true);
+
+                AddRange([.. commands.Where(x => !x.Ignore), .. groups]);
+            }
+            catch
+            {
+                // Do nothing, we can't access nested types.
+                AddRange(commands);
+            }
         }
     }
 
@@ -192,16 +211,16 @@ public class CommandGroup : ComponentSet, IComponent
         while (enumerator.MoveNext())
         {
             if (enumerator.Current.IsDefault)
-                Collection.CopyTo(ref discovered, enumerator.Current);
+                Utilities.CopyTo(ref discovered, enumerator.Current);
             else
             {
                 if (!args.TryGetElementAt(Position, out var value) || !enumerator.Current.Names.Contains(value))
                     continue;
 
                 if (enumerator.Current is CommandGroup group)
-                    Collection.CopyTo(ref discovered, group.Find(args));
+                    Utilities.CopyTo(ref discovered, group.Find(args));
                 else
-                    Collection.CopyTo(ref discovered, enumerator.Current);
+                    Utilities.CopyTo(ref discovered, enumerator.Current);
             }
         }
 

@@ -77,9 +77,9 @@ public sealed class CommandParameter : ICommandParameter
 
         Name = attributes.FirstOrDefault<INameBinding>()?.Name ?? parameterInfo.Name ?? "";
 
-        if (attributes.Contains<IResourceBinding>())
+        if (attributes.Any(x => x is IResourceBinding))
             IsResource = true;
-        else if (attributes.Contains<RemainderAttribute>() || attributes.Contains<ParamArrayAttribute>())
+        else if (attributes.Any(x => x is RemainderAttribute or ParamArrayAttribute))
             IsRemainder = true;
     }
 

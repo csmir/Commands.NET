@@ -40,7 +40,7 @@ internal readonly struct CommandStaticActivator : IActivator
         where TContext : IContext
     {
         if (ContextIndex != -1)
-            return Target.Invoke(_state, [.. _dependencies.Resolve(Target, options), context, .. args]);
+            return Target.Invoke(_state, [.. Utilities.ResolveDependencies(_dependencies, Target, options), context, .. args]);
 
         return Target.Invoke(_state, args);
     }
