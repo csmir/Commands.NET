@@ -8,7 +8,7 @@ namespace Commands.Http;
 /// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class HttpGetAttribute(params string[] routeNames)
-    : HttpMethodAttribute("GET", routeNames)
+    : HttpMethodAttribute(GET, routeNames)
 { }
 
 /// <summary>
@@ -17,7 +17,7 @@ public class HttpGetAttribute(params string[] routeNames)
 /// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class HttpPostAttribute(params string[] routeNames)
-    : HttpMethodAttribute("POST", routeNames)
+    : HttpMethodAttribute(POST, routeNames)
 { }
 
 /// <summary>
@@ -26,7 +26,7 @@ public class HttpPostAttribute(params string[] routeNames)
 /// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class HttpPutAttribute(params string[] routeNames)
-    : HttpMethodAttribute("PUT", routeNames)
+    : HttpMethodAttribute(PUT, routeNames)
 { }
 
 /// <summary>
@@ -35,7 +35,7 @@ public class HttpPutAttribute(params string[] routeNames)
 /// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class HttpDeleteAttribute(params string[] routeNames)
-    : HttpMethodAttribute("DELETE", routeNames)
+    : HttpMethodAttribute(DELETE, routeNames)
 { }
 
 /// <summary>
@@ -44,7 +44,7 @@ public class HttpDeleteAttribute(params string[] routeNames)
 /// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class HttpPatchAttribute(params string[] routeNames)
-    : HttpMethodAttribute("PATCH", routeNames)
+    : HttpMethodAttribute(PATCH, routeNames)
 { }
 
 /// <summary>
@@ -58,6 +58,31 @@ public class HttpPatchAttribute(params string[] routeNames)
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class HttpMethodAttribute(string method, params string[] routeNames) : HttpConditionAttribute<HttpMethodEvaluator>, INameBinding
 {
+    /// <summary>
+    ///     Gets the GET http method name.
+    /// </summary>
+    public const string GET = "GET";
+
+    /// <summary>
+    ///     Gets the POST http method name.
+    /// </summary>
+    public const string POST = "POST";
+
+    /// <summary>
+    ///     Gets the PUT http method name.
+    /// </summary>
+    public const string PUT = "PUT";
+
+    /// <summary>
+    ///     Gets the DELETE http method name.
+    /// </summary>
+    public const string DELETE = "DELETE";
+
+    /// <summary>
+    ///     Gets the PATCH http method name.
+    /// </summary>
+    public const string PATCH = "PATCH";
+
     /// <inheritdoc />
     public string Name
         => Names.Length > 0 ? Names[0] : string.Empty;

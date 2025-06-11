@@ -81,7 +81,7 @@ public struct HttpResult : IHttpResult
     /// <remarks>
     ///     When using Native-AOT, this method isn't implicitly supported. A custom <see cref="JsonSerializerContext"/> needs to be written with support of the provided type(s).
     /// </remarks>
-    /// <param name="content">The response to send</param>
+    /// <param name="content">The response to send.</param>
     /// <param name="statusCode">The status code of the response.</param>
     /// <param name="serializerOptions">Additional options for serializing this response.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
@@ -92,6 +92,19 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
 
         return new HttpResult(statusCode, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(content, content.GetType(), serializerOptions)), "application/json");
+    }
+
+    /// <summary>
+    ///     Creates a new HTTP response with the specified JSON content and status code.
+    /// </summary>
+    /// <param name="content">The response to send.</param>
+    /// <param name="statusCode">The status code of the response.</param>
+    /// <returns>A </returns>
+    public static HttpResult Json([StringSyntax(StringSyntaxAttribute.Json)] string content, HttpStatusCode statusCode = HttpStatusCode.OK)
+    {
+        Assert.NotNullOrEmpty(content, nameof(content));
+
+        return new HttpResult(statusCode, Encoding.UTF8.GetBytes(content), "application/json");
     }
 
     /// <summary>

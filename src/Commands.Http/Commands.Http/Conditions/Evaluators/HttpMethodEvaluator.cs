@@ -5,6 +5,7 @@ namespace Commands.Http;
 /// <summary>
 ///     An evaluator that checks if the HTTP method of a command matches the specified method condition.
 /// </summary>
+[Priority(-1)] // Run this evaluator before self-defined attributes.
 public sealed class HttpMethodEvaluator : ConditionEvaluator
 {
     /// <summary>
