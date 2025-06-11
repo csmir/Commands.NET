@@ -104,7 +104,6 @@ public class ComponentProvider : IComponentProvider
     /// <returns>An awaitable <see cref="Task"/> representing the Finalize operation.</returns>
 #if NET8_0_OR_GREATER
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Task<>))]
-    [UnconditionalSuppressMessage("AotAnalysis", "IL2075", Justification = "The availability of Task<> is ensured at compile-time.")]
 #endif
     protected virtual async Task Finalize<TContext>(TContext context, IResult result, ExecutionOptions options)
         where TContext : class, IContext

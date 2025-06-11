@@ -17,6 +17,9 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
     public string Name { get; }
 
     /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
+#endif
     public Type Type { get; }
 
     /// <inheritdoc />
@@ -62,9 +65,6 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
     public bool HasParameters
         => Parameters.Length > 0;
 
-#if NET8_0_OR_GREATER
-    [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
-#endif
     internal ConstructibleParameter(
         ParameterInfo parameterInfo, ComponentOptions configuration)
     {
