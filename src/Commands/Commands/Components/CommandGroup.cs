@@ -76,11 +76,15 @@ public class CommandGroup : ComponentSet, IComponent
     /// <exception cref="ArgumentException">The provided <paramref name="names"/> is <see langword="null"/> or does not match the <see cref="ComponentOptions.NameValidation"/> if any.</exception>
     public CommandGroup(string[] names, ComponentOptions? options = null)
     {
-        Assert.NotNullOrInvalid(names, (options ?? ComponentOptions.Default).NameValidation, nameof(names));
+        options ??= ComponentOptions.Default;
+
+        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(names));
 
         Ignore = false;
         Attributes = [];
         Names = names;
+
+        options.BuildCompleted?.Invoke(this);
     }
 
     /// <summary>
@@ -142,6 +146,8 @@ public class CommandGroup : ComponentSet, IComponent
                 AddRange(commands);
             }
         }
+
+        options.BuildCompleted?.Invoke(this);
     }
 
     /// <summary>

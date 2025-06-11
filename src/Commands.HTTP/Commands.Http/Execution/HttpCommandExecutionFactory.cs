@@ -6,15 +6,13 @@ namespace Commands.Http;
 /// <summary>
 ///     Represents a factory for executing commands over HTTP, using an <see cref="HttpListener"/> to listen for incoming requests.
 /// </summary>
-public class HttpCommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, ILogger<HttpCommandExecutionFactory> logger, IEnumerable<ResultHandler> resultHandlers, HttpListener httpListener)
-    : CommandExecutionFactory(executionProvider, serviceProvider, resultHandlers), IHostedService
+public class HttpCommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, ILogger<HttpCommandExecutionFactory> logger, IEnumerable<IResultHandler> resultHandlers, HttpListener httpListener)
+    : CommandExecutionFactory(executionProvider, serviceProvider, logger, resultHandlers), IHostedService
 {
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
         httpListener.Start();
-
-        logger.LogInformation("Factory started.");
 
         foreach (var prefix in httpListener.Prefixes)
             logger.LogInformation("Listening on {Prefix}", prefix);
@@ -30,7 +28,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
         httpListener.Stop();
         httpListener.Close();
 
-        logger.LogInformation("Factory stopped.");
+        logger.LogInformation("Stopping {FactoryType}...", nameof(HttpCommandExecutionFactory));
 
         return Task.CompletedTask;
     }
@@ -55,8 +53,6 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
     {
         var requestContext = await contextTask;
 
-        logger.LogInformation("Received request: {Method} {Url}", requestContext.Request.HttpMethod, requestContext.Request.Url);
-
         var acquiredPrefixLength = -1;
 
         foreach (var prefix in httpListener.Prefixes)
@@ -69,6 +65,8 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
         }
 
         var commandContext = new HttpCommandContext(requestContext, acquiredPrefixLength);
+
+        logger.LogInformation("Received inbound request: {Request}", commandContext);
 
         await StartExecution(commandContext, new HostedCommandOptions()
         {

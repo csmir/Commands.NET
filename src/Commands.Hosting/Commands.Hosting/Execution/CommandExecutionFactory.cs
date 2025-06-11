@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace Commands.Hosting;
 
@@ -12,40 +13,48 @@ public class CommandExecutionFactory
 {
     private readonly IComponentProvider _executionProvider;
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger _logger;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="CommandExecutionFactory"/> using the provided services.
     /// </summary>
-    public CommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, IEnumerable<IResultHandler> resultHandlers)
+    public CommandExecutionFactory(IComponentProvider execProvider, IServiceProvider serviceProvider, ILogger logger, IEnumerable<IResultHandler> resultHandlers)
     {
-        var orderedHandlers = resultHandlers.OrderBy(x => x.GetType().GetCustomAttribute<PriorityAttribute>()?.Priority ?? 0).ToList();
+        var handlers = resultHandlers.OrderBy(x => x.GetType().GetCustomAttribute<PriorityAttribute>()?.Priority ?? 0).ToArray();
 
-        executionProvider.OnFailure += async (context, result, exception, services) =>
+        execProvider.OnFailure += async (context, result, exception, services) =>
         {
-            foreach (var handler in orderedHandlers)
+            foreach (var handler in handlers)
             {
                 // If handled, break the loop to avoid multiple handlers processing the same result.
                 if (await handler.Failure(context, result, exception, services))
                     break;
             }
 
+            logger.LogError("Execution failure for request: {Request} with exception: {Exception}", context, result.Exception);
+
             services.GetService<IExecutionScope>()?.Dispose();
         };
 
-        executionProvider.OnSuccess += async (context, result, services) =>
+        execProvider.OnSuccess += async (context, result, services) =>
         {
-            foreach (var handler in orderedHandlers)
+            foreach (var handler in handlers)
             {
                 // If handled, break the loop to avoid multiple handlers processing the same result.
                 if (await handler.Success(context, result, services))
                     break;
             }
 
+            logger.LogInformation("Execution succeeded for request: {Request}.", context);
+
             services.GetService<IExecutionScope>()?.Dispose();
         };
 
-        _executionProvider = executionProvider;
+        _executionProvider = execProvider;
         _serviceProvider = serviceProvider;
+        _logger = logger;
+
+        logger.LogInformation("Consuming {ExecutionProvider}, {HandlerCount} result handler{MoreOrOne} registered.", execProvider.GetType().FullName, handlers.Length, handlers.Length > 1 ? "(s)" : "");
     }
 
     /// <summary>
@@ -75,12 +84,25 @@ public class CommandExecutionFactory
             ServiceProvider = scope.ServiceProvider,
         };
 
+        _logger.LogDebug(
+            "Starting execution for request: {Request} with options: SkipConditions = {SkipConditions}, ExecuteAsynchronously = {ExecuteAsynchronously}",
+            context,
+            executeOptions.SkipConditions,
+            executeOptions.ExecuteAsynchronously
+        );
+
         var token = new CancellationTokenSource();
 
         var executionScope = scope.ServiceProvider.GetRequiredService<IExecutionScope>();
 
         executionScope.CreateState(context, scope, token);
         executeOptions.CancellationToken = executionScope.CancellationSource.Token;
+
+        _logger.LogDebug(
+            "Created execution scope of type {ExecutionScopeType} for request: {Request}.",
+            executionScope.GetType().Name,
+            context
+        );
 
         await _executionProvider.Execute(context, executeOptions);
     }

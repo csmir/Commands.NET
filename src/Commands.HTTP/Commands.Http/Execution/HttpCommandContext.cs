@@ -99,6 +99,10 @@ public class HttpCommandContext : IResourceContext
         _closed = true;
     }
 
+    /// <inheritdoc />
+    public override string ToString()
+        => $"{Request.HttpMethod} {Request.Url?.AbsoluteUri}";
+
     [UnconditionalSuppressMessage("AOT", "IL3050")]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
     void IContext.Respond(object? message)

@@ -19,6 +19,16 @@ public sealed class ComponentOptions
     public Regex? NameValidation { get; set; } = null;
 
     /// <summary>
+    ///     Gets or sets an action that will be invoked when a component is built. This action can be used to perform additional setup or logging on the component after it has been created.
+    /// </summary>
+    public Action<IComponent>? BuildCompleted { get; set; } = null;
+
+    /// <summary>
+    ///     Gets or sets a range of global execution conditions that will be applied to all commands created using these options.
+    /// </summary>
+    public IList<ICondition> GlobalConditions { get; set; }
+
+    /// <summary>
     ///     Gets or sets a dictionary of parsers that will be used to parse command arguments into the target type by all components using these options.
     /// </summary>
     /// <remarks>
@@ -34,12 +44,13 @@ public sealed class ComponentOptions
     ///         </item>
     ///         <item>
     ///             Array implementations of all above types.
+    ///             <br/>
+    ///             <i>By default, array parsers are created by wrapping defined parsers. For example, if you add a custom parser for <see cref="int"/>, the <see cref="Array"/> parser for <see cref="int"/>[] will be created by wrapping the custom parser.</i>
     ///         </item>
     ///         <item>
-    ///             All <see cref="Enum"/> types.
+    ///             All <see cref="Enum"/> implementations.
     ///         </item>
     ///     </list>
-    ///     <i>By default, the parsers for arrays are created by wrapping the default parsers. For example, if you add a custom parser for <see cref="int"/>, the <see cref="Array"/> parser for <see cref="int"/>[] will be created by wrapping the custom parser.</i>
     /// </remarks>
     public IDictionary<Type, TypeParser> Parsers { get; set; }
 
@@ -58,6 +69,8 @@ public sealed class ComponentOptions
     {
         Parsers = TypeParser.CreateDefaults()
             .ToDictionary(x => x.Type);
+
+        GlobalConditions = [];
     }
 
     /// <summary>

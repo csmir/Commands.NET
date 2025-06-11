@@ -64,10 +64,6 @@ public class Command : IComponent, IParameterCollection
         => GetFullName();
 
     /// <inheritdoc />
-    public float Score
-        => GetScore();
-
-    /// <inheritdoc />
     public bool IsSearchable
         => true;
 
@@ -82,6 +78,24 @@ public class Command : IComponent, IParameterCollection
     /// <inheritdoc />
     public int Position
         => (Parent?.Position ?? 0) + (Name == null ? 0 : 1);
+
+    /// <summary>
+    ///     Gets the score of the command, which is used to set the priority of the command during execution. Higher scores take priority over lower scores.
+    /// </summary>
+    /// <remarks>
+    ///     By default, a command has a score calculated by the following logic:
+    ///     <list type="number">
+    ///         <item>For each parameter in the signature, the score is incremented by <b>1</b>.</item>
+    ///         <item>If a parameter is optional, the value is decremented by <b>0.5</b>.</item>
+    ///         <item>If a parameter is remainder, the value is decremented by <b>0.25</b>.</item>
+    ///         <item>If a parameter is nullable, the value is decremented by <b>0.25</b>.</item>
+    ///         <item>If a parameter has a known type parser, the value is incremenented by <b>1</b>.</item>
+    ///         <item>Further score incrementation from <see cref="PriorityAttribute"/> adds up to the total.</item>
+    ///     </list>
+    ///     The total value determines the score of the command, which is used to set the priority of the command during execution as stated above.
+    /// </remarks>
+    public float Score
+        => GetScore();
 
     /// <inheritdoc cref="Command(Delegate, IEnumerable{ExecuteCondition}, string[], ComponentOptions?)"/>
     public Command(Delegate executionDelegate, params string[] names)
@@ -112,6 +126,8 @@ public class Command : IComponent, IParameterCollection
 
         // Delegate commands do not support modularity approach or inheriting conditions from parent groups.
         Evaluators = ConditionEvaluator.CreateEvaluators(conditions);
+
+        options.BuildCompleted?.Invoke(this);
     }
 
     /// <summary>
@@ -127,7 +143,7 @@ public class Command : IComponent, IParameterCollection
         : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ??= ComponentOptions.Default)
     {
         var names = Attributes.FirstOrDefault<INameBinding>()?.Names ?? [];
-
+        
         Assert.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
 
         Names = names;
@@ -139,6 +155,8 @@ public class Command : IComponent, IParameterCollection
             Evaluators = ConditionEvaluator.CreateEvaluators(Attributes.OfType<ICondition>());
 
         Parent = parent;
+
+        options.BuildCompleted?.Invoke(this);
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -158,7 +176,7 @@ public class Command : IComponent, IParameterCollection
             var parameter = parameters[i];
 
             if (parameter.IsRemainder && i != parameters.Length - 1)
-                throw new ComponentFormatException($"Remainder-marked parameters must be the last parameter in the parameter list of a the command.");
+                throw new ComponentFormatException("Remainder-marked parameters must be the last parameter in the parameter list of a command.");
         }
 
         Parameters = parameters;

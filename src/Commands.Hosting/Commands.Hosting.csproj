@@ -57,7 +57,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<InternalsVisibleTo Include="Commands.Http"/>
+		<InternalsVisibleTo Include="Commands.Http" />
 	</ItemGroup>
 
 </Project>

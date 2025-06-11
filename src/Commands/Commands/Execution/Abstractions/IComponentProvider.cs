@@ -16,7 +16,6 @@ public interface IComponentProvider
     /// </remarks>
     public ComponentTree Components { get; }
 
-
     /// <summary>
     ///     Invoked when a command has failed to be executed.
     /// </summary>

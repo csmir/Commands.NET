@@ -2,6 +2,7 @@
 using Commands.Hosting;
 using Commands.Http;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.Text;
 
 var builder = Host.CreateDefaultBuilder(args);
@@ -12,6 +13,19 @@ builder.ConfigureHttpComponents(context =>
     {
         listener.Prefixes.Add("http://localhost:5000/");
     });
+
+    context.ConfigureOptions(options =>
+    {
+        options.BuildCompleted = (component) =>
+        {
+            Console.WriteLine(component.GetFullName());
+        };
+    });
+});
+
+builder.ConfigureLogging(logging =>
+{
+    logging.SetMinimumLevel(LogLevel.Debug);
 });
 
 var host = builder.Build();

@@ -33,7 +33,7 @@ public abstract class ConditionEvaluator
         if (!conditions.Any())
             return [];
 
-        var evaluatorGroups = conditions.GroupBy(x => x.EvaluatorType);
+        var evaluatorGroups = conditions.GroupBy(x => x.EvaluatorType).OrderBy(x => x.Key.GetCustomAttribute<PriorityAttribute>()?.Priority ?? 0);
 
         var arr = new ConditionEvaluator[evaluatorGroups.Count()];
 
@@ -41,7 +41,7 @@ public abstract class ConditionEvaluator
 
         foreach (var group in evaluatorGroups)
         {
-            var groupArr = group.OrderBy(x => x.GetType().GetCustomAttribute<PriorityAttribute>()?.Priority ?? 0).ToArray();
+            var groupArr = group.ToArray();
 
             var instance = (ConditionEvaluator)Activator.CreateInstance(group.Key)!;
 

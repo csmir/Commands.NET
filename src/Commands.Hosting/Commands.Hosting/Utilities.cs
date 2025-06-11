@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Commands.Hosting;
 
@@ -57,6 +58,29 @@ public static class Utilities
     }
 
     /// <summary>
+    ///     Adds a <see cref="IComponentProvider"/> to the <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <remarks>
+    ///     This method will try to add any resources not yet added to the service collection.
+    /// </remarks>
+    /// <param name="services">The <see cref="IServiceProvider"/> to add the configured services to.</param>
+    /// <param name="configureAction">An action to configure the <see cref="ComponentBuilderContext"/> which will be used to populate all related services.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configureAction"/> is <see langword="null"/>.</exception>
+    public static IServiceCollection AddComponentProvider(this IServiceCollection services, Action<ComponentBuilderContext> configureAction)
+    {
+        Assert.NotNull(configureAction, nameof(configureAction));
+
+        var builder = new ComponentBuilderContext();
+
+        configureAction(builder);
+
+        AddComponentProvider(services, builder);
+
+        return services;
+    }
+
+    /// <summary>
     ///     Configures the <see cref="IHost"/>'s <see cref="IComponentProvider"/> to use the provided settings of the <see cref="ComponentTree"/> as the source of components.
     /// </summary>
     /// <param name="host">The host to configure with the related components.</param>
@@ -80,29 +104,6 @@ public static class Utilities
         configureTree(host.Services, provider.Components);
 
         return host;
-    }
-
-    /// <summary>
-    ///     Adds a <see cref="IComponentProvider"/> to the <see cref="IServiceCollection"/>.
-    /// </summary>
-    /// <remarks>
-    ///     This method will try to add any resources not yet added to the service collection.
-    /// </remarks>
-    /// <param name="services">The <see cref="IServiceProvider"/> to add the configured services to.</param>
-    /// <param name="configureAction"></param>
-    /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configureAction"/> is <see langword="null"/>.</exception>
-    public static IServiceCollection AddComponentProvider(this IServiceCollection services, Action<ComponentBuilderContext> configureAction)
-    {
-        Assert.NotNull(configureAction, nameof(configureAction));
-
-        var builder = new ComponentBuilderContext();
-
-        configureAction(builder);
-
-        AddComponentProvider(services, builder);
-
-        return services;
     }
 
     #region Internals
