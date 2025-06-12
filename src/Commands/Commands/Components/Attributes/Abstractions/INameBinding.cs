@@ -3,6 +3,9 @@
 /// <summary>
 ///     An interface that defines names of a target component, such as a command module, command, or parameter.
 /// </summary>
+/// <remarks>
+///     To use this binding, implement <see cref="NameAttribute"/> directly, or consume another attribute that implements this interface.
+/// </remarks>
 public interface INameBinding
 {
     /// <summary>

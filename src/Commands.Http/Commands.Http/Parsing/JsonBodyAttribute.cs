@@ -11,7 +11,7 @@ namespace Commands.Http;
 ///     This component is not Native-AOT compatible without implementing <see cref="JsonSerializerContext"/> and providing the target types for deserialization to it.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-public sealed class JsonBodyAttribute : TypeResourceParserAttribute
+public sealed class JsonBodyAttribute : TypeParserAttribute, IResourceBinding
 {
     /// <inheritdoc />
     [UnconditionalSuppressMessage("AOT", "IL3050")]

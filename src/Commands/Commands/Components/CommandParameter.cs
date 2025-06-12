@@ -79,7 +79,7 @@ public sealed class CommandParameter : ICommandParameter
 
         if (attributes.Any(x => x is IResourceBinding))
             IsResource = true;
-        else if (attributes.Any(x => x is RemainderAttribute or ParamArrayAttribute))
+        else if (attributes.Any(x => x is IRemainderBinding or ParamArrayAttribute))
             IsRemainder = true;
     }
 

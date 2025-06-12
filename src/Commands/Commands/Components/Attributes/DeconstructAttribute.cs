@@ -8,4 +8,5 @@
 /// </remarks>
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
 public sealed class DeconstructAttribute : Attribute
-{ }
+{
+}

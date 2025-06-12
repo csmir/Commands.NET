@@ -1,17 +1,6 @@
 ﻿namespace Commands.Parsing;
 
 /// <summary>
-///     Provides a mechanism to mark command parameters with specified parsing logic tied to a specific class, taking precedence over the default.
-/// </summary>
-/// <typeparam name="TConvertible">The type to parse into using this parser.</typeparam>
-[AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
-public abstract class TypeParserAttribute<TConvertible> : TypeParserAttribute
-{
-    /// <inheritdoc />
-    public override Type Type { get; } = typeof(TConvertible);
-}
-
-/// <summary>
 ///     Provides a mechanism to mark command parameters with specified parsing logic, taking precedence over the default.
 /// </summary>
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
