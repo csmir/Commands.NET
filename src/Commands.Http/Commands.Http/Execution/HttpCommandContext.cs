@@ -67,6 +67,8 @@ public class HttpCommandContext : IResourceContext
     /// <exception cref="InvalidOperationException">Thrown if the HTTP response has already been sent.</exception>
     public virtual void Respond(HttpResult result)
     {
+        Assert.NotNull(result, nameof(result));
+
         Response.StatusCode = (int)result.StatusCode;
         Response.StatusDescription = result.StatusCode.ToString();
 
