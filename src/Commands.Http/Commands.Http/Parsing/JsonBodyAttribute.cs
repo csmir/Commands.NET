@@ -19,13 +19,11 @@ public sealed class JsonBodyAttribute : TypeParserAttribute, IResourceBinding
     public override ValueTask<ParseResult> Parse(IContext context, ICommandParameter parameter, object? argument, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (argument is not string json)
-            return ParseResult.FromError(new ParserException(this, "The provided argument is not a valid JSON string."));
+            return Error("The provided argument is not a valid JSON string.");
 
         try
         {
-            var output = JsonSerializer.Deserialize(json, parameter.Type);
-
-            return ParseResult.FromSuccess(output);
+            return Success(JsonSerializer.Deserialize(json, parameter.Type));
         }
         catch (JsonException ex)
         {

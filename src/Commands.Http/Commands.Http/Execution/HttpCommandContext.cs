@@ -13,12 +13,12 @@ public class HttpCommandContext : IResourceContext
     /// <summary>
     ///     Gets the HTTP request associated with this command context.
     /// </summary>
-    public HttpListenerRequest Request => _httpContext.Request;
+    public HttpListenerRequest Request { get; }
 
     /// <summary>
     ///     Gets the HTTP response associated with this command context, allowing you to set headers, status codes, and content to respond to the request.
     /// </summary>
-    public HttpListenerResponse Response => _httpContext.Response;
+    public HttpListenerResponse Response { get; }
 
     /// <inheritdoc />
     public Arguments Arguments { get; }
@@ -27,15 +27,17 @@ public class HttpCommandContext : IResourceContext
     ///     Initializes a new instance of the <see cref="HttpCommandContext"/> class with the specified HTTP context and prefix length.
     /// </summary>
     /// <param name="httpContext">The context for which this command context exists.</param>
-    /// <param name="acquiredPrefixLength">The prefix which represents the host URL that isn't handled by the command pipeline.</param>
-    public HttpCommandContext(HttpListenerContext httpContext, int acquiredPrefixLength)
+    public HttpCommandContext(HttpListenerContext httpContext)
     {
+        Request = httpContext.Request;
+        Response = httpContext.Response;
+
         _httpContext = httpContext;
 
-        var url = _httpContext.Request.Url!.AbsoluteUri.Split('?');
-
-        var rawArg = url[0][acquiredPrefixLength..].Split('/');
-        var rawQuery = url.Length > 1 ? url[1].Split('&') : [];
+        var rawArg = Request.Url!.AbsolutePath.Split('/');
+        var rawQuery = !string.IsNullOrEmpty(Request.Url.Query) 
+            ? Request.Url!.Query[1..].Split('&') 
+            : [];
 
         var arg = new KeyValuePair<string, object?>[rawArg.Length + rawQuery.Length];
 
@@ -105,8 +107,6 @@ public class HttpCommandContext : IResourceContext
     public override string ToString()
         => $"{Request.HttpMethod} {Request.Url?.AbsoluteUri}";
 
-    [UnconditionalSuppressMessage("AOT", "IL3050")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
     void IContext.Respond(object? message)
     {
         if (message is HttpResult httpResult)

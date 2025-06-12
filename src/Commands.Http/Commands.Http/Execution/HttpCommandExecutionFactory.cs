@@ -53,18 +53,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
     {
         var requestContext = await contextTask;
 
-        var acquiredPrefixLength = -1;
-
-        foreach (var prefix in httpListener.Prefixes)
-        {
-            var urlIndex = requestContext.Request.Url!.AbsoluteUri.IndexOf(prefix);
-
-            // Find the best (shortest) matching prefix, so that the rest of the URL can be considered the command path.
-            if (urlIndex >= 0 && (acquiredPrefixLength == -1 || urlIndex < acquiredPrefixLength))
-                acquiredPrefixLength = prefix.Length;
-        }
-
-        var commandContext = new HttpCommandContext(requestContext, acquiredPrefixLength);
+        var commandContext = new HttpCommandContext(requestContext);
 
         logger.LogInformation("Received inbound request: {Request}", commandContext);
 
