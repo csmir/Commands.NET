@@ -19,7 +19,7 @@ public sealed class ParseDelegate<TConvertible>(
 public abstract class TypeParser<TConvertible> : TypeParser
 {
     /// <inheritdoc />
-    public override Type Type { get; } = typeof(TConvertible);
+    public override Type TargetType { get; } = typeof(TConvertible);
 
     /// <summary>
     ///     Creates a new <see cref="ParseResult"/> representing a successful parse operation.
@@ -36,7 +36,7 @@ public abstract class TypeParser<TConvertible> : TypeParser
 public abstract class TypeParser : IParser
 {
     /// <inheritdoc />
-    public abstract Type Type { get; }
+    public abstract Type TargetType { get; }
 
     /// <inheritdoc />
     public abstract ValueTask<ParseResult> Parse(

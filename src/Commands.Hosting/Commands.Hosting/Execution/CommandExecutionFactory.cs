@@ -11,16 +11,25 @@ namespace Commands.Hosting;
 /// </remarks>
 public class CommandExecutionFactory
 {
-    private readonly IComponentProvider _executionProvider;
+    /// <summary>
+    ///     Gets the component provider that is used to execute commands and handle their results.
+    /// </summary>
+    public IComponentProvider Provider { get; }
+
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger _logger;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="CommandExecutionFactory"/> using the provided services.
     /// </summary>
-    public CommandExecutionFactory(IComponentProvider execProvider, IServiceProvider serviceProvider, ILogger logger, IEnumerable<IResultHandler> resultHandlers)
+    public CommandExecutionFactory(IComponentProvider execProvider, IServiceProvider serviceProvider, ILogger logger, IEnumerable<ResultHandler> resultHandlers)
     {
-        var handlers = resultHandlers.OrderBy(x => x.GetType().GetCustomAttribute<PriorityAttribute>()?.Priority ?? 0).ToArray();
+        Provider = execProvider;
+
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+
+        var handlers = resultHandlers.OrderBy(x => x.Order).ToArray();
 
         execProvider.OnFailure += async (context, result, exception, services) =>
         {
@@ -50,11 +59,17 @@ public class CommandExecutionFactory
             services.GetService<IExecutionScope>()?.Dispose();
         };
 
-        _executionProvider = execProvider;
-        _serviceProvider = serviceProvider;
-        _logger = logger;
+        logger.LogInformation("Consuming {ExecutionProvider}, with {HandlerCount} result handler{MoreOrOne}.", Provider.GetType().FullName, handlers.Length, handlers.Length > 1 ? "(s)" : "");
 
-        logger.LogInformation("Consuming {ExecutionProvider}, {HandlerCount} result handler{MoreOrOne} registered.", execProvider.GetType().FullName, handlers.Length, handlers.Length > 1 ? "(s)" : "");
+        var commands = execProvider.Components.GetCommands().ToArray();
+
+        foreach (var command in commands)
+            logger.LogDebug("Registered {Command} as \"{Name}\".", command.ToString(), command.GetFullName());
+
+        if (commands.Length == 0)
+            logger.LogWarning("No commands discovered. The factory will not handle inbound requests.");
+        else
+            logger.LogInformation("Discovered {CommandCount} command{MoreOrOne}.", commands.Length, commands.Length > 1 ? "s" : "");
     }
 
     /// <summary>
@@ -104,6 +119,6 @@ public class CommandExecutionFactory
             context
         );
 
-        await _executionProvider.Execute(context, executeOptions);
+        await Provider.Execute(context, executeOptions);
     }
 }

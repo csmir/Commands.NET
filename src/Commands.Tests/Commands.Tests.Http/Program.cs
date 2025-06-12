@@ -18,7 +18,7 @@ builder.ConfigureHttpComponents(context =>
     {
         options.BuildCompleted = (component) =>
         {
-            Console.WriteLine(component.GetFullName());
+            // Do any additional setup after the component is built.
         };
     });
 });

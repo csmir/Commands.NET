@@ -40,18 +40,4 @@ public sealed class ExecutionOptions
     ///     Gets the default options for command execution.
     /// </summary>
     public static ExecutionOptions Default { get; } = new();
-
-    /// <inheritdoc cref="IServiceProvider" />
-    /// <remarks>
-    ///     This class implements the <see cref="IServiceProvider"/> interface and returns <see langword="null"/> for all service requests.
-    /// </remarks>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public sealed class EmptyServiceProvider : IServiceProvider
-    {
-        internal static EmptyServiceProvider Instance { get; } = new();
-
-        /// <inheritdoc />
-        public object? GetService(Type serviceType)
-            => null;
-    }
 }

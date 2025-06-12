@@ -8,11 +8,28 @@ namespace Commands.Hosting;
 /// </summary>
 /// <remarks>
 ///     Implementations of this class can override the methods to provide custom handling for specific result types or exceptions that occur during command execution.
-///     <br/>
-///     Additionally, <see cref="PriorityAttribute"/> can be used to control the order in which handlers are executed when multiple handlers are registered.
 /// </remarks>
-public abstract class ResultHandler : IResultHandler
+public abstract class ResultHandler
 {
+    /// <summary>
+    ///     Defines that this handler should be executed last in the command execution pipeline, after all other handlers have been executed.
+    /// </summary>
+    public const int ExecuteLast = int.MaxValue;
+
+    /// <summary>
+    ///     Defines that this handler should be executed first in the command execution pipeline, before all other handlers.
+    /// </summary>
+    public const int ExecuteFirst = int.MinValue;
+
+    /// <summary>
+    ///     Gets the order in which this handler should be executed relative to other handlers. 
+    ///     This property gives control over the execution order of result handlers in the command execution pipeline, allowing for prioritization of certain handlers over others.
+    /// </summary>
+    /// <remarks>
+    ///      When handlers preceding this handler return <see langword="true"/>, this handler will not be executed.
+    /// </remarks>
+    public virtual int Order { get; } = 0;
+
     /// <summary>
     ///     Handles the result of a command execution, allowing for custom handling of different result types and exceptions.
     /// </summary>

@@ -18,7 +18,7 @@ public class ComponentBuilderContext
         Properties[nameof(IComponentProvider)] = typeof(ComponentProvider);
 
         // Initialize the range of result handlers. These will hold the types of handlers that will be added on post-configure; These are hashsets to avoid duplicates.
-        Properties[nameof(IResultHandler)] = new HashSet<Type>();
+        Properties[nameof(ResultHandler)] = new HashSet<Type>();
     }
 
     /// <summary>
@@ -90,17 +90,17 @@ public class ComponentBuilderContext
     /// <summary>
     ///     Adds a result handler type to the component builder. Result handlers are used to process the results of command execution, allowing for custom handling of success and failure cases.
     /// </summary>
-    /// <typeparam name="THandler">The type implementing <see cref="IResultHandler"/> that should be an enumerated implementation to handle command results.</typeparam>
+    /// <typeparam name="THandler">The type implementing <see cref="ResultHandler"/> that should be an enumerated implementation to handle command results.</typeparam>
     /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
     public ComponentBuilderContext AddResultHandler<THandler>()
-        where THandler : IResultHandler
+        where THandler : ResultHandler
     {
-        if (!TryGetProperty<HashSet<Type>>(nameof(IResultHandler), out var handlersProperty))
+        if (!TryGetProperty<HashSet<Type>>(nameof(ResultHandler), out var handlersProperty))
         {
             // If the property is not found, create a new HashSet and add it to the properties.
             handlersProperty = [];
 
-            Properties[nameof(IResultHandler)] = handlersProperty;
+            Properties[nameof(ResultHandler)] = handlersProperty;
         }
 
         handlersProperty.Add(typeof(THandler));

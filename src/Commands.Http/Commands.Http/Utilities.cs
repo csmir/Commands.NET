@@ -22,7 +22,7 @@ public static class Utilities
     ///         <item>A scoped implementation of <see cref="IDependencyResolver"/> which manages the scope's service injection for modules and statically -or delegate- defined commands.</item>
     ///         <item>A scoped implementation of <see cref="IExecutionScope"/> which holds execution metadata for the scope of the command lifetime, and can be injected freely within said scope.</item>
     ///         <item>A scoped implementation of <see cref="IContextAccessor{TContext}"/>. This accessor exposes the context by accessing it from the defined <see cref="IExecutionScope"/>.</item>
-    ///         <item>A collection of singleton <see cref="IResultHandler"/> implementations. These handlers can process command results irrespective of the response logic handled by the <see cref="HttpResultHandler"/>.</item>
+    ///         <item>A collection of singleton <see cref="ResultHandler"/> implementations. These handlers can process command results irrespective of the response logic handled by the <see cref="HttpResultHandler"/>.</item>
     ///     </list>
     /// </remarks>
     /// <param name="builder">The builder to configure with the related services.</param>
@@ -100,7 +100,7 @@ public static class Utilities
             throw new InvalidOperationException($"No {nameof(HttpListener)} configured. Use {nameof(ConfigureListener)} to configure the listener with the required prefixes and additional properties.");
 
         collection.TryAddSingleton(listenerProperty);
-        collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IResultHandler), builder.GetTypeProperty(nameof(HttpResultHandler), typeof(HttpResultHandler))));
+        collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ResultHandler), builder.GetTypeProperty(nameof(HttpResultHandler), typeof(HttpResultHandler))));
         collection.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, HttpCommandExecutionFactory>());
     }
 

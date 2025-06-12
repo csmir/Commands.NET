@@ -18,15 +18,6 @@ TEvaluator>() : Attribute, ICondition
     where TEvaluator : ConditionEvaluator, new()
 {
     /// <inheritdoc />
-#if NET8_0_OR_GREATER
-    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-#endif
-    public Type EvaluatorType { get; } = typeof(TEvaluator);
-
-    /// <inheritdoc />
-    /// <remarks>
-    ///     Make use of <see cref="Error(string)"/> and <see cref="Success"/> to safely create the intended result.
-    /// </remarks>
     public abstract ValueTask<ConditionResult> Evaluate(
         IContext context, Command command, IServiceProvider services, CancellationToken cancellationToken);
 
@@ -42,4 +33,16 @@ TEvaluator>() : Attribute, ICondition
     /// <inheritdoc />
     public ConditionResult Success()
         => ConditionResult.FromSuccess();
+
+    #region Internals
+
+#if NET8_0_OR_GREATER
+    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+#endif
+    Type ICondition.EvaluatorType { get; } = typeof(TEvaluator);
+
+    ConditionEvaluator ICondition.CreateEvaluator() 
+        => new TEvaluator();
+
+    #endregion
 }

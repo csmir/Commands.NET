@@ -34,7 +34,8 @@ public class HttpCommandContext : IResourceContext
 
         _httpContext = httpContext;
 
-        var rawArg = Request.Url!.AbsolutePath.Split('/');
+        var rawArg = Request.Url!.AbsolutePath[1..].Split('/', StringSplitOptions.RemoveEmptyEntries);
+
         var rawQuery = !string.IsNullOrEmpty(Request.Url.Query) 
             ? Request.Url!.Query[1..].Split('&') 
             : [];

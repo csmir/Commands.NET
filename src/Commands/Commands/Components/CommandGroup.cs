@@ -130,7 +130,7 @@ public class CommandGroup : ComponentSet, IComponent
             var commands = new Command[members.Length];
 
             for (var i = 0; i < members.Length; i++)
-                commands[i] = new Command(members[i], this, options);
+                commands[i] = new Command(members[i], options);
 
             try
             {

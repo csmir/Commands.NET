@@ -20,7 +20,4 @@ public abstract class TypeParserAttribute : Attribute, IParser
     /// <inheritdoc />
     public ParseResult Success(object? value)
         => ParseResult.FromSuccess(value);
-
-    // Not implemented, attribute-based parsers are not expected to provide a type.
-    Type IParser.Type => throw new NotImplementedException();
 }

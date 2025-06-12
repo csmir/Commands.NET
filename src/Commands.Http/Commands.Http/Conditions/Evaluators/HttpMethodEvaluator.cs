@@ -5,14 +5,13 @@ namespace Commands.Http;
 /// <summary>
 ///     An evaluator that checks if the HTTP method of a command matches the specified method condition.
 /// </summary>
-[Priority(-1)] // Run this evaluator before self-defined attributes.
 public sealed class HttpMethodEvaluator : ConditionEvaluator
 {
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="HttpMethodEvaluator"/> class.
-    /// </summary>
-    public HttpMethodEvaluator()
-        => MaximumAllowedConditions = 1; // Only one HTTP method condition can exist for a command at a time.
+    /// <inheritdoc />
+    public override int? MaximumAllowedConditions => 1; // Only one HTTP method condition can exist for a command at a time.
+
+    /// <inheritdoc />
+    public override int Order => -1;
 
     /// <inheritdoc />
     public override ValueTask<ConditionResult> Evaluate(IContext context, Command command, IServiceProvider services, CancellationToken cancellationToken)

@@ -97,11 +97,11 @@ public class Command : IComponent, IParameterCollection
     public float Score
         => GetScore();
 
-    /// <inheritdoc cref="Command(Delegate, IEnumerable{ExecuteCondition}, string[], ComponentOptions?)"/>
+    /// <inheritdoc cref="Command(Delegate, IEnumerable{ICondition}, string[], ComponentOptions?)"/>
     public Command(Delegate executionDelegate, params string[] names)
         : this(executionDelegate, [], names) { }
 
-    /// <inheritdoc cref="Command(Delegate, IEnumerable{ExecuteCondition}, string[], ComponentOptions?)"/>
+    /// <inheritdoc cref="Command(Delegate, IEnumerable{ICondition}, string[], ComponentOptions?)"/>
     public Command(Delegate executionDelegate, string[] names, ComponentOptions? options = null)
         : this(executionDelegate, [], names, options) { }
 
@@ -115,7 +115,7 @@ public class Command : IComponent, IParameterCollection
     /// <exception cref="ArgumentNullException">The provided delegate or conditions are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">The provided <paramref name="names"/> is <see langword="null"/> or does not match the <see cref="ComponentOptions.NameValidation"/> if any.</exception>
     /// <exception cref="ComponentFormatException">A <see cref="RemainderAttribute"/> is not placed on the last parameter of the target, <see cref="DeconstructAttribute"/> is defined on a non-deconstructible parameter type, or no <see cref="IParser"/> is available to represent a parameter type.</exception>
-    public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, ComponentOptions? options = null)
+    public Command(Delegate executionDelegate, IEnumerable<ICondition> conditions, string[] names, ComponentOptions? options = null)
         : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), options ??= ComponentOptions.Default)
     {
         Assert.NotNull(conditions, nameof(conditions));

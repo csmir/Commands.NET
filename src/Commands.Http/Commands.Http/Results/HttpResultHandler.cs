@@ -8,9 +8,11 @@ namespace Commands.Http;
 ///     Represents a handler for HTTP command execution results, allowing for custom handling of different result types and exceptions.
 /// </summary>
 /// <param name="hostEnvironment">The environment in which the current pipeline is executing.</param>
-[Priority(int.MaxValue)] // Ensures this handler is executed last, after all other handlers.
 public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
 {
+    /// <inheritdoc />
+    public override int Order => ExecuteLast;
+
     /// <inheritdoc />
     protected override ValueTask<bool> ConditionUnmet(IContext context, Exception exception, ConditionResult result, IServiceProvider services, CancellationToken cancellationToken)
     {

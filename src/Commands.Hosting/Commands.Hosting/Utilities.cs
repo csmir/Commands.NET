@@ -20,6 +20,7 @@ public static class Utilities
     ///         <item>A default scoped implementation of <see cref="IDependencyResolver"/> which manages the scope's service injection for modules and statically -or delegate- defined commands.</item>
     ///         <item>A default scoped implementation of <see cref="IExecutionScope"/> which holds execution metadata for the scope of the command lifetime, and can be injected freely within said scope.</item>
     ///         <item>A default scoped implementation of <see cref="IContextAccessor{TContext}"/>. This accessor exposes the context by accessing it from the defined <see cref="IExecutionScope"/>.</item>
+    ///         <item>A collection of singleton <see cref="ResultHandler"/> implementations. These handlers will be executed to process results of pipeline invocation.</item>
     ///     </list>
     /// </remarks>
     /// <param name="builder">The builder to configure with the related services.</param>
@@ -133,11 +134,11 @@ public static class Utilities
 
         collection.TryAddSingleton<CommandExecutionFactory>();
 
-        if (builder.TryGetProperty<HashSet<Type>>(nameof(IResultHandler), out var resultsProperty))
+        if (builder.TryGetProperty<HashSet<Type>>(nameof(ResultHandler), out var resultsProperty))
         {
             var descriptors = resultsProperty.Select(([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] type) =>
             {
-                return ServiceDescriptor.Singleton(typeof(IResultHandler), type);
+                return ServiceDescriptor.Singleton(typeof(ResultHandler), type);
             });
 
             foreach (var descriptor in descriptors)

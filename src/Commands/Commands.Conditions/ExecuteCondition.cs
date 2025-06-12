@@ -22,27 +22,9 @@ public abstract class ExecuteCondition<
 #if NET8_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 # endif
-TEvaluator> : ExecuteCondition
+TEvaluator> : ICondition
     where TEvaluator : ConditionEvaluator, new()
 {
-    /// <inheritdoc />
-#if NET8_0_OR_GREATER
-    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-#endif
-    public override Type EvaluatorType { get; } = typeof(TEvaluator);
-}
-
-/// <summary>
-///     Represents a condition that determines whether a command can execute or not.
-/// </summary>
-public abstract class ExecuteCondition : ICondition
-{
-    /// <inheritdoc />
-#if NET8_0_OR_GREATER
-    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-#endif
-    public abstract Type EvaluatorType { get; }
-
     /// <inheritdoc />
     public abstract ValueTask<ConditionResult> Evaluate(IContext context, Command command, IServiceProvider services, CancellationToken cancellationToken);
 
@@ -58,4 +40,16 @@ public abstract class ExecuteCondition : ICondition
     /// <inheritdoc />
     public ConditionResult Success()
         => ConditionResult.FromSuccess();
+
+    #region Internals
+
+#if NET8_0_OR_GREATER
+    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+#endif
+    Type ICondition.EvaluatorType { get; } = typeof(TEvaluator);
+
+    ConditionEvaluator ICondition.CreateEvaluator()
+        => new TEvaluator();
+
+    #endregion
 }

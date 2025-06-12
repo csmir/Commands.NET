@@ -1,5 +1,4 @@
-﻿using Commands.Conditions;
-using Commands.Parsing;
+﻿using Commands.Parsing;
 using System.Drawing;
 using System.Text.RegularExpressions;
 
@@ -10,14 +9,6 @@ namespace Commands;
 /// </summary>
 public sealed class ComponentOptions
 {
-    /// <summary>
-    ///     Gets or sets a regular expression that will be used to validate the names of commands and command groups.
-    /// </summary>
-    /// <remarks>
-    ///     By default, this value is <see langword="null"/>. It can -for example- be implemented to validate against restrictions on component naming in certain API environments.
-    /// </remarks>
-    public Regex? NameValidation { get; set; } = null;
-
     /// <summary>
     ///     Gets or sets an action that will be invoked when a component is built. This action can be used to perform additional setup or logging on the component after it has been created.
     /// </summary>
@@ -50,12 +41,20 @@ public sealed class ComponentOptions
     public IDictionary<Type, TypeParser> Parsers { get; set; }
 
     /// <summary>
+    ///     Gets or sets a regular expression that will be used to validate the names of commands and command groups.
+    /// </summary>
+    /// <remarks>
+    ///     By default, this value is <see langword="null"/>. It can -for example- be implemented to validate against restrictions on component naming in certain API environments.
+    /// </remarks>
+    public Regex? NameValidation { get; set; } = null;
+
+    /// <summary>
     ///     Initializes a new instance of the <see cref="ComponentOptions"/> class containing default values for <see cref="Parsers"/>.
     /// </summary>
     public ComponentOptions()
     {
         Parsers = TypeParser.CreateDefaults()
-            .ToDictionary(x => x.Type);
+            .ToDictionary(x => x.TargetType);
     }
 
     /// <summary>
