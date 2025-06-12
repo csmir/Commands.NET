@@ -26,7 +26,7 @@ public class Command : IComponent, IParameterCollection
     /// <remarks>
     ///     When this property is called by a child component, this property will inherit all evaluations from the component's <see cref="Parent"/> component(s).
     /// </remarks>
-    public ConditionEvaluator[] Evaluators { get; }
+    public ConditionEvaluator[] Evaluators { get; private set; }
 
     /// <inheritdoc />
     public CommandGroup? Parent { get; private set; }
@@ -123,8 +123,6 @@ public class Command : IComponent, IParameterCollection
 
         Names = names;
         Ignore = false;
-
-        // Delegate commands do not support modularity approach or inheriting conditions from parent groups.
         Evaluators = ConditionEvaluator.CreateEvaluators(conditions);
 
         options.BuildCompleted?.Invoke(this);
@@ -134,12 +132,11 @@ public class Command : IComponent, IParameterCollection
     ///     Initializes a new instance of <see cref="Command"/>.
     /// </summary>
     /// <param name="executionMethod">The method to run when the command is executed.</param>
-    /// <param name="parent">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
     /// <exception cref="ArgumentNullException">The provided method is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">The provided <paramref name="executionMethod"/> defines names, but those names do not match the provided <see cref="ComponentOptions.NameValidation"/>.</exception>
     /// <exception cref="ComponentFormatException">A <see cref="RemainderAttribute"/> is not placed on the last parameter of the target, <see cref="DeconstructAttribute"/> is defined on a non-deconstructible parameter type, or no <see cref="IParser"/> is available to represent a parameter type.</exception>
-    public Command(MethodInfo executionMethod, CommandGroup? parent = null, ComponentOptions? options = null)
+    public Command(MethodInfo executionMethod, ComponentOptions? options = null)
         : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ??= ComponentOptions.Default)
     {
         var names = Attributes.FirstOrDefault<INameBinding>()?.Names ?? [];
@@ -148,13 +145,7 @@ public class Command : IComponent, IParameterCollection
 
         Names = names;
         Ignore = Attributes.Any(x => x is IgnoreAttribute);
-
-        if (parent != null && options.PropagateParentConditions)
-            Evaluators = ConditionEvaluator.CreateEvaluators([.. Attributes.OfType<ICondition>(), .. parent.GetConditions()]);
-        else
-            Evaluators = ConditionEvaluator.CreateEvaluators(Attributes.OfType<ICondition>());
-
-        Parent = parent;
+        Evaluators = ConditionEvaluator.CreateEvaluators(Attributes.OfType<ICondition>());
 
         options.BuildCompleted?.Invoke(this);
     }
@@ -393,7 +384,12 @@ public class Command : IComponent, IParameterCollection
             throw new ComponentFormatException($"{this} is already bound to a {(Parent != null ? nameof(CommandGroup) : nameof(ComponentSet))}. Remove this component from the parent set before adding it to another.");
 
         if (parent is CommandGroup group)
+        {
             Parent = group;
+
+            // We set the evaluators again to ensure that the parent conditions are included in the evaluation, if the parent has any.
+            Evaluators = ConditionEvaluator.CreateEvaluators([.. Attributes.OfType<ICondition>(), .. Parent.GetConditions()]);
+        }
 
         _bound = true;
     }
@@ -402,6 +398,7 @@ public class Command : IComponent, IParameterCollection
     {
         _bound = false;
         Parent = null;
+        Evaluators = ConditionEvaluator.CreateEvaluators(Attributes.OfType<ICondition>());
     }
 
     #endregion

@@ -232,6 +232,7 @@ public static class Utilities
 
             if (parameter is CommandParameter defaultParameter)
             {
+                // Resource parameters are not counted in the length, as they are skipped during parsing.
                 if (defaultParameter.IsResource)
                     continue;
 
@@ -239,8 +240,6 @@ public static class Utilities
                 if (!defaultParameter.IsOptional)
                     minLength++;
             }
-
-            // Resource parameters are not counted in the length, as they are skipped during parsing.
         }
 
         return new(minLength, maxLength);

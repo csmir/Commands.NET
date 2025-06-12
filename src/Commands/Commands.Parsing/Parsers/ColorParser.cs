@@ -15,7 +15,7 @@ public sealed class ColorParser : TypeParser<Color>
     /// </summary>
     public ColorParser()
     {
-        var writer = new Dictionary<string, Color>(StringComparer.OrdinalIgnoreCase);
+        _colors = new(StringComparer.OrdinalIgnoreCase);
 
         var properties = typeof(Color).GetProperties(BindingFlags.Public | BindingFlags.Static);
 
@@ -24,11 +24,9 @@ public sealed class ColorParser : TypeParser<Color>
             if (property.PropertyType == typeof(Color))
             {
                 var color = (Color)property.GetValue(null)!;
-                writer[property.Name] = color;
+                _colors[property.Name] = color;
             }
         }
-
-        _colors = writer;
     }
 
     /// <inheritdoc />

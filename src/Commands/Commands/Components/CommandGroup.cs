@@ -11,7 +11,7 @@ public class CommandGroup<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 # endif
 T> : CommandGroup
-where T : CommandModule
+    where T : CommandModule
 {
     /// <inheritdoc cref="CommandGroup(Type, ComponentOptions?)" />
     public CommandGroup(ComponentOptions? options = null)
@@ -142,7 +142,7 @@ public class CommandGroup : ComponentSet, IComponent
             }
             catch
             {
-                // Do nothing, we can't access nested types.
+                // Do nothing else, we can't access nested types.
                 AddRange(commands);
             }
         }

@@ -24,11 +24,6 @@ public sealed class ComponentOptions
     public Action<IComponent>? BuildCompleted { get; set; } = null;
 
     /// <summary>
-    ///     Gets or sets a range of global execution conditions that will be applied to all commands created using these options.
-    /// </summary>
-    public IList<ICondition> GlobalConditions { get; set; }
-
-    /// <summary>
     ///     Gets or sets a dictionary of parsers that will be used to parse command arguments into the target type by all components using these options.
     /// </summary>
     /// <remarks>
@@ -55,22 +50,12 @@ public sealed class ComponentOptions
     public IDictionary<Type, TypeParser> Parsers { get; set; }
 
     /// <summary>
-    ///     Gets or sets a value indicating whether the defined <see cref="ICondition"/> implementation of the parent(s) of a <see cref="Command"/> instance should be propagated.
-    /// </summary>
-    /// <remarks>
-    ///     By default, this value is <see langword="true"/>.
-    /// </remarks>
-    public bool PropagateParentConditions { get; set; } = true;
-
-    /// <summary>
     ///     Initializes a new instance of the <see cref="ComponentOptions"/> class containing default values for <see cref="Parsers"/>.
     /// </summary>
     public ComponentOptions()
     {
         Parsers = TypeParser.CreateDefaults()
             .ToDictionary(x => x.Type);
-
-        GlobalConditions = [];
     }
 
     /// <summary>
