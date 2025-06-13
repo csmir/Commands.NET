@@ -46,4 +46,13 @@ Manage and create custom parsers for changing raw input into types.
 Empower your commands with the .NET generic host and service-pattern scoping mechanisms.
 
 > [!NOTE]
-> This namespace requires an additional package to be installed.
+> This namespace requires an additional package to be installed (Commands.NET.Hosting).
+
+### 🌐 [[HTTP Commands|HTTP]]
+
+> `using Commands.Http;`
+
+Learn how to expose your commands as HTTP endpoints using the Commands.NET HTTP package.
+
+> [!NOTE]
+> This namespace requires an additional package to be installed (Commands.NET.Http).

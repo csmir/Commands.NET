@@ -1,0 +1,74 @@
+﻿using Commands.Hosting;
+using Microsoft.Extensions.Logging;
+
+namespace Commands.Http;
+
+/// <summary>
+///     Represents a factory for executing commands over HTTP, using an <see cref="HttpListener"/> to listen for incoming requests.
+/// </summary>
+public class HttpCommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, ILogger<HttpCommandExecutionFactory> logger, IEnumerable<ResultHandler> resultHandlers, HttpListener httpListener)
+    : CommandExecutionFactory(executionProvider, serviceProvider, logger, resultHandlers), IHostedService
+{
+    /// <inheritdoc />
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            httpListener.Start();
+
+            foreach (var prefix in httpListener.Prefixes)
+                logger.LogInformation("Listening on {Prefix}", prefix);
+
+            _ = StartListening(cancellationToken);
+        }
+        catch (HttpListenerException ex)
+        {
+            logger.LogError(ex, "Failed to start HTTP listener. Ensure that the application has permission to use the specified prefixes.");
+
+            throw;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        httpListener.Stop();
+        httpListener.Close();
+
+        logger.LogInformation("Stopping {FactoryType}...", nameof(HttpCommandExecutionFactory));
+
+        return Task.CompletedTask;
+    }
+
+    private async Task StartListening(CancellationToken cancellationToken)
+    {
+        while (httpListener.IsListening && !cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                await httpListener.GetContextAsync().ContinueWith(Listened, cancellationToken);
+            }
+            catch (HttpListenerException)
+            {
+                // Listener was stopped, exit the loop
+                break;
+            }
+        }
+    }
+
+    private async Task Listened(Task<HttpListenerContext> contextTask)
+    {
+        var requestContext = await contextTask;
+
+        var commandContext = new HttpCommandContext(requestContext);
+
+        logger.LogInformation("Received inbound request: {Request}", commandContext);
+
+        await StartExecution(commandContext, new HostedCommandOptions()
+        {
+            ExecuteAsynchronously = false,
+        });
+    }
+}

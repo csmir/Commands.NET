@@ -8,7 +8,7 @@ var builder = Host.CreateDefaultBuilder(args);
 
 builder.ConfigureComponents(context =>
 {
-    context.Configure(options =>
+    context.ConfigureOptions(options =>
     {
         options.Parsers[typeof(Version)] = new TryParseParser<Version>(Version.TryParse);
     });
@@ -17,7 +17,6 @@ builder.ConfigureComponents(context =>
 builder.ConfigureServices(services =>
 {
     services.AddHostedService<CommandListener>();
-    services.AddSingleton<VersionManager>();
     services.AddScoped<BasicService>();
 });
 

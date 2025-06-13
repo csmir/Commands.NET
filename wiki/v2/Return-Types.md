@@ -75,23 +75,20 @@ public Task GetTask()
 
 ## Custom Return Type Handling
 
-`ResultHandler` implements overloads for customizing how method return types are handled by the library.
-
-This is useful for handling custom return types, or for changing the default behavior:
+Tt is possible to implement the handling of custom return types by implementing `ComponentProvider.Finalize` in a derived class.
 
 ```cs
 using Commands;
 
-public class CustomResultHandler : ResultHandler
+public class CustomComponentProvider : ComponentProvider
 {
-    protected override async ValueTask HandleMethodReturn(IContext context, IResult result, IServiceProvider services, CancellationToken cancellationToken)
+    protected override Task Finalize<TContext>(TContext context, IResult result, ExecutionOptions options)
+        where TContext : class, IContext
     {
-        if (result.Value is int i)
-            context.Respond($"The number is {i}");
+        // Do work.
     }
 }
 ```
 
-> [!NOTE]
-> When no implementation of `ResultHandler` is provided to a `ComponentProvider`, the library will use a default implementation. 
-> This implementation does not handle failed results, only resolving the returned value by an `InvokeResult` as described above.
+> [!TIP]
+> Default return type handling, `OnFailure` and `OnSuccess` are invoked by the base implementation, so it is recommended to call `base.Finalize` after custom logic is executed.

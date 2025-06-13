@@ -17,6 +17,9 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
     public string Name { get; }
 
     /// <inheritdoc />
+#if NET8_0_OR_GREATER
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
+#endif
     public Type Type { get; }
 
     /// <inheritdoc />
@@ -55,12 +58,13 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
         => false;
 
     /// <inheritdoc />
+    public bool IsResource
+        => false;
+
+    /// <inheritdoc />
     public bool HasParameters
         => Parameters.Length > 0;
 
-#if NET8_0_OR_GREATER
-    [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
-#endif
     internal ConstructibleParameter(
         ParameterInfo parameterInfo, ComponentOptions configuration)
     {
@@ -87,12 +91,12 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
 
         Activator = new ConstructibleParameterActivator(Type);
 
-        var parameters = CommandUtils.GetParameters(Activator, configuration);
+        var parameters = Utilities.GetParameters(Activator, configuration);
 
         if (parameters.Length == 0)
             throw new ComponentFormatException($"Deconstruct-marked parameter of type {Type} must have at least one parameter in one of its public constructors.");
 
-        (MinLength, MaxLength) = parameters.GetLength();
+        (MinLength, MaxLength) = Utilities.GetLength(parameters);
 
         Parameters = parameters;
 
@@ -100,7 +104,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
 
         ExposedType = parameterInfo.ParameterType;
 
-        Name = attributes.FirstOrDefault<NameAttribute>()?.Name ?? parameterInfo.Name ?? "";
+        Name = attributes.FirstOrDefault<INameBinding>()?.Name ?? parameterInfo.Name ?? "";
     }
 
     /// <inheritdoc />

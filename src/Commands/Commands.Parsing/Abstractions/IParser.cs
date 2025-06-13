@@ -6,11 +6,6 @@
 public interface IParser
 {
     /// <summary>
-    ///     Gets the type that should be parsed to. This value determines what command arguments will use this parser.
-    /// </summary>
-    public Type Type { get; }
-
-    /// <summary>
     ///     Evaluates the known data about the argument to be parsed into, as well as the raw value it should parse into a valid invocation parameter.
     /// </summary>
     /// <param name="context">Context of the current execution.</param>

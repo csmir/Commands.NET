@@ -4,17 +4,17 @@ internal sealed class ArrayParser(TypeParser underlyingParser) : TypeParser
 {
     private static readonly Dictionary<Type, ArrayParser> _parsers = [];
 
-    public override Type Type => underlyingParser.Type;
+    public override Type TargetType => underlyingParser.TargetType;
 
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
 #endif
     public override async ValueTask<ParseResult> Parse(IContext context, ICommandParameter parameter, object? argument, IServiceProvider services, CancellationToken cancellationToken)
     {
         if (argument is not IEnumerable<object> input)
-            return Error($"The provided value is not an array. Expected: '{Type.Name}', got: '{argument}'. At: '{parameter.Name}'");
+            return Error($"The provided value is not an array. Expected: '{TargetType.Name}', got: '{argument}'. At: '{parameter.Name}'");
 
-        var instance = Array.CreateInstance(Type, input.Count());
+        var instance = Array.CreateInstance(TargetType, input.Count());
 
         var counter = 0;
         foreach (var item in input)
@@ -22,7 +22,7 @@ internal sealed class ArrayParser(TypeParser underlyingParser) : TypeParser
             var result = await underlyingParser.Parse(context, parameter, item, services, cancellationToken).ConfigureAwait(false);
 
             if (!result.Success)
-                return Error($"Failed to convert an array element. Expected: '{underlyingParser.Type.Name}', got: '{item}'. At: '{parameter.Name}', Index: '{counter}'");
+                return Error($"Failed to convert an array element. Expected: '{underlyingParser.TargetType.Name}', got: '{item}'. At: '{parameter.Name}', Index: '{counter}'");
 
             instance.SetValue(result.Value, counter++);
         }
@@ -32,12 +32,12 @@ internal sealed class ArrayParser(TypeParser underlyingParser) : TypeParser
 
     internal static ArrayParser GetOrCreate(TypeParser underlyingConverter)
     {
-        if (_parsers.TryGetValue(underlyingConverter.Type, out var parser))
+        if (_parsers.TryGetValue(underlyingConverter.TargetType, out var parser))
             return parser;
 
         parser = new ArrayParser(underlyingConverter)!;
 
-        _parsers.Add(underlyingConverter.Type, parser);
+        _parsers.Add(underlyingConverter.TargetType, parser);
 
         return parser;
     }

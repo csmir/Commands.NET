@@ -23,7 +23,7 @@ public sealed class TryParseParser<T>(TryParseParser<T>.ParseDelegate parser) : 
     /// <param name="str">The raw value to parse.</param>
     /// <param name="value">The out-value of <typeparamref name="T"/>. This value is not <see langword="null"/> when this delegate returns <see langword="true"/></param>
     /// <returns><see langword="true"/> if the parsing was successful, otherwise <see langword="false"/>.</returns>
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     public delegate bool ParseDelegate(string? str, [NotNullWhen(true)] out T? value);
 #else
     public delegate bool ParseDelegate(string? str, out T value);

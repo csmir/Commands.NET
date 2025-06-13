@@ -54,7 +54,7 @@ public void Command(string arg1, int arg2 = 2, bool arg3 = true)
 
 ## Complex parameters
 
-Complex parameters are unique in that they are redirected to the signature of a class constructor:
+Complex parameters are unique in that they are redirected to the signature of a type constructor:
 
 ```cs
 public class ComplexType

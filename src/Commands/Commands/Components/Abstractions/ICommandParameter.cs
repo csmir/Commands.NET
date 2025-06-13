@@ -26,6 +26,11 @@ public interface ICommandParameter : ICommandSegment, IParameter
     public bool IsCollection { get; }
 
     /// <summary>
+    ///     Gets if this parameter is a resource type or not.
+    /// </summary>
+    public bool IsResource { get; }
+
+    /// <summary>
     ///     Gets the parser for this parameter.
     /// </summary>
     /// <remarks>

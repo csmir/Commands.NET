@@ -1,7 +1,4 @@
-﻿using Commands.Conditions;
-using Commands.Parsing;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     A provider hosting a <see cref="ComponentTree"/> that can be executed through a pipeline. Begin using this provider by initializing it using any of the public constructors. 
@@ -105,9 +102,8 @@ public class ComponentProvider : IComponentProvider
     /// <param name="result">The result yielded by the pipeline.</param>
     /// <param name="options">The options used to customize the command execution pipeline in accordance to the context and requirements of execution.</param>
     /// <returns>An awaitable <see cref="Task"/> representing the Finalize operation.</returns>
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Task<>))]
-    [UnconditionalSuppressMessage("AotAnalysis", "IL2075", Justification = "The availability of Task<> is ensured at compile-time.")]
 #endif
     protected virtual async Task Finalize<TContext>(TContext context, IResult result, ExecutionOptions options)
         where TContext : class, IContext

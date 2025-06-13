@@ -1,5 +1,4 @@
-﻿using Commands.Conditions;
-using Commands.Parsing;
+﻿using Commands.Parsing;
 using System.Drawing;
 using System.Text.RegularExpressions;
 
@@ -11,12 +10,9 @@ namespace Commands;
 public sealed class ComponentOptions
 {
     /// <summary>
-    ///     Gets or sets a regular expression that will be used to validate the names of commands and command groups.
+    ///     Gets or sets an action that will be invoked when a component is built. This action can be used to perform additional setup or logging on the component after it has been created.
     /// </summary>
-    /// <remarks>
-    ///     By default, this value is <see langword="null"/>. It can -for example- be implemented to validate against restrictions on component naming in certain API environments.
-    /// </remarks>
-    public Regex? NameValidation { get; set; } = null;
+    public Action<IComponent>? BuildCompleted { get; set; } = null;
 
     /// <summary>
     ///     Gets or sets a dictionary of parsers that will be used to parse command arguments into the target type by all components using these options.
@@ -34,22 +30,23 @@ public sealed class ComponentOptions
     ///         </item>
     ///         <item>
     ///             Array implementations of all above types.
+    ///             <br/>
+    ///             <i>By default, array parsers are created by wrapping defined parsers. For example, if you add a custom parser for <see cref="int"/>, the <see cref="Array"/> parser for <see cref="int"/>[] will be created by wrapping the custom parser.</i>
     ///         </item>
     ///         <item>
-    ///             All <see cref="Enum"/> types.
+    ///             All <see cref="Enum"/> implementations.
     ///         </item>
     ///     </list>
-    ///     <i>By default, the parsers for arrays are created by wrapping the default parsers. For example, if you add a custom parser for <see cref="int"/>, the <see cref="Array"/> parser for <see cref="int"/>[] will be created by wrapping the custom parser.</i>
     /// </remarks>
     public IDictionary<Type, TypeParser> Parsers { get; set; }
 
     /// <summary>
-    ///     Gets or sets a value indicating whether the defined <see cref="ICondition"/> implementation of the parent(s) of a <see cref="Command"/> instance should be propagated.
+    ///     Gets or sets a regular expression that will be used to validate the names of commands and command groups.
     /// </summary>
     /// <remarks>
-    ///     By default, this value is <see langword="true"/>.
+    ///     By default, this value is <see langword="null"/>. It can -for example- be implemented to validate against restrictions on component naming in certain API environments.
     /// </remarks>
-    public bool PropagateParentConditions { get; set; } = true;
+    public Regex? NameValidation { get; set; } = null;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="ComponentOptions"/> class containing default values for <see cref="Parsers"/>.
@@ -57,7 +54,7 @@ public sealed class ComponentOptions
     public ComponentOptions()
     {
         Parsers = TypeParser.CreateDefaults()
-            .ToDictionary(x => x.Type);
+            .ToDictionary(x => x.TargetType);
     }
 
     /// <summary>
@@ -69,8 +66,6 @@ public sealed class ComponentOptions
 
     internal TypeParser GetParser(Type type)
     {
-        Assert.NotNull(type, nameof(type));
-
         if (Parsers.TryGetValue(type, out var parser))
             return parser;
 

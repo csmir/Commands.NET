@@ -6,17 +6,17 @@ var components = new ComponentTree
     new Command(() => Environment.Exit(0), "exit"),
     new CommandGroup("math")
     {
-        new Command((double number, int sumBy)      
-            => number + sumBy,      
+        new Command((double number, int sumBy)
+            => number + sumBy,
                 "sum", "add"),
-        new Command((double number, int subtractBy) 
-            => number - subtractBy, 
+        new Command((double number, int subtractBy)
+            => number - subtractBy,
                 "subtract", "sub"),
-        new Command((double number, int multiplyBy) 
-            => number * multiplyBy, 
+        new Command((double number, int multiplyBy)
+            => number * multiplyBy,
                 "multiply", "mul"),
-        new Command((double number, int divideBy)   
-            => number / divideBy,   
+        new Command((double number, int divideBy)
+            => number / divideBy,
                 "divide", "div")
     },
     new CommandGroup<HelpModule>()

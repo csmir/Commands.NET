@@ -1,5 +1,4 @@
 ﻿using Commands;
-using Commands.Testing;
 
 var components = new ComponentTree();
 

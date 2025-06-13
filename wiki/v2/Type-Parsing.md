@@ -55,7 +55,7 @@ The declarative pattern implements shorthand access to `ParseResult` using the e
 ```cs
 using Commands.Parsing;
 
-public class CustomTypeParserAttribute : TypeParserAttribute<Type>
+public class CustomTypeParserAttribute : TypeParserAttribute
 {
     public override ValueTask<ParseResult> Parse(
         IContext context, ICommandParameter parameter, object? argument, IServiceProvider services, CancellationToken cancellationToken)
@@ -65,17 +65,19 @@ public class CustomTypeParserAttribute : TypeParserAttribute<Type>
 }
 ```
 
-The attribute pattern writes similar to `ExecuteCondition` implementations, also allowing shorthand calls to be used.
+The attribute pattern writes similar to `ExecuteCondition` implementations, also supporting `Error()` and `Success()` methods for returning results.
+
+Attribute based parsers do not have a generic constraint, because the target type is defined for the parameter they are applied to.
 
 ## Applying a Parser
 
-### Functional Pattern & Declarative Pattern
+### Declarative
 
 ```cs
 ComponentOptions.Default.Parsers[typeof(CustomObject)] = new CustomTypeParser();
 ```
 
-### Attribute Pattern
+### Attributes
 
 ```cs
 [Name("command")]
@@ -85,4 +87,4 @@ public void Command([CustomTypeParser] Type type)
 ```
 
 Attribute based parsers are applied to the parameter of a command. 
-Parameters marked by `DeconstructAttribute` do not support parsing, but every non-deconstructed argument within the applicable signature does.
+Parameters marked by `DeconstructAttribute` do not support direct parsing, but every non-deconstructed argument within the chosen type constructor does.

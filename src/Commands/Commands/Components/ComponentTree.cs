@@ -19,11 +19,7 @@ public sealed class ComponentTree : ComponentSet
     /// </summary>
     /// <param name="components">The components to add to this tree.</param>
     public ComponentTree(IEnumerable<IComponent> components)
-    {
-        Assert.NotNull(components, nameof(components));
-
-        AddRange(components);
-    }
+        => AddRange(components);
 
     /// <inheritdoc />
     public override IComponent[] Find(Arguments args)
@@ -38,9 +34,9 @@ public sealed class ComponentTree : ComponentSet
                 continue;
 
             if (enumerator.Current is CommandGroup group)
-                CommandUtils.CopyTo(ref discovered, group.Find(args));
+                Utilities.CopyTo(ref discovered, group.Find(args));
             else
-                CommandUtils.CopyTo(ref discovered, enumerator.Current);
+                Utilities.CopyTo(ref discovered, enumerator.Current);
         }
 
         return discovered;
@@ -86,7 +82,7 @@ public sealed class ComponentTree : ComponentSet
     {
         options ??= ComponentOptions.Default;
 
-        var components = CommandUtils.GetComponents(types, options);
+        var components = types.GetComponents(options);
 
         return AddRange(components);
     }

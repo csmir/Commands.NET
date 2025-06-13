@@ -11,7 +11,7 @@ public sealed class HelpModule(IComponentProvider provider) : CommandModule
 
         foreach (var command in commands)
         {
-            var description = command.Attributes.FirstOrDefault<DescriptionAttribute>()?.Description ?? "No description available.";
+            var description = command.Attributes.OfType<DescriptionAttribute>().FirstOrDefault()?.Description ?? "No description available.";
 
             Respond(command.GetFullName());
             Respond(description);

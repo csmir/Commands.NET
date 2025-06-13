@@ -1,23 +1,14 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace Commands;
 
-/// <summary>
-///     Provides a set of assertion methods for validating arguments.
-/// </summary>
-[EditorBrowsable(EditorBrowsableState.Never)]
-public static class Assert
+internal static class Assert
 {
-    /// <summary>
-    ///     Validates that the specified argument is not null.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void NotNull(object? argument, string argumentExpression)
     {
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
         ArgumentNullException.ThrowIfNull(argument, argumentExpression);
 #else
         if (argument == null)
@@ -25,38 +16,37 @@ public static class Assert
 #endif
     }
 
-    /// <summary>
-    ///     Validates that the specified argument is not null or empty.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void NotNullOrEmpty(string? argument, string argumentExpression)
     {
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
         ArgumentException.ThrowIfNullOrEmpty(argument, argumentExpression);
 #else
-
         if (string.IsNullOrEmpty(argument))
             throw new ArgumentException("The argument must not be null or empty.", argumentExpression);
 #endif
     }
 
-    /// <summary>
-    ///     Validates that the specified arguments are not null, and match the provided validation expression.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void NotNullOrInvalid(IEnumerable<string> values, Regex? regex, string argumentExpression)
     {
         NotNull(values, nameof(values));
 
-        if (regex == null)
-            return;
-
-        foreach (var value in values)
+        if (regex != null)
         {
-            if (!regex.IsMatch(value))
-                throw new ArgumentException($"The argument '{argumentExpression}' must match the validation expression '{regex}'", argumentExpression);
+            var valueCount = 0;
+            foreach (var value in values)
+            {
+                valueCount++;
+
+                NotNullOrEmpty(value, argumentExpression);
+
+                if (!regex.IsMatch(value))
+                    throw new ArgumentException($"The argument '{argumentExpression}' must match the validation expression '{regex}'", argumentExpression);
+            }
+
+            if (valueCount == 0)
+                throw new ArgumentException($"The argument '{argumentExpression}' must not be empty.", argumentExpression);
         }
     }
 }

@@ -3,6 +3,7 @@
 /// <summary>
 ///     Represents a mechanism for querying arguments while searching or parsing a command.
 /// </summary>
+[DebuggerDisplay("Arguments = {Count}, Remaining = {RemainingLength}")]
 public struct Arguments
 {
 #if NET8_0_OR_GREATER
@@ -118,6 +119,8 @@ public struct Arguments
         RemainingLength = _keys.Length + _flaggedKeys.Length;
     }
 
+    #region Internals
+
 #if NET8_0_OR_GREATER
     internal bool TryGetValue(string parameterName, [NotNullWhen(true)] out object? value)
 #else
@@ -171,8 +174,6 @@ public struct Arguments
         _index = index;
         RemainingLength -= index;
     }
-
-    #region Internals
 
     private readonly bool TryGetValueInternal(string parameterName, out object? value)
     {

@@ -1,45 +1,66 @@
 ﻿namespace Commands.Conditions;
 
 /// <summary>
-///     An attribute that contains an evaluation method called when marked on top of a command signature.
+///     Represents an attribute that defines a condition to be evaluated during command execution, using <typeparamref name="TEvaluator"/> as the evaluator implementation.
 /// </summary>
-/// <remarks>
-///     The <see cref="Evaluate(IContext, Command, IServiceProvider, CancellationToken)"/> method is responsible for doing this evaluation. 
-///     Custom implementations of <see cref="ExecuteConditionAttribute{T}"/> can be placed at module or command level, with each being ran in top-down order when a target is checked. 
-///     If multiple commands are found during matching, multiple sequences of preconditions will be ran to find a match that succeeds.
-/// </remarks>
-/// <typeparam name="TEvaluator">The type of evaluator that will be used to determine the result of the evaluation.</typeparam>
-[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
-public abstract class ExecuteConditionAttribute<
-#if NET8_0_OR_GREATER
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-# endif
-TEvaluator>() : Attribute, ICondition
-    where TEvaluator : ConditionEvaluator, new()
+/// <typeparam name="TEvaluator">The evaluator which will be used to </typeparam>
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Delegate, AllowMultiple = true)]
+public abstract class ExecuteConditionAttribute<TEvaluator>() : ExecuteConditionAttribute(typeof(TEvaluator))
+    where TEvaluator : IEvaluator, new()
 {
-    /// <inheritdoc />
-#if NET8_0_OR_GREATER
-    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-#endif
-    public Type EvaluatorType { get; } = typeof(TEvaluator);
+    internal override IEvaluator CreateEvaluator()
+        => new TEvaluator();
+}
 
-    /// <inheritdoc />
+/// <summary>
+///     Represents an attribute that defines a condition to be evaluated during command execution.
+/// </summary>
+/// <param name="evaluatorType">The type of <see cref="IEvaluator"/> by which the current condition should be evaluated.</param>
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Delegate, AllowMultiple = true)]
+public abstract class ExecuteConditionAttribute(
+#if NET6_0_OR_GREATER
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+#endif
+    Type evaluatorType) : Attribute
+{
+    internal string EvaluatorName { get; } = evaluatorType.FullName ?? evaluatorType.Name;
+
+    /// <summary>
+    ///     Evaluates the provided state during execution to determine if the command method can be run or not.
+    /// </summary>
     /// <remarks>
     ///     Make use of <see cref="Error(string)"/> and <see cref="Success"/> to safely create the intended result.
     /// </remarks>
-    public abstract ValueTask<ConditionResult> Evaluate(
-        IContext context, Command command, IServiceProvider services, CancellationToken cancellationToken);
+    /// <param name="context">The context of the current execution.</param>
+    /// <param name="command">The command currently being executed.</param>
+    /// <param name="services">The provider used to register modules and inject services.</param>
+    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <returns>An awaitable <see cref="ValueTask"/> that contains the result of the evaluation.</returns>
+    public abstract ValueTask<ConditionResult> Evaluate(IContext context, Command command, IServiceProvider services, CancellationToken cancellationToken);
 
-    /// <inheritdoc />
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="error"/> is <see langword="null"/> or empty.</exception>
-    public ConditionResult Error(string error)
+    /// <summary>
+    ///     Creates a <see cref="ConditionResult"/> that indicates an erroneous evaluation of the condition.
+    /// </summary>
+    /// <param name="error">The error by which this condition failed.</param>
+    /// <returns>A new <see cref="ConditionResult"/> holding a failed evaluation result.</returns>
+    public virtual ConditionResult Error(string error)
     {
         Assert.NotNullOrEmpty(error, nameof(error));
-
-        return ConditionResult.FromError(new ConditionException(this, error));
+        return ConditionResult.FromError(new ConditionException(error));
     }
 
-    /// <inheritdoc />
-    public ConditionResult Success()
+    /// <summary>
+    ///     Creates a <see cref="ConditionResult"/> that indicates a successful evaluation of the condition.
+    /// </summary>
+    /// <returns>A new <see cref="ConditionResult"/> holding a successful evaluation result.</returns>
+    public virtual ConditionResult Success()
         => ConditionResult.FromSuccess();
+
+    internal virtual IEvaluator CreateEvaluator()
+    {
+        if (!typeof(IEvaluator).IsAssignableFrom(evaluatorType))
+            throw new ArgumentException($"The provided type '{evaluatorType.FullName}' does not implement {nameof(IEvaluator)}.", nameof(evaluatorType));
+
+        return (IEvaluator)Activator.CreateInstance(evaluatorType)!;
+    }
 }

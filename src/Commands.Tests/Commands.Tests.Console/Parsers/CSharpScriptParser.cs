@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.Scripting;
 
 namespace Commands.Tests;
 
-public class CSharpScriptParserAttribute : TypeParserAttribute<Delegate>
+public class CSharpScriptParserAttribute : TypeParserAttribute
 {
     public override ValueTask<ParseResult> Parse(IContext context, ICommandParameter argument, object? value, IServiceProvider services, CancellationToken cancellationToken)
         => new CSharpScriptParser().Parse(context, argument, value, services, cancellationToken);
