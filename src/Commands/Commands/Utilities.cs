@@ -168,7 +168,7 @@ public static class Utilities
         var output = Array.Empty<CommandGroup>();
 
         var action = new Action<Type>((
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
             [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
             type) =>
@@ -279,7 +279,7 @@ public static class Utilities
     #region Reflection
 
     internal static ConstructorInfo GetAvailableConstructor(
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 #endif
         this Type type)

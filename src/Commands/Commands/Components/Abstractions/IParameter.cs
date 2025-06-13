@@ -11,7 +11,7 @@ public interface IParameter
     /// <remarks>
     ///     The returned value is always underlying where available, ensuring parsers do not attempt to convert a nullable type.
     /// </remarks>
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
 #endif
     public Type Type { get; }

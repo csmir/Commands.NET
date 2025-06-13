@@ -18,7 +18,7 @@ public abstract class ExecuteConditionAttribute<TEvaluator>() : ExecuteCondition
 /// <param name="evaluatorType">The type of <see cref="IEvaluator"/> by which the current condition should be evaluated.</param>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Delegate, AllowMultiple = true)]
 public abstract class ExecuteConditionAttribute(
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 #endif
     Type evaluatorType) : Attribute

@@ -8,7 +8,7 @@ internal static class Assert
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void NotNull(object? argument, string argumentExpression)
     {
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
         ArgumentNullException.ThrowIfNull(argument, argumentExpression);
 #else
         if (argument == null)
@@ -19,7 +19,7 @@ internal static class Assert
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void NotNullOrEmpty(string? argument, string argumentExpression)
     {
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
         ArgumentException.ThrowIfNullOrEmpty(argument, argumentExpression);
 #else
         if (string.IsNullOrEmpty(argument))

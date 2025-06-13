@@ -6,7 +6,7 @@ internal sealed class ArrayParser(TypeParser underlyingParser) : TypeParser
 
     public override Type TargetType => underlyingParser.TargetType;
 
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     [UnconditionalSuppressMessage("AotAnalysis", "IL3050", Justification = "The type is propagated from user-facing code, it is up to the user to make it available at compile-time.")]
 #endif
     public override async ValueTask<ParseResult> Parse(IContext context, ICommandParameter parameter, object? argument, IServiceProvider services, CancellationToken cancellationToken)
