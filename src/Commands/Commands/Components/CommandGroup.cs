@@ -154,12 +154,12 @@ public class CommandGroup : ComponentSet, IComponent
     ///     Gets the conditions that determine whether the underlying command within this group can execute or not.
     /// </summary>
     /// <returns>An enumerable representing any conditions to be executed prior to method execution to determine whether the underlying command can be executed.</returns>
-    public IEnumerable<ICondition> GetConditions()
+    public IEnumerable<ExecuteConditionAttribute> GetConditions()
     {
         if (Parent != null)
-            return [.. Attributes.OfType<ICondition>(), .. Parent.GetConditions()];
+            return [.. Attributes.OfType<ExecuteConditionAttribute>(), .. Parent.GetConditions()];
         else
-            return Attributes.OfType<ICondition>();
+            return Attributes.OfType<ExecuteConditionAttribute>();
     }
 
     /// <inheritdoc />

@@ -14,7 +14,7 @@ public abstract class TypeParserAttribute : Attribute, IParser
     {
         Assert.NotNullOrEmpty(error, nameof(error));
 
-        return ParseResult.FromError(new ParserException(this, error));
+        return ParseResult.FromError(new ParserException(error));
     }
 
     /// <inheritdoc />

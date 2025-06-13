@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace Commands.Hosting;
 

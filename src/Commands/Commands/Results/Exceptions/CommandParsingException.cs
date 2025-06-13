@@ -1,17 +1,11 @@
-﻿using Commands.Parsing;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     Represents an exception that is created when a parser fails to parse input.
 /// </summary>
-public class ParserException(IParser parser, string reason)
+public class ParserException(string reason)
     : Exception(reason)
 {
-    /// <summary>
-    ///     Gets the parser that caused the exception.
-    /// </summary>
-    public IParser Parser { get; } = parser;
 }
 
 /// <summary>

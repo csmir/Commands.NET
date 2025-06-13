@@ -1,4 +1,5 @@
-﻿using Commands.Parsing;
+﻿using Commands.Conditions;
+using Commands.Parsing;
 
 namespace Commands;
 
@@ -243,6 +244,34 @@ public static class Utilities
         }
 
         return new(minLength, maxLength);
+    }
+
+    internal static IEvaluator[] GetEvaluators(IEnumerable<ExecuteConditionAttribute> conditions)
+    {
+        static IEnumerable<IEvaluator> YieldEvaluators(IEnumerable<IGrouping<string, ExecuteConditionAttribute>> groups)
+        {
+            foreach (var group in groups)
+            {
+                var groupArr = group.ToArray();
+
+                var evaluator = groupArr[0].CreateEvaluator();
+
+                if (evaluator.MaximumAllowedConditions.HasValue && groupArr.Length > evaluator.MaximumAllowedConditions.Value)
+                    throw new ComponentFormatException($"The evaluator {evaluator.GetType()} specifies that only {evaluator.MaximumAllowedConditions.Value} conditions of its scope are permitted per signature, but it discovered {groupArr.Length} conditions.");
+
+                evaluator.Conditions = groupArr;
+
+                yield return evaluator;
+            }
+        }
+
+        if (!conditions.Any())
+            return [];
+
+        var evaluatorGroups = conditions
+            .GroupBy(x => x.EvaluatorName);
+
+        return [.. YieldEvaluators(evaluatorGroups).OrderBy(x => x.Order)];
     }
 
     #endregion
