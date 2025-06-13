@@ -62,7 +62,7 @@ public void Command(string arg1, int arg2 = 2, bool arg3 = true)
 
 ## Deconstructible Parameters
 
-Deconstructible parameters are unique in that they are redirected to the signature of a class constructor:
+Deconstructible parameters are unique in that they are redirected to the signature of a type constructor:
 
 ```cs
 public class ConstructedType
@@ -93,13 +93,17 @@ public void Command([Deconstruct] ConstructedType complex)
 }
 ```
 
+Deconstructible parameter constructors are an extension of the commands' own parsing logic. 
+In this example, `string`, `int`, and `bool` are added as individual parameters to the command.
+
 > [!NOTE]
-> Deconstructible parameter constructors are an extension of the commands' own parsing logic. 
-> In this example, `string`, `int`, and `bool` are added as individual arguments to the command.
+> When the target type does not have a public constructor containing any parameters, a `ComponentFormatException` will be thrown on creation.
+> It is possible to define which constructor is used by specifying `IgnoreAttribute` on other constructors.
 
 ## Remainder
 
-When a parameter is marked with the `Remainder` attribute, or with `params`, it will consume all remaining arguments. This is useful for commands that accept a variable number of arguments.
+When a parameter is marked with `RemainderAttribute`, an attribute implementing `IRemainderBinding` or with `params`, it will consume all remaining arguments. 
+This is useful for commands that accept a variable number of arguments.
 
 Remainder parameters behave differently depending on the type of the parameter:
 
@@ -117,9 +121,37 @@ public void Command(params int[] args)
 }
 ```
 
+> [!NOTE]
+> A `IRemainderBinding` attribute can only occur on the last parameter of the command signature.
+> If it occurs on any other parameter, a `ComponentFormatException` will be thrown on creation.
+
+## Resources
+
+In some cases it is functionally preferred to have a resource, not necessarily part of the command query, to be injected into the command signature as a parameter. 
+When the `IContext` used for execution implements `IResourceContext`, 
+the `GetResource` method will be used to retrieve a resource bound to the state of the command execution into the parameter marked with `ResourceAttribute` or any other attribute marked with `IResourceBinding`.
+
+```cs
+new Command(([Resource] T resource) => { }, "name");
+```
+```cs
+// 'command' is valid when context is `IResourceContext` returning a resource of type `T`
+[Name("command")]
+public void Command([Resource] T resource)
+{
+}
+```
+
+`T` in this context is a parsible type. The value returned from `GetResource` will be parsed using the `TypeParser` registered for the type `T`.
+
+> [!NOTE]
+> Injecting a resource into the command signature is exclusive, and can only be done once. 
+> If there are multiple occurrences of `IResourceBinding` on the command signature, a `ComponentFormatException` will be thrown on creation.
+
 ## Naming Parameters
 
-Parameters can be named by using the `Name` attribute. This is useful for commands that have camel-case parameter names, but should have lowercase naming to the caller.
+Parameters can be named by using the `NameAttribute` or another custom attribute implementing `INameBinding`. 
+This is useful for commands that have camel-case parameter names, but should have lowercase naming to the caller.
 
 ```cs
 new Command(([Name("arg1")] string Arg1, [Name("arg2")] int Arg2, [Name("arg3")] bool Arg3) => { }, "name");

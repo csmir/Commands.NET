@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Commands.Tests.Benchmarks",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Commands.Tests.Console", "src\Commands.Tests\Commands.Tests.Console\Commands.Tests.Console.csproj", "{3F5E8CB9-FC11-47EC-81EA-2CA241B89A1D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Tests.Aot", "src\Commands.Tests\Commands.Tests.Aot\Commands.Tests.Aot.csproj", "{B223CFF0-3809-49A7-AFC5-01BBEF6C6C65}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Samples.Aot", "src\Commands.Samples\Commands.Samples.Aot\Commands.Samples.Aot.csproj", "{B223CFF0-3809-49A7-AFC5-01BBEF6C6C65}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Samples.Core", "src\Commands.Samples\Commands.Samples.Core\Commands.Samples.Core.csproj", "{B744E55E-4DD1-4929-B831-CBB41B3B08CF}"
 EndProject
@@ -27,7 +27,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Hosting", "src\Com
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Http", "src\Commands.Http\Commands.Http.csproj", "{0F59689D-80CD-47C6-A075-E47E2B24B5E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Tests.Http", "src\Commands.Tests\Commands.Tests.Http\Commands.Tests.Http.csproj", "{4FDAAD40-A564-4A67-AF2C-F4C3A4836E33}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commands.Samples.Http", "src\Commands.Samples\Commands.Samples.Http\Commands.Samples.Http.csproj", "{4FDAAD40-A564-4A67-AF2C-F4C3A4836E33}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -88,10 +88,10 @@ Global
 		{4C8A5F95-9B16-440F-8F70-0CE1CBA88665} = {A9564368-0CFA-474A-BFBA-A1A140C53F2F}
 		{0C4B9040-1BC4-47DC-B9C3-4389EBBD378F} = {1AB3A177-3567-4B50-98D5-9F6CF187D0DD}
 		{3F5E8CB9-FC11-47EC-81EA-2CA241B89A1D} = {1AB3A177-3567-4B50-98D5-9F6CF187D0DD}
-		{B223CFF0-3809-49A7-AFC5-01BBEF6C6C65} = {1AB3A177-3567-4B50-98D5-9F6CF187D0DD}
+		{B223CFF0-3809-49A7-AFC5-01BBEF6C6C65} = {A9564368-0CFA-474A-BFBA-A1A140C53F2F}
 		{B744E55E-4DD1-4929-B831-CBB41B3B08CF} = {A9564368-0CFA-474A-BFBA-A1A140C53F2F}
 		{5E1DDDEF-F126-4E5D-ADC9-CC205D675F43} = {A9564368-0CFA-474A-BFBA-A1A140C53F2F}
-		{4FDAAD40-A564-4A67-AF2C-F4C3A4836E33} = {1AB3A177-3567-4B50-98D5-9F6CF187D0DD}
+		{4FDAAD40-A564-4A67-AF2C-F4C3A4836E33} = {A9564368-0CFA-474A-BFBA-A1A140C53F2F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0CAE3B50-8AEE-4E7A-95F7-A63F51C38083}
