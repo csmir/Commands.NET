@@ -1,4 +1,6 @@
-﻿namespace Commands.Conditions;
+﻿using System.Runtime.CompilerServices;
+
+namespace Commands.Conditions;
 
 /// <summary>
 ///     An evaluator that contains a set of conditions grouped by the evaluator type. This evaluator determines if the contained set of conditions is met.
@@ -32,18 +34,15 @@ public abstract class ConditionEvaluator
 
     #region Internals
 
-#if NET8_0_OR_GREATER
-    [UnconditionalSuppressMessage("AotAnalysis", "IL2072", Justification = "IGrouping<>.Key is a value of ICondition.EvaluatorType, and is marked as dynamically accessible, allowing it to be accessible to the activator.")]
-#endif
     internal static ConditionEvaluator[] CreateEvaluators(IEnumerable<ICondition> conditions)
     {
-        static IEnumerable<ConditionEvaluator> YieldEvaluators(IEnumerable<IGrouping<Type, ICondition>> groups)
+        static IEnumerable<ConditionEvaluator> YieldEvaluators(IEnumerable<IGrouping<string, ICondition>> groups)
         {
             foreach (var group in groups)
             {
                 var groupArr = group.ToArray();
 
-                var evaluator = groupArr[0].CreateEvaluator();
+                var evaluator = Unsafe.As<IInternalCondition>(groupArr[0]).CreateEvaluator();
 
                 if (evaluator.MaximumAllowedConditions.HasValue && groupArr.Length > evaluator.MaximumAllowedConditions.Value)
                     throw new ComponentFormatException($"The evaluator {evaluator.GetType()} specifies that only {evaluator.MaximumAllowedConditions.Value} conditions of its scope are permitted per signature, but it discovered {groupArr.Length} conditions.");
@@ -58,7 +57,7 @@ public abstract class ConditionEvaluator
             return [];
 
         var evaluatorGroups = conditions
-            .GroupBy(x => x.EvaluatorType);
+            .GroupBy(x => Unsafe.As<IInternalCondition>(x).EvaluatorName);
 
         return [.. YieldEvaluators(evaluatorGroups).OrderBy(x => x.Order)];
     }

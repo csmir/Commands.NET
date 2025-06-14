@@ -29,7 +29,7 @@ T> : CommandGroup
 ///     Components of a nameless top-level group are required to be named. If added to another <see cref="CommandGroup"/>, it will be bound to that group, and is required to have <see cref="Names"/>.
 /// </remarks>
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
-public class CommandGroup : ComponentSet, IComponent
+public class CommandGroup : ComponentSet, IInternalComponent
 {
     private bool _bound;
 
@@ -165,18 +165,15 @@ public class CommandGroup : ComponentSet, IComponent
     /// <inheritdoc />
     public string GetFullName()
     {
-        var sb = new StringBuilder();
+        var sb = new ValueStringBuilder(stackalloc char[64]);
 
         if (Parent?.Name != null)
         {
             sb.Append(Parent.GetFullName());
-
-            if (Name != null)
-                sb.Append(' ');
-
-            sb.Append(Name);
+            sb.Append(' ');
         }
-        else if (Name != null)
+
+        if (Name != null)
             sb.Append(Name);
 
         return sb.ToString();
@@ -236,7 +233,7 @@ public class CommandGroup : ComponentSet, IComponent
     /// <inheritdoc />
     public override string ToString()
     {
-        var sb = new StringBuilder();
+        var sb = new ValueStringBuilder(stackalloc char[64]);
 
         if (Parent != null)
         {
@@ -263,7 +260,7 @@ public class CommandGroup : ComponentSet, IComponent
     int IComparable.CompareTo(object? obj)
         => obj is IComponent component ? CompareTo(component) : -1;
 
-    void IComponent.Bind(ComponentSet parent)
+    void IInternalComponent.Bind(ComponentSet parent)
     {
         if (_bound)
             throw new ComponentFormatException($"{this} is already bound to a {(Parent != null ? nameof(CommandGroup) : nameof(ComponentSet))}. Remove this component from the parent set before adding it to another.");
@@ -283,7 +280,7 @@ public class CommandGroup : ComponentSet, IComponent
         _bound = true;
     }
 
-    void IComponent.Unbind()
+    void IInternalComponent.Unbind()
     {
         if (_mutateTree != null)
             _mutateTree = null;

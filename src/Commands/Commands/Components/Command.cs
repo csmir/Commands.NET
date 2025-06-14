@@ -16,7 +16,7 @@ namespace Commands;
 ///     Otherwise, the <see cref="Parent"/> will be <see langword="null"/> and <see cref="Names"/> requires a value.
 /// </remarks>
 [DebuggerDisplay("{ToString()}")]
-public class Command : IComponent, IParameterCollection
+public class Command : IInternalComponent, IParameterCollection
 {
     private bool _bound;
 
@@ -293,19 +293,15 @@ public class Command : IComponent, IParameterCollection
     /// <param name="includeArguments">Defines if the arguments of the command should be included in the output.</param>
     public string GetFullName(bool includeArguments)
     {
-        var sb = new StringBuilder();
+        var sb = new ValueStringBuilder(stackalloc char[64]);
 
         if (Parent?.Name != null)
         {
             sb.Append(Parent.GetFullName());
-
-            if (Name != null)
-            {
-                sb.Append(' ');
-                sb.Append(Name);
-            }
+            sb.Append(' ');
         }
-        else if (Name != null)
+
+        if (Name != null)
             sb.Append(Name);
 
         if (HasParameters && includeArguments)
@@ -349,7 +345,7 @@ public class Command : IComponent, IParameterCollection
     /// <param name="withModuleInfo">Defines if the module information should be appended on the command level.</param>
     public string ToString(bool withModuleInfo)
     {
-        var sb = new StringBuilder();
+        var sb = new ValueStringBuilder(stackalloc char[64]);
 
         if (withModuleInfo && Parent != null)
         {
@@ -378,7 +374,7 @@ public class Command : IComponent, IParameterCollection
     int IComparable.CompareTo(object? obj)
         => obj is IComponent component ? CompareTo(component) : -1;
 
-    void IComponent.Bind(ComponentSet parent)
+    void IInternalComponent.Bind(ComponentSet parent)
     {
         if (_bound)
             throw new ComponentFormatException($"{this} is already bound to a {(Parent != null ? nameof(CommandGroup) : nameof(ComponentSet))}. Remove this component from the parent set before adding it to another.");
@@ -394,7 +390,7 @@ public class Command : IComponent, IParameterCollection
         _bound = true;
     }
 
-    void IComponent.Unbind()
+    void IInternalComponent.Unbind()
     {
         _bound = false;
         Parent = null;

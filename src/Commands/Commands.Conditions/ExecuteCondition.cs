@@ -5,11 +5,7 @@
 /// </summary>
 /// <typeparam name="TEvaluator">The evaluator type which should wrap this condition.</typeparam>
 /// <param name="checkDelegate">The delegate that is triggered when a check is done during command execution to determine if the command can execute or not.</param>
-public sealed class ConditionDelegate<
-#if NET8_0_OR_GREATER
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-#endif
-TEvaluator>(Func<IContext, Command, IServiceProvider, ValueTask<ConditionResult>> checkDelegate) : ExecuteCondition<TEvaluator>
+public sealed class ConditionDelegate<TEvaluator>(Func<IContext, Command, IServiceProvider, ValueTask<ConditionResult>> checkDelegate) : ExecuteCondition<TEvaluator>
     where TEvaluator : ConditionEvaluator, new()
 {
     /// <inheritdoc />
@@ -18,11 +14,7 @@ TEvaluator>(Func<IContext, Command, IServiceProvider, ValueTask<ConditionResult>
 }
 
 /// <inheritdoc />
-public abstract class ExecuteCondition<
-#if NET8_0_OR_GREATER
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-# endif
-TEvaluator> : ICondition
+public abstract class ExecuteCondition<TEvaluator> : IInternalCondition
     where TEvaluator : ConditionEvaluator, new()
 {
     /// <inheritdoc />
@@ -43,12 +35,9 @@ TEvaluator> : ICondition
 
     #region Internals
 
-#if NET8_0_OR_GREATER
-    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-#endif
-    Type ICondition.EvaluatorType { get; } = typeof(TEvaluator);
+    string IInternalCondition.EvaluatorName => nameof(TEvaluator);
 
-    ConditionEvaluator ICondition.CreateEvaluator()
+    ConditionEvaluator IInternalCondition.CreateEvaluator()
         => new TEvaluator();
 
     #endregion

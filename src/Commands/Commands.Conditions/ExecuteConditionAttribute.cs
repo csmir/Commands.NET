@@ -10,11 +10,7 @@
 /// </remarks>
 /// <typeparam name="TEvaluator">The type of evaluator that will be used to determine the result of the evaluation.</typeparam>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
-public abstract class ExecuteConditionAttribute<
-#if NET8_0_OR_GREATER
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-# endif
-TEvaluator>() : Attribute, ICondition
+public abstract class ExecuteConditionAttribute<TEvaluator>() : Attribute, IInternalCondition
     where TEvaluator : ConditionEvaluator, new()
 {
     /// <inheritdoc />
@@ -36,12 +32,10 @@ TEvaluator>() : Attribute, ICondition
 
     #region Internals
 
-#if NET8_0_OR_GREATER
-    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-#endif
-    Type ICondition.EvaluatorType { get; } = typeof(TEvaluator);
+    /// <inheritdoc />
+    string IInternalCondition.EvaluatorName => nameof(TEvaluator);
 
-    ConditionEvaluator ICondition.CreateEvaluator() 
+    ConditionEvaluator IInternalCondition.CreateEvaluator() 
         => new TEvaluator();
 
     #endregion

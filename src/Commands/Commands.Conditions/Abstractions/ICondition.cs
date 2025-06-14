@@ -8,14 +8,6 @@ namespace Commands.Conditions;
 public interface ICondition
 {
     /// <summary>
-    ///     Gets the type of the evaluator implementation for this condition.
-    /// </summary>
-#if NET8_0_OR_GREATER
-    [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-#endif
-    public Type EvaluatorType { get; }
-
-    /// <summary>
     ///     Evaluates the provided state during execution to determine if the command method can be run or not.
     /// </summary>
     /// <remarks>
@@ -40,11 +32,19 @@ public interface ICondition
     /// </summary>
     /// <returns>A <see cref="ConditionResult"/> representing the successful evaluation.</returns>
     public ConditionResult Success();
+}
+
+/// <inheritdoc/>
+internal interface IInternalCondition : ICondition
+{
+    /// <summary>
+    ///     Gets the name of the evaluator type for this condition.
+    /// </summary>
+    public string EvaluatorName { get; }
 
     /// <summary>
     ///     Creates a new instance of the <see cref="ConditionEvaluator"/> that is used to evaluate this condition.
     /// </summary>
     /// <returns>A new instance implementation of <see cref="ConditionEvaluator"/> that will be used to evaluate the given condition for a given command.</returns>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public ConditionEvaluator CreateEvaluator();
 }
