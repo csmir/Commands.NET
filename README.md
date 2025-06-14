@@ -13,7 +13,7 @@ Consider leaving a ⭐
 Commands.NET aims to improve your experience integrating input from different sources* into the same, concurrent pool and treating them as triggered actions, called commands. 
 It provides a modular and intuitive API for registering and executing commands.
 
-**Sources can range from command-line, console, chatboxes, to social platforms like Discord, Slack, Messenger & much, much more.*
+**Sources can range from command-line, console, HTTP, chatboxes, to social platforms like Discord, Slack, Messenger & much, much more.*
 
 ## Documentation
 
@@ -25,33 +25,29 @@ Commands.NET is available on NuGet. You can install it using the package manager
 
 ```bash
 dotnet add package Commands.NET
-dotnet add package Commands.NET.Hosting
 ```
 
 Alternatively, adding it to your `.csproj` file:
 
 ```xml
 <PackageReference Include="Commands.NET" Version="x.x.x" />
-<PackageReference Include="Commands.NET.Hosting" Version="x.x.x" />
 ```
-> The hosting package is optional.
+
+> [!NOTE]
+> `Commands.NET.Hosting` and `Commands.NET.Http` are available as extension packages for respective features,
+> allowing you to host commands in the .NET Generic Host and expose them as HTTP endpoints.
 
 ## Usage
 
 ### Running a Command
 
-A command is a method executed when a specific syntax is provided. 
+A command is a method executed when a specific query is provided. 
 By creating a manager to contain said command, you can run it with the provided arguments.
 
 ```cs
-using Commands;
+var provider = new ComponentProvider();
 
-var components = new ComponentTree() 
-{
-    new Command(() => "Hello world!", "greet");
-};
-
-var provider = new ComponentProvider(components);
+provider.Components.Add(new Command(() => "Hello world!", "greet"));
 
 await provider.Execute(new ConsoleContext(args));
 
@@ -64,8 +60,6 @@ Command groups are named collections of commands or other command groups.
 Groups allow for subcommand creation, where the group name is a category for its children.
 
 ```cs
-using Commands;
-
 var mathGroup = new ComponentGroup("math")
 {
     new Command((double number, int sumBy)      => number + sumBy, 
@@ -92,21 +86,13 @@ await collection.Execute(new ConsoleContext(args));
 Command modules are classes that can contain commands or nested command modules, which themselves can also contain (sub)commands.
 
 ```cs
-using Commands;
-
-public class HelpModule : CommandModule 
+public class PingModule : CommandModule 
 {
-    [Name("help")]
-    public void Help()
-    {
-        var builder = new StringBuilder()
-            .AppendLine("Commands:");
+    [Name("ping")]
+    public string Ping() => "Pong!";
 
-        foreach (var command in Manager!.GetCommands())
-            builder.AppendLine(command.GetFullName());
-
-        Respond(builder.ToString());
-    }
+    [Name("pong")]
+    public string Pong() => "Ping!";
 }
 
 ...
@@ -126,11 +112,6 @@ await provider.Execute(new ConsoleContext(args));
 Commands.NET is designed to be compatible with dependency injection out of the box, propagating `IServiceProvider` throughout the execution flow.
 
 ```cs
-using Commands;
-using Microsoft.Extensions.DependencyInjection;
-
-...
-
 var services = new ServiceCollection()
     .AddSingleton<MyService>()
     .AddSingleton<ComponentProvider>();
@@ -144,12 +125,11 @@ provider.Components.Add(mathGroup);
 await provider.Execute(new ConsoleContext(args), new ExecutionOptions() { Services = services });
 ```
 
-Modules can be injected directly from the provider. They themselves are considered transient, being created and disposed of per command execution.
+Modules can be injected directly from the provider. They themselves are considered transient service consumers, being created and disposed of per command execution.
 
 ```cs
 public class ServicedModule(MyService service) : CommandModule 
 {
-
 }
 ```
 
@@ -158,9 +138,6 @@ public class ServicedModule(MyService service) : CommandModule
 Alongside dependency injection support in the base package, Commands.NET provides an extension package for the .NET Generic Host, allowing you to integrate Commands.NET into your application with ease.
 
 ```cs
-using Commands.Hosting;
-using Microsoft.Extensions.Hosting;
-
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureComponents(configure => ...)
     .Build();
@@ -170,14 +147,14 @@ The extension package supports factory-based command execution alongside scope m
 
 ## Samples
 
-- [Commands.Samples.Core](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Core)
-  - Manage, create and execute commands in a basic console application.
-- [Commands.Samples.Console](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Console)
-  - Fluent API's, complex execution flow and workflow expansion.
-- [Commands.Samples.Hosting](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Hosting)
-  - Integrating Commands.NET into the .NET Generic Host infrastructure.
-- [Commands.Samples.FSharp](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.FSharp)
-  - Use Commands.NET in F# projects.
+This repository includes a set of samples with documented code to help you get started with Commands.NET.
+
+- [Manage, create and execute commands in a basic console application.](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Core)
+- [Fluent API's, complex execution flow and workflow expansion.](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Console)
+- [Use Commands.NET in F# projects.](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.FSharp)
+- [Integrating Commands.NET into the .NET Generic Host infrastructure.](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Hosting)
+- [Exposing commands as lightweight HTTP endpoints without the heavy lifting.](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Http)
+- [Building Native-AOT apps with Commands.NET](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Aot)
 
 ## Benchmarks
 

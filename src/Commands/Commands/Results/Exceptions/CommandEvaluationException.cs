@@ -1,17 +1,11 @@
-﻿using Commands.Conditions;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     Represents an exception that is created when a condition fails to evaluate.
 /// </summary>
-public class ConditionException(ICondition condition, string reason)
+public class ConditionException(string reason)
     : Exception(reason)
 {
-    /// <summary>
-    ///     Gets the condition that caused the exception.
-    /// </summary>
-    public ICondition Condition { get; } = condition;
 }
 
 /// <summary>

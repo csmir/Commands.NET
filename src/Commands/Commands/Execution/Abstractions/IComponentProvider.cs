@@ -29,7 +29,7 @@ public interface IComponentProvider
     ///             When <see cref="IResult"/> is <see cref="ParseResult"/>, the exception can be <see cref="ParserException"/>, <see cref="CommandOutOfRangeException"/> or <see cref="Exception"/> types emitted by custom <see cref="IParser"/> implementations.
     ///         </item>
     ///         <item>
-    ///             When <see cref="IResult"/> is <see cref="ConditionResult"/>, the exception can be <see cref="ConditionException"/> or <see cref="Exception"/> types emitted by custom <see cref="ICondition"/> implementations.
+    ///             When <see cref="IResult"/> is <see cref="ConditionResult"/>, the exception can be <see cref="ConditionException"/> or <see cref="Exception"/> types emitted by custom <see cref="ExecuteConditionAttribute"/> implementations.
     ///         </item>
     ///         <item>
     ///             When <see cref="IResult"/> is <see cref="InvokeResult"/>, the exception can be any exception thrown by the command handler, or where the command failed to execute properly.

@@ -8,7 +8,7 @@ namespace Commands.Http;
 /// <typeparam name="T">The evaluation approach for the condition.</typeparam>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
 public abstract class HttpConditionAttribute<T> : ExecuteConditionAttribute<T>
-    where T : ConditionEvaluator, new()
+    where T : IEvaluator, new()
 {
     /// <inheritdoc />
     public override ValueTask<ConditionResult> Evaluate(IContext context, Command command, IServiceProvider services, CancellationToken cancellationToken)
@@ -39,5 +39,5 @@ public abstract class HttpConditionAttribute<T> : ExecuteConditionAttribute<T>
     /// <param name="response">The HTTP response that contains the error details.</param>
     /// <returns>A <see cref="ConditionResult"/> representing the failed evaluation.</returns>
     public virtual ConditionResult Error(HttpResult response)
-        => ConditionResult.FromError(new HttpConditionException(this, response));
+        => ConditionResult.FromError(new HttpConditionException(response));
 }

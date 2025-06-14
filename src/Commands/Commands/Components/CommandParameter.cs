@@ -14,7 +14,7 @@ public sealed class CommandParameter : ICommandParameter
     public string Name { get; }
 
     /// <inheritdoc />
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
 #endif
     public Type Type { get; }
@@ -95,6 +95,9 @@ public sealed class CommandParameter : ICommandParameter
         if (IsRemainder)
             return $"({Name}...)";
 
+        if (IsResource)
+            return $"{{{Name}}}";
+
         return $"<{Name}>";
     }
 
@@ -123,7 +126,7 @@ public sealed class CommandParameter : ICommandParameter
             if (context is IResourceContext resourceContext)
                 value = await resourceContext.GetResource();
             else
-                return ParseResult.FromError(new ParserException(Parser, "A resource parameter was attempted to be provided from a non-resource bound context."));
+                return ParseResult.FromError(new ParserException("A resource parameter was attempted to be provided from a non-resource bound context."));
         }
 
         // Fast path for matching instances of certain types.
@@ -135,7 +138,7 @@ public sealed class CommandParameter : ICommandParameter
             if (IsNullable)
                 return ParseResult.FromSuccess(null);
 
-            return ParseResult.FromError(new ParserException(Parser, "A null (or \"null\") value was attempted to be provided to a non-nullable command parameter."));
+            return ParseResult.FromError(new ParserException("A null (or \"null\") value was attempted to be provided to a non-nullable command parameter."));
         }
 
         return await Parser.Parse(context, this, value, services, cancellationToken);

@@ -102,7 +102,7 @@ public class ComponentProvider : IComponentProvider
     /// <param name="result">The result yielded by the pipeline.</param>
     /// <param name="options">The options used to customize the command execution pipeline in accordance to the context and requirements of execution.</param>
     /// <returns>An awaitable <see cref="Task"/> representing the Finalize operation.</returns>
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Task<>))]
 #endif
     protected virtual async Task Finalize<TContext>(TContext context, IResult result, ExecutionOptions options)

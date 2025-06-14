@@ -6,46 +6,46 @@ namespace Commands.Http;
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to GET requests.
 /// </summary>
 /// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class HttpGetAttribute(params string[] routeNames)
-    : HttpMethodAttribute(GET, routeNames)
-{ }
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false)]
+public class HttpGetAttribute(params string[] routeNames) : HttpMethodAttribute(GET, routeNames)
+{
+}
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to POST requests.
 /// </summary>
 /// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class HttpPostAttribute(params string[] routeNames)
-    : HttpMethodAttribute(POST, routeNames)
-{ }
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false)]
+public class HttpPostAttribute(params string[] routeNames) : HttpMethodAttribute(POST, routeNames)
+{
+}
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to PUT requests.
 /// </summary>
 /// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class HttpPutAttribute(params string[] routeNames)
-    : HttpMethodAttribute(PUT, routeNames)
-{ }
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false)]
+public class HttpPutAttribute(params string[] routeNames) : HttpMethodAttribute(PUT, routeNames)
+{
+}
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to DELETE requests.
 /// </summary>
 /// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class HttpDeleteAttribute(params string[] routeNames)
-    : HttpMethodAttribute(DELETE, routeNames)
-{ }
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false)]
+public class HttpDeleteAttribute(params string[] routeNames) : HttpMethodAttribute(DELETE, routeNames)
+{
+}
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to PATCH requests.
 /// </summary>
 /// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class HttpPatchAttribute(params string[] routeNames)
-    : HttpMethodAttribute(PATCH, routeNames)
-{ }
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false)]
+public class HttpPatchAttribute(params string[] routeNames) : HttpMethodAttribute(PATCH, routeNames)
+{
+}
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command.
@@ -55,7 +55,7 @@ public class HttpPatchAttribute(params string[] routeNames)
 /// </remarks>
 /// <param name="method">The name of the HTTP method required to execute the provided operation.</param>
 /// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false)]
 public class HttpMethodAttribute(string method, params string[] routeNames) : HttpConditionAttribute<HttpMethodEvaluator>, INameBinding
 {
     /// <summary>
@@ -96,6 +96,6 @@ public class HttpMethodAttribute(string method, params string[] routeNames) : Ht
         if (context.Request.HttpMethod.Equals(method, StringComparison.InvariantCultureIgnoreCase))
             return ConditionResult.FromSuccess();
 
-        return ConditionResult.FromError(new HttpConditionException(this, new HttpResult(HttpStatusCode.MethodNotAllowed, Encoding.UTF8.GetBytes($"Provided HTTP method ({context.Request.HttpMethod}) is not allowed for this operation."))));
+        return ConditionResult.FromError(new HttpConditionException(new HttpResult(HttpStatusCode.MethodNotAllowed, Encoding.UTF8.GetBytes($"Provided HTTP method ({context.Request.HttpMethod}) is not allowed for this operation."))));
     }
 }

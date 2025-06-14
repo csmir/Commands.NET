@@ -21,12 +21,12 @@ public class Command : IInternalComponent, IParameterCollection
     private bool _bound;
 
     /// <summary>
-    ///     Gets all evaluations that this component should do during the execution process, determined by a set of defined <see cref="ICondition"/>'s pointing at the component.
+    ///     Gets all evaluations that this component should do during the execution process, determined by a set of defined <see cref="ExecuteConditionAttribute"/>'s pointing at the component.
     /// </summary>
     /// <remarks>
     ///     When this property is called by a child component, this property will inherit all evaluations from the component's <see cref="Parent"/> component(s).
     /// </remarks>
-    public ConditionEvaluator[] Evaluators { get; private set; }
+    public IEvaluator[] Evaluators { get; private set; }
 
     /// <inheritdoc />
     public CommandGroup? Parent { get; private set; }
@@ -97,33 +97,26 @@ public class Command : IInternalComponent, IParameterCollection
     public float Score
         => GetScore();
 
-    /// <inheritdoc cref="Command(Delegate, IEnumerable{ICondition}, string[], ComponentOptions?)"/>
+    /// <inheritdoc cref="Command(Delegate, string[], ComponentOptions?)"/>
     public Command(Delegate executionDelegate, params string[] names)
-        : this(executionDelegate, [], names) { }
-
-    /// <inheritdoc cref="Command(Delegate, IEnumerable{ICondition}, string[], ComponentOptions?)"/>
-    public Command(Delegate executionDelegate, string[] names, ComponentOptions? options = null)
-        : this(executionDelegate, [], names, options) { }
+        : this(executionDelegate, names, ComponentOptions.Default) { }
 
     /// <summary>
     ///     Initializes a new instance of <see cref="Command"/>.
     /// </summary>
     /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
-    /// <param name="conditions">The conditions bound to the command, which will determine whether it can execute or not.</param>
     /// <param name="names">The names used to discover this command during execution.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
     /// <exception cref="ArgumentNullException">The provided delegate or conditions are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">The provided <paramref name="names"/> is <see langword="null"/> or does not match the <see cref="ComponentOptions.NameValidation"/> if any.</exception>
     /// <exception cref="ComponentFormatException">A <see cref="RemainderAttribute"/> is not placed on the last parameter of the target, <see cref="DeconstructAttribute"/> is defined on a non-deconstructible parameter type, or no <see cref="IParser"/> is available to represent a parameter type.</exception>
-    public Command(Delegate executionDelegate, IEnumerable<ICondition> conditions, string[] names, ComponentOptions? options = null)
+    public Command(Delegate executionDelegate, string[] names, ComponentOptions? options = null)
         : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), options ??= ComponentOptions.Default)
     {
-        Assert.NotNull(conditions, nameof(conditions));
         Assert.NotNullOrInvalid(names, options.NameValidation, nameof(names));
 
         Names = names;
         Ignore = false;
-        Evaluators = ConditionEvaluator.CreateEvaluators(conditions);
 
         options.BuildCompleted?.Invoke(this);
     }
@@ -140,12 +133,11 @@ public class Command : IInternalComponent, IParameterCollection
         : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ??= ComponentOptions.Default)
     {
         var names = Attributes.FirstOrDefault<INameBinding>()?.Names ?? [];
-        
+
         Assert.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
 
         Names = names;
         Ignore = Attributes.Any(x => x is IgnoreAttribute);
-        Evaluators = ConditionEvaluator.CreateEvaluators(Attributes.OfType<ICondition>());
 
         options.BuildCompleted?.Invoke(this);
     }
@@ -159,6 +151,7 @@ public class Command : IInternalComponent, IParameterCollection
 
         Attributes = [.. attributes];
         Activator = activator;
+        Evaluators = Utilities.GetEvaluators(attributes.OfType<ExecuteConditionAttribute>());
 
         (MinLength, MaxLength) = Utilities.GetLength(parameters);
 
@@ -384,7 +377,7 @@ public class Command : IInternalComponent, IParameterCollection
             Parent = group;
 
             // We set the evaluators again to ensure that the parent conditions are included in the evaluation, if the parent has any.
-            Evaluators = ConditionEvaluator.CreateEvaluators([.. Attributes.OfType<ICondition>(), .. Parent.GetConditions()]);
+            Evaluators = Utilities.GetEvaluators([.. Attributes.OfType<ExecuteConditionAttribute>(), .. Parent.GetConditions()]);
         }
 
         _bound = true;
@@ -394,7 +387,7 @@ public class Command : IInternalComponent, IParameterCollection
     {
         _bound = false;
         Parent = null;
-        Evaluators = ConditionEvaluator.CreateEvaluators(Attributes.OfType<ICondition>());
+        Evaluators = Utilities.GetEvaluators(Attributes.OfType<ExecuteConditionAttribute>());
     }
 
     #endregion

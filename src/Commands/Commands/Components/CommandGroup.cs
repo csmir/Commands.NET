@@ -7,7 +7,7 @@ namespace Commands;
 /// <typeparam name="T">The type of the <see cref="CommandModule"/> or <see cref="CommandModule{T}"/> implementation to consider a group of commands.</typeparam>
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
 public class CommandGroup<
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 # endif
 T> : CommandGroup
@@ -96,7 +96,7 @@ public class CommandGroup : ComponentSet, IInternalComponent
     /// <exception cref="ArgumentException">The provided <paramref name="type"/> defines names, but those names do not match the provided <see cref="ComponentOptions.NameValidation"/>.</exception>
     /// <exception cref="ComponentFormatException">The provided type is not an implementation of <see cref="CommandModule"/>.</exception>
     public CommandGroup(
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
         Type type, ComponentOptions? options = null)
@@ -154,12 +154,12 @@ public class CommandGroup : ComponentSet, IInternalComponent
     ///     Gets the conditions that determine whether the underlying command within this group can execute or not.
     /// </summary>
     /// <returns>An enumerable representing any conditions to be executed prior to method execution to determine whether the underlying command can be executed.</returns>
-    public IEnumerable<ICondition> GetConditions()
+    public IEnumerable<ExecuteConditionAttribute> GetConditions()
     {
         if (Parent != null)
-            return [.. Attributes.OfType<ICondition>(), .. Parent.GetConditions()];
+            return [.. Attributes.OfType<ExecuteConditionAttribute>(), .. Parent.GetConditions()];
         else
-            return Attributes.OfType<ICondition>();
+            return Attributes.OfType<ExecuteConditionAttribute>();
     }
 
     /// <inheritdoc />

@@ -1,19 +1,5 @@
 ﻿namespace Commands.Parsing;
 
-/// <summary>
-///     A delegate-based type parser that can be used to parse a type from a raw argument.
-/// </summary>
-/// <typeparam name="TConvertible">The target type of the parser.</typeparam>
-/// <param name="parseDelegate">The execution delegate which will be triggered when a value is to be converted to the provided argument.</param>
-public sealed class ParseDelegate<TConvertible>(
-    Func<IContext, ICommandParameter, object?, IServiceProvider, ValueTask<ParseResult>> parseDelegate)
-    : TypeParser<TConvertible>
-{
-    /// <inheritdoc />
-    public override ValueTask<ParseResult> Parse(IContext context, ICommandParameter parameter, object? argument, IServiceProvider services, CancellationToken cancellationToken)
-        => parseDelegate(context, parameter, argument, services);
-}
-
 /// <inheritdoc />
 /// <typeparam name="TConvertible">The type this <see cref="TypeParser{T}"/> should parse into.</typeparam>
 public abstract class TypeParser<TConvertible> : TypeParser
@@ -48,7 +34,7 @@ public abstract class TypeParser : IParser
     {
         Assert.NotNullOrEmpty(error, nameof(error));
 
-        return ParseResult.FromError(new ParserException(this, error));
+        return ParseResult.FromError(new ParserException(error));
     }
 
     /// <inheritdoc />
