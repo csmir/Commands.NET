@@ -1,4 +1,6 @@
 ﻿
+using System.Runtime.CompilerServices;
+
 namespace Commands;
 
 /// <inheritdoc cref="IComponentSet"/>
@@ -147,7 +149,7 @@ public abstract class ComponentSet : IComponentSet
         lock (_items)
         {
             foreach (var component in _items)
-                component.Unbind();
+                Unsafe.As<IInternalComponent>(component).Unbind();
 
             _items = [];
         }
@@ -185,7 +187,7 @@ public abstract class ComponentSet : IComponentSet
                 if (output)
                 {
                     mutations += 1;
-                    component.Unbind();
+                    Unsafe.As<IInternalComponent>(component).Unbind();
                 }
             }
 
@@ -356,7 +358,7 @@ public abstract class ComponentSet : IComponentSet
             }
 
             if (!extracted)
-                component.Bind(this);
+                Unsafe.As<IInternalComponent>(component).Bind(this);
         }
 
         return discovered;

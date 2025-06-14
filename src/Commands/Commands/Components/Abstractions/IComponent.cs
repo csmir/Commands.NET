@@ -39,18 +39,20 @@ public interface IComponent : ICommandSegment, IComparable<IComponent>
     ///     Gets the position of the component, being how deeply nested it is in the component manager.
     /// </summary>
     public int Position { get; }
+}
 
+/// <inheritdoc/>
+internal interface IInternalComponent : IComponent
+{
     /// <summary>
     ///     Sets the parent group of the component.
     /// </summary>
-    /// <param name="parent">The new parent group of the component. When the set is a <see cref="CommandGroup"/>, it is set as the <see cref="Parent"/> of the component. Otherwise, it is considered bound.</param>
+    /// <param name="parent">The new parent group of the component. When the set is a <see cref="CommandGroup"/>, it is set as the <see cref="IComponent.Parent"/> of the component. Otherwise, it is considered bound.</param>
     /// <exception cref="ComponentFormatException">The component is already bound to a group or tree.</exception>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public void Bind(ComponentSet parent);
 
     /// <summary>
     ///     Unbinds the component from its parent group, if it is bound.
     /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
     public void Unbind();
 }
