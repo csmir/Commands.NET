@@ -10,6 +10,8 @@ public class HttpCommandContext : IResourceContext
 {
     private bool _closed;
 
+    private readonly IServiceProvider _services;
+
     /// <summary>
     ///     Gets the user associated with the HTTP request, if available. This can be used for authentication and authorization purposes.
     /// </summary>
@@ -32,11 +34,14 @@ public class HttpCommandContext : IResourceContext
     ///     Initializes a new instance of the <see cref="HttpCommandContext"/> class with the specified HTTP context and prefix length.
     /// </summary>
     /// <param name="httpContext">The context for which this command context exists.</param>
-    public HttpCommandContext(HttpListenerContext httpContext)
+    /// <param name="services">Dependency injection services to resolve additional services for this context as needed.</param>
+    public HttpCommandContext(HttpListenerContext httpContext, IServiceProvider services)
     {
         Request = httpContext.Request;
         Response = httpContext.Response;
         User = httpContext.User;
+
+        _services = services;
 
         var rawArg = Request.Url!.AbsolutePath[1..].Split('/', StringSplitOptions.RemoveEmptyEntries);
 
@@ -72,6 +77,8 @@ public class HttpCommandContext : IResourceContext
     /// </remarks>
     /// <param name="result">The result to send to the caller.</param>
     /// <exception cref="InvalidOperationException">Thrown if the HTTP response has already been sent.</exception>
+    [UnconditionalSuppressMessage("AOT", "IL3050")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
     public virtual void Respond(HttpResult result)
     {
         Assert.NotNull(result, nameof(result));
@@ -87,6 +94,23 @@ public class HttpCommandContext : IResourceContext
 
             using var outputStream = Response.OutputStream;
             outputStream.Write(result.Content, 0, result.Content.Length);
+        }
+
+        else if (result.TargetObject != null)
+        {
+            var jsonOptions = _services.GetService<JsonSerializerOptions>();
+
+            Response.ContentType = result.ContentType;
+            Response.ContentEncoding = result.ContentEncoding ??= Encoding.UTF8;
+
+            var jsonContent = JsonSerializer.Serialize(result.TargetObject, result.TargetObject.GetType(), jsonOptions);
+
+            var bytes = result.ContentEncoding.GetBytes(jsonContent);
+
+            Response.ContentLength64 = bytes.Length;
+
+            using var outputStream = Response.OutputStream;
+            outputStream.Write(bytes, 0, bytes.Length);
         }
 
         Respond();

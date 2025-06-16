@@ -70,10 +70,12 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
     {
         var requestContext = await contextTask;
 
-        var commandContext = new HttpCommandContext(requestContext);
+        var scope = CreateScope();
 
-        logger.LogInformation("Received inbound request: {Request}", commandContext);
+        scope.Context = new HttpCommandContext(requestContext, scope.Scope.ServiceProvider);
 
-        await StartExecution(commandContext);
+        logger.LogInformation("Received inbound request: {Request}", scope.Context);
+
+        await StartExecution(scope);
     }
 }

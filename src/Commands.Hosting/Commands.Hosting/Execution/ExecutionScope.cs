@@ -8,13 +8,6 @@ internal sealed class ExecutionScope : IExecutionScope
 
     public IServiceScope Scope { get; set; } = null!;
 
-    public void CreateState(IContext context, IServiceScope scope, CancellationTokenSource cancellationSource)
-    {
-        Scope = scope;
-        Context = context;
-        CancellationSource = cancellationSource;
-    }
-
     public void Dispose()
     {
         // Dispose of the scope if it was created.

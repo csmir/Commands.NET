@@ -6,6 +6,9 @@
 [DebuggerDisplay("{ToString()}")]
 public struct HttpResult : IHttpResult
 {
+    // Represents the target value for JSON serialization.
+    internal object? TargetObject;
+
     /// <inheritdoc />
     public HttpStatusCode StatusCode { get; set; }
 
@@ -61,37 +64,18 @@ public struct HttpResult : IHttpResult
     /// <remarks>
     ///     When using Native-AOT, this method isn't implicitly supported. A custom <see cref="JsonSerializerContext"/> needs to be written with support of the provided type(s).
     /// </remarks>
-    /// <typeparam name="TObject">The type of the object to serialize.</typeparam>
-    /// <param name="content">The response to send</param>
-    /// <param name="statusCode">The status code of the response.</param>
-    /// <param name="serializerOptions">Additional options for serializing this response.</param>
-    /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    [UnconditionalSuppressMessage("AOT", "IL3050")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
-    public static HttpResult Json<TObject>(TObject content, HttpStatusCode statusCode = HttpStatusCode.OK, JsonSerializerOptions? serializerOptions = null)
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new HttpResult(statusCode, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(content, typeof(TObject), serializerOptions)), "application/json");
-    }
-
-    /// <summary>
-    ///     Serializes the provided object to JSON and returns it as an HTTP response with the specified status code.
-    /// </summary>
-    /// <remarks>
-    ///     When using Native-AOT, this method isn't implicitly supported. A custom <see cref="JsonSerializerContext"/> needs to be written with support of the provided type(s).
-    /// </remarks>
     /// <param name="content">The response to send.</param>
     /// <param name="statusCode">The status code of the response.</param>
-    /// <param name="serializerOptions">Additional options for serializing this response.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    [UnconditionalSuppressMessage("AOT", "IL3050")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
-    public static HttpResult Json(object content, HttpStatusCode statusCode = HttpStatusCode.OK, JsonSerializerOptions? serializerOptions = null)
+    public static HttpResult Json(object content, HttpStatusCode statusCode = HttpStatusCode.OK)
     {
         Assert.NotNull(content, nameof(content));
 
-        return new HttpResult(statusCode, Encoding.UTF8.GetBytes(JsonSerializer.Serialize(content, content.GetType(), serializerOptions)), "application/json");
+        return new(statusCode)
+        {
+            ContentType = "application/json",
+            TargetObject = content,
+        };
     }
 
     /// <summary>
@@ -104,7 +88,7 @@ public struct HttpResult : IHttpResult
     {
         Assert.NotNullOrEmpty(content, nameof(content));
 
-        return new HttpResult(statusCode, Encoding.UTF8.GetBytes(content), "application/json");
+        return new(statusCode, Encoding.UTF8.GetBytes(content), "application/json");
     }
 
     /// <summary>
@@ -125,7 +109,7 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResult(HttpStatusCode.OK, Encoding.UTF8.GetBytes(content), contentType);
+        return new(HttpStatusCode.OK, Encoding.UTF8.GetBytes(content), contentType);
     }
 
     /// <summary>
@@ -139,7 +123,7 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResult(HttpStatusCode.OK, content, contentType);
+        return new(HttpStatusCode.OK, content, contentType);
     }
 
     /// <summary>
@@ -160,7 +144,7 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResult(HttpStatusCode.BadRequest, Encoding.UTF8.GetBytes(content), contentType);
+        return new(HttpStatusCode.BadRequest, Encoding.UTF8.GetBytes(content), contentType);
     }
 
     /// <summary>
@@ -174,7 +158,7 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResult(HttpStatusCode.BadRequest, content, contentType);
+        return new(HttpStatusCode.BadRequest, content, contentType);
     }
 
     /// <summary>
@@ -195,7 +179,7 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResult(HttpStatusCode.Unauthorized, Encoding.UTF8.GetBytes(content), contentType);
+        return new(HttpStatusCode.Unauthorized, Encoding.UTF8.GetBytes(content), contentType);
     }
 
     /// <summary>
@@ -209,7 +193,7 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResult(HttpStatusCode.Unauthorized, content, contentType);
+        return new(HttpStatusCode.Unauthorized, content, contentType);
     }
 
     /// <summary>
@@ -230,7 +214,7 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResult(HttpStatusCode.Forbidden, Encoding.UTF8.GetBytes(content), contentType);
+        return new(HttpStatusCode.Forbidden, Encoding.UTF8.GetBytes(content), contentType);
     }
 
     /// <summary>
@@ -244,7 +228,7 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResult(HttpStatusCode.Forbidden, content, contentType);
+        return new(HttpStatusCode.Forbidden, content, contentType);
     }
 
     /// <summary>
@@ -265,7 +249,7 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResult(HttpStatusCode.NotFound, Encoding.UTF8.GetBytes(content), contentType);
+        return new(HttpStatusCode.NotFound, Encoding.UTF8.GetBytes(content), contentType);
     }
 
     /// <summary>
@@ -279,7 +263,7 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResult(HttpStatusCode.NotFound, content, contentType);
+        return new(HttpStatusCode.NotFound, content, contentType);
     }
 
     /// <summary>
@@ -300,7 +284,7 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResult(HttpStatusCode.InternalServerError, Encoding.UTF8.GetBytes(content), contentType);
+        return new(HttpStatusCode.InternalServerError, Encoding.UTF8.GetBytes(content), contentType);
     }
 
     /// <summary>
@@ -314,7 +298,7 @@ public struct HttpResult : IHttpResult
         Assert.NotNull(content, nameof(content));
         Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
-        return new HttpResult(HttpStatusCode.InternalServerError, content, contentType);
+        return new(HttpStatusCode.InternalServerError, content, contentType);
     }
 
     /// <summary>
