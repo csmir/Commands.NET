@@ -16,7 +16,7 @@ public interface IHttpResult
     /// <remarks>
     ///     If this property is set, <see cref="ContentType"/> should also be set. If not, it defaults to "text/plain". The content should be a byte array representing the response body, such as JSON or plain text.
     /// </remarks>
-    public byte[]? Content { get; set; }
+    public object? Content { get; set; }
 
     /// <summary>
     ///     Gets the content type of the response, if any.

@@ -6,9 +6,6 @@
 [DebuggerDisplay("{ToString()}")]
 public struct HttpResult : IHttpResult
 {
-    // Represents the target value for JSON serialization.
-    internal object? TargetObject;
-
     /// <inheritdoc />
     public HttpStatusCode StatusCode { get; set; }
 
@@ -19,7 +16,7 @@ public struct HttpResult : IHttpResult
     public Encoding? ContentEncoding { get; set; }
 
     /// <inheritdoc />
-    public byte[]? Content { get; set; }
+    public object? Content { get; set; }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="HttpResult"/> class with a default status code of 204 No Content.
@@ -40,13 +37,12 @@ public struct HttpResult : IHttpResult
     /// <param name="code">The status code of this result.</param>
     /// <param name="content">The content of this result.</param>
     /// <param name="contentType">The content type of this result.</param>
-    public HttpResult(HttpStatusCode code, byte[] content, string? contentType = null)
+    public HttpResult(HttpStatusCode code, object content, string? contentType = null)
     {
         Assert.NotNull(content, nameof(content));
 
         Content = content;
         ContentType = contentType;
-        ContentEncoding = Encoding.UTF8; // Default encoding is UTF-8
 
         StatusCode = code;
     }
@@ -71,11 +67,7 @@ public struct HttpResult : IHttpResult
     {
         Assert.NotNull(content, nameof(content));
 
-        return new(statusCode)
-        {
-            ContentType = "application/json",
-            TargetObject = content,
-        };
+        return new(statusCode, content, "application/json");
     }
 
     /// <summary>
