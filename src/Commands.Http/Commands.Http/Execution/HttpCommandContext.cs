@@ -1,4 +1,6 @@
 ﻿
+using System.Security.Principal;
+
 namespace Commands.Http;
 
 /// <summary>
@@ -8,7 +10,10 @@ public class HttpCommandContext : IResourceContext
 {
     private bool _closed;
 
-    private readonly HttpListenerContext _httpContext;
+    /// <summary>
+    ///     Gets the user associated with the HTTP request, if available. This can be used for authentication and authorization purposes.
+    /// </summary>
+    public IPrincipal? User { get; }
 
     /// <summary>
     ///     Gets the HTTP request associated with this command context.
@@ -31,8 +36,7 @@ public class HttpCommandContext : IResourceContext
     {
         Request = httpContext.Request;
         Response = httpContext.Response;
-
-        _httpContext = httpContext;
+        User = httpContext.User;
 
         var rawArg = Request.Url!.AbsolutePath[1..].Split('/', StringSplitOptions.RemoveEmptyEntries);
 

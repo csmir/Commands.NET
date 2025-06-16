@@ -83,26 +83,20 @@ public class CommandExecutionFactory
     /// <returns>An instance of <see cref="IExecutionScope"/> which represents the scope of the command, its lifetime and the logic to dispose necessary resources.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="context"/> is null.</exception>
     /// <exception cref="NotSupportedException">Thrown when the <see cref="IServiceProvider"/> cannot resolve the scoped <see cref="IExecutionScope"/> as its internal implementation. When customizing the <see cref="IExecutionScope"/> implementation, the factory must be overridden to support it.</exception>
-    public async Task StartExecution<TContext>(TContext context, HostedCommandOptions? options = null)
+    public async Task StartExecution<TContext>(TContext context, ExecutionOptions? options = null)
         where TContext : class, IContext
     {
         Assert.NotNull(context, nameof(context));
 
-        var scope = _serviceProvider.CreateScope();
+        options ??= ExecutionOptions.Default;
 
-        var executeOptions = new ExecutionOptions()
-        {
-            SkipConditions = options?.SkipConditions ?? false,
-            RemainderSeparator = options?.RemainderSeparator ?? ' ',
-            ExecuteAsynchronously = options?.ExecuteAsynchronously ?? true,
-            ServiceProvider = scope.ServiceProvider,
-        };
+        var scope = _serviceProvider.CreateScope();
 
         _logger.LogDebug(
             "Starting execution for request: {Request} with options: SkipConditions = {SkipConditions}, ExecuteAsynchronously = {ExecuteAsynchronously}",
             context,
-            executeOptions.SkipConditions,
-            executeOptions.ExecuteAsynchronously
+            options.SkipConditions,
+            options.ExecuteAsynchronously
         );
 
         var token = new CancellationTokenSource();
@@ -110,7 +104,7 @@ public class CommandExecutionFactory
         var executionScope = scope.ServiceProvider.GetRequiredService<IExecutionScope>();
 
         executionScope.CreateState(context, scope, token);
-        executeOptions.CancellationToken = executionScope.CancellationSource.Token;
+        options.CancellationToken = executionScope.CancellationSource.Token;
 
         _logger.LogDebug(
             "Created execution scope of type {ExecutionScopeType} for request: {Request}.",
@@ -118,6 +112,6 @@ public class CommandExecutionFactory
             context
         );
 
-        await Provider.Execute(context, executeOptions);
+        await Provider.Execute(context, options);
     }
 }

@@ -77,7 +77,7 @@ public static class Utilities
     }
 
     /// <summary>
-    ///     Configures the default result handler to be used by the HTTP commands. If this method is not called, the default result handler will be <see cref="HttpResultHandler"/> which writes the result to the HTTP response.
+    ///     Configures the default result handler to be used by the HTTP commands. If this method is not called, the default result handler will be <see cref="HttpResultHandler"/>, which writes the result to the HTTP response.
     /// </summary>
     /// <typeparam name="THandler">The type of handler which will be the default for handling HTTP results.</typeparam>
     /// <param name="builder">The builder to configure.</param>
@@ -91,6 +91,20 @@ public static class Utilities
         return builder;
     }
 
+    /// <summary>
+    ///     Configures the HTTP command execution factory to be used by the Commands.NET host. If this method is not called, the default factory will be <see cref="HttpCommandExecutionFactory"/>.
+    /// </summary>
+    /// <typeparam name="TFactory">The type of factory which will be the default for handling HTTP calls to the API and forwarding them to the component provider.</typeparam>
+    /// <param name="builder">The builder to configure.</param>
+    /// <returns>The same <see cref="ComponentBuilderContext"/> for call chaining.</returns>
+    public static ComponentBuilderContext WithHttpFactory<TFactory>
+        (this ComponentBuilderContext builder)
+        where TFactory : HttpCommandExecutionFactory
+    {
+        builder.Properties[nameof(HttpCommandExecutionFactory)] = typeof(TFactory);
+        return builder;
+    }
+
     #region Internals
 
     // A method that defines the services to be added to the service collection.
@@ -100,8 +114,9 @@ public static class Utilities
             throw new InvalidOperationException($"No {nameof(HttpListener)} configured. Use {nameof(ConfigureListener)} to configure the listener with the required prefixes and additional properties.");
 
         collection.TryAddSingleton(listenerProperty);
+
         collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ResultHandler), builder.GetTypeProperty(nameof(HttpResultHandler), typeof(HttpResultHandler))));
-        collection.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, HttpCommandExecutionFactory>());
+        collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IHostedService), builder.GetTypeProperty(nameof(HttpCommandExecutionFactory), typeof(HttpCommandExecutionFactory))));
     }
 
     #endregion
