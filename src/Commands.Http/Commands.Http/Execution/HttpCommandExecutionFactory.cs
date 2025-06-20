@@ -58,17 +58,24 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
         }
     }
 
-    private async Task Listened(Task<HttpListenerContext> contextTask)
+    /// <summary>
+    ///     Handles newly received HTTP requests by creating a command context and starting the execution of the command associated with the request. 
+    /// </summary>
+    /// <remarks>
+    ///     This method can be overridden to provide custom handling of HTTP requests, such as logging, authentication, or other pre-processing steps before command execution.
+    /// </remarks>
+    /// <param name="contextTask">The received HTTP request context to handle.</param>
+    /// <returns>An awaitable <see cref="Task"/> awaited by the asynchronous context retriever to handle subsequent requests to the API.</returns>
+    public virtual async Task Listened(Task<HttpListenerContext> contextTask)
     {
         var requestContext = await contextTask;
 
-        var commandContext = new HttpCommandContext(requestContext);
+        var scope = CreateScope();
 
-        logger.LogInformation("Received inbound request: {Request}", commandContext);
+        scope.Context = new HttpCommandContext(requestContext, scope.Scope.ServiceProvider);
 
-        await StartExecution(commandContext, new HostedCommandOptions()
-        {
-            ExecuteAsynchronously = false,
-        });
+        logger.LogInformation("Received inbound request: {Request}", scope.Context);
+
+        await StartExecution(scope);
     }
 }

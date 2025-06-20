@@ -1,5 +1,6 @@
 ﻿using Commands.Hosting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Commands.Http;
 
@@ -77,16 +78,50 @@ public static class Utilities
     }
 
     /// <summary>
-    ///     Configures the default result handler to be used by the HTTP commands. If this method is not called, the default result handler will be <see cref="HttpResultHandler"/> which writes the result to the HTTP response.
+    ///     Configures the default result handler to be used by the HTTP commands. If this method is not called, the default result handler will be <see cref="HttpResultHandler"/>, which writes the result to the HTTP response.
     /// </summary>
     /// <typeparam name="THandler">The type of handler which will be the default for handling HTTP results.</typeparam>
     /// <param name="builder">The builder to configure.</param>
     /// <returns>The same <see cref="ComponentBuilderContext"/> for call chaining.</returns>
-    public static ComponentBuilderContext WithHttpHandler<THandler>
-        (this ComponentBuilderContext builder)
+    public static ComponentBuilderContext WithHttpHandler<THandler>(this ComponentBuilderContext builder)
         where THandler : HttpResultHandler
     {
         builder.Properties[nameof(HttpResultHandler)] = typeof(THandler);
+
+        return builder;
+    }
+
+    /// <summary>
+    ///     Configures the HTTP command execution factory to be used by the Commands.NET host. If this method is not called, the default factory will be <see cref="HttpCommandExecutionFactory"/>.
+    /// </summary>
+    /// <typeparam name="TFactory">The type of factory which will be the default for handling HTTP calls to the API and forwarding them to the component provider.</typeparam>
+    /// <param name="builder">The builder to configure.</param>
+    /// <returns>The same <see cref="ComponentBuilderContext"/> for call chaining.</returns>
+    public static ComponentBuilderContext WithHttpFactory<TFactory>(this ComponentBuilderContext builder)
+        where TFactory : HttpCommandExecutionFactory
+    {
+        builder.Properties[nameof(HttpCommandExecutionFactory)] = typeof(TFactory);
+
+        return builder;
+    }
+
+    /// <summary>
+    ///     Configures the JSON serializer options to be used by the Commands.NET host for serializing and deserializing JSON requests and responses.
+    /// </summary>
+    /// <remarks>
+    ///     When using Native-AOT compilation, 
+    ///     the <see cref="JsonSerializerOptions.TypeInfoResolver"/> must be set to a compatible resolver that holds the <see cref="JsonTypeInfo"/> for types consumed or produced by HTTP commands.
+    ///     <br/>
+    ///     For more information on Native-AOT JSON compatibility, refer to <see href="https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/source-generation"/>
+    /// </remarks>
+    /// <param name="builder"></param>
+    /// <param name="serializerOptions"></param>
+    /// <returns></returns>
+    public static ComponentBuilderContext WithJsonOptions(this ComponentBuilderContext builder, JsonSerializerOptions serializerOptions)
+    {
+        Assert.NotNull(serializerOptions, nameof(serializerOptions));
+
+        builder.Properties[nameof(JsonSerializerOptions)] = serializerOptions;
 
         return builder;
     }
@@ -99,9 +134,13 @@ public static class Utilities
         if (!builder.TryGetProperty<HttpListener>(nameof(HttpListener), out var listenerProperty))
             throw new InvalidOperationException($"No {nameof(HttpListener)} configured. Use {nameof(ConfigureListener)} to configure the listener with the required prefixes and additional properties.");
 
+        if (builder.TryGetProperty<JsonSerializerOptions>(nameof(JsonSerializerOptions), out var jsonOptions))
+            collection.TryAddSingleton(jsonOptions);
+
         collection.TryAddSingleton(listenerProperty);
+
         collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ResultHandler), builder.GetTypeProperty(nameof(HttpResultHandler), typeof(HttpResultHandler))));
-        collection.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, HttpCommandExecutionFactory>());
+        collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IHostedService), builder.GetTypeProperty(nameof(HttpCommandExecutionFactory), typeof(HttpCommandExecutionFactory))));
     }
 
     #endregion

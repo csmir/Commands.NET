@@ -1,4 +1,6 @@
 ﻿
+using System.Security.Principal;
+
 namespace Commands.Http;
 
 /// <summary>
@@ -8,7 +10,12 @@ public class HttpCommandContext : IResourceContext
 {
     private bool _closed;
 
-    private readonly HttpListenerContext _httpContext;
+    private readonly IServiceProvider _services;
+
+    /// <summary>
+    ///     Gets the user associated with the HTTP request, if available. This can be used for authentication and authorization purposes.
+    /// </summary>
+    public IPrincipal? User { get; }
 
     /// <summary>
     ///     Gets the HTTP request associated with this command context.
@@ -27,35 +34,44 @@ public class HttpCommandContext : IResourceContext
     ///     Initializes a new instance of the <see cref="HttpCommandContext"/> class with the specified HTTP context and prefix length.
     /// </summary>
     /// <param name="httpContext">The context for which this command context exists.</param>
-    public HttpCommandContext(HttpListenerContext httpContext)
+    /// <param name="services">Dependency injection services to resolve additional services for this context as needed.</param>
+    public HttpCommandContext(HttpListenerContext httpContext, IServiceProvider services)
     {
         Request = httpContext.Request;
         Response = httpContext.Response;
+        User = httpContext.User;
 
-        _httpContext = httpContext;
+        _services = services;
 
-        var rawArg = Request.Url!.AbsolutePath[1..].Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var arguments = Array.Empty<string>();
+        var rootPath = Request.Url!.AbsolutePath[1..];
 
-        var rawQuery = !string.IsNullOrEmpty(Request.Url.Query)
-            ? Request.Url!.Query[1..].Split('&')
-            : [];
-
-        var arg = new KeyValuePair<string, object?>[rawArg.Length + rawQuery.Length];
-
-        for (var i = 0; i < rawArg.Length; i++)
-            arg[i] = new(rawArg[i], null);
-
-        for (var i = 0; i < rawQuery.Length; i++)
+        while (true)
         {
-            var entry = rawQuery[i];
+            var indexOf = rootPath.IndexOf('/');
 
-            var indexOfEqual = entry.IndexOf('=');
-
-            if (indexOfEqual == -1)
-                arg[rawArg.Length + i] = new(entry, null);
+            if (indexOf == -1)
+                Commands.Utilities.CopyTo(ref arguments, rootPath);
             else
-                arg[rawArg.Length + i] = new(entry[..indexOfEqual], entry[(indexOfEqual + 1)..]);
+            {
+                Commands.Utilities.CopyTo(ref arguments, rootPath[..indexOf]);
+
+                rootPath = rootPath[(indexOf + 1)..];
+
+                if (string.IsNullOrEmpty(rootPath))
+                    break;
+            }
         }
+
+        var queryString = Request.QueryString;
+
+        var arg = new KeyValuePair<string, object?>[arguments.Length + queryString.Count];
+
+        for (var i = 0; i < arguments.Length; i++)
+            arg[i] = new(arguments[i], null);
+
+        for (var i = 0; i < queryString.Count; i++)
+            arg[arguments.Length + i] = new(queryString.GetKey(i)!, queryString.Get(i));
 
         Arguments = new(arg);
     }
@@ -68,6 +84,8 @@ public class HttpCommandContext : IResourceContext
     /// </remarks>
     /// <param name="result">The result to send to the caller.</param>
     /// <exception cref="InvalidOperationException">Thrown if the HTTP response has already been sent.</exception>
+    [UnconditionalSuppressMessage("AOT", "IL3050")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
     public virtual void Respond(HttpResult result)
     {
         Assert.NotNull(result, nameof(result));
@@ -75,14 +93,27 @@ public class HttpCommandContext : IResourceContext
         Response.StatusCode = (int)result.StatusCode;
         Response.StatusDescription = result.StatusCode.ToString();
 
-        if (result.Content != null)
+        if (result.Content is not null)
         {
             Response.ContentType = result.ContentType ?? "text/plain";
-            Response.ContentLength64 = result.Content.LongLength;
-            Response.ContentEncoding = result.ContentEncoding;
+            Response.ContentEncoding = result.ContentEncoding ?? Encoding.UTF8;
 
-            using var outputStream = Response.OutputStream;
-            outputStream.Write(result.Content, 0, result.Content.Length);
+            if (result.Content is byte[] bytes)
+            {
+                Response.ContentLength64 = bytes.LongLength;
+
+                using var outputStream = Response.OutputStream;
+                outputStream.Write(bytes, 0, bytes.Length);
+            }
+            else
+            {
+                var jsonBytes = Response.ContentEncoding.GetBytes(JsonSerializer.Serialize(result.Content, result.Content.GetType(), _services.GetService<JsonSerializerOptions>()));
+
+                Response.ContentLength64 = jsonBytes.Length;
+
+                using var outputStream = Response.OutputStream;
+                outputStream.Write(jsonBytes, 0, jsonBytes.Length);
+            }
         }
 
         Respond();

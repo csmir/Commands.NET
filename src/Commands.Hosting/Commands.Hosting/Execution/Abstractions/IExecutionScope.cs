@@ -22,16 +22,4 @@ public interface IExecutionScope : IDisposable
     ///     Gets a reference to the <see cref="CancellationToken"/> propagated through the execution pipeline. When this token is cancelled, the execution pipeline will be cancelled.
     /// </summary>
     public CancellationTokenSource CancellationSource { get; set; }
-
-    /// <summary>
-    ///     Populates the execution scope with the provided context, scope, and cancellation token source. This method is called when the factory creates a new scope for the command execution.
-    /// </summary>
-    /// <remarks>
-    ///     This method is called by the <see cref="CommandExecutionFactory"/> when it starts executing a command. 
-    ///     It is responsible for creating the state of the execution scope, including the context, scope, and cancellation token source. The implementation of this method should ensure that the state is properly initialized and ready for execution.
-    /// </remarks>
-    /// <param name="context">The context for execution.</param>
-    /// <param name="scope">The scope for execution.</param>
-    /// <param name="cancellationSource">The cancellation token source for execution.</param>
-    public void CreateState(IContext context, IServiceScope scope, CancellationTokenSource cancellationSource);
 }

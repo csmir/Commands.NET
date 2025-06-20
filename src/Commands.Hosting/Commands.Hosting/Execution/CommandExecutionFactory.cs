@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Commands.Hosting;
 
@@ -77,47 +78,47 @@ public class CommandExecutionFactory
     /// <remarks>
     ///     When this pipeline ends, the scope is disposed.
     /// </remarks>
-    /// <typeparam name="TContext">The type of <see cref="IContext"/> that serves as the context for this execution.</typeparam>
-    /// <param name="context">The <see cref="IContext"/> implementation that serves as the context for this execution.</param>
+    /// <param name="scope"> The <see cref="IExecutionScope"/> to use for the command execution. This scope is created by the factory and will be disposed of when the command execution ends.</param>
     /// <param name="options">A set of options that change the pipeline behavior. This factory overrides a couple of settings.</param>
-    /// <returns>An instance of <see cref="IExecutionScope"/> which represents the scope of the command, its lifetime and the logic to dispose necessary resources.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="context"/> is null.</exception>
+    /// <returns>An awaitable <see cref="Task"/> representing the execution of this operation.</returns>
     /// <exception cref="NotSupportedException">Thrown when the <see cref="IServiceProvider"/> cannot resolve the scoped <see cref="IExecutionScope"/> as its internal implementation. When customizing the <see cref="IExecutionScope"/> implementation, the factory must be overridden to support it.</exception>
-    public async Task StartExecution<TContext>(TContext context, HostedCommandOptions? options = null)
-        where TContext : class, IContext
+    public virtual async Task StartExecution(IExecutionScope scope, ExecutionOptions? options = null)
     {
-        Assert.NotNull(context, nameof(context));
+        Assert.NotNull(scope, nameof(scope));
+        Assert.NotNull(scope.Context, nameof(scope.Context));
 
-        var scope = _serviceProvider.CreateScope();
-
-        var executeOptions = new ExecutionOptions()
-        {
-            SkipConditions = options?.SkipConditions ?? false,
-            RemainderSeparator = options?.RemainderSeparator ?? ' ',
-            ExecuteAsynchronously = options?.ExecuteAsynchronously ?? true,
-            ServiceProvider = scope.ServiceProvider,
-        };
+        options ??= ExecutionOptions.Default;
 
         _logger.LogDebug(
             "Starting execution for request: {Request} with options: SkipConditions = {SkipConditions}, ExecuteAsynchronously = {ExecuteAsynchronously}",
-            context,
-            executeOptions.SkipConditions,
-            executeOptions.ExecuteAsynchronously
+            scope.Context,
+            options.SkipConditions,
+            options.ExecuteAsynchronously
         );
 
-        var token = new CancellationTokenSource();
+        await Provider.Execute(scope.Context, options);
+    }
+
+    /// <summary>
+    ///     Creates a new execution scope for the command execution, which can be used to execute commands and handle their results.
+    /// </summary>
+    /// <param name="context">The <see cref="IContext"/> to populate this scope with. If not immediately provided, this can be set before <see cref="StartExecution{TContext}(TContext, ExecutionOptions?)"/> is called.</param>
+    /// <returns>A new <see cref="IExecutionScope"/> implementation from the <see cref="IServiceProvider"/> provided to this factory.</returns>
+    public virtual IExecutionScope CreateScope(IContext? context = null)
+    {
+        var scope = _serviceProvider.CreateScope();
 
         var executionScope = scope.ServiceProvider.GetRequiredService<IExecutionScope>();
 
-        executionScope.CreateState(context, scope, token);
-        executeOptions.CancellationToken = executionScope.CancellationSource.Token;
+        executionScope.Scope = scope;
+        executionScope.CancellationSource = new CancellationTokenSource();
+        executionScope.Context = context!;
 
         _logger.LogDebug(
-            "Created execution scope of type {ExecutionScopeType} for request: {Request}.",
-            executionScope.GetType().Name,
-            context
+            "Created execution scope of type {ExecutionScopeType}.",
+            executionScope.GetType().Name
         );
 
-        await Provider.Execute(context, executeOptions);
+        return executionScope;
     }
 }

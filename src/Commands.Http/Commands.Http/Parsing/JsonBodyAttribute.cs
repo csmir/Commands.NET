@@ -23,7 +23,7 @@ public sealed class JsonBodyAttribute : TypeParserAttribute, IResourceBinding
 
         try
         {
-            return Success(JsonSerializer.Deserialize(json, parameter.Type));
+            return Success(JsonSerializer.Deserialize(json, parameter.Type, services.GetService<JsonSerializerOptions>()));
         }
         catch (JsonException ex)
         {
