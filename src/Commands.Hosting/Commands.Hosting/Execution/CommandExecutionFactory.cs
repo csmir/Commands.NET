@@ -1,85 +1,120 @@
-﻿namespace Commands.Hosting;
+﻿using Microsoft.Extensions.Logging;
+using static System.Formats.Asn1.AsnWriter;
+
+namespace Commands.Hosting;
 
 /// <summary>
 ///     Represents a factory for firing commands in a hosted environment, creating and configuring the scope for the execution.
 /// </summary>
 /// <remarks>
-///     To customize the factory pattern, implement this class and override the available methods. When customizing the scope creation, you must also implement a custom <see cref="IExecutionScope"/> and populate it when the factory creates the scope.
+///     To customize the factory pattern, implement this class and override the available methods.
 /// </remarks>
-public class CommandExecutionFactory : ICommandExecutionFactory
+public class CommandExecutionFactory
 {
-    private readonly IComponentProvider _executionProvider;
+    /// <summary>
+    ///     Gets the component provider that is used to execute commands and handle their results.
+    /// </summary>
+    public IComponentProvider Provider { get; }
+
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger _logger;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="CommandExecutionFactory"/> using the provided services.
     /// </summary>
-    public CommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, IEnumerable<ResultHandler> resultHandlers)
+    public CommandExecutionFactory(IComponentProvider execProvider, IServiceProvider serviceProvider, ILogger logger, IEnumerable<ResultHandler> resultHandlers)
     {
-        executionProvider.OnFailure += async (context, result, exception, services) =>
-        {
-            foreach (var handler in resultHandlers)
-                await handler.Failure(context, result, exception, services);
+        Provider = execProvider;
 
-            services.GetService<IExecutionScope>()?.Dispose();
-        };
-
-        executionProvider.OnSuccess += async (context, result, services) =>
-        {
-            foreach (var handler in resultHandlers)
-                await handler.Success(context, result, services);
-
-            services.GetService<IExecutionScope>()?.Dispose();
-        };
-
-        _executionProvider = executionProvider;
         _serviceProvider = serviceProvider;
-    }
+        _logger = logger;
 
-    /// <inheritdoc />
-    /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="context"/> is null.</exception>
-    /// <exception cref="NotSupportedException">Thrown when the <see cref="IServiceProvider"/> cannot resolve the scoped <see cref="IExecutionScope"/> as its internal implementation. When customizing the <see cref="IExecutionScope"/> implementation, the factory must be overridden to support it.</exception>
-    public virtual async Task StartExecution<TContext>(TContext context, HostedCommandOptions? options = null)
-        where TContext : class, IContext
-    {
-        Assert.NotNull(context, nameof(context));
+        var handlers = resultHandlers.OrderBy(x => x.Order).ToArray();
 
-        var scope = _serviceProvider.CreateScope();
-
-        var executeOptions = new ExecutionOptions()
+        execProvider.OnFailure += async (context, result, exception, services) =>
         {
-            SkipConditions = options?.SkipConditions ?? false,
-            RemainderSeparator = options?.RemainderSeparator ?? ' ',
-            ExecuteAsynchronously = options?.ExecuteAsynchronously ?? true,
-            ServiceProvider = scope.ServiceProvider,
+            foreach (var handler in handlers)
+            {
+                // If handled, break the loop to avoid multiple handlers processing the same result.
+                if (await handler.Failure(context, result, exception, services))
+                    break;
+            }
+
+            logger.LogError("Execution failure for request: {Request} with exception: {Exception}", context, result.Exception);
+
+            services.GetService<IExecutionScope>()?.Dispose();
         };
 
-        var execScope = CreateExecutionScope(context, scope, executeOptions);
+        execProvider.OnSuccess += async (context, result, services) =>
+        {
+            foreach (var handler in handlers)
+            {
+                // If handled, break the loop to avoid multiple handlers processing the same result.
+                if (await handler.Success(context, result, services))
+                    break;
+            }
 
-        executeOptions.CancellationToken = execScope.CancellationSource.Token;
+            logger.LogInformation("Execution succeeded for request: {Request}.", context);
 
-        await _executionProvider.Execute(context, executeOptions);
+            services.GetService<IExecutionScope>()?.Dispose();
+        };
+
+        logger.LogInformation("Consuming {ExecutionProvider}, with {HandlerCount} result handler{MoreOrOne}.", Provider.GetType().FullName, handlers.Length, handlers.Length > 1 ? "(s)" : "");
+
+        var commands = execProvider.Components.GetCommands().ToArray();
+
+        foreach (var command in commands)
+            logger.LogDebug("Registered {Command} as \"{Name}\".", command.ToString(), command.GetFullName());
+
+        if (commands.Length == 0)
+            logger.LogWarning("No commands discovered. The factory will not handle inbound requests.");
+        else
+            logger.LogInformation("Discovered {CommandCount} command{MoreOrOne}.", commands.Length, commands.Length > 1 ? "s" : "");
     }
 
     /// <summary>
-    ///     Configures the scope for the execution context. This method is called when the factory creates a new scope for the command execution.
+    ///     Executes a command from the given context with the given options, creating and configuring a scope and binding it to the lifetime of the execution. 
     /// </summary>
-    /// <typeparam name="TContext">The type of <see cref="IContext"/> that serves as the context for this execution.</typeparam>
-    /// <param name="context">The <see cref="IContext"/> implementation that serves as the context for this execution.</param>
-    /// <param name="scope">The scope created to be configured by this method.</param>
-    /// <param name="options">A set of options that change the pipeline behavior. This factory overrides a couple of settings, which are applied to the options provided to this method.</param>
-    /// <returns>A configured implementation of <see cref="IExecutionScope"/> that represents the lifetime of the execution pipeline.</returns>
+    /// <remarks>
+    ///     When this pipeline ends, the scope is disposed.
+    /// </remarks>
+    /// <param name="scope"> The <see cref="IExecutionScope"/> to use for the command execution. This scope is created by the factory and will be disposed of when the command execution ends.</param>
+    /// <param name="options">A set of options that change the pipeline behavior. This factory overrides a couple of settings.</param>
+    /// <returns>An awaitable <see cref="Task"/> representing the execution of this operation.</returns>
     /// <exception cref="NotSupportedException">Thrown when the <see cref="IServiceProvider"/> cannot resolve the scoped <see cref="IExecutionScope"/> as its internal implementation. When customizing the <see cref="IExecutionScope"/> implementation, the factory must be overridden to support it.</exception>
-    protected virtual IExecutionScope CreateExecutionScope<TContext>(TContext context, IServiceScope scope, ExecutionOptions options)
-        where TContext : class, IContext
+    public virtual async Task ExecuteScope(IExecutionScope scope, ExecutionOptions? options = null)
     {
-        var token = new CancellationTokenSource();
+        Assert.NotNull(scope, nameof(scope));
+        Assert.NotNull(scope.Context, nameof(scope.Context));
+
+        options ??= ExecutionOptions.Default;
+
+        _logger.LogDebug(
+            "Starting execution for request: {Request}",
+            scope.Context
+        );
+
+        await Provider.Execute(scope.Context, options);
+    }
+
+    /// <summary>
+    ///     Creates a new execution scope for the command execution, which can be used to execute commands and handle their results.
+    /// </summary>
+    /// <param name="context">The <see cref="IContext"/> to populate this scope with. If not immediately provided, this can be set before <see cref="ExecuteScope(IExecutionScope, ExecutionOptions?)"/> is called.</param>
+    /// <returns>A new <see cref="IExecutionScope"/> implementation from the <see cref="IServiceProvider"/> provided to this factory.</returns>
+    public virtual IExecutionScope CreateScope(IContext? context = null)
+    {
+        var scope = _serviceProvider.CreateScope();
 
         var executionScope = scope.ServiceProvider.GetRequiredService<IExecutionScope>();
 
-        executionScope.CancellationSource ??= token;
-        executionScope.Context ??= context;
-        executionScope.Scope ??= scope;
+        executionScope.Scope = scope;
+        executionScope.Context = context!;
+
+        _logger.LogDebug(
+            "Created execution scope of type {ExecutionScopeType}.",
+            executionScope.GetType().Name
+        );
 
         return executionScope;
     }

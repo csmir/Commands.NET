@@ -1,7 +1,4 @@
-﻿using Commands.Conditions;
-using Commands.Parsing;
-
-namespace Commands;
+﻿namespace Commands;
 
 /// <summary>
 ///     A provider hosting a <see cref="ComponentTree"/> that can be executed through a pipeline. Begin using this provider by initializing it using any of the public constructors. 
@@ -42,34 +39,11 @@ public class ComponentProvider : IComponentProvider
     }
 
     /// <inheritdoc />
-    public virtual Task Execute<TContext>(TContext context, ExecutionOptions? options = null)
+    public virtual async Task Execute<TContext>(TContext context, ExecutionOptions? options = null)
         where TContext : class, IContext
     {
         options ??= ExecutionOptions.Default;
 
-        if (options.ExecuteAsynchronously)
-        {
-            _ = Work(context, options);
-
-            return Task.CompletedTask;
-        }
-
-        return Work(context, options);
-    }
-
-    /// <summary>
-    ///     A protected method that fires the command pipeline using the provided context and options, and handles the returned results in <see cref="Finalize{TContext}(TContext, IResult, ExecutionOptions)"/>.
-    /// </summary>
-    /// <remarks>
-    ///      This method is called by the <see cref="Execute{TContext}"/> method after determining the execution approach, and can be overridden to provide custom behavior.
-    /// </remarks>
-    /// <typeparam name="TContext">The implementation type of <see cref="IContext"/> which represents the context of the execution.</typeparam>
-    /// <param name="context">The implementation of <see cref="IContext"/> which represents the context of the execution.</param>
-    /// <param name="options">The options used to customize the command execution pipeline in accordance to the context and requirements of execution.</param>
-    /// <returns>An awaitable <see cref="Task"/> representing the Work operation.</returns>
-    protected virtual async Task Work<TContext>(TContext context, ExecutionOptions options)
-        where TContext : class, IContext
-    {
         options.ComponentProvider = this;
 
         IResult? result = null;
@@ -98,16 +72,15 @@ public class ComponentProvider : IComponentProvider
     ///     A protected method that finalizes the command execution by handling the result of the command execution and invoking the appropriate success or failure handlers.
     /// </summary>
     /// <remarks>
-    ///     This method is called by the <see cref="Work{TContext}(TContext, ExecutionOptions)"/> method after the command execution has been completed, and can be overridden to provide custom behavior.
+    ///     This method is called by the <see cref="Execute{TContext}(TContext, ExecutionOptions?)"/> method after the command execution has been completed, and can be overridden to provide custom behavior.
     /// </remarks>
     /// <typeparam name="TContext">The implementation type of <see cref="IContext"/> which represents the context of the execution.</typeparam>
     /// <param name="context">The implementation of <see cref="IContext"/> which represents the context of the execution.</param>
     /// <param name="result">The result yielded by the pipeline.</param>
     /// <param name="options">The options used to customize the command execution pipeline in accordance to the context and requirements of execution.</param>
     /// <returns>An awaitable <see cref="Task"/> representing the Finalize operation.</returns>
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Task<>))]
-    [UnconditionalSuppressMessage("AotAnalysis", "IL2075", Justification = "The availability of Task<> is ensured at compile-time.")]
 #endif
     protected virtual async Task Finalize<TContext>(TContext context, IResult result, ExecutionOptions options)
         where TContext : class, IContext

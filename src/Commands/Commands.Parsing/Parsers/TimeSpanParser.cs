@@ -2,7 +2,7 @@
 
 namespace Commands.Parsing;
 
-internal sealed partial class TimeSpanParser : TypeParser<TimeSpan>
+internal sealed class TimeSpanParser : TypeParser<TimeSpan>
 {
     private static readonly Dictionary<string, Func<string, TimeSpan>> _callback;
 
@@ -10,7 +10,7 @@ internal sealed partial class TimeSpanParser : TypeParser<TimeSpan>
 
     static TimeSpanParser()
     {
-        _callback = new Dictionary<string, Func<string, TimeSpan>>
+        _callback = new()
         {
             ["second"] = Seconds,
             ["seconds"] = Seconds,

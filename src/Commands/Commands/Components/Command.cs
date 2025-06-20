@@ -1,5 +1,6 @@
 ﻿using Commands.Conditions;
 using Commands.Parsing;
+using Commands.Testing;
 using System.Text;
 
 namespace Commands;
@@ -20,12 +21,12 @@ public class Command : IComponent, IParameterCollection
     private bool _bound;
 
     /// <summary>
-    ///     Gets all evaluations that this component should do during the execution process, determined by a set of defined <see cref="ICondition"/>'s pointing at the component.
+    ///     Gets all evaluations that this component should do during the execution process, determined by a set of defined <see cref="ExecuteConditionAttribute"/>'s pointing at the component.
     /// </summary>
     /// <remarks>
     ///     When this property is called by a child component, this property will inherit all evaluations from the component's <see cref="Parent"/> component(s).
     /// </remarks>
-    public ConditionEvaluator[] Evaluators { get; }
+    public IEvaluator[] Evaluators { get; private set; }
 
     /// <inheritdoc />
     public CommandGroup? Parent { get; private set; }
@@ -63,10 +64,6 @@ public class Command : IComponent, IParameterCollection
         => GetFullName();
 
     /// <inheritdoc />
-    public float Score
-        => GetScore();
-
-    /// <inheritdoc />
     public bool IsSearchable
         => true;
 
@@ -82,82 +79,88 @@ public class Command : IComponent, IParameterCollection
     public int Position
         => (Parent?.Position ?? 0) + (Name == null ? 0 : 1);
 
-    /// <inheritdoc cref="Command(Delegate, IEnumerable{ExecuteCondition}, string[], ComponentOptions?)"/>
-    public Command(Delegate executionDelegate, params string[] names)
-        : this(executionDelegate, [], names) { }
+    /// <summary>
+    ///     Gets the score of the command, which is used to set the priority of the command during execution. Higher scores take priority over lower scores.
+    /// </summary>
+    /// <remarks>
+    ///     By default, a command has a score calculated by the following logic:
+    ///     <list type="number">
+    ///         <item>For each parameter in the signature, the score is incremented by <b>1</b>.</item>
+    ///         <item>If a parameter is optional, the value is decremented by <b>0.5</b>.</item>
+    ///         <item>If a parameter is remainder, the value is decremented by <b>0.25</b>.</item>
+    ///         <item>If a parameter is nullable, the value is decremented by <b>0.25</b>.</item>
+    ///         <item>If a parameter has a known type parser, the value is incremenented by <b>1</b>.</item>
+    ///         <item>Further score incrementation from <see cref="PriorityAttribute"/> adds up to the total.</item>
+    ///     </list>
+    ///     The total value determines the score of the command, which is used to set the priority of the command during execution as stated above.
+    /// </remarks>
+    public float Score
+        => GetScore();
 
-    /// <inheritdoc cref="Command(Delegate, IEnumerable{ExecuteCondition}, string[], ComponentOptions?)"/>
-    public Command(Delegate executionDelegate, string[] names, ComponentOptions? options = null)
-        : this(executionDelegate, [], names, options) { }
+    /// <inheritdoc cref="Command(Delegate, string[], ComponentOptions?)"/>
+    public Command(Delegate executionDelegate, params string[] names)
+        : this(executionDelegate, names, ComponentOptions.Default) { }
 
     /// <summary>
     ///     Initializes a new instance of <see cref="Command"/>.
     /// </summary>
     /// <param name="executionDelegate">The delegate that should be ran when the command is executed.</param>
-    /// <param name="conditions">The conditions bound to the command, which will determine whether it can execute or not.</param>
     /// <param name="names">The names used to discover this command during execution.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
     /// <exception cref="ArgumentNullException">The provided delegate or conditions are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">The provided <paramref name="names"/> is <see langword="null"/> or does not match the <see cref="ComponentOptions.NameValidation"/> if any.</exception>
     /// <exception cref="ComponentFormatException">A <see cref="RemainderAttribute"/> is not placed on the last parameter of the target, <see cref="DeconstructAttribute"/> is defined on a non-deconstructible parameter type, or no <see cref="IParser"/> is available to represent a parameter type.</exception>
-    public Command(Delegate executionDelegate, IEnumerable<ExecuteCondition> conditions, string[] names, ComponentOptions? options = null)
-        : this(new CommandStaticActivator(executionDelegate?.Method!, executionDelegate?.Target), options ??= ComponentOptions.Default)
+    public Command(Delegate executionDelegate, string[] names, ComponentOptions? options = null)
+        : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), options ??= ComponentOptions.Default)
     {
-        Assert.NotNull(conditions, nameof(conditions));
         Assert.NotNullOrInvalid(names, options.NameValidation, nameof(names));
 
         Names = names;
         Ignore = false;
 
-        // Delegate commands do not support modularity approach or inheriting conditions from parent groups.
-        Evaluators = ConditionEvaluator.CreateEvaluators(conditions);
+        options.BuildCompleted?.Invoke(this);
     }
 
     /// <summary>
     ///     Initializes a new instance of <see cref="Command"/>.
     /// </summary>
     /// <param name="executionMethod">The method to run when the command is executed.</param>
-    /// <param name="parent">The parent of this command, if any. Irrespective of this value being set, the command can still be added to groups at any time. This parameter will however, inherit the execution conditions from the parent.</param>
     /// <param name="options">An optional configuration containing additional settings when creating this command.</param>
     /// <exception cref="ArgumentNullException">The provided method is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">The provided <paramref name="executionMethod"/> defines names, but those names do not match the provided <see cref="ComponentOptions.NameValidation"/>.</exception>
     /// <exception cref="ComponentFormatException">A <see cref="RemainderAttribute"/> is not placed on the last parameter of the target, <see cref="DeconstructAttribute"/> is defined on a non-deconstructible parameter type, or no <see cref="IParser"/> is available to represent a parameter type.</exception>
-    public Command(MethodInfo executionMethod, CommandGroup? parent = null, ComponentOptions? options = null)
+    public Command(MethodInfo executionMethod, ComponentOptions? options = null)
         : this(executionMethod.IsStatic ? new CommandStaticActivator(executionMethod) : new CommandInstanceActivator(executionMethod), options ??= ComponentOptions.Default)
     {
-        var names = Attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
+        var names = Attributes.FirstOrDefault<INameBinding>()?.Names ?? [];
 
-        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(NameAttribute));
+        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
 
         Names = names;
-        Ignore = Attributes.Contains<IgnoreAttribute>();
+        Ignore = Attributes.Any(x => x is IgnoreAttribute);
 
-        if (parent != null && options.PropagateParentConditions)
-            Evaluators = ConditionEvaluator.CreateEvaluators([.. Attributes.OfType<ICondition>(), .. parent.GetConditions()]);
-        else
-            Evaluators = ConditionEvaluator.CreateEvaluators(Attributes.OfType<ICondition>());
-
-        Parent = parent;
+        options.BuildCompleted?.Invoke(this);
     }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     private Command(IActivator activator, ComponentOptions options)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
-        var parameters = CommandUtils.GetParameters(activator, options);
+        var parameters = Utilities.GetParameters(activator, options);
         var attributes = activator.Target.GetAttributes(true);
 
         Attributes = [.. attributes];
         Activator = activator;
+        Evaluators = Utilities.GetEvaluators(attributes.OfType<ExecuteConditionAttribute>());
 
-        (MinLength, MaxLength) = parameters.GetLength();
+        (MinLength, MaxLength) = Utilities.GetLength(parameters);
 
         for (var i = 0; i < parameters.Length; i++)
         {
             var parameter = parameters[i];
 
             if (parameter.IsRemainder && i != parameters.Length - 1)
-                throw new ComponentFormatException($"Remainder-marked parameters must be the last parameter in the parameter list of a the command.");
+                throw new ComponentFormatException("Remainder-marked parameters must be the last parameter in the parameter list of a command.");
         }
 
         Parameters = parameters;
@@ -184,7 +187,7 @@ public class Command : IComponent, IParameterCollection
             parameters = [];
         else if (MaxLength == args.RemainingLength || (MaxLength <= args.RemainingLength && HasRemainder) || (MaxLength > args.RemainingLength && MinLength <= args.RemainingLength))
         {
-            var arguments = await CommandUtils.Parse(this, context, args, options).ConfigureAwait(false);
+            var arguments = await Utilities.ParseParameters(this, context, args, options).ConfigureAwait(false);
 
             parameters = new object[arguments.Length];
 
@@ -220,6 +223,60 @@ public class Command : IComponent, IParameterCollection
         {
             return new InvokeResult(this, null, exception);
         }
+    }
+
+    /// <summary>
+    ///     Tests the target command using the provided <paramref name="contextCreationDelegate"/> function to create the context for each individual execution.
+    /// </summary>
+    /// <remarks>
+    ///     Define tests on commands using the <see cref="TestAttribute"/> attribute on the command method or delegate.
+    /// </remarks>
+    /// <typeparam name="TContext">The type of <see cref="IContext"/> that this test sequence should use to test with.</typeparam>
+    /// <param name="contextCreationDelegate">A delegate that yields an implementation of <typeparamref name="TContext"/> based on the input value for every new test.</param>
+    /// <param name="options">A collection of options that determine how every test against this command is ran.</param>
+    /// <returns>A <see cref="ValueTask{TResult}"/> containing an <see cref="IEnumerable{T}"/> with the result of every test yielded by this operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="contextCreationDelegate"/> is <see langword="null"/>.</exception>
+    public async ValueTask<IEnumerable<TestResult>> Test<TContext>(Func<string, TContext> contextCreationDelegate, ExecutionOptions? options = null)
+        where TContext : class, IContext
+    {
+        static TestResult Compare(ITest test, TestResultType targetType, Exception exception)
+        {
+            return test.ShouldEvaluateTo == targetType
+                ? TestResult.FromSuccess(test, test.ShouldEvaluateTo)
+                : TestResult.FromError(test, test.ShouldEvaluateTo, targetType, exception);
+        }
+
+        Assert.NotNull(contextCreationDelegate, nameof(contextCreationDelegate));
+
+        options ??= ExecutionOptions.Default;
+
+        var tests = Attributes.OfType<ITest>().ToArray();
+
+        var results = new TestResult[tests.Length];
+
+        for (var i = 0; i < tests.Length; i++)
+        {
+            var test = tests[i];
+
+            var fullName = string.IsNullOrWhiteSpace(test.Arguments)
+                ? GetFullName(false)
+                : GetFullName(false) + ' ' + test.Arguments;
+
+            var runResult = await Run(contextCreationDelegate(fullName), options).ConfigureAwait(false);
+
+            results[i] = runResult.Exception switch
+            {
+                null => Compare(test, TestResultType.Success, new InvalidOperationException("The command was expected to fail, but it succeeded.")),
+
+                CommandParsingException => Compare(test, TestResultType.ParseFailure, runResult.Exception),
+                CommandEvaluationException => Compare(test, TestResultType.ConditionFailure, runResult.Exception),
+                CommandOutOfRangeException => Compare(test, TestResultType.MatchFailure, runResult.Exception),
+
+                _ => Compare(test, TestResultType.InvocationFailure, runResult.Exception),
+            };
+        }
+
+        return results;
     }
 
     /// <inheritdoc cref="GetFullName()" />
@@ -317,7 +374,12 @@ public class Command : IComponent, IParameterCollection
             throw new ComponentFormatException($"{this} is already bound to a {(Parent != null ? nameof(CommandGroup) : nameof(ComponentSet))}. Remove this component from the parent set before adding it to another.");
 
         if (parent is CommandGroup group)
+        {
             Parent = group;
+
+            // We set the evaluators again to ensure that the parent conditions are included in the evaluation, if the parent has any.
+            Evaluators = Utilities.GetEvaluators([.. Attributes.OfType<ExecuteConditionAttribute>(), .. Parent.GetConditions()]);
+        }
 
         _bound = true;
     }
@@ -326,6 +388,7 @@ public class Command : IComponent, IParameterCollection
     {
         _bound = false;
         Parent = null;
+        Evaluators = Utilities.GetEvaluators(Attributes.OfType<ExecuteConditionAttribute>());
     }
 
     #endregion

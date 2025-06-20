@@ -1,5 +1,4 @@
 ﻿using Commands.Conditions;
-using System.ComponentModel;
 
 namespace Commands;
 
@@ -32,26 +31,7 @@ public sealed class ExecutionOptions
     public char RemainderSeparator { get; set; } = ' ';
 
     /// <summary>
-    ///     Gets or sets whether command execution should be handled asynchronously or not.
-    /// </summary>
-    public bool ExecuteAsynchronously { get; set; } = false;
-
-    /// <summary>
     ///     Gets the default options for command execution.
     /// </summary>
     public static ExecutionOptions Default { get; } = new();
-
-    /// <inheritdoc cref="IServiceProvider" />
-    /// <remarks>
-    ///     This class implements the <see cref="IServiceProvider"/> interface and returns <see langword="null"/> for all service requests.
-    /// </remarks>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public sealed class EmptyServiceProvider : IServiceProvider
-    {
-        internal static EmptyServiceProvider Instance { get; } = new();
-
-        /// <inheritdoc />
-        public object? GetService(Type serviceType)
-            => null;
-    }
 }

@@ -14,6 +14,9 @@ public sealed class CommandParameter : ICommandParameter
     public string Name { get; }
 
     /// <inheritdoc />
+#if NET6_0_OR_GREATER
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
+#endif
     public Type Type { get; }
 
     /// <inheritdoc />
@@ -41,6 +44,9 @@ public sealed class CommandParameter : ICommandParameter
     public bool IsCollection
         => Type.IsArray;
 
+    /// <inheritdoc />
+    public bool IsResource { get; }
+
     internal CommandParameter(
         ParameterInfo parameterInfo, ComponentOptions options)
     {
@@ -67,17 +73,17 @@ public sealed class CommandParameter : ICommandParameter
         else
             IsOptional = false;
 
-        if (attributes.Contains<RemainderAttribute>() || attributes.Contains<ParamArrayAttribute>())
-            IsRemainder = true;
-        else
-            IsRemainder = false;
-
         // Assign the parser defined on the parameter if it exists, otherwise use the one defined in the configuration.
         Parser = attributes.FirstOrDefault<IParser>() ?? options.GetParser(Type);
 
         Attributes = [.. attributes];
 
-        Name = attributes.FirstOrDefault<NameAttribute>()?.Name ?? parameterInfo.Name ?? "";
+        Name = attributes.FirstOrDefault<INameBinding>()?.Name ?? parameterInfo.Name ?? "";
+
+        if (attributes.Any(x => x is IResourceBinding))
+            IsResource = true;
+        else if (attributes.Any(x => x is IRemainderBinding or ParamArrayAttribute))
+            IsRemainder = true;
     }
 
     /// <inheritdoc />
@@ -88,6 +94,9 @@ public sealed class CommandParameter : ICommandParameter
 
         if (IsRemainder)
             return $"({Name}...)";
+
+        if (IsResource)
+            return $"{{{Name}}}";
 
         return $"<{Name}>";
     }
@@ -110,8 +119,16 @@ public sealed class CommandParameter : ICommandParameter
     }
 
     /// <inheritdoc />
-    public ValueTask<ParseResult> Parse(IContext context, object? value, IServiceProvider services, CancellationToken cancellationToken)
+    public async ValueTask<ParseResult> Parse(IContext context, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
+        if (IsResource)
+        {
+            if (context is IResourceContext resourceContext)
+                value = await resourceContext.GetResource();
+            else
+                return ParseResult.FromError(new ParserException("A resource parameter was attempted to be provided from a non-resource bound context."));
+        }
+
         // Fast path for matching instances of certain types.
         if (Type.IsInstanceOfType(value))
             return ParseResult.FromSuccess(value);
@@ -121,10 +138,10 @@ public sealed class CommandParameter : ICommandParameter
             if (IsNullable)
                 return ParseResult.FromSuccess(null);
 
-            return ParseResult.FromError(new ParserException(Parser, "A null (or \"null\") value was attempted to be provided to a non-nullable command parameter."));
+            return ParseResult.FromError(new ParserException("A null (or \"null\") value was attempted to be provided to a non-nullable command parameter."));
         }
 
-        return Parser?.Parse(context, this, value, services, cancellationToken) ?? ParseResult.FromSuccess(value.ToString());
+        return await Parser.Parse(context, this, value, services, cancellationToken);
     }
 
     /// <inheritdoc />

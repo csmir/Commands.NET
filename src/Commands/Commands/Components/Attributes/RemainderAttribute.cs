@@ -15,6 +15,6 @@ namespace Commands;
 ///     This implementation is unanimously supported with <see cref="ParamArrayAttribute"/>, which is set on all collections prefixed by <see langword="params"/> by default.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
-public sealed class RemainderAttribute : Attribute
+public sealed class RemainderAttribute : Attribute, IRemainderBinding
 {
 }

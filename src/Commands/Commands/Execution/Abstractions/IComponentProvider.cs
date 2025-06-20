@@ -16,7 +16,6 @@ public interface IComponentProvider
     /// </remarks>
     public ComponentTree Components { get; }
 
-
     /// <summary>
     ///     Invoked when a command has failed to be executed.
     /// </summary>
@@ -30,7 +29,7 @@ public interface IComponentProvider
     ///             When <see cref="IResult"/> is <see cref="ParseResult"/>, the exception can be <see cref="ParserException"/>, <see cref="CommandOutOfRangeException"/> or <see cref="Exception"/> types emitted by custom <see cref="IParser"/> implementations.
     ///         </item>
     ///         <item>
-    ///             When <see cref="IResult"/> is <see cref="ConditionResult"/>, the exception can be <see cref="ConditionException"/> or <see cref="Exception"/> types emitted by custom <see cref="ICondition"/> implementations.
+    ///             When <see cref="IResult"/> is <see cref="ConditionResult"/>, the exception can be <see cref="ConditionException"/> or <see cref="Exception"/> types emitted by custom <see cref="ExecuteConditionAttribute"/> implementations.
     ///         </item>
     ///         <item>
     ///             When <see cref="IResult"/> is <see cref="InvokeResult"/>, the exception can be any exception thrown by the command handler, or where the command failed to execute properly.
@@ -51,7 +50,7 @@ public interface IComponentProvider
     /// <typeparam name="TContext">The type implementing <see cref="IContext"/> which represents the context of the command, which can hold the state of the execution and response logic.</typeparam>
     /// <param name="context">The <see cref="IContext"/> which represents the context of the command, which can hold the state of the execution and response logic.</param>
     /// <param name="options">The options which determine how the execution is approached.</param>
-    /// <returns>An awaitable <see cref="Task"/> which contains the state of the execution. When <see cref="ExecutionOptions.ExecuteAsynchronously"/> is <see langword="true"/>, this operation yields <see cref="Task.CompletedTask"/>.</returns>
+    /// <returns>An awaitable <see cref="Task"/> which contains the state of the execution.</returns>
     public Task Execute<TContext>(TContext context, ExecutionOptions? options = null)
         where TContext : class, IContext;
 }

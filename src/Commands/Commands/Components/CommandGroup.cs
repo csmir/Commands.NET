@@ -7,11 +7,11 @@ namespace Commands;
 /// <typeparam name="T">The type of the <see cref="CommandModule"/> or <see cref="CommandModule{T}"/> implementation to consider a group of commands.</typeparam>
 [DebuggerDisplay("Count = {Count}, {ToString()}")]
 public class CommandGroup<
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 # endif
 T> : CommandGroup
-where T : CommandModule
+    where T : CommandModule
 {
     /// <inheritdoc cref="CommandGroup(Type, ComponentOptions?)" />
     public CommandGroup(ComponentOptions? options = null)
@@ -76,11 +76,15 @@ public class CommandGroup : ComponentSet, IComponent
     /// <exception cref="ArgumentException">The provided <paramref name="names"/> is <see langword="null"/> or does not match the <see cref="ComponentOptions.NameValidation"/> if any.</exception>
     public CommandGroup(string[] names, ComponentOptions? options = null)
     {
-        Assert.NotNullOrInvalid(names, (options ?? ComponentOptions.Default).NameValidation, nameof(names));
+        options ??= ComponentOptions.Default;
+
+        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(names));
 
         Ignore = false;
         Attributes = [];
         Names = names;
+
+        options.BuildCompleted?.Invoke(this);
     }
 
     /// <summary>
@@ -92,7 +96,7 @@ public class CommandGroup : ComponentSet, IComponent
     /// <exception cref="ArgumentException">The provided <paramref name="type"/> defines names, but those names do not match the provided <see cref="ComponentOptions.NameValidation"/>.</exception>
     /// <exception cref="ComponentFormatException">The provided type is not an implementation of <see cref="CommandModule"/>.</exception>
     public CommandGroup(
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
         Type type, ComponentOptions? options = null)
@@ -108,33 +112,54 @@ public class CommandGroup : ComponentSet, IComponent
 
         Attributes = [.. attributes];
 
-        var names = attributes.FirstOrDefault<NameAttribute>()?.Names ?? [];
+        var names = attributes.FirstOrDefault<INameBinding>()?.Names ?? [];
 
-        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(NameAttribute));
+        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
 
         Names = names;
-        Ignore = attributes.Contains<IgnoreAttribute>();
+        Ignore = attributes.Any(x => x is IgnoreAttribute);
 
         Activator = new CommandModuleActivator(type);
 
         if (!Ignore)
         {
-            var components = CommandUtils.GetNestedComponents(options, this);
+            if (Activator!.Type == null)
+                return;
 
-            AddRange(components);
+            var members = Activator!.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
+            var commands = new Command[members.Length];
+
+            for (var i = 0; i < members.Length; i++)
+                commands[i] = new Command(members[i], options);
+
+            try
+            {
+                var nestedTypes = Activator.Type.GetNestedTypes(BindingFlags.Public);
+
+                var groups = Utilities.GetComponents(options, nestedTypes, true);
+
+                AddRange([.. commands.Where(x => !x.Ignore), .. groups]);
+            }
+            catch
+            {
+                // Do nothing else, we can't access nested types.
+                AddRange(commands);
+            }
         }
+
+        options.BuildCompleted?.Invoke(this);
     }
 
     /// <summary>
     ///     Gets the conditions that determine whether the underlying command within this group can execute or not.
     /// </summary>
     /// <returns>An enumerable representing any conditions to be executed prior to method execution to determine whether the underlying command can be executed.</returns>
-    public IEnumerable<ICondition> GetConditions()
+    public IEnumerable<ExecuteConditionAttribute> GetConditions()
     {
         if (Parent != null)
-            return [.. Attributes.OfType<ICondition>(), .. Parent.GetConditions()];
+            return [.. Attributes.OfType<ExecuteConditionAttribute>(), .. Parent.GetConditions()];
         else
-            return Attributes.OfType<ICondition>();
+            return Attributes.OfType<ExecuteConditionAttribute>();
     }
 
     /// <inheritdoc />
@@ -192,16 +217,16 @@ public class CommandGroup : ComponentSet, IComponent
         while (enumerator.MoveNext())
         {
             if (enumerator.Current.IsDefault)
-                CommandUtils.CopyTo(ref discovered, enumerator.Current);
+                Utilities.CopyTo(ref discovered, enumerator.Current);
             else
             {
                 if (!args.TryGetElementAt(Position, out var value) || !enumerator.Current.Names.Contains(value))
                     continue;
 
                 if (enumerator.Current is CommandGroup group)
-                    CommandUtils.CopyTo(ref discovered, group.Find(args));
+                    Utilities.CopyTo(ref discovered, group.Find(args));
                 else
-                    CommandUtils.CopyTo(ref discovered, enumerator.Current);
+                    Utilities.CopyTo(ref discovered, enumerator.Current);
             }
         }
 
@@ -245,7 +270,7 @@ public class CommandGroup : ComponentSet, IComponent
 
         if (parent is CommandGroup group)
             Parent = group;
-        
+
         if (parent is ComponentTree tree && !IsSearchable)
             _mutateTree = (components, removing) =>
             {

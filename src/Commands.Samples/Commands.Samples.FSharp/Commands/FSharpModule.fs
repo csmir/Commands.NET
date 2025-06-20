@@ -2,6 +2,7 @@
 
 open Commands
 
+// A F# module that defines some commands.
 type FSharpModule() = class 
     inherit CommandModule()
         [<Name("echo")>]

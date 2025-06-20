@@ -25,12 +25,12 @@ public abstract class ComponentSet : IComponentSet
         => GetCommands(_ => true, browseNestedComponents);
 
     /// <inheritdoc />
-    public IEnumerable<Command> GetCommands(Predicate<Command> predicate, bool browseNestedComponents = true)
+    public IEnumerable<Command> GetCommands(Func<Command, bool> predicate, bool browseNestedComponents = true)
     {
         Assert.NotNull(predicate, nameof(predicate));
 
         if (!browseNestedComponents)
-            return _items.OfType(predicate);
+            return _items.OfType<Command>().Where(predicate);
 
         List<Command> discovered = [];
 
@@ -51,12 +51,12 @@ public abstract class ComponentSet : IComponentSet
         => GetGroups(_ => true, browseNestedComponents);
 
     /// <inheritdoc />
-    public IEnumerable<CommandGroup> GetGroups(Predicate<CommandGroup> predicate, bool browseNestedComponents = true)
+    public IEnumerable<CommandGroup> GetGroups(Func<CommandGroup, bool> predicate, bool browseNestedComponents = true)
     {
         Assert.NotNull(predicate, nameof(predicate));
 
         if (!browseNestedComponents)
-            return _items.OfType(predicate);
+            return _items.OfType<CommandGroup>().Where(predicate);
 
         List<CommandGroup> discovered = [];
 
