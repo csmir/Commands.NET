@@ -19,8 +19,8 @@ var builder = Host.CreateDefaultBuilder(args);
 builder.ConfigureHttpComponents(context =>
 {
     // This sets up the HTTP listener to listen on the specified prefix. This operation is essential for the HTTP server to function correctly.
-    // If no prefix is specified, the host will fail on build as it cannot instantiate the HTTP listener.
-    context.ConfigureListener(listener =>
+    // If no prefix is specified, the host will fail on run as it cannot start the HTTP listener.
+    context.WithListener(listener =>
     {
         listener.Prefixes.Add("http://localhost:5000/");
     });
@@ -38,7 +38,7 @@ builder.ConfigureLogging(logging =>
 {
     logging.SetMinimumLevel(LogLevel.Debug);
 });
-
+ 
 // After configuring the host, we build it. At this point, all improperly configured settings will throw exceptions, forcing the host to fail if there are any issues.
 var host = builder.Build();
 

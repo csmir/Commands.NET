@@ -6,14 +6,24 @@
 public abstract class ConditionEvaluator : IEvaluator
 {
     /// <summary>
-    ///     Gets how many conditions can be evaluated within the same evaluator. When not specified, there is no limit.
+    ///     Defines that this handler should be executed last in the command execution pipeline, after all other handlers have been executed.
     /// </summary>
-    public int? MaximumAllowedConditions { get; set; }
+    public const int ExecuteLast = int.MaxValue;
+
+    /// <summary>
+    ///     Defines that this handler should be executed first in the command execution pipeline, before all other handlers.
+    /// </summary>
+    public const int ExecuteFirst = int.MinValue;
 
     /// <summary>
     ///     Gets the order in which this evaluator should be executed relative to other evaluators.
     /// </summary>
     public int Order { get; set; }
+
+    /// <summary>
+    ///     Gets how many conditions can be evaluated within the same evaluator. When not specified, there is no limit.
+    /// </summary>
+    public int? MaximumAllowedConditions { get; set; }
 
     /// <summary>
     ///     Gets or sets the conditions that are being evaluated.

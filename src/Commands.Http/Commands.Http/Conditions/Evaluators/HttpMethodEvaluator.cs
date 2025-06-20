@@ -13,7 +13,7 @@ public sealed class HttpMethodEvaluator : OREvaluator
     public HttpMethodEvaluator()
     {
         // Set the order to run this evaluator before self-defined attributes and method evaluator.
-        Order = -2;
+        Order = ExecuteFirst;
 
         // Set the maximum allowed conditions to 1, as this evaluator is typically used to check a single method.
         MaximumAllowedConditions = 1;

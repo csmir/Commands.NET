@@ -31,11 +31,6 @@ public sealed class ExecutionOptions
     public char RemainderSeparator { get; set; } = ' ';
 
     /// <summary>
-    ///     Gets or sets whether command execution should be handled asynchronously or not.
-    /// </summary>
-    public bool ExecuteAsynchronously { get; set; } = false;
-
-    /// <summary>
     ///     Gets the default options for command execution.
     /// </summary>
     public static ExecutionOptions Default { get; } = new();

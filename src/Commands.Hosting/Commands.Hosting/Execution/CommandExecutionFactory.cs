@@ -82,7 +82,7 @@ public class CommandExecutionFactory
     /// <param name="options">A set of options that change the pipeline behavior. This factory overrides a couple of settings.</param>
     /// <returns>An awaitable <see cref="Task"/> representing the execution of this operation.</returns>
     /// <exception cref="NotSupportedException">Thrown when the <see cref="IServiceProvider"/> cannot resolve the scoped <see cref="IExecutionScope"/> as its internal implementation. When customizing the <see cref="IExecutionScope"/> implementation, the factory must be overridden to support it.</exception>
-    public virtual async Task StartExecution(IExecutionScope scope, ExecutionOptions? options = null)
+    public virtual async Task ExecuteScope(IExecutionScope scope, ExecutionOptions? options = null)
     {
         Assert.NotNull(scope, nameof(scope));
         Assert.NotNull(scope.Context, nameof(scope.Context));
@@ -90,10 +90,8 @@ public class CommandExecutionFactory
         options ??= ExecutionOptions.Default;
 
         _logger.LogDebug(
-            "Starting execution for request: {Request} with options: SkipConditions = {SkipConditions}, ExecuteAsynchronously = {ExecuteAsynchronously}",
-            scope.Context,
-            options.SkipConditions,
-            options.ExecuteAsynchronously
+            "Starting execution for request: {Request}",
+            scope.Context
         );
 
         await Provider.Execute(scope.Context, options);
@@ -102,7 +100,7 @@ public class CommandExecutionFactory
     /// <summary>
     ///     Creates a new execution scope for the command execution, which can be used to execute commands and handle their results.
     /// </summary>
-    /// <param name="context">The <see cref="IContext"/> to populate this scope with. If not immediately provided, this can be set before <see cref="StartExecution{TContext}(TContext, ExecutionOptions?)"/> is called.</param>
+    /// <param name="context">The <see cref="IContext"/> to populate this scope with. If not immediately provided, this can be set before <see cref="ExecuteScope(IExecutionScope, ExecutionOptions?)"/> is called.</param>
     /// <returns>A new <see cref="IExecutionScope"/> implementation from the <see cref="IServiceProvider"/> provided to this factory.</returns>
     public virtual IExecutionScope CreateScope(IContext? context = null)
     {
@@ -111,7 +109,6 @@ public class CommandExecutionFactory
         var executionScope = scope.ServiceProvider.GetRequiredService<IExecutionScope>();
 
         executionScope.Scope = scope;
-        executionScope.CancellationSource = new CancellationTokenSource();
         executionScope.Context = context!;
 
         _logger.LogDebug(

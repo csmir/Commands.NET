@@ -13,14 +13,14 @@ public interface IHttpResult
     /// <summary>
     ///     Gets the content of the response, if any.
     /// </summary>
-    /// <remarks>
-    ///     If this property is set, <see cref="ContentType"/> should also be set. If not, it defaults to "text/plain". The content should be a byte array representing the response body, such as JSON or plain text.
-    /// </remarks>
     public object? Content { get; set; }
 
     /// <summary>
     ///     Gets the content type of the response, if any.
     /// </summary>
+    /// <remarks>
+    ///     This is the MIME type of the <see cref="Content"/>, such as "application/json" or "text/plain". If not set, it defaults to "text/plain". 
+    /// </remarks>
     public string? ContentType { get; set; }
 
     /// <summary>
@@ -30,5 +30,4 @@ public interface IHttpResult
     ///     This is the encoding by which <see cref="Content"/> is encoded. If anything other than UTF-8 is used, it should be specified here. If not set, it defaults to UTF-8.
     /// </remarks>
     public Encoding? ContentEncoding { get; set; }
-
 }

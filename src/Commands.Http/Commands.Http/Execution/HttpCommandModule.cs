@@ -25,6 +25,6 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// </remarks>
     /// <param name="response">The <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</param>
     /// <exception cref="InvalidOperationException">Thrown when the response has already been sent or closed.</exception>
-    public virtual void Respond(HttpResult response)
+    public virtual void Respond(IHttpResult response)
         => Context.Respond(response);
 }

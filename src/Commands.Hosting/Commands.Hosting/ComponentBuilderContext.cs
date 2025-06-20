@@ -13,7 +13,6 @@ public class ComponentBuilderContext
     public ComponentBuilderContext()
     {
         // Initialize the default service properties with their respective types.
-        Properties[nameof(IExecutionScope)] = typeof(ExecutionScope);
         Properties[nameof(IDependencyResolver)] = typeof(KeyedDependencyResolver);
         Properties[nameof(IComponentProvider)] = typeof(ComponentProvider);
 
@@ -35,22 +34,6 @@ public class ComponentBuilderContext
         Assert.NotNull(configureOptions, nameof(configureOptions));
 
         configureOptions(ComponentOptions.Default);
-
-        return this;
-    }
-
-    /// <summary>
-    ///     Configures the execution scope type to be used by the hosted component factory to manage the state of execution. This scope is used to manage the lifetime of the command execution and its related services.
-    /// </summary>
-    /// <remarks>
-    ///     This method can be called multiple times, replacing the previously defined scope type for a new one. If this method is not called, the default <see cref="ExecutionScope"/> will be used as the execution scope type.
-    /// </remarks>
-    /// <typeparam name="TScope">The type implementing <see cref="IExecutionScope"/> that should be the underlying implementation used by the hosted factory.</typeparam>
-    /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
-    public ComponentBuilderContext WithExecutionScope<TScope>()
-        where TScope : class, IExecutionScope
-    {
-        Properties[nameof(IExecutionScope)] = typeof(TScope);
 
         return this;
     }

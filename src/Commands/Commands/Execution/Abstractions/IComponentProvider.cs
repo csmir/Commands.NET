@@ -50,7 +50,7 @@ public interface IComponentProvider
     /// <typeparam name="TContext">The type implementing <see cref="IContext"/> which represents the context of the command, which can hold the state of the execution and response logic.</typeparam>
     /// <param name="context">The <see cref="IContext"/> which represents the context of the command, which can hold the state of the execution and response logic.</param>
     /// <param name="options">The options which determine how the execution is approached.</param>
-    /// <returns>An awaitable <see cref="Task"/> which contains the state of the execution. When <see cref="ExecutionOptions.ExecuteAsynchronously"/> is <see langword="true"/>, this operation yields <see cref="Task.CompletedTask"/>.</returns>
+    /// <returns>An awaitable <see cref="Task"/> which contains the state of the execution.</returns>
     public Task Execute<TContext>(TContext context, ExecutionOptions? options = null)
         where TContext : class, IContext;
 }

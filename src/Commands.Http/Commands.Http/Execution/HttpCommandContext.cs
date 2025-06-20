@@ -10,6 +10,7 @@ public class HttpCommandContext : IResourceContext
 {
     private bool _closed;
 
+    private readonly HttpListenerResponse _response;
     private readonly IServiceProvider _services;
 
     /// <summary>
@@ -25,7 +26,10 @@ public class HttpCommandContext : IResourceContext
     /// <summary>
     ///     Gets the HTTP response associated with this command context, allowing you to set headers, status codes, and content to respond to the request.
     /// </summary>
-    public HttpListenerResponse Response { get; }
+    /// <exception cref="InvalidOperationException">The HTTP response has already been sent, and cannot be accessed further.</exception>
+    public HttpListenerResponse Response => _closed
+        ? throw new InvalidOperationException("The HTTP response has already been sent, and cannot be accessed further.")
+        : _response;
 
     /// <inheritdoc />
     public Arguments Arguments { get; }
@@ -38,7 +42,7 @@ public class HttpCommandContext : IResourceContext
     public HttpCommandContext(HttpListenerContext httpContext, IServiceProvider services)
     {
         Request = httpContext.Request;
-        Response = httpContext.Response;
+        _response = httpContext.Response;
         User = httpContext.User;
 
         _services = services;
@@ -63,6 +67,7 @@ public class HttpCommandContext : IResourceContext
             }
         }
 
+        // Make this a variable as the getter of QueryString doesn't store the produced value.
         var queryString = Request.QueryString;
 
         var arg = new KeyValuePair<string, object?>[arguments.Length + queryString.Count];
@@ -86,8 +91,11 @@ public class HttpCommandContext : IResourceContext
     /// <exception cref="InvalidOperationException">Thrown if the HTTP response has already been sent.</exception>
     [UnconditionalSuppressMessage("AOT", "IL3050")]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "End user can define custom JsonSerializerContext that has the required TypeInfo for the target type.")]
-    public virtual void Respond(HttpResult result)
+    public virtual void Respond(IHttpResult result)
     {
+        if (_closed)
+            throw new InvalidOperationException("The HTTP response has already been sent.");
+
         Assert.NotNull(result, nameof(result));
 
         Response.StatusCode = (int)result.StatusCode;
@@ -141,7 +149,7 @@ public class HttpCommandContext : IResourceContext
 
     void IContext.Respond(object? message)
     {
-        if (message is HttpResult httpResult)
+        if (message is IHttpResult httpResult)
             Respond(httpResult);
         else
             Respond(HttpResult.Json(message!));

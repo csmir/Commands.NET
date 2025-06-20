@@ -17,8 +17,13 @@ public sealed class CommandListener(CommandExecutionFactory factory) : Backgroun
             // We create a default console context, which is a simple implementation of IContext that reads input from the console, and is able to send responses back to it.
             var context = new ConsoleContext(Console.ReadLine());
 
+            var scope = factory.CreateScope(context);
+
             // We start the execution of the command using the CommandExecutionFactory, which will handle the command's lifecycle, including parsing, executing, and handling results.
-            await factory.StartExecution(context);
+            await factory.ExecuteScope(scope, new()
+            {
+                CancellationToken = stoppingToken,
+            });
         }
     }
 }

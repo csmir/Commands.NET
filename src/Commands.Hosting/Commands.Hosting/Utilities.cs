@@ -127,8 +127,8 @@ public static class Utilities
     {
         collection.TryAddSingleton(typeof(IComponentProvider), builder.GetTypeProperty(nameof(IComponentProvider), typeof(ComponentProvider)));
         collection.TryAddScoped(typeof(IDependencyResolver), builder.GetTypeProperty(nameof(IDependencyResolver), typeof(KeyedDependencyResolver)));
-        collection.TryAddScoped(typeof(IExecutionScope), builder.GetTypeProperty(nameof(IExecutionScope), typeof(ExecutionScope)));
 
+        collection.TryAddScoped(typeof(IExecutionScope), typeof(ExecutionScope));
         collection.TryAddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
 
         collection.TryAddSingleton<CommandExecutionFactory>();

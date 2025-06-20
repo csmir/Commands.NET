@@ -4,8 +4,6 @@ internal sealed class ExecutionScope : IExecutionScope
 {
     public IContext Context { get; set; } = null!;
 
-    public CancellationTokenSource CancellationSource { get; set; } = null!;
-
     public IServiceScope Scope { get; set; } = null!;
 
     public void Dispose()
@@ -20,8 +18,5 @@ internal sealed class ExecutionScope : IExecutionScope
         {
             contextDisposable.Dispose();
         }
-
-        // Dispose of the cancellation token source.
-        CancellationSource?.Dispose();
     }
 }

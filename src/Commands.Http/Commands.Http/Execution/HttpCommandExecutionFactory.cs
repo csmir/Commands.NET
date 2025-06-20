@@ -1,4 +1,5 @@
 ﻿using Commands.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Commands.Http;
@@ -6,24 +7,40 @@ namespace Commands.Http;
 /// <summary>
 ///     Represents a factory for executing commands over HTTP, using an <see cref="HttpListener"/> to listen for incoming requests.
 /// </summary>
-public class HttpCommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, ILogger<HttpCommandExecutionFactory> logger, IEnumerable<ResultHandler> resultHandlers, HttpListener httpListener)
+public class HttpCommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, IConfiguration configuration, ILogger<HttpCommandExecutionFactory> logger, IEnumerable<ResultHandler> resultHandlers, HttpListener httpListener)
     : CommandExecutionFactory(executionProvider, serviceProvider, logger, resultHandlers), IHostedService
 {
+    private Task? _runningTask;
+    private CancellationTokenSource? _linkedTokenSrc;
+
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
         try
         {
+            // Configure remaining prefixes if any were provided in configuration.
+            foreach (var prefix in configuration.GetSection("Commands:Http:Prefixes").GetChildren())
+            {
+                logger.LogDebug("Configuring HTTP prefix: {Prefix}", prefix.Value);
+
+                if (string.IsNullOrWhiteSpace(prefix.Value))
+                    continue;
+
+                if (!httpListener.Prefixes.Contains(prefix.Value!))
+                    httpListener.Prefixes.Add(prefix.Value!);
+            }
+
             httpListener.Start();
 
             foreach (var prefix in httpListener.Prefixes)
                 logger.LogInformation("Listening on {Prefix}", prefix);
 
-            _ = StartListening(cancellationToken);
+            _linkedTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            _runningTask = Task.Run(() => StartListening(_linkedTokenSrc.Token), _linkedTokenSrc.Token);
         }
         catch (HttpListenerException ex)
         {
-            logger.LogError(ex, "Failed to start HTTP listener. Ensure that the application has permission to use the specified prefixes.");
+            logger.LogError(ex, "Failed to start HTTP listener. Ensure that the application has permission to use the specified prefixes, or specify permissions in case none are set.");
 
             throw;
         }
@@ -32,30 +49,27 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
     }
 
     /// <inheritdoc />
-    public Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
-        httpListener.Stop();
-        httpListener.Close();
+        if (_runningTask is null)
+            return;
 
         logger.LogInformation("Stopping {FactoryType}...", nameof(HttpCommandExecutionFactory));
 
-        return Task.CompletedTask;
-    }
-
-    private async Task StartListening(CancellationToken cancellationToken)
-    {
-        while (httpListener.IsListening && !cancellationToken.IsCancellationRequested)
+        try
         {
-            try
-            {
-                await httpListener.GetContextAsync().ContinueWith(Listened, cancellationToken);
-            }
-            catch (HttpListenerException)
-            {
-                // Listener was stopped, exit the loop
-                break;
-            }
+            _linkedTokenSrc?.Cancel();
+
+            httpListener.Stop();
+            httpListener.Close();
         }
+        finally
+        {
+            await _runningTask.WaitAsync(cancellationToken)
+                .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        }
+
+        logger.LogInformation("{FactoryType} stopped.", nameof(HttpCommandExecutionFactory));
     }
 
     /// <summary>
@@ -65,8 +79,9 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
     ///     This method can be overridden to provide custom handling of HTTP requests, such as logging, authentication, or other pre-processing steps before command execution.
     /// </remarks>
     /// <param name="contextTask">The received HTTP request context to handle.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation if needed.</param>
     /// <returns>An awaitable <see cref="Task"/> awaited by the asynchronous context retriever to handle subsequent requests to the API.</returns>
-    public virtual async Task Listened(Task<HttpListenerContext> contextTask)
+    public virtual async Task Listened(Task<HttpListenerContext> contextTask, CancellationToken cancellationToken)
     {
         var requestContext = await contextTask;
 
@@ -76,6 +91,26 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
 
         logger.LogInformation("Received inbound request: {Request}", scope.Context);
 
-        await StartExecution(scope);
+        await ExecuteScope(scope, new()
+        {
+            CancellationToken = cancellationToken,
+        });
+    }
+
+    private async Task StartListening(CancellationToken cancellationToken)
+    {
+        while (httpListener.IsListening && !cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                await httpListener.GetContextAsync()
+                    .ContinueWith((task) => Listened(task, cancellationToken), cancellationToken);
+            }
+            catch (HttpListenerException)
+            {
+                // Listener was stopped, exit the loop
+                break;
+            }
+        }
     }
 }

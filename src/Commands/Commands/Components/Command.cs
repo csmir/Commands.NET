@@ -250,9 +250,6 @@ public class Command : IComponent, IParameterCollection
 
         options ??= ExecutionOptions.Default;
 
-        if (options.ExecuteAsynchronously)
-            options.ExecuteAsynchronously = false;
-
         var tests = Attributes.OfType<ITest>().ToArray();
 
         var results = new TestResult[tests.Length];

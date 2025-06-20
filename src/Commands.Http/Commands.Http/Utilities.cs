@@ -17,7 +17,7 @@ public static class Utilities
     ///     This method configures the <see cref="IServiceProvider"/> consumed by the <see cref="IHost"/> built from this builder, to implement the following services:
     ///     <list type="bullet">
     ///         <item>A required hosted singleton of <see cref="HttpCommandExecutionFactory"/>. This factory manages command scopes and execution lifetime.</item>
-    ///         <item>A required singleton of <see cref="HttpListener"/>. This listener can be configured using <see cref="ConfigureListener(ComponentBuilderContext, Action{HttpListener})"/>.</item>
+    ///         <item>A required singleton of <see cref="HttpListener"/>. This listener can be configured using <see cref="WithListener(ComponentBuilderContext, Action{HttpListener})"/>.</item>
     ///         <item>A singleton implementation of <see cref="HttpResultHandler"/>. This handler is exclusively to handle unhandled HTTP results, and can be replaced or ignored by self-registered handlers of higher priority.</item>
     ///         <item>A singleton implementation of <see cref="IComponentProvider"/>. This provider supplies the defined <see cref="CommandExecutionFactory"/> with executable commands.</item>
     ///         <item>A scoped implementation of <see cref="IDependencyResolver"/> which manages the scope's service injection for modules and statically -or delegate- defined commands.</item>
@@ -56,12 +56,12 @@ public static class Utilities
     }
 
     /// <summary>
-    ///     Configures an <see cref="HttpListener"/> instance to be used by the Commands.NET host with the provided action.
+    ///     Adds or modifies the <see cref="HttpListener"/> instance to be used by the Commands.NET host with the provided action.
     /// </summary>
     /// <param name="builder">The builder to configure.</param>
     /// <param name="configure">An action to configure the listener object with.</param>
     /// <returns>The same <see cref="ComponentBuilderContext"/> for call chaining.</returns>
-    public static ComponentBuilderContext ConfigureListener(this ComponentBuilderContext builder, Action<HttpListener> configure)
+    public static ComponentBuilderContext WithListener(this ComponentBuilderContext builder, Action<HttpListener> configure)
     {
         Assert.NotNull(configure, nameof(configure));
 
@@ -132,7 +132,7 @@ public static class Utilities
     internal static void TryAddServices(IServiceCollection collection, ComponentBuilderContext builder)
     {
         if (!builder.TryGetProperty<HttpListener>(nameof(HttpListener), out var listenerProperty))
-            throw new InvalidOperationException($"No {nameof(HttpListener)} configured. Use {nameof(ConfigureListener)} to configure the listener with the required prefixes and additional properties.");
+            listenerProperty = new HttpListener(); // Create a new listener if not already defined.
 
         if (builder.TryGetProperty<JsonSerializerOptions>(nameof(JsonSerializerOptions), out var jsonOptions))
             collection.TryAddSingleton(jsonOptions);
