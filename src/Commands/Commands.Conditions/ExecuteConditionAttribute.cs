@@ -60,6 +60,10 @@ public abstract class ExecuteConditionAttribute(
     {
         if (!typeof(IEvaluator).IsAssignableFrom(evaluatorType))
             throw new ArgumentException($"The provided type '{evaluatorType.FullName}' does not implement {nameof(IEvaluator)}.", nameof(evaluatorType));
+    ConditionEvaluator ICondition.CreateEvaluator() 
+        => new TEvaluator();
+    ConditionEvaluator ICondition.CreateEvaluator() 
+        => new TEvaluator();
 
         return (IEvaluator)Activator.CreateInstance(evaluatorType)!;
     }
