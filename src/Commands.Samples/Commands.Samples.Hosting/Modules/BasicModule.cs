@@ -1,5 +1,6 @@
 ﻿namespace Commands.Samples;
 
+// This class represents a basic command module that provides commands for getting help, checking the version, and echoing messages.
 public class BasicModule(BasicService service) : CommandModule<ConsoleContext>
 {
     [Name("help")]

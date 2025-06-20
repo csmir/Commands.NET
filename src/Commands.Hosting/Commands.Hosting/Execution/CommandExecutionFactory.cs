@@ -6,7 +6,7 @@ namespace Commands.Hosting;
 ///     Represents a factory for firing commands in a hosted environment, creating and configuring the scope for the execution.
 /// </summary>
 /// <remarks>
-///     To customize the factory pattern, implement this class and override the available methods. When customizing the scope creation, you must also implement a custom <see cref="IExecutionScope"/> and populate it when the factory creates the scope.
+///     To customize the factory pattern, implement this class and override the available methods.
 /// </remarks>
 public class CommandExecutionFactory
 {

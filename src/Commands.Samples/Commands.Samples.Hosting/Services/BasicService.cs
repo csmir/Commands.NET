@@ -2,6 +2,8 @@
 
 namespace Commands.Samples;
 
+// This class represents a basic service that provides functionality to get and set the version of the application,
+// as well as to retrieve a list of available commands. We abstract this functionality into a service to keep the command logic clean and focused on execution patterns.
 public class BasicService(IContextAccessor<ConsoleContext> context, IComponentProvider provider, VersionManager manager)
 {
     public IEnumerable<string> GetCommands()
