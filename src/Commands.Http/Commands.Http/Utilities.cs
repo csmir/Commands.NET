@@ -35,8 +35,6 @@ public static class Utilities
     /// <inheritdoc cref="ConfigureHttpComponents(IHostBuilder, Action{ComponentBuilderContext})"/>
     public static IHostBuilder ConfigureHttpComponents(this IHostBuilder builder, Action<HostBuilderContext, ComponentBuilderContext> configureComponents)
     {
-        Assert.NotNull(configureComponents, nameof(configureComponents));
-
         var httpBuilder = new ComponentBuilderContext();
 
         builder.ConfigureServices((context, services) =>
@@ -63,8 +61,6 @@ public static class Utilities
     /// <returns>The same <see cref="ComponentBuilderContext"/> for call chaining.</returns>
     public static ComponentBuilderContext WithListener(this ComponentBuilderContext builder, Action<HttpListener> configure)
     {
-        Assert.NotNull(configure, nameof(configure));
-
         if (!builder.TryGetProperty<HttpListener>(nameof(HttpListener), out var listenerProperty))
         {
             listenerProperty = new HttpListener();
@@ -119,8 +115,6 @@ public static class Utilities
     /// <returns></returns>
     public static ComponentBuilderContext WithJsonOptions(this ComponentBuilderContext builder, JsonSerializerOptions serializerOptions)
     {
-        Assert.NotNull(serializerOptions, nameof(serializerOptions));
-
         builder.Properties[nameof(JsonSerializerOptions)] = serializerOptions;
 
         return builder;

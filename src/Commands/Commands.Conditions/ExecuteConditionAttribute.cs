@@ -46,6 +46,7 @@ public abstract class ExecuteConditionAttribute(
     public virtual ConditionResult Error(string error)
     {
         Assert.NotNullOrEmpty(error, nameof(error));
+
         return ConditionResult.FromError(new ConditionException(error));
     }
 

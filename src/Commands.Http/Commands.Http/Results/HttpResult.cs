@@ -99,7 +99,6 @@ public struct HttpResult : IHttpResult
     public static HttpResult Ok(string content, string contentType = "text/plain")
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         return new(HttpStatusCode.OK, Encoding.UTF8.GetBytes(content), contentType);
     }
@@ -113,7 +112,6 @@ public struct HttpResult : IHttpResult
     public static HttpResult Ok(byte[] content, string contentType)
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         return new(HttpStatusCode.OK, content, contentType);
     }
@@ -134,7 +132,6 @@ public struct HttpResult : IHttpResult
     public static HttpResult BadRequest(string content, string contentType = "text/plain")
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         return new(HttpStatusCode.BadRequest, Encoding.UTF8.GetBytes(content), contentType);
     }
@@ -148,7 +145,6 @@ public struct HttpResult : IHttpResult
     public static HttpResult BadRequest(byte[] content, string contentType)
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         return new(HttpStatusCode.BadRequest, content, contentType);
     }
@@ -169,7 +165,6 @@ public struct HttpResult : IHttpResult
     public static HttpResult Unauthorized(string content, string contentType = "text/plain")
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         return new(HttpStatusCode.Unauthorized, Encoding.UTF8.GetBytes(content), contentType);
     }
@@ -183,7 +178,6 @@ public struct HttpResult : IHttpResult
     public static HttpResult Unauthorized(byte[] content, string contentType)
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         return new(HttpStatusCode.Unauthorized, content, contentType);
     }
@@ -204,7 +198,6 @@ public struct HttpResult : IHttpResult
     public static HttpResult Forbidden(string content, string contentType = "text/plain")
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         return new(HttpStatusCode.Forbidden, Encoding.UTF8.GetBytes(content), contentType);
     }
@@ -218,7 +211,6 @@ public struct HttpResult : IHttpResult
     public static HttpResult Forbidden(byte[] content, string contentType)
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         return new(HttpStatusCode.Forbidden, content, contentType);
     }
@@ -239,7 +231,6 @@ public struct HttpResult : IHttpResult
     public static HttpResult NotFound(string content, string contentType = "text/plain")
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         return new(HttpStatusCode.NotFound, Encoding.UTF8.GetBytes(content), contentType);
     }
@@ -253,7 +244,6 @@ public struct HttpResult : IHttpResult
     public static HttpResult NotFound(byte[] content, string contentType)
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         return new(HttpStatusCode.NotFound, content, contentType);
     }
@@ -274,7 +264,6 @@ public struct HttpResult : IHttpResult
     public static HttpResult InternalServerError(string content, string contentType = "text/plain")
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         return new(HttpStatusCode.InternalServerError, Encoding.UTF8.GetBytes(content), contentType);
     }
@@ -288,7 +277,6 @@ public struct HttpResult : IHttpResult
     public static HttpResult InternalServerError(byte[] content, string contentType)
     {
         Assert.NotNull(content, nameof(content));
-        Assert.NotNullOrEmpty(contentType, nameof(contentType));
 
         return new(HttpStatusCode.InternalServerError, content, contentType);
     }
@@ -299,4 +287,11 @@ public struct HttpResult : IHttpResult
     /// <param name="result">The result to wrap in a task.</param>
     public static implicit operator Task<HttpResult>(HttpResult result)
         => Task.FromResult(result);
+
+    /// <summary>
+    ///     Implicitly converts an <see cref="HttpStatusCode"/> to an <see cref="HttpResult"/> with the status code set.
+    /// </summary>
+    /// <param name="code"></param>
+    public static implicit operator HttpResult(HttpStatusCode code)
+        => new(code);
 }

@@ -85,7 +85,9 @@ public class CommandExecutionFactory
     public virtual async Task ExecuteScope(IExecutionScope scope, ExecutionOptions? options = null)
     {
         Assert.NotNull(scope, nameof(scope));
-        Assert.NotNull(scope.Context, nameof(scope.Context));
+
+        if (scope?.Context is null)
+            throw new InvalidOperationException($"{nameof(IExecutionScope)} must have a context set before executing it. Use {nameof(CreateScope)} with a provided context or assign the scope before it enters {nameof(ExecuteScope)}.");
 
         options ??= ExecutionOptions.Default;
 

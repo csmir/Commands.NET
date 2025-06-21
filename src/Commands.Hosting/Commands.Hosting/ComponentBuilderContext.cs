@@ -31,8 +31,6 @@ public class ComponentBuilderContext
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureOptions"/> is <see langword="null"/>.</exception>
     public ComponentBuilderContext ConfigureOptions(Action<ComponentOptions> configureOptions)
     {
-        Assert.NotNull(configureOptions, nameof(configureOptions));
-
         configureOptions(ComponentOptions.Default);
 
         return this;

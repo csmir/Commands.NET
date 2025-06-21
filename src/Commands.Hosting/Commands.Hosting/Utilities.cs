@@ -34,8 +34,6 @@ public static class Utilities
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureComponents"/> is <see langword="null"/>.</exception>
     public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentBuilderContext> configureComponents)
     {
-        Assert.NotNull(configureComponents, nameof(configureComponents));
-
         return ConfigureComponents(builder, (_, ctx) => configureComponents(ctx));
     }
 
@@ -43,8 +41,6 @@ public static class Utilities
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureComponents"/> is <see langword="null"/>.</exception>
     public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<HostBuilderContext, ComponentBuilderContext> configureComponents)
     {
-        Assert.NotNull(configureComponents, nameof(configureComponents));
-
         var properties = new ComponentBuilderContext();
 
         builder.ConfigureServices((ctx, services) =>
@@ -69,8 +65,6 @@ public static class Utilities
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configureAction"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddComponentProvider(this IServiceCollection services, Action<ComponentBuilderContext> configureAction)
     {
-        Assert.NotNull(configureAction, nameof(configureAction));
-
         var builder = new ComponentBuilderContext();
 
         configureAction(builder);
@@ -89,16 +83,12 @@ public static class Utilities
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureTree"/> is <see langword="null"/>.</exception>
     public static IHost UseComponents(this IHost host, Action<ComponentTree> configureTree)
     {
-        Assert.NotNull(configureTree, nameof(configureTree));
-
         return UseComponents(host, (_, tree) => configureTree(tree));
     }
 
     /// <inheritdoc cref="UseComponents(IHost, Action{ComponentTree})"/>
     public static IHost UseComponents(this IHost host, Action<IServiceProvider, ComponentTree> configureTree)
     {
-        Assert.NotNull(configureTree, nameof(configureTree));
-
         var provider = host.Services.GetRequiredService<IComponentProvider>();
 
         configureTree(host.Services, provider.Components);
@@ -110,8 +100,6 @@ public static class Utilities
 
     internal static IHostBuilder ConfigureComponents(this IHostBuilder builder, ComponentBuilderContext componentBuilder)
     {
-        Assert.NotNull(componentBuilder, nameof(componentBuilder));
-
         builder.ConfigureServices((ctx, services) =>
         {
             AddComponentProvider(services, componentBuilder);

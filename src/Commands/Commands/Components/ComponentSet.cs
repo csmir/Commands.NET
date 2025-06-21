@@ -106,8 +106,6 @@ public abstract class ComponentSet : IComponentSet
     /// <exception cref="ComponentFormatException">Thrown when the added <paramref name="components"/> are already added to another <see cref="ComponentSet"/>, or when they cannot be added to the specified type.</exception>
     public int AddRange(IEnumerable<IComponent> components)
     {
-        Assert.NotNull(components, nameof(components));
-
         if (!components.Any())
             return 0;
 
@@ -130,8 +128,6 @@ public abstract class ComponentSet : IComponentSet
     /// <inheritdoc />
     public int RemoveRange(IEnumerable<IComponent> components)
     {
-        Assert.NotNull(components, nameof(components));
-
         if (!components.Any())
             return 0;
 

@@ -15,10 +15,9 @@ public static class Utilities
     /// <param name="options">The configuration which determines certain settings for the creation process for contained commands.</param>
     /// <param name="isNested">Determines whether the current iteration of additions is nested or not.</param>
     /// <returns>A new <see cref="IEnumerable{T}"/> containing all created component groups in the initial collection of types.</returns>
-    public static IEnumerable<CommandGroup> GetComponents(this IEnumerable<Type> types, ComponentOptions options, bool isNested = false)
+    public static IEnumerable<CommandGroup> GetComponents(this IEnumerable<Type> types, ComponentOptions? options = null, bool isNested = false)
     {
-        Assert.NotNull(types, nameof(types));
-        Assert.NotNull(options, nameof(options));
+        options ??= ComponentOptions.Default;
 
         return GetComponents(options, types, isNested);
     }

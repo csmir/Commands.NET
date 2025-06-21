@@ -80,8 +80,6 @@ public sealed class ComponentTree : ComponentSet
     /// <returns>The number of added components; or 0 if no components are added.</returns>
     public int AddRange(IEnumerable<Type> types, ComponentOptions? options = null)
     {
-        options ??= ComponentOptions.Default;
-
         var components = types.GetComponents(options);
 
         return AddRange(components);
