@@ -56,7 +56,7 @@ host.UseComponents(components =>
 {
     components.Add(new Command([HttpGet] () =>
     {
-        return HttpResponse.Ok("OK!");
+        return HttpResult.Ok("OK!");
     }, "ping"));
 });
 
@@ -86,8 +86,8 @@ When defining commands, the `HttpMethodAttribute` or any of its derived attribut
 public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
 {
     [HttpGet("get")]
-    public Task<HttpResponse> Get(int initialValue, Guid anotherValue)
-        => HttpResponse.Ok($"Hello World; {initialValue}, {anotherValue}");
+    public IHttpResult Get(int initialValue, Guid anotherValue)
+        => HttpResult.Ok($"Hello World; {initialValue}, {anotherValue}");
 }
 ```
 
@@ -103,8 +103,8 @@ or do so using snailing: `http://localhost:5000/http-module/get/42/123e4567-e89b
 public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
 {
     [HttpPost("post")]
-    public Task<HttpResponse> Post([JsonBody] string content)
-        => HttpResponse.Ok($"Received: {content}");
+    public IHttpResult Post([JsonBody] string content)
+        => HttpResult.Ok($"Received: {content}");
 }
 ```
 
@@ -127,8 +127,8 @@ It is also possible to define methods not bound to any standard HTTP method by u
 public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
 {
     [HttpMethod("CUSTOM", "custom")]
-    public Task<HttpResponse> CustomMethod()
-        => HttpResponse.Ok("This is a custom HTTP method response.");
+    public IHttpResult CustomMethod()
+        => HttpResult.Ok("This is a custom HTTP method response.");
 }
 ```
 

@@ -154,7 +154,7 @@ This repository includes a set of samples with documented code to help you get s
 - [Use Commands.NET in F# projects.](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.FSharp)
 - [Integrating Commands.NET into the .NET Generic Host infrastructure.](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Hosting)
 - [Exposing commands as lightweight HTTP endpoints without the heavy lifting.](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Http)
-- [Building Native-AOT apps with Commands.NET](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Aot)
+- [Building Native-AOT apps with Commands.NET.](https://github.com/csmir/Commands.NET/tree/master/src/Commands.Samples/Commands.Samples.Aot)
 
 ## Benchmarks
 
