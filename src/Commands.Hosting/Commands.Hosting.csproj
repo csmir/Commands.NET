@@ -10,7 +10,7 @@
 		<NoWarn>CA1822;IDE0130;IDE0290</NoWarn>
 
 		<AssemblyVersion>2.0</AssemblyVersion>
-		<PackageVersion>2.0.0-alpha.20</PackageVersion> <!--\-alpha.1-->
+		<PackageVersion>2.0.0-alpha.21</PackageVersion> <!--\-alpha.1-->
 		<FileVersion>2.0.0.0</FileVersion>
 
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
