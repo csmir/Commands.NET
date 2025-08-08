@@ -64,6 +64,9 @@ public class HttpCommandContext : IResourceContext
 
                 if (string.IsNullOrEmpty(rootPath))
                     break;
+
+                if (rootPath.Length <= indexOf + 1)
+                    break;
             }
         }
 
