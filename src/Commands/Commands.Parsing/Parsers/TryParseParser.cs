@@ -56,6 +56,12 @@ internal static class TryParseParser
             new TryParseParser<long>(long.TryParse),
             new TryParseParser<ulong>(ulong.TryParse),
 
+#if NET8_0_OR_GREATER 
+            // 128 bit int
+            new TryParseParser<Int128>(Int128.TryParse),
+            new TryParseParser<UInt128>(UInt128.TryParse),
+#endif
+
             // floating point int
             new TryParseParser<float>(float.TryParse),
             new TryParseParser<double>(double.TryParse),
@@ -64,6 +70,10 @@ internal static class TryParseParser
             // time
             new TryParseParser<DateTime>(DateTime.TryParse),
             new TryParseParser<DateTimeOffset>(DateTimeOffset.TryParse),
+#if NET8_0_OR_GREATER
+            new TryParseParser<TimeOnly>(TimeOnly.TryParse),
+            new TryParseParser<DateOnly>(DateOnly.TryParse),
+#endif
 
             // guid
             new TryParseParser<Guid>(Guid.TryParse),
