@@ -52,9 +52,19 @@ public sealed class ComponentOptions
     ///     Initializes a new instance of the <see cref="ComponentOptions"/> class containing default values for <see cref="Parsers"/>.
     /// </summary>
     public ComponentOptions()
+        : this(false) { }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="ComponentOptions"/> class.
+    /// </summary>
+    /// <param name="skipDefaults">Defines whether defaults should be configured in this configuration. If set, it will circumvent</param>
+    public ComponentOptions(bool skipDefaults)
     {
-        Parsers = TypeParser.CreateDefaults()
-            .ToDictionary(x => x.TargetType);
+        if (skipDefaults)
+            Parsers = new Dictionary<Type, TypeParser>();
+        else
+            Parsers = TypeParser.CreateDefaults()
+                .ToDictionary(x => x.TargetType);
     }
 
     /// <summary>
