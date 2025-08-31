@@ -283,7 +283,7 @@ public class Command : IComponent, IParameterCollection
     /// <param name="includeArguments">Defines if the arguments of the command should be included in the output.</param>
     public string GetFullName(bool includeArguments)
     {
-        var sb = new StringBuilder();
+        var sb = new ValueStringBuilder(stackalloc char[64]);
 
         if (Parent?.Name != null)
         {
