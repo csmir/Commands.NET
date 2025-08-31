@@ -178,8 +178,13 @@ public abstract class ComponentSet : IComponentSet
                 {
                     if (_items[i] == component)
                     {
-                        Array.Copy(_items, 0, copy, 0, i);
+                        component.Unbind();
+                        mutations++;
                         break;
+                    }
+                    else
+                    {
+                        copy[i - mutations] = _items[i];
                     }
                 }
             }
@@ -195,7 +200,6 @@ public abstract class ComponentSet : IComponentSet
             return mutations;
         }
     }
-
     // This method is used to add a range of components to the array of components with low allocation overhead.
     internal int BindRange(IEnumerable<IComponent> components, bool extracted)
     {
