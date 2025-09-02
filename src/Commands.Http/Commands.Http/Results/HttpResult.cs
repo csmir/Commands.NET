@@ -4,19 +4,27 @@
 ///     Represents the response of an HTTP request, containing the status code, content, and content type.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
-public struct HttpResult : IHttpResult
+public class HttpResult : IHttpResult
 {
-    /// <inheritdoc />
-    public HttpStatusCode StatusCode { get; set; }
+    private readonly Dictionary<string, string> _headers = new(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc />
-    public string? ContentType { get; set; }
+    public HttpStatusCode StatusCode { get; }
 
     /// <inheritdoc />
-    public Encoding? ContentEncoding { get; set; }
+    public string? ContentType { get; }
 
     /// <inheritdoc />
-    public object? Content { get; set; }
+    public Encoding? ContentEncoding { get; }
+
+    /// <inheritdoc />
+    public object? Content { get; }
+
+    /// <inheritdoc />
+    /// <remarks>
+    ///     Add headers to this collection by using the <see cref="WithHeader(string, string)"/> method.
+    /// </remarks>
+    public IReadOnlyDictionary<string, string> Headers => _headers;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="HttpResult"/> class with a default status code of 204 No Content.
@@ -48,10 +56,26 @@ public struct HttpResult : IHttpResult
     }
 
     /// <summary>
+    ///     Adds a header to the HTTP response if it does not already exist, or replaces the value if it does.
+    /// </summary>
+    /// <param name="key">The key of the header to add. For example: "X-API-KEY"</param>
+    /// <param name="value">The value of the header to add.</param>
+    /// <returns>The same <see cref="HttpResult"/> for call-chaining.</returns>
+    public HttpResult WithHeader(string key, string value)
+    {
+        Assert.NotNullOrEmpty(key, nameof(key));
+        Assert.NotNull(value, nameof(value));
+
+        _headers[key] = value;
+
+        return this;
+    }
+
+    /// <summary>
     ///     Gets a string representation of this HTTP response, including the status code and description.
     /// </summary>
     /// <returns></returns>
-    public override readonly string ToString()
+    public override string ToString()
         => $"Status = ({(int)StatusCode}) {StatusCode}";
 
     /// <summary>

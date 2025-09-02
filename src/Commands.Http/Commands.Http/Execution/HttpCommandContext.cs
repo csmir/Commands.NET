@@ -26,9 +26,9 @@ public class HttpCommandContext : IResourceContext
     /// <summary>
     ///     Gets the HTTP response associated with this command context, allowing you to set headers, status codes, and content to respond to the request.
     /// </summary>
-    /// <exception cref="InvalidOperationException">The HTTP response has already been sent, and cannot be accessed further.</exception>
+    /// <exception cref="InvalidOperationException">The HTTP response has already been sent, and cannot be accessed.</exception>
     public HttpListenerResponse Response => _closed
-        ? throw new InvalidOperationException("The HTTP response has already been sent, and cannot be accessed further.")
+        ? throw new InvalidOperationException("The HTTP response has already been sent, and cannot be accessed.")
         : _response;
 
     /// <inheritdoc />
@@ -100,6 +100,9 @@ public class HttpCommandContext : IResourceContext
 
         Response.StatusCode = (int)result.StatusCode;
         Response.StatusDescription = result.StatusCode.ToString();
+        
+        foreach (var (key, value) in result.Headers)
+            Response.AddHeader(key, value);
 
         if (result.Content is not null)
         {

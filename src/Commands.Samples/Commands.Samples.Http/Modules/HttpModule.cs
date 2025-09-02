@@ -5,37 +5,37 @@ namespace Commands.Tests;
 
 // This module demonstrates how to create a simple HTTP command module using Commands.Http.
 // Examples for general module practices is available in the Samples.Core, Samples.Console and Samples.Hosting projects.
-[Name("http-module")]
+[Name("http")]
 public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
 {
-    // This command can be invoked via HTTP GET requests under the following URL: http://localhost:5000/http-module/ping.
+    // This command can be invoked via HTTP GET requests under the following URL: http://localhost:5000/http/ping.
     [HttpGet("get")]
     public IHttpResult Get(int initialValue, Guid anotherValue)
-        => HttpResult.Ok($"Hello World; {initialValue}, {anotherValue}");
+        => Ok($"Hello World; {initialValue}, {anotherValue}");
 
-    // This command can be invoked via HTTP POST requests under the following URL: http://localhost:5000/http-module/post?queryTest=123.
+    // This command can be invoked via HTTP POST requests under the following URL: http://localhost:5000/http/post?queryTest=123.
     // The [JsonBody] attribute indicates that the body of the request should be parsed as JSON and deserialized into a Dictionary<string, string>.
     [HttpPost("post")]
     public IHttpResult Post(string queryTest, [JsonBody] Dictionary<string, string> dictionary)
     {
         dictionary["key3"] = queryTest;
 
-        return HttpResult.Json(dictionary, HttpStatusCode.Created);
+        return Json(dictionary, HttpStatusCode.Created);
     }
 
-    // This command can be invoked via HTTP PUT requests under the following URL: http://localhost:5000/http-module/delete.
+    // This command can be invoked via HTTP PUT requests under the following URL: http://localhost:5000/http/delete.
     [HttpDelete("delete")]
     public IHttpResult Delete()
-        => HttpResult.Forbidden();
+        => Forbidden();
 
-    // This command can be invoked via HTTP GET requests under the following URL: http://localhost:5000/http-module/dowork.
+    // This command can be invoked via HTTP GET requests under the following URL: http://localhost:5000/http/dowork.
     [HttpGet("dowork")]
-    public async void DoWork()
+    public async Task DoWork()
     {
-        Context.Response.Headers.Add("X-Detached-Process", "true");
+        var response = Ok("Doing work").WithHeader("X-Detached", "true");
 
         // Submit the response immediately, so the client receives it without waiting for the long-running process to complete.
-        Respond(HttpResult.Ok("Doing work"));
+        Respond(response);
 
         // Simulate a long-running process
         await Task.Delay(10000);
