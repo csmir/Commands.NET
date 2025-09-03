@@ -93,6 +93,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
 
         await ExecuteScope(scope, new()
         {
+            ServiceProvider = scope.Scope.ServiceProvider,
             CancellationToken = cancellationToken,
         });
     }
