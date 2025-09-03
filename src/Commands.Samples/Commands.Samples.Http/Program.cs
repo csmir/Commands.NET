@@ -1,6 +1,7 @@
 ﻿using Commands;
 using Commands.Hosting;
 using Commands.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Text;
@@ -14,6 +15,12 @@ using System.Text;
 
 var builder = Host.CreateDefaultBuilder(args);
 
+builder.ConfigureAppConfiguration((context, config) =>
+{
+    // Optionally add additional configuration sources here, such as JSON files, environment variables, etc.
+    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+});
+
 // First, we are going to configure the host to use HTTP components, which is required for the communication over RESTful APIs. 
 // The ConfigureHttpComponents method allows us to set up the HTTP listener, which will listen for incoming requests on a specified prefix (in this case, http://localhost:5000/).
 builder.ConfigureHttpComponents(context =>
@@ -22,7 +29,7 @@ builder.ConfigureHttpComponents(context =>
     // If no prefix is specified, the host will fail on run as it cannot start the HTTP listener.
     context.WithListener(listener =>
     {
-        listener.Prefixes.Add("http://localhost:5000/");
+        listener.Prefixes.Add("http://localhost:7000/");
     });
 
     // Option configuration defines how components created by UseComponents will behave. 

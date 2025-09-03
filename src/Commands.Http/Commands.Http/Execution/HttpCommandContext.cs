@@ -55,14 +55,17 @@ public class HttpCommandContext : IResourceContext
             var indexOf = rootPath.IndexOf('/');
 
             if (indexOf == -1)
+            {
                 Commands.Utilities.CopyTo(ref arguments, rootPath);
+                break;
+            }
             else
             {
                 Commands.Utilities.CopyTo(ref arguments, rootPath[..indexOf]);
 
                 rootPath = rootPath[(indexOf + 1)..];
 
-                if (string.IsNullOrEmpty(rootPath) || rootPath.Length <= indexOf + 1)
+                if (string.IsNullOrEmpty(rootPath))
                     break;
             }
         }
