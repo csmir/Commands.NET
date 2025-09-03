@@ -5,45 +5,45 @@ namespace Commands.Http;
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to GET requests.
 /// </summary>
-/// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
+/// <param name="routeName">Optional route name that can be used to match the command to specific routes.</param>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false)]
-public class HttpGetAttribute(params string[] routeNames) : HttpMethodAttribute(GET, routeNames)
+public class HttpGetAttribute([StringSyntax("Route")] string? routeName = null) : HttpMethodAttribute(GET, routeName)
 {
 }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to POST requests.
 /// </summary>
-/// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
+/// <param name="routeName">Optional route name that can be used to match the command to specific routes.</param>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false)]
-public class HttpPostAttribute(params string[] routeNames) : HttpMethodAttribute(POST, routeNames)
+public class HttpPostAttribute([StringSyntax("Route")] string? routeName = null) : HttpMethodAttribute(POST, routeName)
 {
 }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to PUT requests.
 /// </summary>
-/// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
+/// <param name="routeName">Optional route name that can be used to match the command to specific routes.</param>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false)]
-public class HttpPutAttribute(params string[] routeNames) : HttpMethodAttribute(PUT, routeNames)
+public class HttpPutAttribute([StringSyntax("Route")] string? routeName = null) : HttpMethodAttribute(PUT, routeName)
 {
 }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to DELETE requests.
 /// </summary>
-/// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
+/// <param name="routeName">Optional route name that can be used to match the command to specific routes.</param>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false)]
-public class HttpDeleteAttribute(params string[] routeNames) : HttpMethodAttribute(DELETE, routeNames)
+public class HttpDeleteAttribute([StringSyntax("Route")] string? routeName = null) : HttpMethodAttribute(DELETE, routeName)
 {
 }
 
 /// <summary>
 ///     Represents an attribute that can be used to specify the HTTP method for a command, constraining it to PATCH requests.
 /// </summary>
-/// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
+/// <param name="routeName">Optional route name that can be used to match the command to specific routes.</param>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false)]
-public class HttpPatchAttribute(params string[] routeNames) : HttpMethodAttribute(PATCH, routeNames)
+public class HttpPatchAttribute([StringSyntax("Route")] string? routeName = null) : HttpMethodAttribute(PATCH, routeName)
 {
 }
 
@@ -54,9 +54,9 @@ public class HttpPatchAttribute(params string[] routeNames) : HttpMethodAttribut
 ///     This attribute can be used to constrain a command to a specific HTTP method, such as GET, POST, PUT, DELETE, etc. Consider using the specific method attributes like <see cref="HttpGetAttribute"/>, <see cref="HttpPostAttribute"/>, etc., for better readability and clarity if possible.
 /// </remarks>
 /// <param name="method">The name of the HTTP method required to execute the provided operation.</param>
-/// <param name="routeNames">Optional route names that can be used to match the command to specific routes.</param>
+/// <param name="routeName">Optional route name that can be used to match the command to specific routes.</param>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate, AllowMultiple = false)]
-public class HttpMethodAttribute(string method, params string[] routeNames) : HttpConditionAttribute<HttpMethodEvaluator>, INameBinding
+public class HttpMethodAttribute(string method, [StringSyntax("Route")] string? routeName = null) : HttpConditionAttribute<HttpMethodEvaluator>, INameBinding
 {
     /// <summary>
     ///     Gets the GET http method name.
@@ -88,7 +88,7 @@ public class HttpMethodAttribute(string method, params string[] routeNames) : Ht
         => Names.Length > 0 ? Names[0] : string.Empty;
 
     /// <inheritdoc />
-    public string[] Names { get; } = routeNames;
+    public string[] Names { get; } = !string.IsNullOrEmpty(routeName) ? [routeName] : [];
 
     /// <inheritdoc />
     public override ValueTask<ConditionResult> Evaluate(HttpCommandContext context, Command command, IServiceProvider services, CancellationToken cancellationToken)
