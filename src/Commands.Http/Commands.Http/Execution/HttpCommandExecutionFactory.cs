@@ -7,8 +7,8 @@ namespace Commands.Http;
 /// <summary>
 ///     Represents a factory for executing commands over HTTP, using an <see cref="HttpListener"/> to listen for incoming requests.
 /// </summary>
-public class HttpCommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, IConfiguration configuration, ILogger<HttpCommandExecutionFactory> logger, IEnumerable<ResultHandler> resultHandlers, HttpListener httpListener)
-    : CommandExecutionFactory(executionProvider, serviceProvider, logger, resultHandlers), IHostedService
+public class HttpCommandExecutionFactory(IComponentProvider executionProvider, IServiceProvider serviceProvider, IEnumerable<ResultHandler> resultHandlers, HttpListener httpListener)
+    : CommandExecutionFactory(executionProvider, serviceProvider, resultHandlers), IHostedService
 {
     private Task? _runningTask;
     private CancellationTokenSource? _linkedTokenSrc;
@@ -18,29 +18,34 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
     {
         try
         {
-            // Configure remaining prefixes if any were provided in configuration.
-            foreach (var prefix in configuration.GetSection("Commands:Http:Prefixes").GetChildren())
+            var configuration = Services.GetService<IConfiguration>();
+
+            if (configuration != null)
             {
-                logger.LogDebug("Configuring HTTP prefix: {Prefix}", prefix.Value);
+                // Configure remaining prefixes if any were provided in configuration.
+                foreach (var prefix in configuration.GetSection("Commands:Http:Prefixes").GetChildren())
+                {
+                    Logger?.LogDebug("Configuring HTTP prefix: {Prefix}", prefix.Value);
 
-                if (string.IsNullOrWhiteSpace(prefix.Value))
-                    continue;
+                    if (string.IsNullOrWhiteSpace(prefix.Value))
+                        continue;
 
-                if (!httpListener.Prefixes.Contains(prefix.Value!))
-                    httpListener.Prefixes.Add(prefix.Value!);
+                    if (!httpListener.Prefixes.Contains(prefix.Value!))
+                        httpListener.Prefixes.Add(prefix.Value!);
+                }
             }
 
             httpListener.Start();
 
             foreach (var prefix in httpListener.Prefixes)
-                logger.LogInformation("Listening on {Prefix}", prefix);
+                Logger?.LogInformation("Listening on {Prefix}", prefix);
 
             _linkedTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _runningTask = Task.Run(() => StartListening(_linkedTokenSrc.Token), _linkedTokenSrc.Token);
         }
         catch (HttpListenerException ex)
         {
-            logger.LogError(ex, "Failed to start HTTP listener. Ensure that the application has permission to use the specified prefixes, or specify permissions in case none are set.");
+            Logger?.LogError(ex, "Failed to start HTTP listener. Ensure that the application has permission to use the specified prefixes, or specify permissions in case none are set.");
 
             throw;
         }
@@ -54,7 +59,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
         if (_runningTask is null)
             return;
 
-        logger.LogInformation("Stopping {FactoryType}...", nameof(HttpCommandExecutionFactory));
+        Logger?.LogInformation("Stopping {FactoryType}...", nameof(HttpCommandExecutionFactory));
 
         try
         {
@@ -69,7 +74,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
                 .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         }
 
-        logger.LogInformation("{FactoryType} stopped.", nameof(HttpCommandExecutionFactory));
+        Logger?.LogInformation("{FactoryType} stopped.", nameof(HttpCommandExecutionFactory));
     }
 
     /// <summary>
@@ -89,7 +94,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
 
         scope.Context = new HttpCommandContext(requestContext, scope.Scope.ServiceProvider);
 
-        logger.LogInformation("Received inbound request: {Request}", scope.Context);
+        Logger?.LogInformation("Received inbound request: {Request}", scope.Context);
 
         await ExecuteScope(scope, new()
         {

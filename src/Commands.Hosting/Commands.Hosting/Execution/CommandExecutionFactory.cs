@@ -16,18 +16,26 @@ public class CommandExecutionFactory
     /// </summary>
     public IComponentProvider Provider { get; }
 
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger _logger;
+    /// <summary>
+    ///     Gets the logger instance used for logging within the factory. This logger is obtained from the provided <see cref="IServiceProvider"/> during construction, if possible. Otherwise, it may be null.
+    /// </summary>
+    protected ILogger? Logger { get; }
+
+    /// <summary>
+    ///     Gets the service provider used to resolve dependencies and create scopes for command execution.
+    /// </summary>
+    protected IServiceProvider Services { get; }
 
     /// <summary>
     ///     Creates a new instance of the <see cref="CommandExecutionFactory"/> using the provided services.
     /// </summary>
-    public CommandExecutionFactory(IComponentProvider execProvider, IServiceProvider serviceProvider, ILogger logger, IEnumerable<ResultHandler> resultHandlers)
+    public CommandExecutionFactory(IComponentProvider execProvider, IServiceProvider serviceProvider, IEnumerable<ResultHandler> resultHandlers)
     {
         Provider = execProvider;
 
-        _serviceProvider = serviceProvider;
-        _logger = logger;
+        Services = serviceProvider;
+        
+        Logger = serviceProvider.GetService<ILogger<CommandExecutionFactory>>();
 
         var handlers = resultHandlers.OrderBy(x => x.Order).ToArray();
 
@@ -40,7 +48,7 @@ public class CommandExecutionFactory
                     break;
             }
 
-            logger.LogError("Execution failure for request: {Request} with exception: {Exception}", context, result.Exception);
+            Logger?.LogError("Execution failure for request: {Request} with exception: {Exception}", context, result.Exception);
 
             services.GetService<IExecutionScope>()?.Dispose();
         };
@@ -54,22 +62,22 @@ public class CommandExecutionFactory
                     break;
             }
 
-            logger.LogInformation("Execution succeeded for request: {Request}.", context);
+            Logger?.LogInformation("Execution succeeded for request: {Request}.", context);
 
             services.GetService<IExecutionScope>()?.Dispose();
         };
 
-        logger.LogInformation("Consuming {ExecutionProvider}, with {HandlerCount} result handler{MoreOrOne}.", Provider.GetType().FullName, handlers.Length, handlers.Length > 1 ? "(s)" : "");
+        Logger?.LogInformation("Consuming {ExecutionProvider}, with {HandlerCount} result handler{MoreOrOne}.", Provider.GetType().FullName, handlers.Length, handlers.Length > 1 ? "(s)" : "");
 
         var commands = execProvider.Components.GetCommands().ToArray();
 
         foreach (var command in commands)
-            logger.LogDebug("Registered {Command} as \"{Name}\".", command.ToString(), command.GetFullName());
+            Logger?.LogDebug("Registered {Command} as \"{Name}\".", command.ToString(), command.GetFullName());
 
         if (commands.Length == 0)
-            logger.LogWarning("No commands discovered. The factory will not handle inbound requests.");
+            Logger?.LogWarning("No commands discovered. The factory will not handle inbound requests.");
         else
-            logger.LogInformation("Discovered {CommandCount} command{MoreOrOne}.", commands.Length, commands.Length > 1 ? "s" : "");
+            Logger?.LogInformation("Discovered {CommandCount} command{MoreOrOne}.", commands.Length, commands.Length > 1 ? "s" : "");
     }
 
     /// <summary>
@@ -91,7 +99,7 @@ public class CommandExecutionFactory
 
         options ??= ExecutionOptions.Default;
 
-        _logger.LogDebug(
+        Logger?.LogDebug(
             "Starting execution for request: {Request}",
             scope.Context
         );
@@ -106,14 +114,14 @@ public class CommandExecutionFactory
     /// <returns>A new <see cref="IExecutionScope"/> implementation from the <see cref="IServiceProvider"/> provided to this factory.</returns>
     public virtual IExecutionScope CreateScope(IContext? context = null)
     {
-        var scope = _serviceProvider.CreateScope();
+        var scope = Services.CreateScope();
 
         var executionScope = scope.ServiceProvider.GetRequiredService<IExecutionScope>();
 
         executionScope.Scope = scope;
         executionScope.Context = context!;
 
-        _logger.LogDebug(
+        Logger?.LogDebug(
             "Created execution scope of type {ExecutionScopeType}.",
             executionScope.GetType().Name
         );
