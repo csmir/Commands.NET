@@ -138,3 +138,8 @@ When a command returns an `HttpResult` or `IHttpResult`, it will be sent directl
 If the command returns a different type, it will be converted to an `HttpResult` using the default response formatter.
 
 `HttpResult` has a set of static methods that can be used to create responses with different status codes and content types, including JSON formatting.
+
+> [!TIP]
+> While the HTTP package provides support for the generic host out of the box, it is not a requirement to use it. 
+> When only using services from for example `IServiceProvider`, use the overloads present for `IServiceCollection` instead, 
+> which assume no Host is being configured and doesn't require any of the host services.

@@ -13,7 +13,14 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
     private Task? _runningTask;
     private CancellationTokenSource? _linkedTokenSrc;
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Starts the <see cref="HttpListener"/> and begin listening for incoming HTTP requests. This method will not wait, escaping after starting the listener.
+    /// </summary>
+    /// <remarks>
+    ///     Any additional prefixes specified in the under "Commands:Http:Prefixes" application's configuration (if configured) are added to the listener before starting.
+    /// </remarks>
+    /// <param name="cancellationToken">The token that when cancelled, will notify a linked token to stop the HTTP pipeline and cleanly escape the listening process.</param>
+    /// <returns>An awaitable <see cref="Task"/> representing the result of the start operation.</returns>
     public Task StartAsync(CancellationToken cancellationToken)
     {
         try
@@ -53,7 +60,11 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    ///     Stops the <see cref="HttpListener"/> and waits for any ongoing request processing to complete before returning. This method will wait until all ongoing requests are processed or the provided <paramref name="cancellationToken"/> is cancelled.
+    /// </summary>
+    /// <param name="cancellationToken">The token that when cancelled, will force the listening process to break regardless of its execution state.</param>
+    /// <returns>An awaitable <see cref="Task"/> representing the result of the stop operation.</returns>
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         if (_runningTask is null)
@@ -86,7 +97,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
     /// <param name="contextTask">The received HTTP request context to handle.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation if needed.</param>
     /// <returns>An awaitable <see cref="Task"/> awaited by the asynchronous context retriever to handle subsequent requests to the API.</returns>
-    public virtual async Task Listened(Task<HttpListenerContext> contextTask, CancellationToken cancellationToken)
+    protected virtual async Task Listened(Task<HttpListenerContext> contextTask, CancellationToken cancellationToken)
     {
         var requestContext = await contextTask;
 

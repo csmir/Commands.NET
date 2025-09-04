@@ -7,9 +7,10 @@ namespace Commands.Http;
 /// <summary>
 ///     Represents a handler for HTTP command execution results, allowing for custom handling of different result types and exceptions.
 /// </summary>
-/// <param name="hostEnvironment">The environment in which the current pipeline is executing.</param>
-public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
+public class HttpResultHandler(IServiceProvider services) : ResultHandler
 {
+    private readonly bool _isDevelopment = services.GetService<IHostEnvironment>()?.IsDevelopment() ?? false;
+
     /// <inheritdoc />
     public override int Order => ExecuteLast;
 
@@ -19,7 +20,7 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
         if (exception is HttpConditionException httpException)
             context.Respond(httpException.Response);
         else
-            context.Respond(hostEnvironment.IsDevelopment()
+            context.Respond(_isDevelopment
                 ? HttpResult.Forbidden(exception.Message)
                 : HttpResult.Forbidden());
 
@@ -32,7 +33,7 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
         if (exception is HttpConditionException httpException)
             context.Respond(httpException.Response);
         else
-            context.Respond(hostEnvironment.IsDevelopment()
+            context.Respond(_isDevelopment
                 ? HttpResult.InternalServerError(exception.Message)
                 : HttpResult.InternalServerError());
 
@@ -42,7 +43,7 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
     /// <inheritdoc />
     protected override ValueTask<bool> CommandNotFound(IContext context, CommandNotFoundException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        context.Respond(hostEnvironment.IsDevelopment()
+        context.Respond(_isDevelopment
             ? HttpResult.NotFound(exception.Message)
             : HttpResult.NotFound());
 
@@ -52,7 +53,7 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
     /// <inheritdoc />
     protected override ValueTask<bool> RouteIncomplete(IContext context, CommandRouteIncompleteException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        context.Respond(hostEnvironment.IsDevelopment()
+        context.Respond(_isDevelopment
             ? HttpResult.NotFound(exception.Message)
             : HttpResult.NotFound());
 
@@ -62,7 +63,7 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
     /// <inheritdoc />
     protected override ValueTask<bool> ParamsOutOfRange(IContext context, CommandOutOfRangeException exception, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        context.Respond(hostEnvironment.IsDevelopment()
+        context.Respond(_isDevelopment
             ? HttpResult.BadRequest(exception.Message)
             : HttpResult.BadRequest());
 
@@ -75,7 +76,7 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
         if (exception is HttpConditionException httpException)
             context.Respond(httpException.Response);
         else
-            context.Respond(hostEnvironment.IsDevelopment()
+            context.Respond(_isDevelopment
                 ? HttpResult.BadRequest(exception.Message)
                 : HttpResult.BadRequest());
 
@@ -85,7 +86,7 @@ public class HttpResultHandler(IHostEnvironment hostEnvironment) : ResultHandler
     /// <inheritdoc />
     protected override ValueTask<bool> Unhandled(IContext context, Exception? exception, IResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        context.Respond(hostEnvironment.IsDevelopment()
+        context.Respond(_isDevelopment
             ? HttpResult.InternalServerError(exception?.Message ?? "An unhandled error occurred.")
             : HttpResult.InternalServerError());
 

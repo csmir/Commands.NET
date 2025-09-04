@@ -132,7 +132,7 @@ A simple command listener can be created by implementing the `BackgroundService`
 to create a new execution context for each command:
 
 ```cs
-public sealed class CommandListener(IExecutionFactory factory) : BackgroundService
+public sealed class CommandListener(CommandExecutionFactory factory) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -159,3 +159,8 @@ hostBuilder.ConfigureServices(services =>
 
 ...
 ```
+
+> [!TIP]
+> While the Hosting package provides support for the generic host out of the box, it is not a requirement to use it. 
+> When only using services from for example `IServiceProvider`, use the overloads present for `IServiceCollection` instead, 
+> which assume no Host is being configured and doesn't require any of the host services.

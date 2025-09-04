@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Net.Sockets;
 
 namespace Commands.Hosting;
 
@@ -47,7 +48,7 @@ public static class Utilities
         {
             configureComponents(ctx, properties);
 
-            AddComponentProvider(services, properties);
+            AddComponents(services, properties, true);
         });
 
         return builder;
@@ -63,13 +64,13 @@ public static class Utilities
     /// <param name="configureAction">An action to configure the <see cref="ComponentBuilderContext"/> which will be used to populate all related services.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configureAction"/> is <see langword="null"/>.</exception>
-    public static IServiceCollection AddComponentProvider(this IServiceCollection services, Action<ComponentBuilderContext> configureAction)
+    public static IServiceCollection AddComponents(this IServiceCollection services, Action<ComponentBuilderContext> configureAction)
     {
         var builder = new ComponentBuilderContext();
 
         configureAction(builder);
 
-        AddComponentProvider(services, builder);
+        AddComponents(services, builder, true);
 
         return services;
     }
@@ -98,20 +99,13 @@ public static class Utilities
 
     #region Internals
 
-    internal static IHostBuilder ConfigureComponents(this IHostBuilder builder, ComponentBuilderContext componentBuilder)
-    {
-        builder.ConfigureServices((ctx, services) =>
-        {
-            AddComponentProvider(services, componentBuilder);
-        });
+    internal static IHostBuilder ConfigureComponents(this IHostBuilder builder, ComponentBuilderContext componentBuilder, bool addFactory)
+        => builder.ConfigureServices((ctx, services) => services.AddComponents(componentBuilder, addFactory));
 
-        return builder;
-    }
+    internal static IServiceCollection AddComponents(this IServiceCollection services, ComponentBuilderContext builder, bool addFactory)
+        => TryAddServices(services, builder, addFactory);
 
-    private static void AddComponentProvider(IServiceCollection services, ComponentBuilderContext builder)
-        => TryAddServices(services, builder);
-
-    private static void TryAddServices(IServiceCollection collection, ComponentBuilderContext builder)
+    private static IServiceCollection TryAddServices(IServiceCollection collection, ComponentBuilderContext builder, bool addFactory)
     {
         collection.TryAddSingleton(typeof(IComponentProvider), builder.GetTypeProperty(nameof(IComponentProvider), typeof(ComponentProvider)));
         collection.TryAddScoped(typeof(IDependencyResolver), builder.GetTypeProperty(nameof(IDependencyResolver), typeof(KeyedDependencyResolver)));
@@ -119,7 +113,8 @@ public static class Utilities
         collection.TryAddScoped(typeof(IExecutionScope), typeof(ExecutionScope));
         collection.TryAddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
 
-        collection.TryAddSingleton<CommandExecutionFactory>();
+        if (addFactory)
+            collection.TryAddSingleton<CommandExecutionFactory>();
 
         if (builder.TryGetProperty<HashSet<Type>>(nameof(ResultHandler), out var resultsProperty))
         {
@@ -131,6 +126,8 @@ public static class Utilities
             foreach (var descriptor in descriptors)
                 collection.TryAddEnumerable(descriptor);
         }
+
+        return collection;
     }
 
     #endregion

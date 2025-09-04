@@ -29,28 +29,52 @@ public static class Utilities
     /// <param name="builder">The builder to configure with the related services.</param>
     /// <param name="configureComponents">An action to configure the <see cref="ComponentBuilderContext"/> which will be used to populate all related services.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
-    public static IHostBuilder ConfigureHttpComponents(this IHostBuilder builder, Action<ComponentBuilderContext> configureComponents)
-        => ConfigureHttpComponents(builder, (context, httpBuilder) => configureComponents(httpBuilder));
+    public static IHostBuilder ConfigureHttpComponents(this IHostBuilder builder, Action<ComponentBuilderContext>? configureComponents = null)
+        => ConfigureHttpComponents(builder, (context, httpBuilder) => configureComponents?.Invoke(httpBuilder));
 
     /// <inheritdoc cref="ConfigureHttpComponents(IHostBuilder, Action{ComponentBuilderContext})"/>
-    public static IHostBuilder ConfigureHttpComponents(this IHostBuilder builder, Action<HostBuilderContext, ComponentBuilderContext> configureComponents)
+    public static IHostBuilder ConfigureHttpComponents(this IHostBuilder builder, Action<HostBuilderContext, ComponentBuilderContext>? configureComponents = null)
     {
         var httpBuilder = new ComponentBuilderContext();
 
         builder.ConfigureServices((context, services) =>
         {
-            configureComponents(context, httpBuilder);
+            configureComponents?.Invoke(context, httpBuilder);
         });
 
         // Do the lower level configuration of the core components first.
-        builder.ConfigureComponents(httpBuilder);
+        builder.ConfigureComponents(httpBuilder, false);
 
         builder.ConfigureServices((context, services) =>
         {
-            TryAddServices(services, httpBuilder);
+            TryAddServices(services, httpBuilder, true);
         });
 
         return builder;
+    }
+
+    /// <summary>
+    ///     Adds all required services for HTTP command execution to the provided <see cref="IServiceCollection"/>, using the provided configuration action to configure said services.
+    /// </summary>
+    /// <remarks>
+    ///     This method will try to add any resources not yet added to the service collection, ignoring any that are already registered. 
+    ///     <br />
+    ///     This method does not register the <see cref="HttpCommandExecutionFactory"/> as a hosted service to automatically start the listening process. You must start the listener manually after building the service provider.
+    /// </remarks>
+    /// <param name="collection">The collection to add HTTP configured services to.</param>
+    /// <param name="configureComponents">An optional action to configure the <see cref="ComponentBuilderContext"/> which will be used to populate all related services.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> for call-chaining.</returns>
+    public static IServiceCollection AddHttpComponents(this IServiceCollection collection, Action<ComponentBuilderContext>? configureComponents = null)
+    {
+        var httpBuilder = new ComponentBuilderContext();
+
+        configureComponents?.Invoke(httpBuilder);
+
+        collection.AddComponents(httpBuilder, false);
+
+        TryAddServices(collection, httpBuilder, false);
+
+        return collection;
     }
 
     /// <summary>
@@ -123,7 +147,7 @@ public static class Utilities
     #region Internals
 
     // A method that defines the services to be added to the service collection.
-    internal static void TryAddServices(IServiceCollection collection, ComponentBuilderContext builder)
+    internal static void TryAddServices(IServiceCollection collection, ComponentBuilderContext builder, bool hostFactory)
     {
         if (!builder.TryGetProperty<HttpListener>(nameof(HttpListener), out var listenerProperty))
             listenerProperty = new HttpListener(); // Create a new listener if not already defined.
@@ -134,7 +158,11 @@ public static class Utilities
         collection.TryAddSingleton(listenerProperty);
 
         collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(ResultHandler), builder.GetTypeProperty(nameof(HttpResultHandler), typeof(HttpResultHandler))));
-        collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IHostedService), builder.GetTypeProperty(nameof(HttpCommandExecutionFactory), typeof(HttpCommandExecutionFactory))));
+
+        if (hostFactory)
+            collection.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IHostedService), builder.GetTypeProperty(nameof(HttpCommandExecutionFactory), typeof(HttpCommandExecutionFactory))));
+        else
+            collection.TryAddSingleton(typeof(HttpCommandExecutionFactory), builder.GetTypeProperty(nameof(HttpCommandExecutionFactory), typeof(HttpCommandExecutionFactory)));
     }
 
     #endregion
