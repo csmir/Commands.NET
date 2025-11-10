@@ -1,4 +1,6 @@
-﻿namespace Commands;
+﻿using System;
+
+namespace Commands;
 
 /// <summary>
 ///     Represents a mechanism for querying arguments while searching or parsing a command.
@@ -94,27 +96,21 @@ public struct Arguments
     {
         //_namedArgs = new(comparer);
 
-        var keySet = Array.Empty<string>();
-        var flagSet = Array.Empty<KeyValuePair<string, object?>>();
+        int capacityHint = args is ICollection<KeyValuePair<string, object?>> col ? col.Count / 2 : 2;
+
+        List<KeyValuePair<string, object?>> flags = new(capacityHint);
+        List<string> keys = new(capacityHint);
 
         foreach (var kvp in args)
         {
-            if (kvp.Value == null)
-            {
-                Array.Resize(ref keySet, keySet.Length + 1);
-
-                keySet[keySet.Length - 1] = kvp.Key;
-            }
+            if (kvp.Value is null)
+                keys.Add(kvp.Key);
             else
-            {
-                Array.Resize(ref flagSet, flagSet.Length + 1);
-
-                flagSet[flagSet.Length - 1] = kvp;
-            }
+                flags.Add(kvp);
         }
 
-        _keys = keySet;
-        _flaggedKeys = flagSet;
+        _flaggedKeys = [.. flags];
+        _keys = [.. keys];
 
         RemainingLength = _keys.Length + _flaggedKeys.Length;
     }
@@ -162,12 +158,7 @@ public struct Arguments
 #endif
 
     internal readonly IEnumerable<object> TakeRemaining(string parameterName)
-    {
-        if (TryGetValueInternal(parameterName, out var value))
-            return [value!, .. _keys.Skip(_index)];
-
-        return _keys.Skip(_index);
-    }
+        => TryGetValueInternal(parameterName, out var value) ? [value!, .. _keys.Skip(_index)] : _keys.Skip(_index);
 
     internal void SetIndex(int index)
     {
@@ -190,145 +181,110 @@ public struct Arguments
         return false;
     }
 
-    private static IEnumerable<KeyValuePair<string, object?>> ReadInternal(string[] input)
+    private static List<KeyValuePair<string, object?>> ReadInternal(string[] input)
     {
-        if (input.Length is 0)
-            yield break;
+        List<KeyValuePair<string, object?>> result = [];
 
-        if (input.Length is 1)
+        if (input.Length == 0)
+            return result;
+
+        if (input.Length == 1)
         {
-            yield return new(input[0], null);
-            yield break;
+            result.Add(new(input[0], null));
+            return result;
         }
 
-        // Reserved for joining arguments.
-        var openState = 0;
-        var concatenating = false;
-        var concatenation = new List<string>();
-
-        // Reserved for named arguments.
+        bool concatenating = false;
         string? name = null;
+        int openQuotes = 0;
+
+        Span<char> buffer = stackalloc char[256];
+        ValueStringBuilder vsb = new(buffer);
 
         foreach (var argument in input)
         {
+            ReadOnlySpan<char> span = argument.AsSpan();
+
             if (concatenating)
             {
-                if (argument.StartsWith(U0022))
+                if (span[0] == '"')
+                    openQuotes++;
+
+                if (span.Length > 1 && span.Slice(1).IndexOf('"') != -1)
+                    openQuotes--;
+
+                vsb.Append(span);
+                vsb.Append(' ');
+
+                if (span[span.Length - 1] == '"')
                 {
-                    openState++;
+                    openQuotes--;
 
-                    concatenation.Add(argument);
-
-                    if (argument.Length > 1)
-                    {
-#if NET8_0_OR_GREATER
-                        if (argument[1..].Contains(U0022))
-                            openState--;
-#else
-                        if (argument.Remove(0, 1).Contains(U0022))
-                            openState--;
-#endif
-                    }
-
-                    continue;
-                }
-
-                if (argument.EndsWith(U0022))
-                {
-                    if (openState is 0)
+                    if (openQuotes <= 0)
                     {
                         concatenating = false;
-
-                        concatenation.Add(argument);
+                        string resultStr = vsb.ToString();
 
                         if (name is null)
-                            yield return new(string.Join(U0020, concatenation), null);
+                            result.Add(new(resultStr, null));
                         else
                         {
-                            yield return new(name, string.Join(U0020, concatenation));
-
+                            result.Add(new(name, resultStr));
                             name = null;
                         }
 
-                        concatenation.Clear();
+                        buffer.Clear();
+                        vsb = new(buffer);
                     }
-                    else
-                    {
-                        openState--;
-
-                        concatenation.Add(argument);
-                    }
-
-                    continue;
                 }
 
-                concatenation.Add(argument);
+                continue;
+            }
+
+            if (span[0] == '-' && span[1] == '-')
+            {
+                if (name is not null)
+                    result.Add(new(name, null));
+
+                name = span.Slice(2).ToString();
+                continue;
+            }
+
+            if (span[0] == '"' && span[span.Length - 1] != '"')
+            {
+                concatenating = true;
+                openQuotes = 1;
+
+                vsb.Append(span);
+                vsb.Append(' ');
+                continue;
+            }
+
+            if (name is null)
+            {
+                result.Add(new(argument, null));
             }
             else
             {
-                if (argument.StartsWith(U002D))
-                {
-                    if (argument.Length > 1)
-                    {
-#if NET8_0_OR_GREATER
-                        if (argument[1] is U002D)
-                        {
-                            if (name is not null)
-                                yield return new(name, null);
-
-                            name = argument[2..];
-
-                            continue;
-                        }
-                    }
-
-                    yield return new(argument[1..], null);
-#else
-                        if (argument[1] == U002D[0])
-                        {
-                            if (name is not null)
-                                yield return new(name, null);
-
-                            name = argument.Remove(0, 2);
-
-                            continue;
-                        }
-                    }
-
-                    yield return new(argument.Remove(0, 1), null);
-#endif
-
-                    continue;
-                }
-
-                if (argument.StartsWith(U0022) && !argument.EndsWith(U0022))
-                {
-                    concatenating = true;
-
-                    concatenation.Add(argument);
-
-                    continue;
-                }
-
-                if (name is null)
-                    yield return new(argument, null);
-                else
-                {
-                    yield return new(name, argument);
-
-                    name = null;
-                }
+                result.Add(new(name, argument));
+                name = null;
             }
+
+            buffer.Clear();
+            vsb = new(buffer);
         }
 
-        // If concatenation is still filled on escaping the sequence, add as last argument.
-        if (concatenation.Count != 0)
+        string final = vsb.ToString();
+
+        if (final.Length != 0)
         {
             if (name is null)
-                yield return new(string.Join(U0020, concatenation), null);
+                result.Add(new(final, null));
             else
-                yield return new(name, string.Join(U0020, concatenation));
+                result.Add(new(name, final));
         }
+
+        return result;
     }
 
     #endregion

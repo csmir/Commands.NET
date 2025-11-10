@@ -1,4 +1,6 @@
-﻿using Commands.Conditions;
+﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using Commands.Conditions;
 using Commands.Parsing;
 
 namespace Commands;
@@ -16,11 +18,7 @@ public static class Utilities
     /// <param name="isNested">Determines whether the current iteration of additions is nested or not.</param>
     /// <returns>A new <see cref="IEnumerable{T}"/> containing all created component groups in the initial collection of types.</returns>
     public static IEnumerable<CommandGroup> GetComponents(this IEnumerable<Type> types, ComponentOptions? options = null, bool isNested = false)
-    {
-        options ??= ComponentOptions.Default;
-
-        return GetComponents(options, types, isNested);
-    }
+        => GetComponents(options ?? ComponentOptions.Default, types, isNested);
 
     #region Internals
 
@@ -36,6 +34,38 @@ public static class Utilities
 
         return default;
     }
+
+#if NET8_0_OR_GREATER
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void CopyTo<T>(ref T[] array, T item)
+    {
+        T[] newArray = GC.AllocateUninitializedArray<T>(array.Length + 1);
+
+        ref T source = ref MemoryMarshal.GetArrayDataReference(array), destination = ref MemoryMarshal.GetArrayDataReference(newArray);
+
+        for (int i = 0; i < array.Length; i++) Unsafe.Add(ref destination, i) = Unsafe.Add(ref source, i);
+
+        Unsafe.Add(ref destination, array.Length) = item;
+
+        array = newArray;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void CopyTo<T>(ref T[] array, T[] items)
+    {
+        T[] newArray = GC.AllocateUninitializedArray<T>(array.Length + items.Length);
+
+        ref T sourceA = ref MemoryMarshal.GetArrayDataReference(array), sourceB = ref MemoryMarshal.GetArrayDataReference(items), destination = ref MemoryMarshal.GetArrayDataReference(newArray);
+
+        for (int i = 0; i < array.Length; i++) Unsafe.Add(ref destination, i) = Unsafe.Add(ref sourceA, i);
+
+        for (int i = 0; i < items.Length; i++) Unsafe.Add(ref destination, array.Length + i) = Unsafe.Add(ref sourceB, i);
+
+        array = newArray;
+    }
+
+#else
 
     internal static void CopyTo<T>(ref T[] array, T item)
     {
@@ -61,6 +91,8 @@ public static class Utilities
 
         array = newArray;
     }
+
+#endif
 
     #endregion
 
@@ -302,5 +334,5 @@ public static class Utilities
 
     #endregion
 
-    #endregion
+#endregion
 }

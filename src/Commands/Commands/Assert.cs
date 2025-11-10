@@ -32,21 +32,17 @@ internal static class Assert
     {
         NotNull(values, nameof(values));
 
-        if (regex != null)
+        if (regex == null) return;
+
+        if (!values.Any())
+            throw new ArgumentException($"The argument '{argumentExpression}' must not be empty.", argumentExpression);
+
+        foreach (var value in values)
         {
-            var valueCount = 0;
-            foreach (var value in values)
-            {
-                valueCount++;
+            NotNullOrEmpty(value, argumentExpression);
 
-                NotNullOrEmpty(value, argumentExpression);
-
-                if (!regex.IsMatch(value))
-                    throw new ArgumentException($"The argument '{argumentExpression}' must match the validation expression '{regex}'", argumentExpression);
-            }
-
-            if (valueCount == 0)
-                throw new ArgumentException($"The argument '{argumentExpression}' must not be empty.", argumentExpression);
+            if (!regex.IsMatch(value))
+                throw new ArgumentException($"The argument '{argumentExpression}' must match the validation expression '{regex}'", argumentExpression);
         }
     }
 }

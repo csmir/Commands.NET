@@ -17,15 +17,9 @@ public sealed class ColorParser : TypeParser<Color>
     {
         _colors = new(StringComparer.OrdinalIgnoreCase);
 
-        var properties = typeof(Color).GetProperties(BindingFlags.Public | BindingFlags.Static);
-
-        foreach (var property in properties)
+        foreach (var property in typeof(Color).GetProperties(BindingFlags.Public | BindingFlags.Static).Where(static p => p.PropertyType == typeof(Color)))
         {
-            if (property.PropertyType == typeof(Color))
-            {
-                var color = (Color)property.GetValue(null)!;
-                _colors[property.Name] = color;
-            }
+            _colors[property.Name] = (Color)property.GetValue(null)!;
         }
     }
 
@@ -61,8 +55,6 @@ public sealed class ColorParser : TypeParser<Color>
 
     private bool TryParseRgb(string value, out Color result)
     {
-        result = new();
-
         var separation = value.Split(',');
 
         if (separation.Length == 3)
@@ -76,6 +68,7 @@ public sealed class ColorParser : TypeParser<Color>
             }
         }
 
+        result = new();
         return false;
     }
 
@@ -108,8 +101,6 @@ public sealed class ColorParser : TypeParser<Color>
 
     private bool TryParseUint(string value, out Color result)
     {
-        result = new();
-
         if (uint.TryParse(value, out var rgb))
         {
             var r = (byte)((rgb & 0xFF0000) >> 16);
@@ -121,13 +112,12 @@ public sealed class ColorParser : TypeParser<Color>
             return true;
         }
 
+        result = new();
         return false;
     }
 
     private bool TryParseNamed(string value, out Color result)
     {
-        result = new();
-
         if (_colors.TryGetValue(value, out var color))
         {
             result = color;
@@ -135,6 +125,7 @@ public sealed class ColorParser : TypeParser<Color>
             return true;
         }
 
+        result = new();
         return false;
     }
 }
