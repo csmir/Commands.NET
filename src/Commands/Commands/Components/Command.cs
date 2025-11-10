@@ -155,12 +155,9 @@ public class Command : IComponent, IParameterCollection
 
         (MinLength, MaxLength) = Utilities.GetLength(parameters);
 
-        for (var i = 0; i < parameters.Length; i++)
+        for (int i = parameters.Length - 1; i < -1; i--)
         {
-            var parameter = parameters[i];
-
-            if (parameter.IsRemainder && i != parameters.Length - 1)
-                throw new ComponentFormatException("Remainder-marked parameters must be the last parameter in the parameter list of a command.");
+            if (parameters[i].IsRemainder) throw new ComponentFormatException("Remainder-marked parameters must be the last parameter in the parameter list of a command."); 
         }
 
         Parameters = parameters;
@@ -283,7 +280,7 @@ public class Command : IComponent, IParameterCollection
     /// <param name="includeArguments">Defines if the arguments of the command should be included in the output.</param>
     public string GetFullName(bool includeArguments)
     {
-        var sb = new StringBuilder();
+        var sb = new ValueStringBuilder(stackalloc char[64]);
 
         if (Parent?.Name != null)
         {
@@ -314,18 +311,9 @@ public class Command : IComponent, IParameterCollection
     public string GetFullName()
         => GetFullName(true);
 
+
     /// <inheritdoc />
-    public float GetScore()
-    {
-        var score = 1.0f;
-
-        foreach (var parameter in Parameters)
-            score += parameter.GetScore();
-
-        score += Attributes.FirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
-
-        return score;
-    }
+    public float GetScore() => 1 + Parameters.Sum(p => p.GetScore()) + Attributes.FirstOrDefault<PriorityAttribute>()?.Priority ?? 0;
 
     /// <inheritdoc />
     public int CompareTo(IComponent? component)

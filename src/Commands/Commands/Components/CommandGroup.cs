@@ -165,16 +165,18 @@ public class CommandGroup : ComponentSet, IComponent
     /// <inheritdoc />
     public string GetFullName()
     {
-        var sb = new StringBuilder();
+        var sb = new ValueStringBuilder(stackalloc char[64]);
 
         if (Parent?.Name != null)
         {
             sb.Append(Parent.GetFullName());
 
             if (Name != null)
+            {
                 sb.Append(' ');
+                sb.Append(Name);
+            }
 
-            sb.Append(Name);
         }
         else if (Name != null)
             sb.Append(Name);
@@ -236,7 +238,7 @@ public class CommandGroup : ComponentSet, IComponent
     /// <inheritdoc />
     public override string ToString()
     {
-        var sb = new StringBuilder();
+        var sb = new ValueStringBuilder(stackalloc char[64]);
 
         if (Parent != null)
         {
