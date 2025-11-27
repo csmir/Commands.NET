@@ -34,11 +34,8 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
                 {
                     Logger?.LogDebug("Configuring HTTP prefix: {Prefix}", prefix.Value);
 
-                    if (string.IsNullOrWhiteSpace(prefix.Value))
-                        continue;
-
-                    if (!httpListener.Prefixes.Contains(prefix.Value!))
-                        httpListener.Prefixes.Add(prefix.Value!);
+                    if (!string.IsNullOrWhiteSpace(prefix.Value) && !httpListener.Prefixes.Contains(prefix.Value))
+                        httpListener.Prefixes.Add(prefix.Value);
                 }
             }
 
