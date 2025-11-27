@@ -26,7 +26,7 @@ The following benchmarks are ran on the latest version of the library, using the
 
 > [!NOTE]
 > Allocation for running commands is a combination of the argument creation, and search process. 
-> On itself, it allocates 144 / 192 bytes for actual execution.
+> On itself, it allocates 144 bytes for actual execution.
 
 # Intel® Core™ Ultra 7 155H 
 
@@ -40,5 +40,9 @@ The following benchmarks are ran on the latest version of the library, using the
 | CollectionCreate |   4.652 ns | 0.1170 ns | 0.1094 ns | 0.0025 |      32 B |
 | GroupCreate      |  11.211 ns | 0.0869 ns | 0.0813 ns | 0.0083 |     104 B |
 | CommandCreate    | 165.108 ns | 1.7455 ns | 1.6327 ns | 0.0370 |     464 B |
+
+> [!NOTE]
+> Allocation for running commands is a combination of the argument creation, and search process. 
+> On itself, it allocates 112 bytes for actual execution.
 
 *This chart can be reproduced at any time by running this benchmark project.*
