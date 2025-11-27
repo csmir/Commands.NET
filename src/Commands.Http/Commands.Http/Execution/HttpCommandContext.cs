@@ -121,7 +121,14 @@ public class HttpCommandContext : IResourceContext
             }
             else
             {
-                var jsonBytes = Response.ContentEncoding.GetBytes(JsonSerializer.Serialize(result.Content, result.Content.GetType(), _services.GetService<JsonSerializerOptions>()));
+                string serializationResult;
+
+                if (result.Content is Tuple<Type, object> objectReferredByT)
+                    serializationResult = JsonSerializer.Serialize(objectReferredByT.Item2, objectReferredByT.Item1, _services.GetService<JsonSerializerOptions>());
+                else
+                    serializationResult = JsonSerializer.Serialize(result.Content, result.Content.GetType(), _services.GetService<JsonSerializerOptions>());
+
+                var jsonBytes = Response.ContentEncoding.GetBytes(serializationResult);
 
                 Response.ContentLength64 = jsonBytes.Length;
 
