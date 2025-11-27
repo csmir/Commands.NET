@@ -5,13 +5,15 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-		<NoWarn>CA1822;IDE0130</NoWarn>
+	<NoWarn>CA1822;IDE0130</NoWarn>  
+    <DefineConstants>$(DefineConstants);DISABLE_PROFILER_AGENT_CONFIG</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.15.6" />
     <PackageReference Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.3.36726.2" />
   </ItemGroup>
+	
 
   <ItemGroup>
     <ProjectReference Include="..\..\Commands\Commands.csproj" />
