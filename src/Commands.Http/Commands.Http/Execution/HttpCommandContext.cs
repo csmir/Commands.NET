@@ -35,6 +35,11 @@ public class HttpCommandContext : IResourceContext
     public Arguments Arguments { get; }
 
     /// <summary>
+    ///     A dictionary for storing arbitrary items related to this command context.
+    /// </summary>
+    public IDictionary<string, object?> Items { get; }
+
+    /// <summary>
     ///     Initializes a new instance of the <see cref="HttpCommandContext"/> class with the specified HTTP context and prefix length.
     /// </summary>
     /// <param name="httpContext">The context for which this command context exists.</param>
@@ -82,6 +87,7 @@ public class HttpCommandContext : IResourceContext
             arg[arguments.Length + i] = new(queryString.GetKey(i)!, queryString.Get(i));
 
         Arguments = new(arg);
+        Items = new Dictionary<string, object?>();
     }
 
     /// <summary>
