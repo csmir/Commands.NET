@@ -38,7 +38,7 @@ builder.ConfigureHttpComponents(context =>
     // This (currently) includes defining parsers and validation of component names.
     context.ConfigureOptions(options =>
     {
-        
+
     });
 });
 
@@ -88,23 +88,14 @@ await host.RunAsync();
 // This approach is more flexible and allows for more granular control over the services and components used in the application.
 // ... Or when you do not intend to implement the whole host, but just want to run the HTTP server on an isolated service collection.
 var services = new ServiceCollection()
-    .AddHttpComponents(options =>
-    {
-        options.WithListener(listener =>
-        {
-           listener.Prefixes.Add("http://localhost:7000/");
-        });
-    })
+    .AddSingleton<ComponentTree>([new CommandGroup<HttpModule>()])
+    .AddHttpComponents(cfg => cfg.WithListener(listener => listener.Prefixes.Add("http://localhost:7000/")))
     .BuildServiceProvider();
-
-// Retrieve the component provider from the service collection and add the HttpModule to it, rather than calling UseComponents on the host.
-services.GetRequiredService<IComponentProvider>()
-    .Components.Add<HttpModule>();
 
 // The factory under hosted context implements IHostedService, which means it will start and stop with the host.
 // This is not supported in this isolated context, so it is registered as a singleton service and can be started and stopped manually.
 await services.GetRequiredService<HttpCommandExecutionFactory>()
-    .StartAsync(default);
+    .StartAsync();
 
 // Prevent the application from exiting immediately... or when in a larger application, continue running other tasks.
 await Task.Delay(Timeout.Infinite);

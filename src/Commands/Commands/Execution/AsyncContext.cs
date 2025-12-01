@@ -24,6 +24,7 @@ public abstract class AsyncContext : IContext
 
     #region Internals
 
+    // Internal helper to respond using either async or sync context. Prefers async if available.
     internal static Task Respond(IContext context, object? message)
     {
         if (context is AsyncContext asyncContext)

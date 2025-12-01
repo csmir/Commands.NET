@@ -24,12 +24,24 @@ public class ComponentProvider : IComponentProvider
         => Components = [];
 
     /// <summary>
+    ///     Creates a new instance of the <see cref="ComponentProvider"/> using the provided <see cref="IComponent"/> implementations as the components to use.
+    /// </summary>
+    /// <remarks>
+    ///     This constructor will create a new <see cref="ComponentTree"/> using the provided <paramref name="components"/> as the source of <see cref="Components"/>. See <see cref="ComponentProvider.ComponentProvider(ComponentTree)"/> for more.
+    /// </remarks>
+    /// <param name="components">A collection of components which this provider should treat as the instance of <see cref="Components"/> to find and execute commands from.</param>
+    public ComponentProvider(IEnumerable<IComponent> components)
+        : this([.. components])
+    {
+    }
+
+    /// <summary>
     ///     Creates a new instance of the <see cref="ComponentProvider"/> using the provided <see cref="ComponentTree"/> as the source of components.
     /// </summary>
     /// <remarks>
     ///     The <paramref name="components"/> will be the source of <see cref="Components"/>, and can be mutated further at runtime to add or remove additional components.
     /// </remarks>
-    /// <param name="components">A pre-initialized set of components which this provider should treat as the instance of <see cref="Components"/> targetted to find and execute commands from.</param>
+    /// <param name="components">A pre-initialized set of components which this provider should treat as the instance of <see cref="Components"/> to find and execute commands from.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="components"/> is <see langword="null"/>.</exception>
     public ComponentProvider(ComponentTree components)
     {

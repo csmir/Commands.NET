@@ -39,7 +39,7 @@ public abstract class ComponentSet : IComponentSet
             if (component is Command command && predicate(command))
                 discovered.Add(command);
 
-            if (component is CommandGroup grp)
+            else if (component is CommandGroup grp)
                 discovered.AddRange(grp.GetCommands(predicate, browseNestedComponents));
         }
 
@@ -166,35 +166,40 @@ public abstract class ComponentSet : IComponentSet
     // This method is used to remove a range of components from the array of components with low allocation overhead.
     internal int UnbindRange(IEnumerable<IComponent> components)
     {
+        IComponent[] copy = new IComponent[_items.Length];
+
         lock (_items)
         {
-            var mutations = 0;
-
-            var copy = new List<IComponent>(_items);
+            int mutations = 0;
 
             foreach (var component in components)
             {
-                Assert.NotNull(component, nameof(component));
-
-                var output = copy.Remove(component);
-
-                if (output)
+                for (int i = 0; i < _items.Length; i++)
                 {
-                    mutations += 1;
-                    component.Unbind();
+                    if (_items[i] == component)
+                    {
+                        component.Unbind();
+                        mutations++;
+                        break;
+                    }
+                    else
+                    {
+                        copy[i - mutations] = _items[i];
+                    }
                 }
             }
 
             if (mutations > 0)
             {
+                Array.Resize(ref copy, _items.Length - mutations);
+                _items = copy;
+
                 _mutateTree?.Invoke(components, true);
-                _items = [.. copy];
             }
 
             return mutations;
         }
     }
-
     // This method is used to add a range of components to the array of components with low allocation overhead.
     internal int BindRange(IEnumerable<IComponent> components, bool extracted)
     {

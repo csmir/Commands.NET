@@ -87,11 +87,11 @@ public class HttpResult : IHttpResult
     /// <param name="content">The response to send.</param>
     /// <param name="statusCode">The status code of the response.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Json(object content, HttpStatusCode statusCode = HttpStatusCode.OK)
+    public static HttpResult Json<T>([DisallowNull] T content, HttpStatusCode statusCode = HttpStatusCode.OK)
     {
         Assert.NotNull(content, nameof(content));
 
-        return new(statusCode, content, "application/json");
+        return new(statusCode, new Tuple<Type, object>(typeof(T), content), "application/json");
     }
 
     /// <summary>

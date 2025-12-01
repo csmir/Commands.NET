@@ -21,7 +21,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
     /// </remarks>
     /// <param name="cancellationToken">The token that when cancelled, will notify a linked token to stop the HTTP pipeline and cleanly escape the listening process.</param>
     /// <returns>An awaitable <see cref="Task"/> representing the result of the start operation.</returns>
-    public Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -34,11 +34,8 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
                 {
                     Logger?.LogDebug("Configuring HTTP prefix: {Prefix}", prefix.Value);
 
-                    if (string.IsNullOrWhiteSpace(prefix.Value))
-                        continue;
-
-                    if (!httpListener.Prefixes.Contains(prefix.Value!))
-                        httpListener.Prefixes.Add(prefix.Value!);
+                    if (!string.IsNullOrWhiteSpace(prefix.Value) && !httpListener.Prefixes.Contains(prefix.Value))
+                        httpListener.Prefixes.Add(prefix.Value);
                 }
             }
 
@@ -65,7 +62,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
     /// </summary>
     /// <param name="cancellationToken">The token that when cancelled, will force the listening process to break regardless of its execution state.</param>
     /// <returns>An awaitable <see cref="Task"/> representing the result of the stop operation.</returns>
-    public async Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken = default)
     {
         if (_runningTask is null)
             return;

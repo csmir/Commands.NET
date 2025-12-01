@@ -162,12 +162,7 @@ public struct Arguments
 #endif
 
     internal readonly IEnumerable<object> TakeRemaining(string parameterName)
-    {
-        if (TryGetValueInternal(parameterName, out var value))
-            return [value!, .. _keys.Skip(_index)];
-
-        return _keys.Skip(_index);
-    }
+        => TryGetValueInternal(parameterName, out var value) ? [value!, .. _keys.Skip(_index)] : _keys.Skip(_index);
 
     internal void SetIndex(int index)
     {

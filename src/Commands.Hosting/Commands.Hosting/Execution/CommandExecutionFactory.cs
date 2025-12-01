@@ -67,7 +67,7 @@ public class CommandExecutionFactory
             services.GetService<IExecutionScope>()?.Dispose();
         };
 
-        Logger?.LogInformation("Consuming {ExecutionProvider}, with {HandlerCount} result handler{MoreOrOne}.", Provider.GetType().FullName, handlers.Length, handlers.Length > 1 ? "(s)" : "");
+        Logger?.LogInformation("Consuming {ExecutionProvider}, with {HandlerCount} result handler{MoreOrOne}.", Provider.GetType().FullName, handlers.Length, handlers.Length != 1 ? "(s)" : "");
 
         var commands = execProvider.Components.GetCommands().ToArray();
 
