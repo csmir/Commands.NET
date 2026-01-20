@@ -73,7 +73,7 @@ public class ComponentBuilderContext
     /// </summary>
     /// <typeparam name="THandler">The type implementing <see cref="ResultHandler"/> that should be an enumerated implementation to handle command results.</typeparam>
     /// <returns>The same <see cref="ComponentBuilderContext"/> for call-chaining.</returns>
-    public ComponentBuilderContext AddResultHandler<THandler>()
+    public ComponentBuilderContext AddResultHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] THandler>()
         where THandler : ResultHandler
     {
         if (!TryGetProperty<HashSet<Type>>(nameof(ResultHandler), out var handlersProperty))

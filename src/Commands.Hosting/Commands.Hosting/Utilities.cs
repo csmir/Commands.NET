@@ -110,7 +110,7 @@ public static class Utilities
         collection.TryAddSingleton(typeof(IComponentProvider), builder.GetTypeProperty(nameof(IComponentProvider), typeof(ComponentProvider)));
         collection.TryAddScoped(typeof(IDependencyResolver), builder.GetTypeProperty(nameof(IDependencyResolver), typeof(KeyedDependencyResolver)));
 
-        collection.TryAddScoped(typeof(IExecutionScope), typeof(ExecutionScope));
+        collection.TryAddScoped<IExecutionScope, ExecutionScope>();
         collection.TryAddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
 
         if (addFactory)
@@ -118,9 +118,11 @@ public static class Utilities
 
         if (builder.TryGetProperty<HashSet<Type>>(nameof(ResultHandler), out var resultsProperty))
         {
-            var descriptors = resultsProperty.Select(([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] type) =>
+            var descriptors = resultsProperty.Select((type) =>
             {
+#pragma warning disable IL2067 // Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The parameter of method does not have matching annotations.
                 return ServiceDescriptor.Singleton(typeof(ResultHandler), type);
+#pragma warning restore IL2067 // Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The parameter of method does not have matching annotations.
             });
 
             foreach (var descriptor in descriptors)
