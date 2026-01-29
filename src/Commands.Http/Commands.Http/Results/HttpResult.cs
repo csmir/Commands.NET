@@ -45,9 +45,9 @@ public class HttpResult : IHttpResult
     /// <param name="code">The status code of this result.</param>
     /// <param name="content">The content of this result.</param>
     /// <param name="contentType">The content type of this result.</param>
-    public HttpResult(HttpStatusCode code, object content, string? contentType = null)
+    public HttpResult(HttpStatusCode code, [DisallowNull] object content, string? contentType = null)
     {
-        Assert.NotNull(content, nameof(content));
+        ArgumentNullException.ThrowIfNull(content);
 
         Content = content;
         ContentType = contentType;
@@ -61,10 +61,9 @@ public class HttpResult : IHttpResult
     /// <param name="key">The key of the header to add. For example: "X-API-KEY"</param>
     /// <param name="value">The value of the header to add.</param>
     /// <returns>The same <see cref="HttpResult"/> for call-chaining.</returns>
-    public HttpResult WithHeader(string key, string value)
+    public HttpResult WithHeader([DisallowNull] string key, string value)
     {
-        Assert.NotNullOrEmpty(key, nameof(key));
-        Assert.NotNull(value, nameof(value));
+        ArgumentException.ThrowIfNullOrEmpty(key);
 
         _headers[key] = value;
 
@@ -87,12 +86,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The response to send.</param>
     /// <param name="statusCode">The status code of the response.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Json<T>([DisallowNull] T content, HttpStatusCode statusCode = HttpStatusCode.OK)
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(statusCode, new Tuple<Type, object>(typeof(T), content), "application/json");
-    }
+    public static HttpResult Json<T>([DisallowNull] T content, HttpStatusCode statusCode = HttpStatusCode.OK) 
+        => new(statusCode, new Tuple<Type, object>(typeof(T), content), "application/json");
 
     /// <summary>
     ///     Creates a new HTTP response with the specified JSON content and status code.
@@ -100,12 +95,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The response to send.</param>
     /// <param name="statusCode">The status code of the response.</param>
     /// <returns>A </returns>
-    public static HttpResult Json([StringSyntax(StringSyntaxAttribute.Json)] string content, HttpStatusCode statusCode = HttpStatusCode.OK)
-    {
-        Assert.NotNullOrEmpty(content, nameof(content));
-
-        return new(statusCode, Encoding.UTF8.GetBytes(content), "application/json");
-    }
+    public static HttpResult Json([StringSyntax(StringSyntaxAttribute.Json)] string content, HttpStatusCode statusCode = HttpStatusCode.OK) 
+        => new(statusCode, Encoding.UTF8.GetBytes(content), "application/json");
 
     /// <summary>
     ///     Creates a new HTTP response as 204 No Content.
@@ -120,12 +111,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Ok(string content, string contentType = "text/plain")
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(HttpStatusCode.OK, Encoding.UTF8.GetBytes(content), contentType);
-    }
+    public static HttpResult Ok(string content, string contentType = "text/plain") 
+        => new(HttpStatusCode.OK, Encoding.UTF8.GetBytes(content), contentType);
 
     /// <summary>
     ///     Creates a new HTTP response as 200 OK, the specified content as a byte array and content type.
@@ -133,12 +120,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Ok(byte[] content, string contentType)
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(HttpStatusCode.OK, content, contentType);
-    }
+    public static HttpResult Ok(byte[] content, string contentType) 
+        => new(HttpStatusCode.OK, content, contentType);
 
     /// <summary>
     ///     Creates a new HTTP response as 400 Bad Request.
@@ -153,12 +136,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult BadRequest(string content, string contentType = "text/plain")
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(HttpStatusCode.BadRequest, Encoding.UTF8.GetBytes(content), contentType);
-    }
+    public static HttpResult BadRequest(string content, string contentType = "text/plain") 
+        => new(HttpStatusCode.BadRequest, Encoding.UTF8.GetBytes(content), contentType);
 
     /// <summary>
     ///     Creates a new HTTP response as 400 Bad Request, the specified content as a byte array and content type.
@@ -166,12 +145,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult BadRequest(byte[] content, string contentType)
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(HttpStatusCode.BadRequest, content, contentType);
-    }
+    public static HttpResult BadRequest(byte[] content, string contentType) 
+        => new(HttpStatusCode.BadRequest, content, contentType);
 
     /// <summary>
     ///     Creates a new HTTP response as 401 Unauthorized.
@@ -186,12 +161,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Unauthorized(string content, string contentType = "text/plain")
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(HttpStatusCode.Unauthorized, Encoding.UTF8.GetBytes(content), contentType);
-    }
+    public static HttpResult Unauthorized(string content, string contentType = "text/plain") 
+        => new(HttpStatusCode.Unauthorized, Encoding.UTF8.GetBytes(content), contentType);
 
     /// <summary>
     ///     Creates a new HTTP response as 401 Unauthorized, the specified content as a byte array and content type.
@@ -199,12 +170,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Unauthorized(byte[] content, string contentType)
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(HttpStatusCode.Unauthorized, content, contentType);
-    }
+    public static HttpResult Unauthorized(byte[] content, string contentType) 
+        => new(HttpStatusCode.Unauthorized, content, contentType);
 
     /// <summary>
     ///     Creates a new HTTP response as 403 Forbidden.
@@ -219,12 +186,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Forbidden(string content, string contentType = "text/plain")
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(HttpStatusCode.Forbidden, Encoding.UTF8.GetBytes(content), contentType);
-    }
+    public static HttpResult Forbidden(string content, string contentType = "text/plain") 
+        => new(HttpStatusCode.Forbidden, Encoding.UTF8.GetBytes(content), contentType);
 
     /// <summary>
     ///     Creates a new HTTP response as 403 Forbidden, specified content as a byte array and content type.
@@ -232,12 +195,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Forbidden(byte[] content, string contentType)
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(HttpStatusCode.Forbidden, content, contentType);
-    }
+    public static HttpResult Forbidden(byte[] content, string contentType) 
+        => new(HttpStatusCode.Forbidden, content, contentType);
 
     /// <summary>
     ///     Creates a new HTTP response as 404 Not Found.
@@ -252,12 +211,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult NotFound(string content, string contentType = "text/plain")
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(HttpStatusCode.NotFound, Encoding.UTF8.GetBytes(content), contentType);
-    }
+    public static HttpResult NotFound(string content, string contentType = "text/plain") 
+        => new(HttpStatusCode.NotFound, Encoding.UTF8.GetBytes(content), contentType);
 
     /// <summary>
     ///     Creates a new HTTP response as 404 Not Found, the specified content as a byte array and content type.
@@ -265,12 +220,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult NotFound(byte[] content, string contentType)
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(HttpStatusCode.NotFound, content, contentType);
-    }
+    public static HttpResult NotFound(byte[] content, string contentType) 
+        => new(HttpStatusCode.NotFound, content, contentType);
 
     /// <summary>
     ///     Creates a new HTTP response as 500 Internal Server Error.
@@ -285,12 +236,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult InternalServerError(string content, string contentType = "text/plain")
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(HttpStatusCode.InternalServerError, Encoding.UTF8.GetBytes(content), contentType);
-    }
+    public static HttpResult InternalServerError(string content, string contentType = "text/plain") 
+        => new(HttpStatusCode.InternalServerError, Encoding.UTF8.GetBytes(content), contentType);
 
     /// <summary>
     ///     Creates a new HTTP response as 500 Internal Server Error, the specified content as a byte array and content type.
@@ -298,12 +245,8 @@ public class HttpResult : IHttpResult
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult InternalServerError(byte[] content, string contentType)
-    {
-        Assert.NotNull(content, nameof(content));
-
-        return new(HttpStatusCode.InternalServerError, content, contentType);
-    }
+    public static HttpResult InternalServerError(byte[] content, string contentType) 
+        => new(HttpStatusCode.InternalServerError, content, contentType);
 
     /// <summary>
     ///     Implicitly converts an <see cref="HttpResult"/> to a <see cref="Task{HttpResult}"/> for asynchronous handling.

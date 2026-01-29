@@ -27,7 +27,8 @@ public abstract class ComponentSet : IComponentSet
     /// <inheritdoc />
     public IEnumerable<Command> GetCommands(Func<Command, bool> predicate, bool browseNestedComponents = true)
     {
-        Assert.NotNull(predicate, nameof(predicate));
+        if (predicate == null)
+            throw new ArgumentNullException(nameof(predicate));
 
         if (!browseNestedComponents)
             return _items.OfType<Command>().Where(predicate);
@@ -53,7 +54,8 @@ public abstract class ComponentSet : IComponentSet
     /// <inheritdoc />
     public IEnumerable<CommandGroup> GetGroups(Func<CommandGroup, bool> predicate, bool browseNestedComponents = true)
     {
-        Assert.NotNull(predicate, nameof(predicate));
+        if (predicate == null)
+            throw new ArgumentNullException(nameof(predicate));
 
         if (!browseNestedComponents)
             return _items.OfType<CommandGroup>().Where(predicate);
@@ -320,7 +322,8 @@ public abstract class ComponentSet : IComponentSet
 
         foreach (var component in components)
         {
-            Assert.NotNull(component, nameof(component));
+            if (component == null)
+                continue;
 
             if (_items.Contains(component))
                 continue;

@@ -32,7 +32,8 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
                 // Configure remaining prefixes if any were provided in configuration.
                 foreach (var prefix in configuration.GetSection("Commands:Http:Prefixes").GetChildren())
                 {
-                    Logger?.LogDebug("Configuring HTTP prefix: {Prefix}", prefix.Value);
+                    if (Logger?.IsEnabled(LogLevel.Debug) == true)
+                        Logger.LogDebug("Configuring HTTP prefix: {Prefix}", prefix.Value);
 
                     if (!string.IsNullOrWhiteSpace(prefix.Value) && !httpListener.Prefixes.Contains(prefix.Value))
                         httpListener.Prefixes.Add(prefix.Value);
@@ -42,14 +43,18 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
             httpListener.Start();
 
             foreach (var prefix in httpListener.Prefixes)
-                Logger?.LogInformation("Listening on {Prefix}", prefix);
+            {
+                if (Logger?.IsEnabled(LogLevel.Information) == true)
+                    Logger.LogInformation("Listening on {Prefix}", prefix);
+            }
 
             _linkedTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _runningTask = Task.Run(() => StartListening(_linkedTokenSrc.Token), _linkedTokenSrc.Token);
         }
         catch (HttpListenerException ex)
         {
-            Logger?.LogError(ex, "Failed to start HTTP listener. Ensure that the application has permission to use the specified prefixes, or specify permissions in case none are set.");
+            if (Logger?.IsEnabled(LogLevel.Error) == true)
+                Logger.LogError(ex, "Failed to start HTTP listener. Ensure that the application has permission to use the specified prefixes, or specify permissions in case none are set.");
 
             throw;
         }
@@ -67,7 +72,8 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
         if (_runningTask is null)
             return;
 
-        Logger?.LogInformation("Stopping {FactoryType}...", nameof(HttpCommandExecutionFactory));
+        if (Logger?.IsEnabled(LogLevel.Information) == true)
+            Logger.LogInformation("Stopping {FactoryType}...", nameof(HttpCommandExecutionFactory));
 
         try
         {
@@ -82,7 +88,8 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
                 .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         }
 
-        Logger?.LogInformation("{FactoryType} stopped.", nameof(HttpCommandExecutionFactory));
+        if (Logger?.IsEnabled(LogLevel.Information) == true)
+            Logger.LogInformation("{FactoryType} stopped.", nameof(HttpCommandExecutionFactory));
     }
 
     /// <summary>
@@ -102,7 +109,8 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
 
         scope.Context = new HttpCommandContext(requestContext, scope.Scope.ServiceProvider);
 
-        Logger?.LogInformation("Received inbound request: {Request}", scope.Context);
+        if (Logger?.IsEnabled(LogLevel.Information) == true)
+            Logger.LogInformation("Received inbound request: {Request}", scope.Context);
 
         await ExecuteScope(scope, new()
         {

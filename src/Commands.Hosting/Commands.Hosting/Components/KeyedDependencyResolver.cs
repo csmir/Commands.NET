@@ -4,7 +4,7 @@ internal sealed class KeyedDependencyResolver(IServiceProvider provider) : IDepe
 {
     public object? GetService(DependencyParameter dependency)
     {
-        if (provider is IKeyedServiceProvider keyedProvider && dependency.Attributes.FirstOrDefault<FromKeyedServicesAttribute>() is { Key: var key })
+        if (provider is IKeyedServiceProvider keyedProvider && dependency.Attributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is { Key: var key })
             return keyedProvider.GetKeyedService(dependency.Type, key);
 
         return provider.GetService(dependency.Type);

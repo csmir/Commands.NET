@@ -7,7 +7,7 @@
 		<LangVersion>14.0</LangVersion>
 		<WarningsAsErrors>true</WarningsAsErrors>
 		<IsAotCompatible Condition="'$(TargetFramework)' == 'net10'">true</IsAotCompatible>
-		<NoWarn>CA1822;IDE0130;IDE0290;IDE0056;SYSLIB1045</NoWarn>
+		<NoWarn>CA1822;CA1510;IDE0130;IDE0290;IDE0056;SYSLIB1045</NoWarn>
 
 		<AssemblyVersion>2.0</AssemblyVersion>
 		<PackageVersion>2.0.0-alpha.31</PackageVersion> <!--\-alpha.1-->
@@ -51,11 +51,6 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-		<InternalsVisibleTo Include="Commands.Hosting" />
-		<InternalsVisibleTo Include="Commands.Http" />
 	</ItemGroup>
 
 </Project>

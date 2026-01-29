@@ -45,7 +45,8 @@ public abstract class ExecuteConditionAttribute(
     /// <returns>A new <see cref="ConditionResult"/> holding a failed evaluation result.</returns>
     public virtual ConditionResult Error(string error)
     {
-        Assert.NotNullOrEmpty(error, nameof(error));
+        if (string.IsNullOrEmpty(error))
+            throw new ArgumentNullException(nameof(error));
 
         return ConditionResult.FromError(new ConditionException(error));
     }

@@ -32,7 +32,8 @@ public abstract class TypeParser : IParser
     /// <exception cref="ArgumentNullException">Thrown when the provided <paramref name="error"/> is <see langword="null"/> or empty.</exception>
     public ParseResult Error(string error)
     {
-        Assert.NotNullOrEmpty(error, nameof(error));
+        if (string.IsNullOrEmpty(error))
+            throw new ArgumentNullException(nameof(error));
 
         return ParseResult.FromError(new ParserException(error));
     }

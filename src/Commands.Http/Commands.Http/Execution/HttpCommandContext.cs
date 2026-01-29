@@ -52,7 +52,7 @@ public class HttpCommandContext : IResourceContext
 
         _services = services;
 
-        var arguments = Array.Empty<string>();
+        var arguments = new List<string>();
         var rootPath = Request.Url!.AbsolutePath[1..];
 
         while (true)
@@ -61,12 +61,12 @@ public class HttpCommandContext : IResourceContext
 
             if (indexOf == -1)
             {
-                Commands.Utilities.CopyTo(ref arguments, rootPath);
+                arguments.Add(rootPath);
                 break;
             }
             else
             {
-                Commands.Utilities.CopyTo(ref arguments, rootPath[..indexOf]);
+                arguments.Add(rootPath[..indexOf]);
 
                 rootPath = rootPath[(indexOf + 1)..];
 
@@ -78,13 +78,13 @@ public class HttpCommandContext : IResourceContext
         // Make this a variable as the getter of QueryString doesn't store the produced value.
         var queryString = Request.QueryString;
 
-        var arg = new KeyValuePair<string, object?>[arguments.Length + queryString.Count];
+        var arg = new KeyValuePair<string, object?>[arguments.Count + queryString.Count];
 
-        for (var i = 0; i < arguments.Length; i++)
+        for (var i = 0; i < arguments.Count; i++)
             arg[i] = new(arguments[i], null);
 
         for (var i = 0; i < queryString.Count; i++)
-            arg[arguments.Length + i] = new(queryString.GetKey(i)!, queryString.Get(i));
+            arg[arguments.Count + i] = new(queryString.GetKey(i)!, queryString.Get(i));
 
         Arguments = new(arg);
         Elements = new Dictionary<string, object?>();
@@ -105,7 +105,7 @@ public class HttpCommandContext : IResourceContext
         if (_closed)
             throw new InvalidOperationException("The HTTP response has already been sent.");
 
-        Assert.NotNull(result, nameof(result));
+        ArgumentNullException.ThrowIfNull(result);
 
         Response.StatusCode = (int)result.StatusCode;
         Response.StatusDescription = result.StatusCode.ToString();

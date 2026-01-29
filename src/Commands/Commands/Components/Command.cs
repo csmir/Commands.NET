@@ -113,7 +113,7 @@ public class Command : IComponent, IParameterCollection
     public Command(Delegate executionDelegate, string[] names, ComponentOptions? options = null)
         : this(new CommandStaticActivator(executionDelegate.Method, executionDelegate.Target), options ??= ComponentOptions.Default)
     {
-        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(names));
+        NameBindingValidation.NotNullOrInvalid(names, options.NameValidation, nameof(names));
 
         Names = names;
         Ignore = false;
@@ -134,7 +134,7 @@ public class Command : IComponent, IParameterCollection
     {
         var names = Attributes.FirstOrDefault<INameBinding>()?.Names ?? [];
 
-        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
+        NameBindingValidation.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
 
         Names = names;
         Ignore = Attributes.Any(x => x is IgnoreAttribute);
@@ -243,7 +243,8 @@ public class Command : IComponent, IParameterCollection
                 : TestResult.FromError(test, test.ShouldEvaluateTo, targetType, exception);
         }
 
-        Assert.NotNull(contextCreationDelegate, nameof(contextCreationDelegate));
+        if (contextCreationDelegate == null)
+            throw new ArgumentNullException(nameof(contextCreationDelegate));
 
         options ??= ExecutionOptions.Default;
 

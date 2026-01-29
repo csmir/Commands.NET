@@ -45,7 +45,8 @@ public class ComponentProvider : IComponentProvider
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="components"/> is <see langword="null"/>.</exception>
     public ComponentProvider(ComponentTree components)
     {
-        Assert.NotNull(components, nameof(components));
+        if (components == null)
+            throw new ArgumentNullException(nameof(components));
 
         Components = components;
     }

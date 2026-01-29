@@ -78,7 +78,7 @@ public class CommandGroup : ComponentSet, IComponent
     {
         options ??= ComponentOptions.Default;
 
-        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(names));
+        NameBindingValidation.NotNullOrInvalid(names, options.NameValidation, nameof(names));
 
         Ignore = false;
         Attributes = [];
@@ -103,7 +103,8 @@ public class CommandGroup : ComponentSet, IComponent
     {
         options ??= ComponentOptions.Default;
 
-        Assert.NotNull(type, nameof(type));
+        if (type == null)
+            throw new ArgumentNullException(nameof(type));
 
         if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
             throw new ComponentFormatException($"The provided type is not a valid implementation of {nameof(CommandModule)}. Ensure it is not abstract, and does not contain unimplemented generic parameters.");
@@ -114,7 +115,7 @@ public class CommandGroup : ComponentSet, IComponent
 
         var names = attributes.FirstOrDefault<INameBinding>()?.Names ?? [];
 
-        Assert.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
+        NameBindingValidation.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
 
         Names = names;
         Ignore = attributes.Any(x => x is IgnoreAttribute);
