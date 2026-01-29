@@ -32,7 +32,10 @@ public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
     [HttpGet("dowork")]
     public async Task DoWork()
     {
-        var response = Ok("Doing work").WithHeader("X-Detached", "true");
+        var response = Ok("Doing work");
+
+        response.Headers["X-Process-Id"] = Guid.NewGuid().ToString();
+        response.Headers["X-Start-Time"] = DateTime.UtcNow.ToString("o");
 
         // Submit the response immediately, so the client receives it without waiting for the long-running process to complete.
         Respond(response);

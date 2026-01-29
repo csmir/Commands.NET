@@ -35,5 +35,5 @@ public interface IHttpResult
     /// <summary>
     ///     A collection of headers to include in the HTTP response. Append this dictionary with any headers you want to include in the response.
     /// </summary>
-    IReadOnlyDictionary<string, string> Headers { get; }
+    IDictionary<string, string> Headers { get; }
 }

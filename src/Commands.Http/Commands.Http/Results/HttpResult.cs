@@ -1,13 +1,47 @@
 ﻿namespace Commands.Http;
 
 /// <summary>
+///     A type containing constants for common HTTP header names.
+/// </summary>
+public static class HttpHeaderNames
+{
+    /// <summary>
+    ///     The "Content-Type" HTTP header.
+    /// </summary>
+    public const string ContentType = "Content-Type";
+
+    /// <summary>
+    ///     The "Content-Length" HTTP header.
+    /// </summary>
+    public const string ContentLength = "Content-Length";
+
+    /// <summary>
+    ///     The "Authorization" HTTP header.
+    /// </summary>
+    public const string Authorization = "Authorization";
+
+    /// <summary>
+    ///     The "Accept" HTTP header.
+    /// </summary>
+    public const string Accept = "Accept";
+
+    /// <summary>
+    ///     A custom HTTP header that Commands.Http can use to convey error descriptions in development scenarios.  
+    /// </summary>
+    public const string XLibErrDescription = "CN-Error-Description";
+
+    /// <summary>
+    ///     A custom HTTP header that Commands.Http can use to convey error origins in development scenarios.
+    /// </summary>
+    public const string XLibErrOrigin = "CN-Error-Origin";
+}
+
+/// <summary>
 ///     Represents the response of an HTTP request, containing the status code, content, and content type.
 /// </summary>
 [DebuggerDisplay("{ToString()}")]
 public class HttpResult : IHttpResult
 {
-    private readonly Dictionary<string, string> _headers = new(StringComparer.OrdinalIgnoreCase);
-
     /// <inheritdoc />
     public HttpStatusCode StatusCode { get; }
 
@@ -21,10 +55,7 @@ public class HttpResult : IHttpResult
     public object? Content { get; }
 
     /// <inheritdoc />
-    /// <remarks>
-    ///     Add headers to this collection by using the <see cref="WithHeader(string, string)"/> method.
-    /// </remarks>
-    public IReadOnlyDictionary<string, string> Headers => _headers;
+    public IDictionary<string, string> Headers { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="HttpResult"/> class with a default status code of 204 No Content.
@@ -53,21 +84,6 @@ public class HttpResult : IHttpResult
         ContentType = contentType;
 
         StatusCode = code;
-    }
-
-    /// <summary>
-    ///     Adds a header to the HTTP response if it does not already exist, or replaces the value if it does.
-    /// </summary>
-    /// <param name="key">The key of the header to add. For example: "X-API-KEY"</param>
-    /// <param name="value">The value of the header to add.</param>
-    /// <returns>The same <see cref="HttpResult"/> for call-chaining.</returns>
-    public HttpResult WithHeader([DisallowNull] string key, string value)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(key);
-
-        _headers[key] = value;
-
-        return this;
     }
 
     /// <summary>

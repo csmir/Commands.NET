@@ -1,6 +1,7 @@
 ﻿using Commands.Conditions;
 using Commands.Hosting;
 using Commands.Parsing;
+using System.Net.Http.Headers;
 
 namespace Commands.Http;
 
@@ -20,9 +21,13 @@ public class HttpResultHandler(IServiceProvider services) : ResultHandler
         if (exception is HttpConditionException httpException)
             context.Respond(httpException.Response);
         else
-            context.Respond(_isDevelopment
-                ? HttpResult.Forbidden(exception.Message)
-                : HttpResult.Forbidden());
+        {
+            var response = new HttpResult(HttpStatusCode.Forbidden);
+
+            BuildErrorHeaders(response, exception, nameof(ConditionUnmet));
+
+            context.Respond(response);
+        }
 
         return ValueTask.FromResult(true);
     }
@@ -33,9 +38,13 @@ public class HttpResultHandler(IServiceProvider services) : ResultHandler
         if (exception is HttpConditionException httpException)
             context.Respond(httpException.Response);
         else
-            context.Respond(_isDevelopment
-                ? HttpResult.InternalServerError(exception.Message)
-                : HttpResult.InternalServerError());
+        {
+            var response = new HttpResult(HttpStatusCode.InternalServerError);
+
+            BuildErrorHeaders(response, exception, nameof(InvokeFailed));
+
+            context.Respond(response);
+        }
 
         return ValueTask.FromResult(true);
     }
@@ -43,9 +52,11 @@ public class HttpResultHandler(IServiceProvider services) : ResultHandler
     /// <inheritdoc />
     protected override ValueTask<bool> CommandNotFound(IContext context, CommandNotFoundException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        context.Respond(_isDevelopment
-            ? HttpResult.NotFound(exception.Message)
-            : HttpResult.NotFound());
+        var response = new HttpResult(HttpStatusCode.InternalServerError);
+
+        BuildErrorHeaders(response, exception, nameof(CommandNotFound));
+
+        context.Respond(response);
 
         return ValueTask.FromResult(true);
     }
@@ -53,9 +64,11 @@ public class HttpResultHandler(IServiceProvider services) : ResultHandler
     /// <inheritdoc />
     protected override ValueTask<bool> RouteIncomplete(IContext context, CommandRouteIncompleteException exception, SearchResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        context.Respond(_isDevelopment
-            ? HttpResult.NotFound(exception.Message)
-            : HttpResult.NotFound());
+        var response = new HttpResult(HttpStatusCode.NotFound);
+
+        BuildErrorHeaders(response, exception, nameof(RouteIncomplete));
+
+        context.Respond(response);
 
         return ValueTask.FromResult(true);
     }
@@ -63,9 +76,11 @@ public class HttpResultHandler(IServiceProvider services) : ResultHandler
     /// <inheritdoc />
     protected override ValueTask<bool> ParamsOutOfRange(IContext context, CommandOutOfRangeException exception, ParseResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        context.Respond(_isDevelopment
-            ? HttpResult.BadRequest(exception.Message)
-            : HttpResult.BadRequest());
+        var response = new HttpResult(HttpStatusCode.BadRequest);
+
+        BuildErrorHeaders(response, exception, nameof(ParamsOutOfRange));
+
+        context.Respond(response);
 
         return ValueTask.FromResult(true);
     }
@@ -76,9 +91,13 @@ public class HttpResultHandler(IServiceProvider services) : ResultHandler
         if (exception is HttpConditionException httpException)
             context.Respond(httpException.Response);
         else
-            context.Respond(_isDevelopment
-                ? HttpResult.BadRequest(exception.Message)
-                : HttpResult.BadRequest());
+        {
+            var response = new HttpResult(HttpStatusCode.BadRequest);
+
+            BuildErrorHeaders(response, exception, nameof(ParseFailed));
+
+            context.Respond(response);
+        }
 
         return ValueTask.FromResult(true);
     }
@@ -86,10 +105,21 @@ public class HttpResultHandler(IServiceProvider services) : ResultHandler
     /// <inheritdoc />
     protected override ValueTask<bool> Unhandled(IContext context, Exception? exception, IResult result, IServiceProvider services, CancellationToken cancellationToken)
     {
-        context.Respond(_isDevelopment
-            ? HttpResult.InternalServerError(exception?.Message ?? "An unhandled error occurred.")
-            : HttpResult.InternalServerError());
+        var response = new HttpResult(HttpStatusCode.InternalServerError);
+
+        BuildErrorHeaders(response, exception, nameof(Unhandled));
+
+        context.Respond(response);
 
         return ValueTask.FromResult(true);
+    }
+
+    private void BuildErrorHeaders(HttpResult result, Exception? exception, string source)
+    {
+        if (_isDevelopment)
+        {
+            result.Headers[HttpHeaderNames.XLibErrDescription] = exception?.Message ?? "An unhandled error occurred.";
+            result.Headers[HttpHeaderNames.XLibErrOrigin] = source;
+        }
     }
 }
