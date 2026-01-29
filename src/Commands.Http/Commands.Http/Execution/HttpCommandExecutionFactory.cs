@@ -32,8 +32,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
                 // Configure remaining prefixes if any were provided in configuration.
                 foreach (var prefix in configuration.GetSection("Commands:Http:Prefixes").GetChildren())
                 {
-                    if (Logger?.IsEnabled(LogLevel.Debug) == true)
-                        Logger.LogDebug("Configuring HTTP prefix: {Prefix}", prefix.Value);
+                    Logger?.LogDebug("Configuring HTTP prefix: {Prefix}", prefix.Value);
 
                     if (!string.IsNullOrWhiteSpace(prefix.Value) && !httpListener.Prefixes.Contains(prefix.Value))
                         httpListener.Prefixes.Add(prefix.Value);
@@ -43,18 +42,14 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
             httpListener.Start();
 
             foreach (var prefix in httpListener.Prefixes)
-            {
-                if (Logger?.IsEnabled(LogLevel.Information) == true)
-                    Logger.LogInformation("Listening on {Prefix}", prefix);
-            }
+                Logger?.LogInformation("Listening on {Prefix}", prefix);
 
             _linkedTokenSrc = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             _runningTask = Task.Run(() => StartListening(_linkedTokenSrc.Token), _linkedTokenSrc.Token);
         }
         catch (HttpListenerException ex)
         {
-            if (Logger?.IsEnabled(LogLevel.Error) == true)
-                Logger.LogError(ex, "Failed to start HTTP listener. Ensure that the application has permission to use the specified prefixes, or specify permissions in case none are set.");
+            Logger?.LogError(ex, "Failed to start HTTP listener. Ensure that the application has permission to use the specified prefixes, or specify permissions in case none are set.");
 
             throw;
         }
