@@ -322,10 +322,7 @@ public abstract class ComponentSet : IComponentSet
 
         foreach (var component in components)
         {
-            if (component == null)
-                continue;
-
-            if (_items.Contains(component))
+            if (component == null || _items.Contains(component))
                 continue;
 
             if (this is ComponentTree rootSet)

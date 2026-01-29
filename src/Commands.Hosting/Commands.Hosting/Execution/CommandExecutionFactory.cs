@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace Commands.Hosting;
 
@@ -36,7 +35,7 @@ public class CommandExecutionFactory
         Services = serviceProvider;
         
         Logger = serviceProvider.GetService<ILogger<CommandExecutionFactory>>();
-
+        
         var handlers = resultHandlers.OrderBy(x => x.Order).ToArray();
 
         execProvider.OnFailure += async (context, result, exception, services) =>
@@ -62,31 +61,22 @@ public class CommandExecutionFactory
                     break;
             }
 
-            if (Logger?.IsEnabled(LogLevel.Information) == true)
-                Logger.LogInformation("Execution succeeded for request: {Request}.", context);
+            Logger?.LogInformation("Execution succeeded for request: {Request}.", context);
 
             services.GetService<IExecutionScope>()?.Dispose();
         };
 
-        if (Logger?.IsEnabled(LogLevel.Information) == true)
-            Logger.LogInformation("Consuming {ExecutionProvider}, with {HandlerCount} result handler{MoreOrOne}.", Provider.GetType().FullName, handlers.Length, handlers.Length != 1 ? "(s)" : "");
+        Logger?.LogInformation("Consuming {ExecutionProvider}, with {HandlerCount} result handler{MoreOrOne}.", Provider.GetType().FullName, handlers.Length, handlers.Length != 1 ? "(s)" : "");
 
         var commands = execProvider.Components.GetCommands().ToArray();
 
         foreach (var command in commands)
-            if (Logger?.IsEnabled(LogLevel.Debug) == true)
-                Logger.LogDebug("Registered {Command} as \"{Name}\".", command.ToString(), command.GetFullName());
+            Logger?.LogDebug("Registered {Command} as \"{Name}\".", command.ToString(), command.GetFullName());
 
         if (commands.Length == 0)
-        {
-            if (Logger?.IsEnabled(LogLevel.Warning) == true)
-                Logger.LogWarning("No commands discovered. The factory will not handle inbound requests.");
-        }
+            Logger?.LogWarning("No commands discovered. The factory will not handle inbound requests.");
         else
-        {
-            if (Logger?.IsEnabled(LogLevel.Information) == true)
-                Logger.LogInformation("Discovered {CommandCount} command{MoreOrOne}.", commands.Length, commands.Length > 1 ? "s" : "");
-        }
+            Logger?.LogInformation("Discovered {CommandCount} command{MoreOrOne}.", commands.Length, commands.Length > 1 ? "s" : "");
     }
 
     /// <summary>
@@ -106,17 +96,12 @@ public class CommandExecutionFactory
         if (scope?.Context is null)
             throw new InvalidOperationException($"{nameof(IExecutionScope)} must have a context set before executing it. Use {nameof(CreateScope)} with a provided context or assign the scope before it enters {nameof(ExecuteScope)}.");
 
-        options ??= ExecutionOptions.Default;
+        Logger?.LogDebug(
+            "Starting execution for request: {Request}",
+            scope.Context
+        );
 
-        if (Logger?.IsEnabled(LogLevel.Debug) == true)
-        {
-            Logger.LogDebug(
-                "Starting execution for request: {Request}",
-                scope.Context
-            );
-        }
-
-        await Provider.Execute(scope.Context, options);
+        await Provider.Execute(scope.Context, options ?? ExecutionOptions.Default);
     }
 
     /// <summary>
@@ -133,13 +118,10 @@ public class CommandExecutionFactory
         executionScope.Scope = scope;
         executionScope.Context = context!;
 
-        if (Logger?.IsEnabled(LogLevel.Debug) == true)
-        {
-            Logger.LogDebug(
-                "Created execution scope of type {ExecutionScopeType}.",
-                executionScope.GetType().Name
-            );
-        }
+        Logger?.LogDebug(
+            "Created execution scope of type {ExecutionScopeType}.",
+            executionScope.GetType().Name
+        );
 
         return executionScope;
     }

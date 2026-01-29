@@ -7,7 +7,7 @@
 		<LangVersion>14.0</LangVersion>
 		<WarningsAsErrors>true</WarningsAsErrors>
 		<IsAotCompatible>true</IsAotCompatible>
-		<NoWarn>CA1822;IDE0130;IDE0290</NoWarn>
+		<NoWarn>CA1822;CA1873;IDE0130;IDE0290</NoWarn>
 
 		<AssemblyVersion>2.0</AssemblyVersion>
 		<PackageVersion>2.0.0-alpha.31</PackageVersion> <!--\-alpha.1-->

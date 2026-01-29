@@ -72,8 +72,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
         if (_runningTask is null)
             return;
 
-        if (Logger?.IsEnabled(LogLevel.Information) == true)
-            Logger.LogInformation("Stopping {FactoryType}...", nameof(HttpCommandExecutionFactory));
+        Logger?.LogInformation("Stopping {FactoryType}...", nameof(HttpCommandExecutionFactory));
 
         try
         {
@@ -88,8 +87,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
                 .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         }
 
-        if (Logger?.IsEnabled(LogLevel.Information) == true)
-            Logger.LogInformation("{FactoryType} stopped.", nameof(HttpCommandExecutionFactory));
+        Logger?.LogInformation("{FactoryType} stopped.", nameof(HttpCommandExecutionFactory));
     }
 
     /// <summary>
@@ -109,8 +107,7 @@ public class HttpCommandExecutionFactory(IComponentProvider executionProvider, I
 
         scope.Context = new HttpCommandContext(requestContext, scope.Scope.ServiceProvider);
 
-        if (Logger?.IsEnabled(LogLevel.Information) == true)
-            Logger.LogInformation("Received inbound request: {Request}", scope.Context);
+        Logger?.LogInformation("Received inbound request: {Request}", scope.Context);
 
         await ExecuteScope(scope, new()
         {
