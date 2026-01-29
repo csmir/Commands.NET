@@ -1,22 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	  <PublishAot>true</PublishAot>
-	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <InvariantGlobalization>true</InvariantGlobalization>
-	  <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
-	  <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
-	  <StackTraceSupport>false</StackTraceSupport>
-	  <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
-	  <NoWarn>CA1822;IDE0130</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PublishAot>true</PublishAot>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
+		<IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
+		<StackTraceSupport>false</StackTraceSupport>
+		<IlcOptimizationPreference>Speed</IlcOptimizationPreference>
+		<NoWarn>CA1822;IDE0130</NoWarn>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Commands\Commands.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\Commands\Commands.csproj" />
+	</ItemGroup>
 
 </Project>
