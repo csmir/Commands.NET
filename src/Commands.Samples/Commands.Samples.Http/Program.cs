@@ -62,7 +62,7 @@ host.UseComponents(components =>
 
     // This adds a command that can be invoked via HTTP GET requests under the following url: http://localhost:5000/ping.
     // The command responds with a simple "OK!" message.
-    components.Add(new Command([HttpGet] () => new HttpResult(HttpStatusCode.OK), "ping"));
+    components.Add(new Command([HttpGet] () => new HttpResult(200), "ping"));
 
     // This adds a command that can be invoked via HTTP GET requests under the following url: http://localhost:5000/help.
     // The command lists all available commands in the component tree, providing a simple way to discover what commands are available.

@@ -66,9 +66,29 @@ public class HttpResult : IHttpResult
     /// <summary>
     ///     Initializes a new instance of the <see cref="HttpResult"/> class with the specified status code.
     /// </summary>
+    /// <param name="code">The numeric status code of this result. Converted to a value of <see cref="HttpStatusCode"/> on initialization.</param>
+    public HttpResult(int code)
+        : this((HttpStatusCode)code)
+    {
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="HttpResult"/> class with the specified status code.
+    /// </summary>
     /// <param name="code">The status code of this result.</param>
     public HttpResult(HttpStatusCode code)
         => StatusCode = code;
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="HttpResult"/> class with the specified status code, content, and content type.
+    /// </summary>
+    /// <param name="code">The status code of this result. Converted to a value of <see cref="HttpStatusCode"/> on initialization.</param>
+    /// <param name="content">The content of this result.</param>
+    /// <param name="contentType">The content type of this result.</param>
+    public HttpResult(int code, [DisallowNull] object content, string? contentType = null)
+        : this((HttpStatusCode)code, content, contentType)
+    {
+    }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="HttpResult"/> class with the specified status code, content, and content type.

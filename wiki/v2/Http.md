@@ -56,7 +56,7 @@ host.UseComponents(components =>
 {
     components.Add(new Command([HttpGet] () =>
     {
-        return HttpResult.Ok("OK!");
+        return new HttpResult(200);
     }, "ping"));
 });
 
@@ -87,7 +87,7 @@ public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
 {
     [HttpGet("get")]
     public IHttpResult Get(int initialValue, Guid anotherValue)
-        => HttpResult.Ok($"Hello World; {initialValue}, {anotherValue}");
+        => Ok($"Hello World; {initialValue}, {anotherValue}");
 }
 ```
 
@@ -104,7 +104,7 @@ public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
 {
     [HttpPost("post")]
     public IHttpResult Post([JsonBody] string content)
-        => HttpResult.Ok($"Received: {content}");
+        => Ok($"Received: {content}");
 }
 ```
 
@@ -128,7 +128,7 @@ public sealed class HttpModule : HttpCommandModule<HttpCommandContext>
 {
     [HttpMethod("CUSTOM", "custom")]
     public IHttpResult CustomMethod()
-        => HttpResult.Ok("This is a custom HTTP method response.");
+        => Ok("This is a custom HTTP method response.");
 }
 ```
 
