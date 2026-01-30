@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Text;
 
 
@@ -61,10 +62,7 @@ host.UseComponents(components =>
 
     // This adds a command that can be invoked via HTTP GET requests under the following url: http://localhost:5000/ping.
     // The command responds with a simple "OK!" message.
-    components.Add(new Command([HttpGet] () =>
-    {
-        return HttpResult.Ok("OK!");
-    }, "ping"));
+    components.Add(new Command([HttpGet] () => new HttpResult(HttpStatusCode.OK), "ping"));
 
     // This adds a command that can be invoked via HTTP GET requests under the following url: http://localhost:5000/help.
     // The command lists all available commands in the component tree, providing a simple way to discover what commands are available.
@@ -77,7 +75,7 @@ host.UseComponents(components =>
         foreach (var command in commands)
             response.AppendLine($"- {command}");
 
-        return HttpResult.Ok(response.ToString());
+        return new HttpResult(HttpStatusCode.OK, response.ToString());
     }, "help"));
 });
 

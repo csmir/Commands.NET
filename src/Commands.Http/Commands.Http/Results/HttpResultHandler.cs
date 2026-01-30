@@ -1,7 +1,6 @@
 ﻿using Commands.Conditions;
 using Commands.Hosting;
 using Commands.Parsing;
-using System.Net.Http.Headers;
 
 namespace Commands.Http;
 
@@ -118,8 +117,8 @@ public class HttpResultHandler(IServiceProvider services) : ResultHandler
     {
         if (_isDevelopment)
         {
-            result.Headers[HttpHeaderNames.XLibErrDescription] = exception?.Message ?? "An unhandled error occurred.";
-            result.Headers[HttpHeaderNames.XLibErrOrigin] = source;
+            result.Headers[HttpHeaderNames.LibraryErrorDescription] = exception?.Message ?? "An unhandled error occurred.";
+            result.Headers[HttpHeaderNames.LibraryErrorOrigin] = source;
         }
     }
 }

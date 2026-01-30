@@ -14,7 +14,7 @@ public interface IHttpResult
     /// <summary>
     ///     Gets the content of the response, if any.
     /// </summary>
-    public object? Content { get;  }
+    public object? Content { get; }
 
     /// <summary>
     ///     Gets the content type of the response, if any.

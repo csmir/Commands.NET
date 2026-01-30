@@ -157,7 +157,7 @@ public class Command : IComponent, IParameterCollection
 
         for (int i = parameters.Length - 1; i < -1; i--)
         {
-            if (parameters[i].IsRemainder) throw new ComponentFormatException("Remainder-marked parameters must be the last parameter in the parameter list of a command."); 
+            if (parameters[i].IsRemainder) throw new ComponentFormatException("Remainder-marked parameters must be the last parameter in the parameter list of a command.");
         }
 
         Parameters = parameters;

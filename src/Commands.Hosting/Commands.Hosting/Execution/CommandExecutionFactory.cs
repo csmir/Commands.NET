@@ -33,9 +33,9 @@ public class CommandExecutionFactory
         Provider = execProvider;
 
         Services = serviceProvider;
-        
+
         Logger = serviceProvider.GetService<ILogger<CommandExecutionFactory>>();
-        
+
         var handlers = resultHandlers.OrderBy(x => x.Order).ToArray();
 
         execProvider.OnFailure += async (context, result, exception, services) =>

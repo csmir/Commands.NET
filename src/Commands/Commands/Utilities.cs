@@ -1,7 +1,7 @@
-﻿using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using Commands.Conditions;
+﻿using Commands.Conditions;
 using Commands.Parsing;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Commands;
 
@@ -334,5 +334,5 @@ public static class Utilities
 
     #endregion
 
-#endregion
+    #endregion
 }

@@ -37,17 +37,8 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The response to send.</param>
     /// <param name="statusCode">The status code of the response.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Json(object content, HttpStatusCode statusCode = HttpStatusCode.OK) 
-        => new(statusCode, content, "application/json");
-
-    /// <summary>
-    ///     Creates a new HTTP response with the specified JSON content and status code.
-    /// </summary>
-    /// <param name="content">The response to send.</param>
-    /// <param name="statusCode">The status code of the response.</param>
-    /// <returns>A </returns>
-    public static HttpResult Json([StringSyntax(StringSyntaxAttribute.Json)] string content, HttpStatusCode statusCode = HttpStatusCode.OK) 
-        => new(statusCode, Encoding.UTF8.GetBytes(content), "application/json");
+    public static HttpResult Json<TObject>([DisallowNull] TObject content, HttpStatusCode statusCode = HttpStatusCode.OK)
+        => new JsonHttpResult<TObject>(content, statusCode);
 
     /// <summary>
     ///     Creates a new HTTP response as 204 No Content.
@@ -62,7 +53,7 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Ok(string content, string contentType = "text/plain") 
+    public static HttpResult Ok(string content, string contentType = "text/plain")
         => new(HttpStatusCode.OK, Encoding.UTF8.GetBytes(content), contentType);
 
     /// <summary>
@@ -71,7 +62,7 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Ok(byte[] content, string contentType) 
+    public static HttpResult Ok(byte[] content, string contentType)
         => new(HttpStatusCode.OK, content, contentType);
 
     /// <summary>
@@ -87,7 +78,7 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult BadRequest(string content, string contentType = "text/plain") 
+    public static HttpResult BadRequest(string content, string contentType = "text/plain")
         => new(HttpStatusCode.BadRequest, Encoding.UTF8.GetBytes(content), contentType);
 
     /// <summary>
@@ -96,7 +87,7 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult BadRequest(byte[] content, string contentType) 
+    public static HttpResult BadRequest(byte[] content, string contentType)
         => new(HttpStatusCode.BadRequest, content, contentType);
 
     /// <summary>
@@ -112,7 +103,7 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Unauthorized(string content, string contentType = "text/plain") 
+    public static HttpResult Unauthorized(string content, string contentType = "text/plain")
         => new(HttpStatusCode.Unauthorized, Encoding.UTF8.GetBytes(content), contentType);
 
     /// <summary>
@@ -121,7 +112,7 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Unauthorized(byte[] content, string contentType) 
+    public static HttpResult Unauthorized(byte[] content, string contentType)
         => new(HttpStatusCode.Unauthorized, content, contentType);
 
     /// <summary>
@@ -137,7 +128,7 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Forbidden(string content, string contentType = "text/plain") 
+    public static HttpResult Forbidden(string content, string contentType = "text/plain")
         => new(HttpStatusCode.Forbidden, Encoding.UTF8.GetBytes(content), contentType);
 
     /// <summary>
@@ -146,7 +137,7 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult Forbidden(byte[] content, string contentType) 
+    public static HttpResult Forbidden(byte[] content, string contentType)
         => new(HttpStatusCode.Forbidden, content, contentType);
 
     /// <summary>
@@ -162,7 +153,7 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult NotFound(string content, string contentType = "text/plain") 
+    public static HttpResult NotFound(string content, string contentType = "text/plain")
         => new(HttpStatusCode.NotFound, Encoding.UTF8.GetBytes(content), contentType);
 
     /// <summary>
@@ -171,7 +162,7 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult NotFound(byte[] content, string contentType) 
+    public static HttpResult NotFound(byte[] content, string contentType)
         => new(HttpStatusCode.NotFound, content, contentType);
 
     /// <summary>
@@ -187,7 +178,7 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult InternalServerError(string content, string contentType = "text/plain") 
+    public static HttpResult InternalServerError(string content, string contentType = "text/plain")
         => new(HttpStatusCode.InternalServerError, Encoding.UTF8.GetBytes(content), contentType);
 
     /// <summary>
@@ -196,6 +187,6 @@ public abstract class HttpCommandModule<T> : CommandModule<T>
     /// <param name="content">The content to respond to the caller with.</param>
     /// <param name="contentType">The type of the content to respond to the caller with.</param>
     /// <returns>A new instance of <see cref="HttpResult"/> containing the values to be served to the caller invoking this operation.</returns>
-    public static HttpResult InternalServerError(byte[] content, string contentType) 
+    public static HttpResult InternalServerError(byte[] content, string contentType)
         => new(HttpStatusCode.InternalServerError, content, contentType);
 }

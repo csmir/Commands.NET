@@ -31,7 +31,7 @@ public abstract class HttpConditionAttribute<T> : ExecuteConditionAttribute<T>
 
     /// <inheritdoc />
     public override ConditionResult Error(string error)
-        => Error(HttpResult.BadRequest(error));
+        => Error(new HttpResult(HttpStatusCode.BadRequest, error));
 
     /// <summary>
     ///     Creates a <see cref="ConditionResult"/> that represents an error condition with the provided status code and error message.

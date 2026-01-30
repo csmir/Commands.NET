@@ -109,7 +109,7 @@ public class HttpCommandContext : IResourceContext
 
         Response.StatusCode = (int)result.StatusCode;
         Response.StatusDescription = result.StatusCode.ToString();
-        
+
         foreach (var (key, value) in result.Headers)
             Response.AddHeader(key, value);
 
@@ -171,7 +171,7 @@ public class HttpCommandContext : IResourceContext
         if (message is IHttpResult httpResult)
             Respond(httpResult);
         else
-            Respond(HttpResult.Json(message!));
+            Respond(new JsonHttpResult<object>(message!));
     }
 
     async ValueTask<object?> IResourceContext.GetResource()
