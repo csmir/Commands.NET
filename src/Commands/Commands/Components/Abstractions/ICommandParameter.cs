@@ -8,14 +8,6 @@ namespace Commands;
 public interface ICommandParameter : ICommandSegment, IParameter
 {
     /// <summary>
-    ///     Gets the position of this parameter in the command's parameter list.
-    /// </summary>
-    /// <remarks>
-    ///     This value is zero-based.
-    /// </remarks>
-    public int Position { get; }
-
-    /// <summary>
     ///     Gets if this parameter is the query remainder or not.
     /// </summary>
     public bool IsRemainder { get; }

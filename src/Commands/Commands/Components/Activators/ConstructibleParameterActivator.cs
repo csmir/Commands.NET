@@ -1,20 +1,44 @@
 ﻿namespace Commands;
 
-internal readonly struct ConstructibleParameterActivator(
-#if NET8_0_OR_GREATER
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-#endif
-        Type type) : IActivator
+internal readonly struct ConstructibleParameterActivator
+    : IActivator
 {
-    private readonly ConstructorInfo _ctor = type.GetAvailableConstructor();
+    private readonly ConstructorInfo _ctor;
+    private readonly DependencyParameter[] _dependencies;
 
     public MethodBase Target
         => _ctor;
 
-    public int ContextIndex
-        => -1;
+    public int SignatureLength { get; }
 
-    public object? Invoke<TContext>(TContext context, Command? command, object?[]? args, ExecutionOptions options)
+    public ConstructibleParameterActivator(
+#if NET6_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+#endif
+        Type type)
+    {
+        _ctor = type.GetAvailableConstructor();
+        _dependencies = [];
+
+        var parameters = _ctor.GetParameters();
+
+        foreach (var parameter in parameters)
+        {
+            if (parameter.GetCustomAttributes().OfType<DependencyAttribute>().Any())
+                Utilities.CopyTo(ref _dependencies, new DependencyParameter(parameter));
+        }
+
+        SignatureLength = parameters.Length;
+    }
+
+    public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options)
         where TContext : IContext
-        => _ctor.Invoke(args);
+    {
+        Utilities.ResolveDependencies(ref args, _dependencies, _ctor, options);
+
+        return _ctor.Invoke(args);
+    }
+
+    public ICommandParameter[] GetParameters(ComponentOptions options)
+        => Utilities.GetCommandParameters(_ctor.GetParameters(), _dependencies, -1, options);
 }

@@ -33,4 +33,9 @@ public interface IParameter
     ///     Gets if this argument is optional or not.
     /// </summary>
     public bool IsOptional { get; }
+
+    /// <summary>
+    ///     Gets the position of the parameter in the signature. This value is zero-based, meaning the first parameter of a signature has a position of 0, the second has a position of 1 and so on.
+    /// </summary>
+    public int Position { get; }
 }

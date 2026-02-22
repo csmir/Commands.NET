@@ -146,22 +146,31 @@ public class Command : IComponent, IParameterCollection
     private Command(IActivator activator, ComponentOptions options)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
     {
-        var parameters = Utilities.GetParameters(activator, options);
-        var attributes = activator.Target.GetAttributes(true);
-
-        Attributes = [.. attributes];
-        Activator = activator;
-        Evaluators = Utilities.GetEvaluators(attributes.OfType<ExecuteConditionAttribute>());
-
-        (MinLength, MaxLength) = Utilities.GetLength(parameters);
-
-        for (int i = parameters.Length - 1; i < -1; i--)
+        try
         {
-            if (parameters[i].IsRemainder) throw new ComponentFormatException("Remainder-marked parameters must be the last parameter in the parameter list of a command.");
+            var parameters = activator.GetParameters(options);
+
+            var attributes = activator.Target.GetAttributes(true);
+
+            Attributes = [.. attributes];
+            Activator = activator;
+            Evaluators = Utilities.GetEvaluators(attributes.OfType<ExecuteConditionAttribute>());
+
+            (MinLength, MaxLength) = Utilities.GetLength(parameters);
+
+            for (int i = parameters.Length - 1; i < -1; i--)
+            {
+                if (parameters[i].IsRemainder) throw new ComponentFormatException("Remainder-marked parameters must be the last parameter in the parameter list of a command.");
+            }
+
+            Parameters = parameters;
+            HasRemainder = parameters.Any(x => x.IsRemainder);
         }
 
-        Parameters = parameters;
-        HasRemainder = parameters.Any(x => x.IsRemainder);
+        catch (Exception ex) when (ex is ComponentFormatException or ArgumentException)
+        {
+            throw new ComponentFormatException($"Failed to create a {nameof(Command)} from the provided method: {activator.Target}. See inner exception for more details.", ex);
+        }
     }
 
     /// <summary>
@@ -181,19 +190,19 @@ public class Command : IComponent, IParameterCollection
         object?[] parameters;
 
         if (!HasParameters && args.RemainingLength == 0)
-            parameters = [];
+            parameters = new object?[Activator.SignatureLength];
         else if (MaxLength == args.RemainingLength || (MaxLength <= args.RemainingLength && HasRemainder) || (MaxLength > args.RemainingLength && MinLength <= args.RemainingLength))
         {
             var arguments = await Utilities.ParseParameters(this, context, args, options).ConfigureAwait(false);
 
-            parameters = new object[arguments.Length];
+            parameters = new object?[Activator.SignatureLength];
 
             for (var i = 0; i < arguments.Length; i++)
             {
                 if (!arguments[i].Success)
                     return ParseResult.FromError(new CommandParsingException(this, arguments[i].Exception));
 
-                parameters[i] = arguments[i].Value;
+                parameters[Parameters[i].Position] = arguments[i].Value;
             }
         }
         else

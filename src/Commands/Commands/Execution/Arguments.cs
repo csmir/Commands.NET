@@ -6,7 +6,7 @@
 [DebuggerDisplay("Arguments = {Count}, Remaining = {RemainingLength}")]
 public struct Arguments
 {
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     const char U0022 = '"';
     const char U0020 = ' ';
     const char U002D = '-';
@@ -121,7 +121,7 @@ public struct Arguments
 
     #region Internals
 
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     internal bool TryGetValue(string parameterName, [NotNullWhen(true)] out object? value)
 #else
     internal bool TryGetValue(string parameterName, out object? value)
@@ -138,7 +138,7 @@ public struct Arguments
         return true;
     }
 
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     internal readonly bool TryGetElementAt(int index, [NotNullWhen(true)] out string? value)
 #else
     internal readonly bool TryGetElementAt(int index, out string? value)
@@ -155,7 +155,7 @@ public struct Arguments
     }
 
     internal readonly string TakeRemaining(string parameterName, char separator)
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
         => string.Join(separator, TakeRemaining(parameterName));
 #else
         => string.Join($"{separator}", TakeRemaining(parameterName));
@@ -216,7 +216,7 @@ public struct Arguments
 
                     if (argument.Length > 1)
                     {
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
                         if (argument[1..].Contains(U0022))
                             openState--;
 #else
@@ -265,7 +265,7 @@ public struct Arguments
                 {
                     if (argument.Length > 1)
                     {
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
                         if (argument[1] is U002D)
                         {
                             if (name is not null)

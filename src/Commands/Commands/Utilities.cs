@@ -35,7 +35,7 @@ public static class Utilities
         return default;
     }
 
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void CopyTo<T>(ref T[] array, T item)
@@ -155,15 +155,13 @@ public static class Utilities
         return results;
     }
 
-    internal static object?[] ResolveDependencies(DependencyParameter[] dependencies, MemberInfo target, ExecutionOptions options)
+    internal static void ResolveDependencies(ref object?[] args, DependencyParameter[] dependencies, MemberInfo target, ExecutionOptions options)
     {
         if (dependencies.Length == 0)
-            return [];
+            return;
 
         var resolver = (options.ServiceProvider.GetService(typeof(IDependencyResolver))
             ?? new DefaultDependencyResolver(options.ServiceProvider)) as IDependencyResolver;
-
-        var resolvedValues = new object?[dependencies.Length];
 
         for (var i = 0; i < dependencies.Length; i++)
         {
@@ -172,22 +170,20 @@ public static class Utilities
             var service = resolver!.GetService(dependency);
 
             if (service != null || dependency.IsNullable)
-                resolvedValues[i] = service;
+                args[dependency.Position] = service;
 
             else if (dependency.Type == typeof(IServiceProvider))
-                resolvedValues[i] = options.ServiceProvider;
+                args[dependency.Position] = options.ServiceProvider;
 
             else if (dependency.Type == typeof(IComponentProvider))
-                resolvedValues[i] = options.ComponentProvider;
+                args[dependency.Position] = options.ComponentProvider;
 
             else if (dependency.IsOptional)
-                resolvedValues[i] = Type.Missing;
+                args[dependency.Position] = Type.Missing;
 
             else
                 throw new ComponentFormatException($"The method or module {target.Name} defines unknown service type {dependency.Type}.");
         }
-
-        return resolvedValues;
     }
 
     #endregion
@@ -229,32 +225,38 @@ public static class Utilities
         return output;
     }
 
-    internal static ICommandParameter[] GetParameters(IActivator activator, ComponentOptions configuration)
+    internal static ICommandParameter[] GetCommandParameters(ParameterInfo[] parameters, DependencyParameter[] dependencies, int contextIndex, ComponentOptions options)
     {
-        var parameters = activator.Target.GetParameters();
+        // The parameters that are dependencies are not included in the command parameters.
+        var realIndex = 0;
+        var realLength = parameters.Length - dependencies.Length;
 
-        if (activator.ContextIndex != -1)
-            parameters = [.. parameters.Skip(activator.ContextIndex + 1)];
+        if (contextIndex != -1)
+            realLength--;
 
-        var arr = new ICommandParameter[parameters.Length];
+        var output = new ICommandParameter[realLength];
 
         for (var i = 0; i < parameters.Length; i++)
         {
+            // If a dependency has already been defined at this position, skip it.
+            if (dependencies.Any(d => d.Position == i) || i == contextIndex)
+                continue;
+
             if (parameters[i].GetCustomAttributes().Any(x => x is DeconstructAttribute))
-                arr[i] = new ConstructibleParameter(parameters[i], configuration);
+                output[realIndex++] = new ConstructibleParameter(parameters[i], options);
             else
-                arr[i] = new CommandParameter(parameters[i], configuration);
+                output[realIndex++] = new CommandParameter(parameters[i], options);
         }
 
-        return arr;
+        return output;
     }
 
-    internal static Tuple<int, int> GetLength(IEnumerable<ICommandParameter> arguments)
+    internal static Tuple<int, int> GetLength(IEnumerable<ICommandParameter> parameters)
     {
         var minLength = 0;
         var maxLength = 0;
 
-        foreach (var parameter in arguments)
+        foreach (var parameter in parameters)
         {
             if (parameter is ConstructibleParameter constructibleParameter)
             {

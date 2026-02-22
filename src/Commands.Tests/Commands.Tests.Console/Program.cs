@@ -3,7 +3,7 @@
 var components = new ComponentTree();
 
 components.AddRange(typeof(Program).Assembly.GetExportedTypes());
-components.Add(new Command((IComponentProvider provider, ConsoleContext context) =>
+components.Add(new Command(([Dependency] IComponentProvider provider, ConsoleContext context) =>
 {
     foreach (var command in provider.Components.GetCommands())
         context.Respond(command);

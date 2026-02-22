@@ -100,54 +100,61 @@ public class CommandGroup : ComponentSet, IComponent
 #endif
         Type type, ComponentOptions? options = null)
     {
-        options ??= ComponentOptions.Default;
-
-        if (type == null)
-            throw new ArgumentNullException(nameof(type));
-
-        if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
-            throw new ComponentFormatException($"The provided type is not a valid implementation of {nameof(CommandModule)}. Ensure it is not abstract, and does not contain unimplemented generic parameters.");
-
-        var attributes = type.GetAttributes(true);
-
-        Attributes = [.. attributes];
-
-        var names = attributes.FirstOrDefault<INameBinding>()?.Names ?? [];
-
-        NameBindingValidation.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
-
-        Names = names;
-        Ignore = attributes.Any(x => x is IgnoreAttribute);
-
-        Activator = new CommandModuleActivator(type);
-
-        if (!Ignore)
+        try
         {
-            if (Activator!.Type == null)
-                return;
+            options ??= ComponentOptions.Default;
 
-            var members = Activator!.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
-            var commands = new Command[members.Length];
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
 
-            for (var i = 0; i < members.Length; i++)
-                commands[i] = new Command(members[i], options);
+            if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
+                throw new ComponentFormatException($"The provided type is not a valid implementation of {nameof(CommandModule)}. Ensure it is not abstract, and does not contain unimplemented generic parameters.");
 
-            try
+            var attributes = type.GetAttributes(true);
+
+            Attributes = [.. attributes];
+
+            var names = attributes.FirstOrDefault<INameBinding>()?.Names ?? [];
+
+            NameBindingValidation.NotNullOrInvalid(names, options.NameValidation, nameof(INameBinding));
+
+            Names = names;
+            Ignore = attributes.Any(x => x is IgnoreAttribute);
+
+            Activator = new CommandModuleActivator(type);
+
+            if (!Ignore)
             {
-                var nestedTypes = Activator.Type.GetNestedTypes(BindingFlags.Public);
+                if (Activator!.Type == null)
+                    return;
 
-                var groups = Utilities.GetComponents(options, nestedTypes, true);
+                var members = Activator!.Type!.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
+                var commands = new Command[members.Length];
 
-                AddRange([.. commands.Where(x => !x.Ignore), .. groups]);
+                for (var i = 0; i < members.Length; i++)
+                    commands[i] = new Command(members[i], options);
+
+                try
+                {
+                    var nestedTypes = Activator.Type.GetNestedTypes(BindingFlags.Public);
+
+                    var groups = Utilities.GetComponents(options, nestedTypes, true);
+
+                    AddRange([.. commands.Where(x => !x.Ignore), .. groups]);
+                }
+                catch
+                {
+                    // Do nothing else, we can't access nested types.
+                    AddRange(commands);
+                }
             }
-            catch
-            {
-                // Do nothing else, we can't access nested types.
-                AddRange(commands);
-            }
+
+            options.BuildCompleted?.Invoke(this);
         }
-
-        options.BuildCompleted?.Invoke(this);
+        catch (Exception ex) when (ex is ComponentFormatException or ArgumentException)
+        {
+            throw new ComponentFormatException($"Failed to create a {nameof(CommandGroup)} from the provided type: {type}. See inner exception for more details.", ex);
+        }
     }
 
     /// <summary>

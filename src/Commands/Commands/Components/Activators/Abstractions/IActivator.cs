@@ -11,12 +11,9 @@ public interface IActivator
     public MethodBase Target { get; }
 
     /// <summary>
-    ///     Gets the index of the <see cref="IContext"/> parameter in the target method, which is used to define the context of the command.
+    ///     Gets the total length of parameters expected by the target of this activator, including the parameters that are implicitly passed by the command execution pipeline, such as the context or the command information.
     /// </summary>
-    /// <remarks>
-    ///     Returns -1 if the target method does not have a <see cref="IContext"/> parameter.
-    /// </remarks>
-    public int ContextIndex { get; }
+    public int SignatureLength { get; }
 
     /// <summary>
     ///     Invokes the target of this <see cref="IActivator"/> with the provided values.
@@ -29,4 +26,11 @@ public interface IActivator
     /// <exception cref="ComponentFormatException">Thrown when the service provider could not resolve the service signature, being a set of services defined on the member or module.</exception>
     public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options)
         where TContext : IContext;
+
+    /// <summary>
+    ///     Gets a parameter collection that contains the parameters the activator expects to be passed to the target.
+    /// </summary>
+    /// <param name="options">The options that determine the execution pattern of this activator.</param>
+    /// <returns>An array containing the <see cref="ICommandParameter"/> implementations for a command that will run based on this activator.</returns>
+    public ICommandParameter[] GetParameters(ComponentOptions options);
 }

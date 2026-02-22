@@ -17,7 +17,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
     public string Name { get; }
 
     /// <inheritdoc />
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
 #endif
     public Type Type { get; }
@@ -66,7 +66,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
         => Parameters.Length > 0;
 
     internal ConstructibleParameter(
-        ParameterInfo parameterInfo, ComponentOptions configuration)
+        ParameterInfo parameterInfo, ComponentOptions options)
     {
         var underlying = Nullable.GetUnderlyingType(parameterInfo.ParameterType);
         var attributes = parameterInfo.GetAttributes(false);
@@ -90,15 +90,8 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
             IsOptional = false;
 
         Activator = new ConstructibleParameterActivator(Type);
-
-        var parameters = Utilities.GetParameters(Activator, configuration);
-
-        if (parameters.Length == 0)
-            throw new ComponentFormatException($"Deconstruct-marked parameter of type {Type} must have at least one parameter in one of its public constructors.");
-
-        (MinLength, MaxLength) = Utilities.GetLength(parameters);
-
-        Parameters = parameters;
+        Parameters = Activator.GetParameters(options);
+        (MinLength, MaxLength) = Utilities.GetLength(Parameters);
 
         Attributes = [.. attributes];
 

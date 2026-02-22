@@ -118,8 +118,8 @@ public class CommandClass : CommandModule
 }
 ```
 
-Even still, it is possible to pass the execution state to the static method without making an instance of the surrounding class. 
-For access to this data, the `IContext` implementation used to execute this command can be injected directly into the method.
+Still, it is possible to pass the execution state to the static method without making an instance of the surrounding class. 
+For access to this data, the `IContext` implementation used to execute this command can be written directly into the method signature.
 
 ```cs
 [Name("command")]
@@ -133,15 +133,17 @@ public class CommandClass : CommandModule
 }
 ```
 
-Static (and delegate) commands also support service injection. 
-All services that are registered in the `IServiceProvider` can be injected into the method, by specifying them as parameters preceding the `IContext` parameter.
+Commands also support service injection. This is most commonly used for static commands, as instance commands can have services injected into their constructor.
+In case it is desired, instance commands can also have services injected into their method signatures, and they will be resolved on execution.
+
+All services that are registered in the `IServiceProvider` can be injected into the method, by using the `[Dependency]` attribute as shown below.
 
 ```cs
 [Name("command")]
 public class CommandClass : CommandModule
 {
     // 'command 1' is valid
-    public static void Command(IServiceProvider services, IContext context, int value)
+    public static void Command([Dependency] IServiceProvider services, int value)
     {
         var myService = services.GetService<MyService>();
         context.Respond(myService.DoSomething(value));

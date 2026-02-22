@@ -2,46 +2,47 @@
 
 internal readonly struct CommandStaticActivator : IActivator
 {
+    private readonly int _contextIndex;
     private readonly DependencyParameter[] _dependencies;
     private readonly object? _state;
 
     public MethodBase Target { get; }
 
-    public int ContextIndex { get; }
+    public int SignatureLength { get; }
 
     public CommandStaticActivator(MethodInfo target, object? state = null)
     {
         Target = target;
         _state = state;
 
-        ContextIndex = -1;
+        _contextIndex = -1;
+        _dependencies = [];
 
-        var param = target.GetParameters();
+        var parameters = target.GetParameters();
 
-        for (var i = 0; i < param.Length; i++)
+        for (var i = 0; i < parameters.Length; i++)
         {
-            if (typeof(IContext).IsAssignableFrom(param[i].ParameterType))
-                ContextIndex = i;
+            if (typeof(IContext).IsAssignableFrom(parameters[i].ParameterType))
+                _contextIndex = i;
+
+            if (parameters[i].GetCustomAttributes().OfType<DependencyAttribute>().Any())
+                Utilities.CopyTo(ref _dependencies, new DependencyParameter(parameters[i]));
         }
 
-        _dependencies = new DependencyParameter[ContextIndex == -1 ? 0 : ContextIndex];
-
-        if (ContextIndex > 0)
-        {
-            for (var i = 0; i < ContextIndex; i++)
-            {
-                var dep = param[i];
-                _dependencies[i] = new DependencyParameter(dep);
-            }
-        }
+        SignatureLength = parameters.Length;
     }
 
     public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options)
         where TContext : IContext
     {
-        if (ContextIndex != -1)
-            return Target.Invoke(_state, [.. Utilities.ResolveDependencies(_dependencies, Target, options), context, .. args]);
+        Utilities.ResolveDependencies(ref args, _dependencies, Target, options);
+
+        if (_contextIndex != -1)
+            args[_contextIndex] = context;
 
         return Target.Invoke(_state, args);
     }
+
+    public ICommandParameter[] GetParameters(ComponentOptions options)
+        => Utilities.GetCommandParameters(Target.GetParameters(), _dependencies, _contextIndex, options);
 }

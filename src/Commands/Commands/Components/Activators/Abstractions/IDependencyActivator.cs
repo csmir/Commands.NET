@@ -9,18 +9,10 @@ public interface IDependencyActivator<T>
     /// <summary>
     ///     Gets the type of the activator. This is the type that will be returned when the activator is invoked.
     /// </summary>
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
     public Type Type { get; }
-
-    /// <summary>
-    ///     Gets the service definitions that are required to initialize the activator.
-    /// </summary>
-    /// <remarks>
-    ///     This value is empty when no services are required to initialize the returned value.
-    /// </remarks>
-    public DependencyParameter[] Dependencies { get; }
 
     /// <summary>
     ///     Returns the activated instance of the activator.

@@ -3,16 +3,15 @@
 internal readonly struct CommandModuleActivator : IDependencyActivator<CommandModule>
 {
     private readonly ConstructorInfo _ctor;
+    private readonly DependencyParameter[] _dependencies;
 
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     [property: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
     public Type Type { get; }
 
-    public DependencyParameter[] Dependencies { get; }
-
     public CommandModuleActivator(
-#if NET8_0_OR_GREATER
+#if NET6_0_OR_GREATER
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
 #endif
         Type type)
@@ -21,14 +20,21 @@ internal readonly struct CommandModuleActivator : IDependencyActivator<CommandMo
 
         var parameters = _ctor.GetParameters();
 
-        Dependencies = new DependencyParameter[parameters.Length];
+        // We know that all parameters on a module are dependencies so we can do this without checking for attributes.
+        _dependencies = new DependencyParameter[parameters.Length];
 
         for (var i = 0; i < parameters.Length; i++)
-            Dependencies[i] = new DependencyParameter(parameters[i]);
+            _dependencies[i] = new DependencyParameter(parameters[i]);
 
         Type = type;
     }
 
     public CommandModule Activate(ExecutionOptions options)
-        => (CommandModule)_ctor.Invoke(Utilities.ResolveDependencies(Dependencies, _ctor, options));
+    {
+        var args = Array.Empty<object?>();
+
+        Utilities.ResolveDependencies(ref args, _dependencies, _ctor, options);
+
+        return (CommandModule)_ctor.Invoke(args);
+    }
 }

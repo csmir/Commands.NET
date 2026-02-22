@@ -21,6 +21,9 @@ public sealed class DependencyParameter : IParameter
     /// <inheritdoc />
     public bool IsOptional { get; }
 
+    /// <inheritdoc />
+    public int Position { get; }
+
     /// <summary>
     ///     Gets all attributes on the current object.
     /// </summary>
@@ -47,6 +50,7 @@ public sealed class DependencyParameter : IParameter
         else
             IsOptional = false;
 
+        Position = parameterInfo.Position;
         ExposedType = parameterInfo.ParameterType;
 
         Attributes = [.. parameterInfo.GetAttributes(false)];
