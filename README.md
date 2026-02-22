@@ -99,7 +99,7 @@ public class PingModule : CommandModule
 
 var provider = new ComponentProvider();
 
-provider.Components.Add<HelpModule>();
+provider.Components.Add<PingModule>();
 provider.Components.Add(mathGroup);
 
 await provider.Execute(new ConsoleContext(args));
@@ -119,7 +119,7 @@ var services = new ServiceCollection()
 
 var provider = services.GetRequiredService<ComponentProvider>();
 
-provider.Components.Add<HelpModule>();
+provider.Components.Add<PingModule>();
 provider.Components.Add(mathGroup);
 
 await provider.Execute(new ConsoleContext(args), new ExecutionOptions() { Services = services });
