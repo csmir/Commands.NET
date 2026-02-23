@@ -23,7 +23,12 @@ internal readonly struct CommandStaticActivator : IActivator
         for (var i = 0; i < parameters.Length; i++)
         {
             if (typeof(IContext).IsAssignableFrom(parameters[i].ParameterType))
+            {
+                if (_contextIndex != -1)
+                    throw new ComponentFormatException($"Command does not support multiple parameters that implement '{typeof(IContext)}'.");
+
                 _contextIndex = i;
+            }
 
             if (parameters[i].GetCustomAttributes().OfType<DependencyAttribute>().Any())
                 Utilities.CopyTo(ref _dependencies, new DependencyParameter(parameters[i]));
