@@ -8,7 +8,7 @@ Consider leaving a ⭐
 [![Download](https://img.shields.io/static/v1?style=flat&message=download%20on%20nuget&color=004880&logo=NuGet&logoColor=FFFFFF&label=)](https://nuget.org/packages/Commands.NET)
 [![Discord](https://img.shields.io/discord/1092510256384450652?style=flat)](https://discord.gg/T7hCvShAx5)
 
-**Do more, with less. With speed, compatibility and fluent integration in mind.**
+Do more, with less. **A high performance, scalable CLI / command framework.**
 
 Commands.NET aims to improve your experience integrating input from different sources* into the same, concurrent pool and treating them as triggered actions, called commands. 
 It provides a modular and intuitive API for registering and executing commands.
