@@ -17,9 +17,9 @@ public sealed class BasicModule : CommandModule<SampleContext>
 
     [Name("coinflip")]
     public string CoinFlip()
-        => new Random().Next(0, 2) == 0 ? "Heads" : "Tails";
+        => Random.Shared.Next(0, 2) == 0 ? "Heads" : "Tails";
 
     [Name("diceroll")]
     public string DiceRoll()
-        => new Random().Next(1, 7).ToString();
+        => Random.Shared.Next(1, 7).ToString();
 }
