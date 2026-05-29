@@ -113,7 +113,7 @@ public static class Utilities
                 break;
             }
 
-            if (param.IsResource)
+            if (param.IsMetadata)
             {
                 results[i] = await param.Parse(context, null, options.ServiceProvider, options.CancellationToken).ConfigureAwait(false);
 
@@ -267,7 +267,7 @@ public static class Utilities
             if (parameter is CommandParameter defaultParameter)
             {
                 // Resource parameters are not counted in the length, as they are skipped during parsing.
-                if (defaultParameter.IsResource)
+                if (defaultParameter.IsMetadata)
                     continue;
 
                 maxLength++;

@@ -32,10 +32,8 @@ public static class Utilities
     /// <param name="configureComponents">An action to configure the <see cref="ComponentBuilderContext"/> which will be used to populate all related services.</param>
     /// <returns>The same <see cref="IHostBuilder"/> for call-chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureComponents"/> is <see langword="null"/>.</exception>
-    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentBuilderContext> configureComponents)
-    {
-        return ConfigureComponents(builder, (_, ctx) => configureComponents(ctx));
-    }
+    public static IHostBuilder ConfigureComponents(this IHostBuilder builder, Action<ComponentBuilderContext> configureComponents) 
+        => ConfigureComponents(builder, (_, ctx) => configureComponents(ctx));
 
     /// <inheritdoc cref="ConfigureComponents(IHostBuilder, Action{ComponentBuilderContext})"/>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureComponents"/> is <see langword="null"/>.</exception>
@@ -47,7 +45,7 @@ public static class Utilities
         {
             configureComponents(ctx, properties);
 
-            AddComponents(services, properties, true);
+            TryAddServices(services, properties);
         });
 
         return builder;
@@ -69,9 +67,40 @@ public static class Utilities
 
         configureAction(builder);
 
-        AddComponents(services, builder, true);
+        TryAddServices(services, builder);
 
         return services;
+    }
+
+    /// <summary>
+    ///     Adds a component to the <see cref="IComponentProvider"/> of the <see cref="IHost"/>. This method can be used to add components at runtime, but will not be effective if the provider is already in use and has cached the components.
+    /// </summary>
+    /// <param name="host">The host to configure with the related components.</param>
+    /// <param name="component">The component to add to the host's component provider.</param>
+    /// <returns>The same <see cref="IHost"/> for call chaining.</returns>
+    public static IHost UseComponent(this IHost host, IComponent component)
+    {
+        var provider = host.Services.GetRequiredService<IComponentProvider>();
+
+        provider.Components.Add(component);
+
+        return host;
+    }
+
+    /// <summary>
+    ///     Adds a component module to the <see cref="IComponentProvider"/> of the <see cref="IHost"/>. This method can be used to add components at runtime, but will not be effective if the provider is already in use and has cached the components.
+    /// </summary>
+    /// <typeparam name="T">The type of the component module to add.</typeparam>
+    /// <param name="host">The host to configure with the related components.</param>
+    /// <returns>The same <see cref="IHost"/> for call chaining.</returns>
+    public static IHost UseModule<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)] T>(this IHost host)
+        where T : CommandModule
+    {
+        var provider = host.Services.GetRequiredService<IComponentProvider>();
+
+        provider.Components.Add(new CommandGroup<T>());
+
+        return host;
     }
 
     /// <summary>
@@ -81,10 +110,8 @@ public static class Utilities
     /// <param name="configureTree">An action to configure the <see cref="ComponentTree"/> with available components.</param>
     /// <returns>The same <see cref="IHost"/> for call chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configureTree"/> is <see langword="null"/>.</exception>
-    public static IHost UseComponents(this IHost host, Action<ComponentTree> configureTree)
-    {
-        return UseComponents(host, (_, tree) => configureTree(tree));
-    }
+    public static IHost UseComponents(this IHost host, Action<ComponentTree> configureTree) 
+        => UseComponents(host, (_, tree) => configureTree(tree));
 
     /// <inheritdoc cref="UseComponents(IHost, Action{ComponentTree})"/>
     public static IHost UseComponents(this IHost host, Action<IServiceProvider, ComponentTree> configureTree)
@@ -98,13 +125,7 @@ public static class Utilities
 
     #region Internals
 
-    internal static IHostBuilder ConfigureComponents(this IHostBuilder builder, ComponentBuilderContext componentBuilder, bool addFactory)
-        => builder.ConfigureServices((ctx, services) => services.AddComponents(componentBuilder, addFactory));
-
-    internal static IServiceCollection AddComponents(this IServiceCollection services, ComponentBuilderContext builder, bool addFactory)
-        => TryAddServices(services, builder, addFactory);
-
-    private static IServiceCollection TryAddServices(IServiceCollection collection, ComponentBuilderContext builder, bool addFactory)
+    private static IServiceCollection TryAddServices(IServiceCollection collection, ComponentBuilderContext builder)
     {
         collection.TryAddSingleton(typeof(IComponentProvider), builder.GetTypeProperty(nameof(IComponentProvider), typeof(ComponentProvider)));
         collection.TryAddScoped(typeof(IDependencyResolver), builder.GetTypeProperty(nameof(IDependencyResolver), typeof(KeyedDependencyResolver)));
@@ -112,8 +133,7 @@ public static class Utilities
         collection.TryAddScoped<IExecutionScope, ExecutionScope>();
         collection.TryAddScoped(typeof(IContextAccessor<>), typeof(ContextAccessor<>));
 
-        if (addFactory)
-            collection.TryAddSingleton<CommandExecutionFactory>();
+        collection.TryAddSingleton<CommandExecutionFactory>();
 
         if (builder.TryGetProperty<HashSet<Type>>(nameof(ResultHandler), out var resultsProperty))
         {

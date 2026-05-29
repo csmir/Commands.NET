@@ -20,7 +20,7 @@ public interface ICommandParameter : ICommandSegment, IParameter
     /// <summary>
     ///     Gets if this parameter is a resource type or not.
     /// </summary>
-    public bool IsResource { get; }
+    public bool IsMetadata { get; }
 
     /// <summary>
     ///     Gets the parser for this parameter.

@@ -45,7 +45,7 @@ public sealed class CommandParameter : ICommandParameter
         => Type.IsArray;
 
     /// <inheritdoc />
-    public bool IsResource { get; }
+    public bool IsMetadata { get; }
 
     internal CommandParameter(
         ParameterInfo parameterInfo, ComponentOptions options)
@@ -80,8 +80,8 @@ public sealed class CommandParameter : ICommandParameter
 
         Name = attributes.FirstOrDefault<INameBinding>()?.Name ?? parameterInfo.Name ?? "";
 
-        if (attributes.Any(x => x is IResourceBinding))
-            IsResource = true;
+        if (attributes.Any(x => x is IMetadataBinding))
+            IsMetadata = true;
         else if (attributes.Any(x => x is IRemainderBinding or ParamArrayAttribute))
             IsRemainder = true;
     }
@@ -95,7 +95,7 @@ public sealed class CommandParameter : ICommandParameter
         if (IsRemainder)
             return $"({Name}...)";
 
-        if (IsResource)
+        if (IsMetadata)
             return $"{{{Name}}}";
 
         return $"<{Name}>";
@@ -121,12 +121,12 @@ public sealed class CommandParameter : ICommandParameter
     /// <inheritdoc />
     public async ValueTask<ParseResult> Parse(IContext context, object? value, IServiceProvider services, CancellationToken cancellationToken)
     {
-        if (IsResource)
+        if (IsMetadata)
         {
-            if (context is IResourceContext resourceContext)
-                value = await resourceContext.GetResource();
+            if (context is IMetadataContext resourceContext)
+                value = await resourceContext.GetMetadata();
             else
-                return ParseResult.FromError(new ParserException("A resource parameter was attempted to be provided from a non-resource bound context."));
+                return ParseResult.FromError(new ParserException("A metadata parameter was attempted to be provided from a non-metadata bound context."));
         }
 
         // Fast path for matching instances of certain types.

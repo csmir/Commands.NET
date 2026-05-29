@@ -55,9 +55,4 @@
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.2" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<InternalsVisibleTo Include="Commands.Http" />
-	</ItemGroup>
-
 </Project>

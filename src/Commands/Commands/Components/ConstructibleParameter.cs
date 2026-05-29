@@ -58,7 +58,7 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
         => false;
 
     /// <inheritdoc />
-    public bool IsResource
+    public bool IsMetadata
         => false;
 
     /// <inheritdoc />
