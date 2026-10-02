@@ -9,12 +9,13 @@ public struct Arguments
 #if NET6_0_OR_GREATER
     const char U0022 = '"';
     const char U0020 = ' ';
-    const char U002D = '-';
 #else
     const string U0022 = "\"";
     const string U0020 = " ";
-    const string U002D = "-";
 #endif
+    const char U002D = '-';
+    const char U002E = '.';
+    const char U003D = '=';
 
     private int _index = 0;
 
@@ -57,10 +58,17 @@ public struct Arguments
     ///     Creates a new <see cref="Arguments"/> from a string input.
     /// </summary>
     /// <remarks>
-    ///     The implementation is defined by the following rules:
+    ///     The implementation follows POSIX utility conventions, extended with GNU-style long options, by the following rules:
     ///     <list type="number">
     ///         <item>
-    ///             <b>Flags</b> can act either as a standalone argument when prefixed with one hyphen <c>-</c>, or as a name for the next item, assuming a prefix of two hyphens <c>--</c>, and that the next item is not also a flag.
+    ///             <b>Short options</b> are prefixed with one hyphen <c>-</c> and are always flags, resolving to <see langword="true"/>. Options can be grouped, where <c>-abc</c> is equal to <c>-a -b -c</c>.
+    ///         </item>
+    ///         <item>
+    ///             <b>Long options</b> are prefixed with two hyphens <c>--</c>, and take the next item as their value, or the value after <c>=</c> when written as <c>--name=value</c>.
+    ///             When no value follows, because the next item is also an option or the input ends, the option is a flag resolving to <see langword="true"/>.
+    ///         </item>
+    ///         <item>
+    ///             <b>Operands</b> include a lone hyphen <c>-</c> and negative numbers such as <c>-5</c>, which are never treated as options. A lone <c>--</c> ends option parsing, treating all following items as operands.
     ///         </item>
     ///         <item>
     ///             <b>Whitespace</b> acts as a delimiter. When preceded by an argument name, it treats the next item as its value, otherwise closing a pair.
@@ -187,15 +195,6 @@ public struct Arguments
 
     private static IEnumerable<KeyValuePair<string, object?>> ReadInternal(string[] input)
     {
-        if (input.Length is 0)
-            yield break;
-
-        if (input.Length is 1)
-        {
-            yield return new(input[0], null);
-            yield break;
-        }
-
         // Reserved for joining arguments.
         var openState = 0;
         var concatenating = false;
@@ -203,6 +202,9 @@ public struct Arguments
 
         // Reserved for named arguments.
         string? name = null;
+
+        // Set when '--' is encountered, after which every argument is an operand.
+        var endOfOptions = false;
 
         foreach (var argument in input)
         {
@@ -261,37 +263,58 @@ public struct Arguments
             }
             else
             {
-                if (argument.StartsWith(U002D))
+                if (!endOfOptions && IsOption(argument))
                 {
-                    if (argument.Length > 1)
+                    // A long option that is followed by another option has no value, and is a flag.
+                    if (name is not null)
                     {
-#if NET6_0_OR_GREATER
-                        if (argument[1] is U002D)
-                        {
-                            if (name is not null)
-                                yield return new(name, null);
+                        yield return new(name, true);
 
-                            name = argument[2..];
+                        name = null;
+                    }
+
+                    if (argument.Length is 2 && argument[1] == U002D)
+                    {
+                        endOfOptions = true;
+
+                        continue;
+                    }
+
+                    if (argument[1] == U002D)
+                    {
+                        var option = argument.Substring(2);
+                        var separator = option.IndexOf(U003D);
+
+                        if (separator is -1)
+                        {
+                            name = option;
 
                             continue;
                         }
-                    }
 
-                    yield return new(argument[1..], null);
-#else
-                        if (argument[1] == U002D[0])
+                        name = option.Substring(0, separator);
+
+                        var value = option.Substring(separator + 1);
+
+                        if (value.StartsWith(U0022) && !(value.Length > 1 && value.EndsWith(U0022)))
                         {
-                            if (name is not null)
-                                yield return new(name, null);
+                            concatenating = true;
 
-                            name = argument.Remove(0, 2);
+                            concatenation.Add(value);
 
                             continue;
                         }
+
+                        yield return new(name, value);
+
+                        name = null;
+
+                        continue;
                     }
 
-                    yield return new(argument.Remove(0, 1), null);
-#endif
+                    // Short options are always flags, and can be grouped: '-abc' is equal to '-a -b -c'.
+                    for (var i = 1; i < argument.Length; i++)
+                        yield return new(argument[i].ToString(), true);
 
                     continue;
                 }
@@ -324,6 +347,22 @@ public struct Arguments
             else
                 yield return new(name, string.Join(U0020, concatenation));
         }
+        // A long option at the end of the input has no value, and is a flag.
+        else if (name is not null)
+            yield return new(name, true);
+    }
+
+    private static bool IsOption(string argument)
+    {
+        // A lone hyphen is an operand, conventionally representing standard input.
+        if (argument.Length < 2 || argument[0] != U002D)
+            return false;
+
+        // Negative numbers are operands, such as '-5' or '-.5'.
+        if (char.IsDigit(argument[1]) || (argument[1] == U002E && argument.Length > 2 && char.IsDigit(argument[2])))
+            return false;
+
+        return true;
     }
 
     #endregion
