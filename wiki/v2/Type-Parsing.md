@@ -27,11 +27,13 @@ Any user-defined parsers will take precedence over the default parsers.
 ### Functional Pattern
 
 ```cs
-var parser = new ParserDelegate<CustomObject>((ctx, param, value, services) => ...);
+using Commands.Parsing;
+
+var parser = new TryParseParser<CustomObject>(CustomObject.TryParse);
 ```
 
-The creation pattern handles conditions as `ValueTask<ParseResult>` where `ParseResult.FromError()` or `ParseResult.FromSuccess()` can be used to return the result. 
-`ParseResult` implicitly converts to `ValueTask<T>`.
+The functional pattern wraps any `TryParse`-style method or delegate, matching `bool (string? str, out T value)`. 
+When the delegate returns `true` the parse succeeds with its out-value, otherwise the parse fails and the command is not executed.
 
 ### Declarative Pattern
 
@@ -72,6 +74,8 @@ Attribute based parsers do not have a generic constraint, because the target typ
 ## Applying a Parser
 
 ### Declarative
+
+Functional and declarative parsers are registered for their target type:
 
 ```cs
 ComponentOptions.Default.Parsers[typeof(CustomObject)] = new CustomTypeParser();

@@ -37,10 +37,10 @@ internal readonly struct CommandStaticActivator : IActivator
         SignatureLength = parameters.Length;
     }
 
-    public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options)
+    public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options, IComponentProvider? provider)
         where TContext : IContext
     {
-        Utilities.ResolveDependencies(ref args, _dependencies, Target, options);
+        Utilities.ResolveDependencies(ref args, _dependencies, Target, options, provider);
 
         if (_contextIndex != -1)
             args[_contextIndex] = context;

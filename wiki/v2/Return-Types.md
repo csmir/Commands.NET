@@ -14,6 +14,8 @@ Amongst basic return types, the library supports:
 - `T : notnull`
 - `Task`
 - `Task<T : notnull>`
+- `ValueTask`
+- `ValueTask<T : notnull>`
 
 When returning `void`, the library will not send a response to the caller.
 
@@ -54,7 +56,7 @@ public object GetObject()
 }
 ```
 
-When returning `Task`, the library will await the task. If the task returns a value, it *will* be sent to the caller. If there is no value, the library will not send a response.
+When returning `Task` or `ValueTask`, the library will await the task. When returning `Task<T>` or `ValueTask<T>`, the result of the task *will* be sent to the caller. If there is no value, the library will not send a response.
 
 ```cs
 new Command(() => Task.CompletedTask, "task");
@@ -68,14 +70,24 @@ public Task GetTask()
 }
 ```
 
+The command is considered finished when its task completes. Exceptions thrown by an asynchronous command, before or after awaiting, fail the command and are passed to `OnFailure`, just like exceptions thrown synchronously.
+
 > [!NOTE]
-> `ValueTask` is not handled as a method return type. 
+> How a return value is handled is decided by the *declared* return type of the command. A command declared to return `object` that returns a `Task` will send the task itself, rather than awaiting it.
 > Furthermore, the library will convert the return type to a `string` by calling `ToString`, if it is `T` and unhandled. 
 > If the consumer desires to display `T` in a different way, they can override `ToString` in the class.
 
+`CommandReturnType` exposes this handling, to await and unwrap the return value of a method yourself:
+
+```cs
+var returnType = new CommandReturnType(method);
+
+var result = await returnType.GetAsyncResult(method.Invoke(instance, args));
+```
+
 ## Custom Return Type Handling
 
-Tt is possible to implement the handling of custom return types by implementing `ComponentProvider.Finalize` in a derived class.
+It is possible to implement the handling of custom return types by implementing `ComponentProvider.Finalize` in a derived class.
 
 ```cs
 using Commands;

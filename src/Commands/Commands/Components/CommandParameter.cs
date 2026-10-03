@@ -89,6 +89,10 @@ public sealed class CommandParameter : ICommandParameter
     /// <inheritdoc />
     public string GetFullName()
     {
+        // Boolean parameters are flags, which resolve to true when present by name.
+        if (Type == typeof(bool) && !IsRemainder && !IsResource)
+            return IsOptional ? $"[--{Name}]" : $"--{Name}";
+
         if (IsOptional)
             return $"[{Name}]";
 

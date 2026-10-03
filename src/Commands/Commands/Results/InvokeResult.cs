@@ -21,6 +21,9 @@ public readonly struct InvokeResult : IResult
     /// <summary>
     ///     Gets the value returned by the method execution.
     /// </summary>
+    /// <remarks>
+    ///     When the command returns <see cref="Task{TResult}"/> or <see cref="ValueTask{TResult}"/>, this is the awaited result. When the command returns <see langword="void"/>, <see cref="Task"/> or <see cref="ValueTask"/>, this is <see langword="null"/>.
+    /// </remarks>
     public object? ReturnValue { get; }
 
     internal InvokeResult(Command command, object? value, Exception? exception)

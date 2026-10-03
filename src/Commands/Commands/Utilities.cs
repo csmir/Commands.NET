@@ -114,7 +114,7 @@ public static class Utilities
 
     #region Execution
 
-    internal static async ValueTask<ParseResult[]> ParseParameters(IParameterCollection collection, IContext context, Arguments args, ExecutionOptions options)
+    internal static async ValueTask<ParseResult[]> ParseParameters(IParameterCollection collection, IContext context, Arguments args, ExecutionOptions options, IComponentProvider? provider)
     {
         var results = new ParseResult[collection.Parameters.Length];
 
@@ -138,13 +138,13 @@ public static class Utilities
 
             if (param is ConstructibleParameter constructible)
             {
-                var result = await ParseParameters(constructible, context, args, options).ConfigureAwait(false);
+                var result = await ParseParameters(constructible, context, args, options, provider).ConfigureAwait(false);
 
                 if (result.All(x => x.Success))
                 {
                     try
                     {
-                        results[i] = ParseResult.FromSuccess(constructible.Activator.Invoke(context, null, [.. result.Select(x => x.Value)], options));
+                        results[i] = ParseResult.FromSuccess(constructible.Activator.Invoke(context, null, [.. result.Select(x => x.Value)], options, provider));
                     }
                     catch (Exception ex)
                     {
@@ -156,6 +156,8 @@ public static class Utilities
 
                 if (constructible.IsOptional)
                     results[i] = ParseResult.FromSuccess(Type.Missing);
+                else
+                    results[i] = result.First(x => !x.Success);
 
                 continue;
             }
@@ -165,13 +167,13 @@ public static class Utilities
             else if (param.IsOptional)
                 results[i] = ParseResult.FromSuccess(Type.Missing);
             else
-                results[i] = ParseResult.FromError(new ArgumentNullException(param.Name));
+                results[i] = ParseResult.FromError(new MissingArgumentException(param.Name));
         }
 
         return results;
     }
 
-    internal static void ResolveDependencies(ref object?[] args, DependencyParameter[] dependencies, MemberInfo target, ExecutionOptions options)
+    internal static void ResolveDependencies(ref object?[] args, DependencyParameter[] dependencies, MemberInfo target, ExecutionOptions options, IComponentProvider? provider)
     {
         if (dependencies.Length == 0)
             return;
@@ -185,14 +187,17 @@ public static class Utilities
 
             var service = resolver!.GetService(dependency);
 
-            if (service != null || dependency.IsNullable)
+            if (service != null)
                 args[dependency.Position] = service;
 
             else if (dependency.Type == typeof(IServiceProvider))
                 args[dependency.Position] = options.ServiceProvider;
 
-            else if (dependency.Type == typeof(IComponentProvider))
-                args[dependency.Position] = options.ComponentProvider;
+            else if (dependency.Type == typeof(IComponentProvider) && provider != null)
+                args[dependency.Position] = provider;
+
+            else if (dependency.IsNullable)
+                args[dependency.Position] = null;
 
             else if (dependency.IsOptional)
                 args[dependency.Position] = Type.Missing;

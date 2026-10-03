@@ -29,11 +29,11 @@ internal readonly struct CommandModuleActivator : IDependencyActivator<CommandMo
         Type = type;
     }
 
-    public CommandModule Activate(ExecutionOptions options)
+    public CommandModule Activate(ExecutionOptions options, IComponentProvider? provider)
     {
         var args = new object?[_dependencies.Length];
 
-        Utilities.ResolveDependencies(ref args, _dependencies, _ctor, options);
+        Utilities.ResolveDependencies(ref args, _dependencies, _ctor, options, provider);
 
         return (CommandModule)_ctor.Invoke(args);
     }

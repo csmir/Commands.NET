@@ -7,9 +7,6 @@ namespace Commands;
 /// </summary>
 public sealed class ExecutionOptions
 {
-    // A reference to the component manager that called the command, if any.
-    internal ComponentProvider? ComponentProvider;
-
     /// <summary>
     ///     Gets or sets the services for running the request.
     /// </summary>

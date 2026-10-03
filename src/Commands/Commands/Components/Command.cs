@@ -18,6 +18,8 @@ namespace Commands;
 [DebuggerDisplay("{ToString()}")]
 public class Command : IComponent, IParameterCollection
 {
+    private readonly CommandReturnType _returnType;
+
     private bool _bound;
 
     /// <summary>
@@ -156,9 +158,11 @@ public class Command : IComponent, IParameterCollection
             Activator = activator;
             Evaluators = Utilities.GetEvaluators(attributes.OfType<ExecuteConditionAttribute>());
 
+            _returnType = new CommandReturnType(activator.Target);
+
             (MinLength, MaxLength) = Utilities.GetLength(parameters);
 
-            for (int i = parameters.Length - 1; i < -1; i--)
+            for (var i = 0; i < parameters.Length - 1; i++)
             {
                 if (parameters[i].IsRemainder) throw new ComponentFormatException("Remainder-marked parameters must be the last parameter in the parameter list of a command.");
             }
@@ -180,7 +184,16 @@ public class Command : IComponent, IParameterCollection
     /// <param name="context">The instance of the <see cref="IContext"/> provided to this command.</param>
     /// <param name="options">A collection of options that determines pipeline logic.</param>
     /// <returns>An awaitable <see cref="ValueTask"/> containing the result of the execution. If <see cref="IResult.Success"/> is <see langword="true"/>, the command has successfully been executed.</returns>
-    public async ValueTask<IResult> Run<TContext>(TContext context, ExecutionOptions options)
+    /// <remarks>
+    ///     The returned <see cref="ValueTask"/> completes when the command has finished, including any <see cref="Task"/> or <see cref="ValueTask"/> it returns. Exceptions thrown by the command, synchronously or asynchronously, are captured in the result.
+    ///     <br/>
+    ///     When a command is ran directly, dependencies of type <see cref="IComponentProvider"/> are only resolved from the <see cref="ExecutionOptions.ServiceProvider"/>.
+    /// </remarks>
+    public ValueTask<IResult> Run<TContext>(TContext context, ExecutionOptions options)
+        where TContext : class, IContext
+        => Run(context, options, null);
+
+    internal async ValueTask<IResult> Run<TContext>(TContext context, ExecutionOptions options, IComponentProvider? provider)
         where TContext : class, IContext
     {
         var args = context.Arguments;
@@ -193,14 +206,20 @@ public class Command : IComponent, IParameterCollection
             parameters = new object?[Activator.SignatureLength];
         else if (MaxLength == args.RemainingLength || (MaxLength <= args.RemainingLength && HasRemainder) || (MaxLength > args.RemainingLength && MinLength <= args.RemainingLength))
         {
-            var arguments = await Utilities.ParseParameters(this, context, args, options).ConfigureAwait(false);
+            var arguments = await Utilities.ParseParameters(this, context, args, options, provider).ConfigureAwait(false);
 
             parameters = new object?[Activator.SignatureLength];
 
             for (var i = 0; i < arguments.Length; i++)
             {
                 if (!arguments[i].Success)
+                {
+                    // A required argument without a value means the input does not match the signature, rather than failing to parse.
+                    if (arguments[i].Exception is MissingArgumentException)
+                        return ParseResult.FromError(new CommandOutOfRangeException(this, args.RemainingLength, arguments[i].Exception));
+
                     return ParseResult.FromError(new CommandParsingException(this, arguments[i].Exception));
+                }
 
                 parameters[Parameters[i].Position] = arguments[i].Value;
             }
@@ -221,7 +240,11 @@ public class Command : IComponent, IParameterCollection
 
         try
         {
-            var value = Activator.Invoke(context, this, parameters, options);
+            var value = Activator.Invoke(context, this, parameters, options, provider);
+
+            // Awaiting within this scope ensures asynchronous exceptions are captured in the result, just like synchronous ones.
+            if (_returnType.IsAwaitable)
+                value = await _returnType.GetAsyncResult(value).ConfigureAwait(false);
 
             return new InvokeResult(this, value, null);
         }

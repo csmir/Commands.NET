@@ -22,9 +22,10 @@ public interface IActivator
     /// <param name="command">Reflected information of the command that is currently being executed.</param>
     /// <param name="args">The converted arguments to invoke the command with.</param>
     /// <param name="options">The options that determine the execution pattern of this invoker.</param>
+    /// <param name="provider">The provider executing the command, used to resolve dependencies of type <see cref="IComponentProvider"/>; or <see langword="null"/> when the command is ran directly.</param>
     /// <returns>The result of the invocation. This result is <see langword="null"/> if the method signature returns void.</returns>
     /// <exception cref="ComponentFormatException">Thrown when the service provider could not resolve the service signature, being a set of services defined on the member or module.</exception>
-    public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options)
+    public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options, IComponentProvider? provider)
         where TContext : IContext;
 
     /// <summary>

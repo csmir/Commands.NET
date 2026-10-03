@@ -91,6 +91,10 @@ public struct Arguments
         : this(input?.Split(separators) ?? []) { }
 
     /// <inheritdoc cref="Arguments(string, char[])"/>
+#if NET9_0_OR_GREATER
+    // Preferred over the named argument overload when both apply, such as for an empty collection expression.
+    [System.Runtime.CompilerServices.OverloadResolutionPriority(1)]
+#endif
     public Arguments(string[] input)
         : this(ReadInternal(input)) { }
 

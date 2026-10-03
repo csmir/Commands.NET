@@ -3,8 +3,11 @@
 /// <summary>
 ///     Represents an exception that is created when provided arguments are out of range of a command.
 /// </summary>
-public sealed class CommandOutOfRangeException(Command command, int argsLength)
-    : Exception
+/// <remarks>
+///     When the amount of arguments matches the command, but a required parameter did not receive a value, the inner exception is a <see cref="MissingArgumentException"/>.
+/// </remarks>
+public sealed class CommandOutOfRangeException(Command command, int argsLength, Exception? innerException = null)
+    : Exception(null, innerException)
 {
     /// <summary>
     ///     Gets the command that caused the exception.

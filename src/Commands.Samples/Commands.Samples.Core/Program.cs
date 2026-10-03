@@ -24,6 +24,11 @@ var components = new ComponentTree
 
 var provider = new ComponentProvider(components);
 
-provider.OnFailure += (ctx, res, ex, svc) => ctx.Respond(ex);
+provider.OnFailure += (ctx, res, ex, svc) =>
+{
+    ctx.Respond(ex);
+
+    return Task.CompletedTask;
+};
 
 await provider.Execute(new ConsoleContext(args));

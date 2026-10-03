@@ -6,16 +6,14 @@
 /// </summary>
 public class ComponentProvider : IComponentProvider
 {
-    private static MethodInfo? _taskGetValue;
-
     /// <inheritdoc />
     public ComponentTree Components { get; }
 
     /// <inheritdoc />
-    public event Action<IContext, IResult, Exception, IServiceProvider>? OnFailure;
+    public event Func<IContext, IResult, Exception, IServiceProvider, Task>? OnFailure;
 
     /// <inheritdoc />
-    public event Action<IContext, IResult, IServiceProvider>? OnSuccess;
+    public event Func<IContext, IResult, IServiceProvider, Task>? OnSuccess;
 
     /// <summary>
     ///     Creates a new instance of the <see cref="ComponentProvider"/>.
@@ -57,8 +55,6 @@ public class ComponentProvider : IComponentProvider
     {
         options ??= ExecutionOptions.Default;
 
-        options.ComponentProvider = this;
-
         IResult? result = null;
 
         var components = Components.Find(context.Arguments);
@@ -67,7 +63,7 @@ public class ComponentProvider : IComponentProvider
         {
             if (component is Command command)
             {
-                result = await command.Run(context, options).ConfigureAwait(false);
+                result = await command.Run(context, options, this).ConfigureAwait(false);
 
                 if (result.Success)
                     break;
@@ -92,9 +88,6 @@ public class ComponentProvider : IComponentProvider
     /// <param name="result">The result yielded by the pipeline.</param>
     /// <param name="options">The options used to customize the command execution pipeline in accordance to the context and requirements of execution.</param>
     /// <returns>An awaitable <see cref="Task"/> representing the Finalize operation.</returns>
-#if NET6_0_OR_GREATER
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(Task<>))]
-#endif
     protected virtual async Task Finalize<TContext>(TContext context, IResult result, ExecutionOptions options)
         where TContext : class, IContext
     {
@@ -108,37 +101,48 @@ public class ComponentProvider : IComponentProvider
 
         if (result.Success && result is InvokeResult invokeResult)
         {
-            switch (invokeResult.ReturnValue)
+            // The return value has already been awaited and unwrapped by the command. Void, Task and ValueTask commands have no value.
+            if (invokeResult.ReturnValue != null)
             {
-                case null: // (void)
-                    break;
+                try
+                {
+                    await AsyncContext.Respond(context, invokeResult.ReturnValue).ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    await InvokeFailure(context, new InvokeResult(invokeResult.Command, invokeResult.ReturnValue, exception), Unfold(exception)!, options.ServiceProvider).ConfigureAwait(false);
 
-                case Task task:
-                    await task.ConfigureAwait(false);
-
-                    var taskType = task.GetType();
-
-                    // If the task is a generic task, and the result is not a void task result, get the result and respond with it.
-                    // Unfortunately we cannot do a type comparison on VoidTaskResult, because it is an internal corelib struct.
-                    if (taskType.IsGenericType && taskType.GenericTypeArguments[0].Name != "VoidTaskResult")
-                    {
-                        _taskGetValue ??= taskType.GetProperty("Result")!.GetMethod;
-
-                        var output = _taskGetValue?.Invoke(task, null);
-
-                        if (output != null)
-                            await AsyncContext.Respond(context, output).ConfigureAwait(false);
-                    }
-                    break;
-
-                case object obj:
-                    await AsyncContext.Respond(context, obj).ConfigureAwait(false);
-                    break;
+                    return;
+                }
             }
 
-            OnSuccess?.Invoke(context, result, options.ServiceProvider);
+            await InvokeSuccess(context, result, options.ServiceProvider).ConfigureAwait(false);
         }
         else
-            OnFailure?.Invoke(context, result, Unfold(result.Exception)!, options.ServiceProvider);
+            await InvokeFailure(context, result, Unfold(result.Exception)!, options.ServiceProvider).ConfigureAwait(false);
+    }
+
+    // Awaits every subscriber in order. Invoking the delegate directly would only return the task of the last subscriber.
+    private async Task InvokeFailure(IContext context, IResult result, Exception exception, IServiceProvider services)
+    {
+        var handlers = OnFailure;
+
+        if (handlers == null)
+            return;
+
+        foreach (var handler in handlers.GetInvocationList())
+            await ((Func<IContext, IResult, Exception, IServiceProvider, Task>)handler)(context, result, exception, services).ConfigureAwait(false);
+    }
+
+    // Awaits every subscriber in order. Invoking the delegate directly would only return the task of the last subscriber.
+    private async Task InvokeSuccess(IContext context, IResult result, IServiceProvider services)
+    {
+        var handlers = OnSuccess;
+
+        if (handlers == null)
+            return;
+
+        foreach (var handler in handlers.GetInvocationList())
+            await ((Func<IContext, IResult, IServiceProvider, Task>)handler)(context, result, services).ConfigureAwait(false);
     }
 }

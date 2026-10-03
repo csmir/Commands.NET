@@ -59,10 +59,16 @@ var provider = new ComponentProvider();
 provider.OnSuccess += (context, result, services) => 
 {
 	// Logic
+
+	return Task.CompletedTask;
 };
 
-provider.OnFailure += (context, result, exception, services) => 
+provider.OnFailure += async (context, result, exception, services) => 
 {
-	// Logic
+	// Asynchronous logic
+	await Task.CompletedTask;
 };
 ```
+
+Every subscriber is awaited in the order it was added, and `Execute` completes after the last subscriber completes. 
+Exceptions thrown by a subscriber are not caught by the provider, and propagate out of `Execute`.

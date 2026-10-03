@@ -26,10 +26,10 @@ internal readonly struct CommandInstanceActivator
         SignatureLength = parameters.Length;
     }
 
-    public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options)
+    public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options, IComponentProvider? provider)
         where TContext : IContext
     {
-        var module = command!.Parent?.Activator?.Activate(options);
+        var module = command!.Parent?.Activator?.Activate(options, provider);
 
         if (module != null)
         {
@@ -37,7 +37,7 @@ internal readonly struct CommandInstanceActivator
             module.Command = command;
         }
 
-        Utilities.ResolveDependencies(ref args, _dependencies, Target, options);
+        Utilities.ResolveDependencies(ref args, _dependencies, Target, options, provider);
 
         return Target.Invoke(module, args);
     }

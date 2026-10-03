@@ -8,6 +8,7 @@ This article introduces how to use various parameter types in commands.
 - [Deconstructible Parameters](#complex-parameters)
 - [Remainder](#remainder)
 - [Naming Parameters](#naming-parameters)
+- [Named Arguments and Flags](#named-arguments-and-flags)
 
 \* When specifying 'all', that is relative to the implementation of `TypeParser` types for non-standard implementations.
 
@@ -28,7 +29,7 @@ public void Command(string arg1, int arg2, bool arg3)
 
 > [!IMPORTANT] 
 > The library will automatically convert the input arguments to the parameter types, if possible. 
-> If the conversion fails, the command will not be executed and return a `MatchResult` with an `Exception`.
+> If the conversion fails, the command will not be executed and returns a failed `ParseResult`, whose `Exception` is a `CommandParsingException`.
 
 ## Nullable Parameters
 
@@ -163,3 +164,38 @@ public void Command([Name("arg1")] string Arg1, [Name("arg2")] int Arg2, [Name("
 {   
 }
 ```
+
+## Named Arguments and Flags
+
+Every parameter can be provided by position, or by name. When an argument is named, it is matched to the parameter with that exact name, either the name from `NameAttribute` or the name in the signature. 
+Matching is case-sensitive, so `-a` and `-A` are different arguments.
+
+Input is read following POSIX utility conventions, extended with GNU-style long options:
+
+| Input | Result |
+|---|---|
+| `--name value` | `name` is `"value"` |
+| `--name=value` | `name` is `"value"` |
+| `--flag` followed by another option, or at the end of the input | `flag` is `true` |
+| `-a` | `a` is `true`. Short options are always flags, and never take a value |
+| `-abc` | `a`, `b` and `c` are each `true` |
+| `--` | Ends option parsing, every following argument is positional |
+| `-` and negative numbers like `-5` or `-.5` | Positional arguments, never options |
+
+```cs
+new Command(([Name("dev-cert")] bool devCert = false, int port = 8080) => { }, "serve");
+```
+```cs
+// 'serve', 'serve --dev-cert', 'serve --port 5000 --dev-cert' and 'serve --dev-cert --port=5000' are valid
+[Name("serve")]
+public void Serve([Name("dev-cert")] bool devCert = false, int port = 8080)
+{
+}
+```
+
+> [!TIP]
+> Flags resolve to `true` when present, so a `bool` parameter that acts as a flag should be optional with a default of `false`.
+
+> [!NOTE]
+> A long option takes the next argument as its value, so `--verbose file.txt` assigns `"file.txt"` to `verbose`. 
+> Place flags last, use `--verbose=true`, or end the options with `--`, such as `--verbose -- file.txt`.

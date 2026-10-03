@@ -26,7 +26,8 @@ public interface IComponentProvider
     ///             When <see cref="IResult"/> is <see cref="SearchResult"/>, the exception can be <see cref="CommandNotFoundException"/> or <see cref="CommandRouteIncompleteException"/>.
     ///         </item>
     ///         <item>
-    ///             When <see cref="IResult"/> is <see cref="ParseResult"/>, the exception can be <see cref="ParserException"/>, <see cref="CommandOutOfRangeException"/> or <see cref="Exception"/> types emitted by custom <see cref="IParser"/> implementations.
+    ///             When <see cref="IResult"/> is <see cref="ParseResult"/>, the exception can be <see cref="ParserException"/>, <see cref="CommandOutOfRangeException"/>, <see cref="MissingArgumentException"/> when a required parameter did not receive a value, or <see cref="Exception"/> types emitted by custom <see cref="IParser"/> implementations.
+    ///             The exception of the <see cref="ParseResult"/> itself is <see cref="CommandOutOfRangeException"/> or <see cref="CommandParsingException"/>, wrapping the exceptions above.
     ///         </item>
     ///         <item>
     ///             When <see cref="IResult"/> is <see cref="ConditionResult"/>, the exception can be <see cref="ConditionException"/> or <see cref="Exception"/> types emitted by custom <see cref="ExecuteConditionAttribute"/> implementations.
@@ -35,13 +36,17 @@ public interface IComponentProvider
     ///             When <see cref="IResult"/> is <see cref="InvokeResult"/>, the exception can be any exception thrown by the command handler, or where the command failed to execute properly.
     ///         </item>
     ///     </list>
+    ///     Every subscriber is awaited in the order it was added, and execution completes after the last subscriber completes.
     /// </remarks>
-    public event Action<IContext, IResult, Exception, IServiceProvider>? OnFailure;
+    public event Func<IContext, IResult, Exception, IServiceProvider, Task>? OnFailure;
 
     /// <summary>
     ///     Invoked when a command has succesfully been executed.
     /// </summary>
-    public event Action<IContext, IResult, IServiceProvider>? OnSuccess;
+    /// <remarks>
+    ///     Every subscriber is awaited in the order it was added, and execution completes after the last subscriber completes.
+    /// </remarks>
+    public event Func<IContext, IResult, IServiceProvider, Task>? OnSuccess;
 
     /// <summary>
     ///     Executes the command pipeline using the provided <see cref="IContext"/>. 

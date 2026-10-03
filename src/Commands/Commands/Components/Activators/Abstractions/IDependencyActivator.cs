@@ -18,6 +18,7 @@ public interface IDependencyActivator<T>
     ///     Returns the activated instance of the activator.
     /// </summary>
     /// <param name="options">The options containing the <see cref="IServiceProvider"/> from which the target <typeparamref name="T"/> should be returned, or which should be use to resolve the type immediately.</param>
+    /// <param name="provider">The provider executing the command, used to resolve dependencies of type <see cref="IComponentProvider"/>; or <see langword="null"/> when the command is ran directly.</param>
     /// <returns>An instance of <typeparamref name="T"/> which was pre-initialized, provided from the <see cref="IServiceProvider"/> or created using a self-defined injection pattern.</returns>
-    public T Activate(ExecutionOptions options);
+    public T Activate(ExecutionOptions options, IComponentProvider? provider);
 }

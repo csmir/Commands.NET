@@ -8,10 +8,11 @@ This article will cover how modules work, which command scenarios are *at least*
 - [Class-level execution](#class-commands)
 - [Nesting commands](#nesting-commands)
 - [Static definitions](#static-definitions)
+- [Service injection](#service-injection)
 
 ## Basic usage
 
-Commands in modules are defined by creating a method with the `NameAttribute` attribute. The `NameAttribute` attribute specifies the name of the command that the method will be executed.
+Every `public` method, instance or static, declared in a `public` class that inherits from `CommandModule` is a command. The `NameAttribute` attribute specifies the name the command is executed by.
 
 ```cs
 // 'command' is valid
@@ -21,7 +22,25 @@ public void Command()
 }
 ```
 
-Only `public` methods can be commands, and they must be in a class that is `public` and inherits from `CommandModule`.
+A method without a name is the default command of its module, and is executed when the name of the module is provided without a subcommand. 
+To prevent a `public` method from becoming a command, mark it with `IgnoreAttribute`.
+
+```cs
+[Name("module")]
+public class Module : CommandModule
+{
+    // 'module' is valid
+    public void Default()
+    {
+    }
+
+    // Not a command.
+    [Ignore]
+    public void Helper()
+    {
+    }
+}
+```
 
 ## Command overloading
 
@@ -47,7 +66,7 @@ public void Command(int arg1, int arg2)
 
 ## Class commands
 
-Commands can be defined in a class by using the `Name` attribute on the class itself. This will make all methods in the class commands.
+By using the `Name` attribute on the class itself, all commands in the class are grouped under that name. Methods without a name of their own become default commands of the group, so overloads can be defined by signature alone.
 
 ```cs
 [Name("command")]
@@ -133,20 +152,38 @@ public class CommandClass : CommandModule
 }
 ```
 
-Commands also support service injection. This is most commonly used for static commands, as instance commands can have services injected into their constructor.
-In case it is desired, instance commands can also have services injected into their method signatures, and they will be resolved on execution.
+## Service injection
 
-All services that are registered in the `IServiceProvider` can be injected into the method, by using the `[Dependency]` attribute as shown below.
+Commands support service injection. Every parameter of a module constructor is a dependency, resolved from the `IServiceProvider` in `ExecutionOptions` when an instance command is executed. A new instance of the module is created for every execution.
+
+```cs
+[Name("command")]
+public class CommandClass(MyService myService) : CommandModule
+{
+    // 'command 1' is valid
+    public string Command(int value)
+    {
+        return myService.DoSomething(value);
+    }
+}
+```
+
+Static and delegate commands, or instance commands that only need a service in a single command, can have services injected into their method signature using the `[Dependency]` attribute. These are resolved on execution.
 
 ```cs
 [Name("command")]
 public class CommandClass : CommandModule
 {
     // 'command 1' is valid
-    public static void Command([Dependency] IServiceProvider services, int value)
+    public static void Command(IContext context, [Dependency] MyService myService, int value)
     {
-        var myService = services.GetService<MyService>();
         context.Respond(myService.DoSomething(value));
     }
 }
 ```
+
+The `IServiceProvider` itself and the `IComponentProvider` executing the command can always be injected, even when they are not registered as services. 
+When a command is ran directly through `Command.Run`, the `IComponentProvider` is only available when it is registered in the `IServiceProvider`.
+
+> [!NOTE]
+> A dependency that cannot be resolved is injected as `null` when it is nullable, or uses its default value when it is optional. Otherwise, the command fails with a `ComponentFormatException`.

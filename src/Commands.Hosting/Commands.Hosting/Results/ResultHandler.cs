@@ -55,7 +55,8 @@ public abstract class ResultHandler
                     }
                     break;
                 case ParseResult parseResult:
-                    if (exception is CommandOutOfRangeException rangeEx)
+                    // The exception passed to this method is unfolded to its root cause, so the result's own exception determines the kind of failure.
+                    if (parseResult.Exception is CommandOutOfRangeException rangeEx)
                         return ParamsOutOfRange(context, rangeEx, parseResult, services, cancellationToken);
 
                     return ParseFailed(context, exception, parseResult, services, cancellationToken);

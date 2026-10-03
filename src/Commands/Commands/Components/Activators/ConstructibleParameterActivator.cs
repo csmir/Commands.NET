@@ -31,10 +31,10 @@ internal readonly struct ConstructibleParameterActivator
         SignatureLength = parameters.Length;
     }
 
-    public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options)
+    public object? Invoke<TContext>(TContext context, Command? command, object?[] args, ExecutionOptions options, IComponentProvider? provider)
         where TContext : IContext
     {
-        Utilities.ResolveDependencies(ref args, _dependencies, _ctor, options);
+        Utilities.ResolveDependencies(ref args, _dependencies, _ctor, options, provider);
 
         return _ctor.Invoke(args);
     }
