@@ -333,7 +333,8 @@ public static class Utilities
             return ctor;
         }
 
-        throw new ComponentFormatException($"{type} has no publically available constructors to use in creating instances of this type.");
+        throw new ComponentFormatException($"{type} has no publically available constructors to use in creating instances of this type. " +
+            $"If the application is trimmed or compiled ahead-of-time, the constructors may have been removed. Ensure they are preserved, for example by using DynamicDependencyAttribute.");
     }
 
     internal static IEnumerable<Attribute> GetAttributes(this ICustomAttributeProvider provider, bool inherit)

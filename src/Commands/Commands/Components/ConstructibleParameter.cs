@@ -17,9 +17,6 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
     public string Name { get; }
 
     /// <inheritdoc />
-#if NET6_0_OR_GREATER
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
-#endif
     public Type Type { get; }
 
     /// <inheritdoc />
@@ -65,6 +62,9 @@ public class ConstructibleParameter : ICommandParameter, IParameterCollection
     public bool HasParameters
         => Parameters.Length > 0;
 
+#if NET6_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "The constructors of a deconstructed type cannot be statically preserved by the library. Consumers preserve them, such as with DynamicDependencyAttribute, and creation fails with a ComponentFormatException when they are not.")]
+#endif
     internal ConstructibleParameter(
         ParameterInfo parameterInfo, ComponentOptions options)
     {

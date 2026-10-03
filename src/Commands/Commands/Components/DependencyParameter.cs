@@ -7,9 +7,6 @@
 public sealed class DependencyParameter : IParameter
 {
     /// <inheritdoc />
-#if NET6_0_OR_GREATER
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors)]
-#endif
     public Type Type { get; }
 
     /// <inheritdoc />

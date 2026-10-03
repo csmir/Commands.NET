@@ -101,6 +101,18 @@ In this example, `string`, `int`, and `bool` are added as individual parameters 
 > When the target type does not have a public constructor containing any parameters, a `ComponentFormatException` will be thrown on creation.
 > It is possible to define which constructor is used by specifying `IgnoreAttribute` on other constructors.
 
+> [!IMPORTANT]
+> When the application is trimmed or compiled with Native AOT, the constructor of a deconstructed type is removed unless it is used elsewhere, because the library can only reach it through reflection. 
+> Preserve it by adding `DynamicDependencyAttribute` to the command, otherwise creating the command throws a `ComponentFormatException`.
+>
+> ```cs
+> [Name("command")]
+> [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(CustomType))]
+> public void Command([Deconstruct] CustomType arg)
+> {
+> }
+> ```
+
 ## Remainder
 
 When a parameter is marked with `RemainderAttribute`, an attribute implementing `IRemainderBinding` or with `params`, it will consume all remaining arguments. 
