@@ -107,7 +107,7 @@ public class CommandGroup : ComponentSet, IComponent
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            if (!typeof(CommandModule).IsAssignableFrom(type) || type.IsAbstract || type.ContainsGenericParameters)
+            if (!type.IsCommandModule())
                 throw new ComponentFormatException($"The provided type is not a valid implementation of {nameof(CommandModule)}. Ensure it is not abstract, and does not contain unimplemented generic parameters.");
 
             var attributes = type.GetAttributes(true);
@@ -137,8 +137,19 @@ public class CommandGroup : ComponentSet, IComponent
                 try
                 {
                     var nestedTypes = Activator.Type.GetNestedTypes(BindingFlags.Public);
+                    var componentTypes = Array.Empty<ComponentType>();
 
-                    var groups = Utilities.GetComponents(options, nestedTypes, true);
+                    foreach (var nestedType in nestedTypes)
+                    {
+                        if (!nestedType.IsCommandModule())
+                            continue;
+
+                        // Elements of GetNestedTypes are not tracked by the trimmer, but GetNestedType by name is.
+                        // PublicNestedTypes on this type keeps nested types whole, so both resolve to the same type.
+                        Utilities.CopyTo(ref componentTypes, new ComponentType(Activator.Type.GetNestedType(nestedType.Name, BindingFlags.Public)!));
+                    }
+
+                    var groups = Utilities.GetComponents(options, componentTypes);
 
                     AddRange([.. commands.Where(x => !x.Ignore), .. groups]);
                 }

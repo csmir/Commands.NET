@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>14.0</LangVersion>
 		<WarningsAsErrors>true</WarningsAsErrors>
-		<IsAotCompatible Condition="'$(TargetFramework)' == 'net10'">true</IsAotCompatible>
+		<IsAotCompatible Condition="'$(TargetFramework)' == 'net10.0'">true</IsAotCompatible>
 		<NoWarn>CA1822;CA1510;IDE0130;IDE0290;IDE0056;SYSLIB1045</NoWarn>
 
 		<AssemblyVersion>2.0</AssemblyVersion>

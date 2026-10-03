@@ -17,8 +17,24 @@ public static class Utilities
     /// <param name="options">The configuration which determines certain settings for the creation process for contained commands.</param>
     /// <param name="isNested">Determines whether the current iteration of additions is nested or not.</param>
     /// <returns>A new <see cref="IEnumerable{T}"/> containing all created component groups in the initial collection of types.</returns>
+#if NET6_0_OR_GREATER
+    [RequiresUnreferencedCode("This method uses reflection which may break when trimming.")]
+#endif
     public static IEnumerable<CommandGroup> GetComponents(this IEnumerable<Type> types, ComponentOptions? options = null, bool isNested = false)
-        => GetComponents(options ?? ComponentOptions.Default, types, isNested);
+    {
+        var componentTypes = Array.Empty<ComponentType>();
+        var seen = new HashSet<Type>();
+
+        foreach (var type in types)
+        {
+            if ((isNested && !type.IsNested) || !type.IsCommandModule() || !seen.Add(type))
+                continue;
+
+            CopyTo(ref componentTypes, new ComponentType(type));
+        }
+
+        return GetComponents(options ?? ComponentOptions.Default, componentTypes);
+    }
 
     #region Internals
 
@@ -188,39 +204,20 @@ public static class Utilities
 
     #endregion
 
-    #region Components
+#region Components
 
-    internal static CommandGroup[] GetComponents(ComponentOptions configuration, IEnumerable<Type> types, bool isNested)
+    // Callers are expected to filter the provided types using IsCommandModule before calling this method.
+    internal static CommandGroup[] GetComponents(ComponentOptions configuration, ComponentType[] types)
     {
         var output = Array.Empty<CommandGroup>();
 
-        var action = new Action<Type>((
-#if NET6_0_OR_GREATER
-            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
-#endif
-            type) =>
-        {
-            if (isNested && !type.IsNested)
-                return;
-
-            CommandGroup? group;
-
-            try
-            {
-                group = new CommandGroup(type, configuration);
-            }
-            catch (ComponentFormatException)
-            {
-                // This will throw if the type does not implement CommandModule. We can safely ignore this.
-                return;
-            }
-
-            if (group != null && !group.Ignore)
-                CopyTo(ref output, group);
-        });
-
         foreach (var type in types)
-            action(type);
+        {
+            var group = new CommandGroup(type.Value, configuration);
+
+            if (!group.Ignore)
+                CopyTo(ref output, group);
+        }
 
         return output;
     }
@@ -307,9 +304,12 @@ public static class Utilities
         return [.. YieldEvaluators(evaluatorGroups).OrderBy(x => x.Order)];
     }
 
-    #endregion
+#endregion
 
     #region Reflection
+
+    internal static bool IsCommandModule(this Type type)
+        => typeof(CommandModule).IsAssignableFrom(type) && !type.IsAbstract && !type.ContainsGenericParameters;
 
     internal static ConstructorInfo GetAvailableConstructor(
 #if NET6_0_OR_GREATER
@@ -336,5 +336,5 @@ public static class Utilities
 
     #endregion
 
-    #endregion
+#endregion
 }

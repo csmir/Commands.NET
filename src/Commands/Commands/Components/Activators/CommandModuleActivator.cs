@@ -31,7 +31,7 @@ internal readonly struct CommandModuleActivator : IDependencyActivator<CommandMo
 
     public CommandModule Activate(ExecutionOptions options)
     {
-        var args = Array.Empty<object?>();
+        var args = new object?[_dependencies.Length];
 
         Utilities.ResolveDependencies(ref args, _dependencies, _ctor, options);
 

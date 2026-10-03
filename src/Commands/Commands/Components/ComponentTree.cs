@@ -52,8 +52,12 @@ public sealed class ComponentTree : ComponentSet
     /// <param name="type">The type to add to the tree, if possible.</param>
     /// <param name="options">Options to use when creating the components.</param>
     /// <returns><see langword="true"/> if the component was created and succesfully added; otherwise <see langword="false"/>.</returns>
-    public bool Add(Type type, ComponentOptions? options = null)
-        => AddRange([type], options) > 0;
+    public bool Add(
+#if NET6_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
+#endif
+        Type type, ComponentOptions? options = null)
+        => type.IsCommandModule() && AddRange(Utilities.GetComponents(options ?? ComponentOptions.Default, [new ComponentType(type)])) > 0;
 
     /// <summary>
     ///     Attempts to add the provided type to the tree, using the <paramref name="options"/> to create a new <see cref="IComponent"/> implementation.
@@ -64,7 +68,11 @@ public sealed class ComponentTree : ComponentSet
     /// <typeparam name="T">The type implementation of <see cref="CommandModule"/> to add.</typeparam>
     /// <param name="options">Options to use when creating the components.</param>
     /// <returns><see langword="true"/> if the component was created and succesfully added; otherwise <see langword="false"/>.</returns>
-    public bool Add<T>(ComponentOptions? options = null)
+    public bool Add<
+#if NET6_0_OR_GREATER
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicNestedTypes)]
+#endif
+        T>(ComponentOptions? options = null)
         where T : CommandModule
         => Add(typeof(T), options);
 
@@ -78,6 +86,9 @@ public sealed class ComponentTree : ComponentSet
     /// <param name="types">A collection of types to filter and add to the manager, where possible.</param>
     /// <param name="options">The options to use when creating the components.</param>
     /// <returns>The number of added components; or 0 if no components are added.</returns>
+#if NET6_0_OR_GREATER
+    [RequiresUnreferencedCode("This method uses reflection which may break when trimming.")]
+#endif
     public int AddRange(IEnumerable<Type> types, ComponentOptions? options = null)
     {
         var components = types.GetComponents(options);
